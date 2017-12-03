@@ -42,10 +42,20 @@ void MainWindow::customFunc()
 
 //	return;
 
+//	QString g = "/media/Files/Data/iitp/Results";
+//	for(QString dr : QDir(g).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+//	{
+//		if(dr == "cohPicsAll") { continue; }
+
+//		QFile::copy(g + "/" + dr + "/cohPics",
+//					g + "/cohPicsAll/" + dr);
+//	}
+//	exit(0);
+
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackFinal/")
-						 + "Korchun";
+						 + "Demchishin";
 	for(QString fl : QDir(path).entryList(def::edfFilters))
 	{
 		autos::checkMarkFBfinal(path + "/" + fl);
@@ -161,16 +171,16 @@ void MainWindow::customFunc()
 #if 01
 	/// IITP
 	QStringList guyList{
-		"Alex",		//
-		"Boris",	//
-		"Dima",		//
-		"Egor",		//
-		"Galya",	//
-		"Ira",		//
-		"Isakov",	//
-		"Levik",	//
-		"Oleg",		//
-		"Victor"	//
+		"Alex"		//
+//		"Boris",	//
+//		"Dima",		//
+//		"Egor",		//
+//		"Galya",	//
+//		"Ira",		//
+//		"Isakov",	//
+//		"Levik",	//
+//		"Oleg",		//
+//		"Victor"	//
 	};
 
 
@@ -235,20 +245,19 @@ void MainWindow::customFunc()
 
 //		return;
 
-		std::cout << 1 << std::endl;
-		std::valarray<double> drawThing{0,	0,
-			0.06399744,	0.04252348,	0.001983,	0,	0.00257324,
-			0.00359005,	0.00174666,	0.00243207,	0.00294025,	0.00430815,
-			0.00256283,	0.00187166,	0.00312526,	0,	0.00420443,
-			0.0035522,	0.00442235};
-		double mx = 0.0838959;
-		QString pPath = "/media/Files/Data/iitp/Results/Alex/cohPics/Alex_00_free_Ta_l_alpha.jpg";
-		myLib::drw::drawOneMap(drawThing,
-							   mx,
-							   myLib::drw::ColorScale::jet,
-							   true).save(pPath, 0, 100);
-		exit(0);
-
+//		std::cout << 1 << std::endl;
+//		std::valarray<double> drawThing{0,	0,
+//			0.06399744,	0.04252348,	0.001983,	0,	0.00257324,
+//			0.00359005,	0.00174666,	0.00243207,	0.00294025,	0.00430815,
+//			0.00256283,	0.00187166,	0.00312526,	0,	0.00420443,
+//			0.0035522,	0.00442235};
+//		double mx = 0.0838959;
+//		QString pPath = "/media/Files/Data/iitp/Results/Alex/cohPics/Alex_00_free_Ta_l_alpha.jpg";
+//		myLib::drw::drawOneMap(drawThing,
+//							   mx,
+//							   myLib::drw::ColorScale::jet,
+//							   true).save(pPath, 0, 100);
+//		exit(0);
 
 		if(01)
 		{
@@ -257,8 +266,8 @@ void MainWindow::customFunc()
 //			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
 //			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
-//			continue;
-			exit(0);
+			continue;
+//			exit(0);
 		}
 
 //		exit(0);
@@ -1061,6 +1070,8 @@ void MainWindow::customFunc()
 #if 0
 	/// Galya_tactile things
 
+//	autos::EdfsToFolders("/media/Files/Data/Galya/AllTactile");
+//	exit(0);
 
 	if(0)
 	{
@@ -1087,7 +1098,6 @@ void MainWindow::customFunc()
 				QFile::rename(workPath + "/" + fileName,
 							  workPath + "/" + newName);
 			}
-
 //			repair::toLowerDir(workPath);
 //			autos::GalyaToFolders(workPath);
 		}
@@ -1104,12 +1114,11 @@ void MainWindow::customFunc()
 		}
 //		for(QString add : {"young", "adults"})
 //		{
-//			const QString tact = def::GalyaFolder + "/NormSept17/" + add;
-//			auto dirList = QDir(tact).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-//			for(QString dr : dirList)
-//			{
-				QString pt = def::GalyaFolder + "/Rest9Oct17/edf";
-//				pt = tact + "/" + dr;
+			const QString tact = def::GalyaFolder + "/AllTactile";
+			auto dirList = QDir(tact).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(QString dr : dirList)
+			{
+				const QString pt = tact + "/" + dr;
 				auto filList = QDir(pt).entryList(def::edfFilters);
 				for(QString fl : filList)
 				{
@@ -1127,105 +1136,46 @@ void MainWindow::customFunc()
 //						file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
 					}
 				}
-//			}
+			}
 //		}
 		exit(0);
 	}
-
-//	auto txtLst = QDir("/media/Files/Data/Galya/AllTactile_out/").entryList({"*.txt"});
-//	for(QString txt : txtLst)
-//	{
-//		std::cout << myLib::countSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/" + txt,
-//								  '\t') << std::endl;
-//	}
-//	exit(0);
-
-
-//	const QString pp = "/media/Files/Data/Galya/AllTactile_backup/bad/Mustafina_Karina_6";
-//	auto ll = QDir(pp).entryList(def::edfFilters);
-//	for(auto fn : ll)
-//	{
-//		edfFile fil;
-//		fil.readEdfFile(pp + "/" + fn);
-//		edfChannel newChan = fil.getChannels()[16];
-//		newChan.label = "EEG T6-A1";
-//		fil.insertChannel(16, fil.getData(16), newChan).writeEdfFile(pp + "/T6/" + fn);
-//	}
-//	exit(0);
-
-//	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Umanskaya_d2_dim.txt", '\t') << std::endl;
-//	exit(0);
 
 	if(01)
 	{
 		/// counting
 		def::currAutosUser = def::autosUser::Galya;
-
-		autos::ProcessAllInOneFolder(def::GalyaFolder + "/Rest9Oct17/edf");
-
-//		for(QString add : {"young", "adults"})
-//		{
-//			autos::Galya_tactile(def::GalyaFolder + "/NormSept17/" + add);
-//		}
-
+//		autos::ProcessAllInOneFolder(def::GalyaFolder + "/AllTactile");
+		autos::ProcessByFolders(def::GalyaFolder + "/AllTactile");
 	exit(0);
 	}
-
-//	myLib::replaceSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/all_.txt",
-//								"\n0\t",
-//								"\n \t",
-//								"/media/Files/Data/Galya/AllTactile_out/all__.txt");
-//	myLib::areEqualFiles("/media/Files/Data/Galya/AllTactile_out/all.txt",
-//						 "/media/Files/Data/Galya/AllTactile_out/all_.txt");
-
-//	const QString from = "/media/Seagate Expansion Drive/Michael/Data/MRI";
-//	const QString to = "/media/Files/Data/MRI_winds";
-//	auto drList = QDir(to).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-//	for(QString dr : drList)
-//	{
-//		QString dr1 = dr;
-//		dr1.remove("_windows_cleaned");
-//		QDir().rename(to + "/" + dr,
-//					  to + "/" + dr1);
-//		continue;
-
-//		QString interest = from + "/" + dr + "/" + dr + "_windows_cleaned";
-//		QString TO = to + "/" + dr + "_windows_cleaned";
-//		if(QDir(interest).exists())
-//		{
-//			QDir().mkpath(TO);
-//			for(QString fn : QDir(interest).entryList(QDir::Files))
-//			{
-//				QFile::copy(interest + "/" + fn,
-//							TO + "/" + fn);
-//			}
-//		}
-//	}
-
-//	def::currAutosUser = def::autosUser::Galya;
-//	autos::EEG_MRI_FD();
 	exit(0);
 #endif
 
 #if 0
 	/// Galya tactile labels
-//	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/Alexey_Coma.txt",
-//										   '\t') << std::endl;
-//	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Galya/AllTactile_out/labels.txt",
-//										   '\t') << std::endl;
 
-//	std::cout << myLib::countSymbolsInFile(def::GalyaFolder + "/Rest9Oct17/edf_out/Gladun.txt",
-//										   '\t') << std::endl;
-//	std::cout << myLib::countSymbolsInFile(def::GalyaFolder + "/Rest9Oct17/labels.txt",
-//										   '\t') << std::endl;
-//	exit(0);
+	const QString workPath = def::GalyaFolder + "/AllTactile_out";
+
+#if 0
+	/// cout results
+	for(QString fn : QDir(workPath).entryList({"*.txt"}))
+	{
+//		continue;
+		std::cout << fn << "\t"
+				  << myLib::countSymbolsInFile(workPath + "/" + fn, '\t') << std::endl;
+	}
+	std::cout << "labels.txt" << "\t"
+			  << myLib::countSymbolsInFile(workPath + "/" + "labels.txt", '\t') << std::endl;
+	exit(0);
+#endif
+
 
 	const QString sep{"\t"};
 //	const QString sep{"\r\n"};
 
 	std::ofstream lab;
-//	lab.open((def::GalyaFolder + "/AllTactile_out/labels.txt").toStdString());
-	lab.open((def::GalyaFolder + "/Rest9Oct17/labels.txt").toStdString());
+	lab.open((workPath + "/labels.txt").toStdString());
 
 	std::vector<QString> labels1 = coords::lbl19;
 	for(QString & in : labels1)
@@ -1235,11 +1185,12 @@ void MainWindow::customFunc()
 
 	const QString initFreq = "_1_30";
 
+//	QString mark = "rest";
 //	for(QString mark : {"buk", "kis", "rol", "sch", "og", "zg"})
-	QString mark = "rest";
+	for(QString mark : {"buk", "kis", "rol", "sch", "fon"})
 	{
 		/// ALPHA
-		for(QString lbl : labels1)
+		for(QString lbl : labels1) /// 19 values
 		{
 			lab << mark
 				<< "_" << "alpha"
@@ -1248,6 +1199,7 @@ void MainWindow::customFunc()
 		}
 
 		/// FFT
+		/// 18 ranges 1-Hz-wide, 19 channels = 342 values
 		for(int i = 2; i < 20; ++i)
 		{
 			for(QString lbl : labels1)
@@ -1260,7 +1212,7 @@ void MainWindow::customFunc()
 			}
 		}
 
-		/// CHAOS
+		/// Hilbert and Fractal Dimension 5*19 = 95 values
 		for(QString fir : {
 			QString("hilbcarr")	+ initFreq,
 			QString("hilbcarr")	+ "_8_13",
@@ -1279,7 +1231,10 @@ void MainWindow::customFunc()
 			}
 		}
 
+
+
 		/// HJORTH
+		/// 38 values
 		for(QString fir : {"hjorthcom", "hjorthmob"})
 		{
 			for(QString lbl : labels1)
@@ -1292,7 +1247,9 @@ void MainWindow::customFunc()
 
 		}
 
+#if 0
 		/// WAVELET
+		/// 19*19 = 361 values
 		for(int i = 0; i < 19; ++i)
 		{
 			for(QString lbl : labels1)
@@ -1300,6 +1257,22 @@ void MainWindow::customFunc()
 				lab << mark
 					<< "_" << nm(i + 2)
 					<< "_" << lbl << sep;
+			}
+		}
+#endif
+
+
+		/// logFFT
+		/// 18*19 = 342 values
+		for(int i = 2; i < 20; ++i)
+		{
+			for(QString lbl : labels1)
+			{
+				lab << mark
+					<< "_" << "logfft"
+					<< "_" << nm(i)
+					<< "_" << nm(i+1)
+					<< "_"  << lbl << sep;
 			}
 		}
 	}

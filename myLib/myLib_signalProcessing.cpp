@@ -2209,17 +2209,17 @@ void splineCoeffCount(const std::valarray<double> & inX,
 
         rightVec[i] = 3 * ( (inY[i] - inY[i-1]) / ( (inX[i] - inX[i-1]) * (inX[i] - inX[i-1]) ) + (inY[i+1] - inY[i]) / ( (inX[i+1] - inX[i]) * (inX[i+1] - inX[i]) ));
     }
-	if(0) // std::cout matrix and rightvec - OK
-    {
-        for(int i = 0; i < dim; ++i)
-        {
-            for(int j = 0; j < dim; ++j)
-            {
-				std::cout << coefsMatrix[i][j] << "\t ";
-            }
-			std::cout << rightVec[i] << std::endl;
-        }
-    }
+#if 0
+	// cout matrix and rightvec - OK
+	for(int i = 0; i < dim; ++i)
+	{
+		for(int j = 0; j < dim; ++j)
+		{
+			std::cout << coefsMatrix[i][j] << "\t ";
+		}
+		std::cout << rightVec[i] << std::endl;
+	}
+#endif
 	// count K's
     vectorK = coefsMatrix.matrixSystemSolveGauss(rightVec);
 	// count outA and outB

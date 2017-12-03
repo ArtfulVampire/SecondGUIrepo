@@ -70,9 +70,10 @@ void GalyaProcessing(const QString & procDirPath,
 			Mask = autos::featuresMask::alpha |
 				   autos::featuresMask::spectre |
 				   autos::featuresMask::Hilbert |
-				   autos::featuresMask::fracDim
-//				   autos::featuresMask::Hjorth |
-//				   autos::featuresMask::wavelet
+				   autos::featuresMask::fracDim |
+				   autos::featuresMask::Hjorth |
+//				   autos::featuresMask::wavelet |
+				   autos::featuresMask::logFFT
 				   ;
 
 			break;
@@ -170,7 +171,6 @@ void countFeatures(const matrix & inData,
 
 			outStr << std::fixed;
 			outStr.precision(4);
-
 
 			auto f = std::get<2>(FEATURES[num]);
 			f(inData,
@@ -380,6 +380,34 @@ void countHjorth(const matrix & inData,
 		for(auto row : inData)
 		{
 			outStr << f(row) << "\t";
+		}
+	}
+}
+
+void countLogFFT(const matrix & inData,
+				 double srate,
+				 std::ostream & outStr)
+{
+	std::vector<std::vector<double>> spectra(inData.rows()); /// [chan][freq]
+	for(int i = 0; i < inData.rows(); ++i)
+	{
+		/// norming is necessary
+		auto helpSpectre = myLib::smoothSpectre(
+							   myLib::spectreRtoR(inData[i]) *
+							   myLib::spectreNorm(smLib::fftL(inData.cols()),
+												  inData.cols(),
+												  srate),
+							   -1);
+		spectra[i] = myLib::integrateSpectre(helpSpectre,
+											 inData.cols(),
+											 srate);
+	}
+
+	for(int j = 0; j < spectra[0].size(); ++j)
+	{
+		for(int i = 0; i < inData.rows(); ++i)
+		{
+			outStr << std::log(spectra[i][j]) << "\t";
 		}
 	}
 }
@@ -903,6 +931,8 @@ void ArrangeFilesToLine(const QString & dirPath,
 {
 	QDir().mkpath(myLib::getDirPathLib(outFilePath));
 
+#if 0
+	/// old 2.12.2017
 	std::ofstream outStr;
 	outStr.open(outFilePath.toStdString());
 
@@ -924,6 +954,18 @@ void ArrangeFilesToLine(const QString & dirPath,
 		inStr.close();
 	}
 	outStr.close();
+#else
+	/// new 2.12.2017
+	QFile out(outFilePath); out.open(QIODevice::WriteOnly);
+
+	for(const QString & fileName : fileNames)
+	{
+		QFile in(dirPath + "/" + fileName); in.open(QIODevice::ReadOnly);
+		out.write(in.readAll());
+		in.close();
+	}
+	out.close();
+#endif
 }
 
 
@@ -1243,12 +1285,14 @@ void ProcessByFolders(const QString & inPath,
 	QTime myTime;
 	myTime.start();
 	/// to arguments
+	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_fon"};
+
 //	const std::vector<QString> markers{"_rest"};
 //	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
 //	const std::vector<QString> markers{"_2sv", "_2zv", "_4sv", "_4zv",
 //									   "_8sv", "_8zv", "_16sv", "_16zv", "_og", "_zg"};
-	const std::vector<QString> markers{"_brush", "_cry", "_fire", "_flower",
-									   "_isopropanol", "_needles", "_vanilla", "_wc"};
+//	const std::vector<QString> markers{"_brush", "_cry", "_fire", "_flower",
+//									   "_isopropanol", "_needles", "_vanilla", "_wc"};
 
 	if(outPath == QString())
 	{
@@ -1321,7 +1365,7 @@ void ProcessByFolders(const QString & inPath,
 		outPath = guyPath + "/out";
 
 		/// process?
-		if(01)
+		if(0)
 		{
 			/// clear outFolder
 			myLib::cleanDir(guyPath + "/out", "txt", true);
@@ -1330,44 +1374,46 @@ void ProcessByFolders(const QString & inPath,
 		}
 
 		/// make one line file for each stimulus
-		if(1)
+		if(01)
 		{
 			for(QString mark : markers)
 			{
 				QStringList fileNamesToArrange;
 
 					for(autos::featuresMask func : {
-//						autos::featuresMask::alpha,
-//						autos::featuresMask::spectre,
-//						autos::featuresMask::Hilbert,
-						autos::featuresMask::fracDim
-//						, autos::featuresMask::Hjorth
-				})
+						autos::featuresMask::alpha,
+						autos::featuresMask::spectre,
+						autos::featuresMask::Hilbert,
+						autos::featuresMask::fracDim,
+						autos::featuresMask::Hjorth,
+//						autos::featuresMask::wavelet,
+						autos::featuresMask::logFFT
+			})
 					{
 						const QString fileName = ExpName + mark
 												 + "_" + autos::getFeatureString(func) + ".txt";
 						fileNamesToArrange.push_back(fileName);
 
-						if(0) /// create files if they are absent
+						if(01) /// create files if they are absent
 						{
 							if(!QFile::exists(outPath + "/" + fileName))
 							{
-								std::cout << "File doesn't exist: " << fileName << std::endl;
+//								std::cout << "File doesn't exist: " << fileName << std::endl;
+
 								std::ofstream outStr;
 								outStr.open((outPath + "/" + fileName).toStdString());
 								for(int i = 0; i < autos::getFileLength(func); ++i)
 								{
+									outStr << " " << '\t';
 									outStr << 0 << '\t';
 								}
 								outStr.close();
 							}
 						}
 					}
-
-//				std::cout << fileNamesToArrange << std::endl << std::endl;
-				autos::ArrangeFilesToLine(outPath,
-										  fileNamesToArrange,
-										  outPath + "/" + ExpName + mark + ".txt");
+					autos::ArrangeFilesToLine(outPath,
+											  fileNamesToArrange,
+											  outPath + "/" + ExpName + mark + ".txt");
 			}
 		}
 

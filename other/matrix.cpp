@@ -187,7 +187,10 @@ matrix::matrix(std::initializer_list<double> lst) // diagonal
 
 
 
-
+matrix & matrix::operator = (double other)
+{
+	this->fill(other);
+}
 
 matrix matrix::operator = (const matrix & other)
 {

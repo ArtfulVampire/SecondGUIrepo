@@ -1081,19 +1081,11 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	const int valsWidth = 40;
 
 	/// whole pic
-//	std::cout
-//			<< myLib::drw::mapSize
-//			   + (colorsWidth + valsWidth) * drawScale
-//			<< "   "
-//			<< myLib::drw::mapSize
-//			<< std::endl;
 	QPixmap pic1(myLib::drw::mapSize + (colorsWidth + valsWidth) * drawScale,
 				 myLib::drw::mapSize);
 	QPainter paint1;
 	pic1.fill();
 	paint1.begin(&pic1);
-
-	std::cout << "asdfasdf" << std::endl;
 
 	/// the map itself
 	QPixmap pic2 = QPixmap(mapSize, mapSize);
@@ -1137,8 +1129,6 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		}
 	}
 
-	std::cout << 4 << std::endl;
-
 	// some approximation for square - Fp3, Fpz, Fp, O3, Oz, O4
 	auto & a = helpMatrix;
 	const double c1 = 1 / 2.;
@@ -1150,13 +1140,8 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	a[5][3] = (a[5][2] + a[4][2] + a[4][3] + a[4][4] + a[4][5]) / 5. * c2;
 	a[5][5] = (a[5][4] + a[4][4] + a[4][5]) / 3. * c1;
 
-
-	std::cout << 5 << std::endl;
-
 	const double minMagn = helpMatrix.minVal();
 	const double maxMagn = helpMatrix.maxVal();
-
-	std::cout << "ready for spline calc" << std::endl;
 
 	/// splines
 	matrix Ah(5, 6);

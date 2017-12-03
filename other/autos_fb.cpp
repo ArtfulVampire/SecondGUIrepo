@@ -33,12 +33,14 @@ void checkMarkFBfinal(const QString & filePath)
 	fil.readEdfFile(filePath);
 	std::cout << fil.getExpName() << std::endl;
 
-	bool ok = true;
-
 	std::vector<uint> a = fil.countMarkers({241, 247, 254});
 	if(a != std::vector<uint>{40, 40, 80})
 	{
 		std::cout << a << std::endl;
+	}
+	else
+	{
+		std::cout << "markers count is OK" << std::endl;
 	}
 
 	std::pair<int, int> prev{0, 254};
@@ -57,7 +59,6 @@ void checkMarkFBfinal(const QString & filePath)
 					  << "approx time = " << prev.first / fil.getFreq() + 8.4
 					  << "\ttask " << taskNum << " start"
 					  << std::endl;
-			ok = false;
 		}
 		if(in.second == 254) { ++taskNum; }
 
@@ -69,11 +70,9 @@ void checkMarkFBfinal(const QString & filePath)
 					  << "\ttask " << taskNum << " finish"
 					  << std::endl;
 			++taskNum;
-			ok = false;
 		}
 		prev = in;
 	}
-	if(ok) { std::cout << "markers are OK" << std::endl; }
 }
 
 void checkStatTimesSolving(const QString & guyPath, const QString & guyName, int typ)

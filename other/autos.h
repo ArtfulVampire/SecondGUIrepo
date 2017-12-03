@@ -34,23 +34,31 @@ void countWavelet(const matrix & inData,
 void countHjorth(const matrix & inData,
 				 double srate,
 				 std::ostream & outStr);
+void countLogFFT(const matrix & inData,
+				 double srate,
+				 std::ostream & outStr);
 
-enum featuresMask {spectre	= 0x01,
-				   alpha	= 0x02,
-				   fracDim	= 0x04,
-				   Hilbert	= 0x08,
-				   wavelet	= 0x10,
-				   Hjorth	= 0x20};
+enum featuresMask {
+	spectre	= 0x01,
+	alpha	= 0x02,
+	fracDim	= 0x04,
+	Hilbert	= 0x08,
+	wavelet	= 0x10,
+	Hjorth	= 0x20,
+	logFFT	= 0x40
+};
 
 using featureFuncType = std::function<void(const matrix &, double, std::ostream &)>;
 
 const std::vector<std::tuple<int, QString, featureFuncType, int>> FEATURES {
 	std::make_tuple(featuresMask::spectre,	"spectre",	autos::countFFT,		18 * 19),
-	std::make_tuple(featuresMask::alpha,	"alpha",	autos::countAlpha,		1 * 19),
-	std::make_tuple(featuresMask::fracDim,	"fracDim",	autos::countFracDim,	1 * 19),
-	std::make_tuple(featuresMask::Hilbert,	"Hilbert",	autos::countHilbert,	2 * 2 * 19),	/// 2 * 3 * 19 Xenia
-	std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet,	3 * 19 * 19),
-	std::make_tuple(featuresMask::Hjorth,	"Hjorth",	autos::countHjorth,		2 * 19)
+			std::make_tuple(featuresMask::alpha,	"alpha",	autos::countAlpha,		1 * 19),
+			std::make_tuple(featuresMask::fracDim,	"fracDim",	autos::countFracDim,	1 * 19),
+			std::make_tuple(featuresMask::Hilbert,	"Hilbert",	autos::countHilbert,	2 * 2 * 19),	/// 2 * 3 * 19 Xenia
+			std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet,	3 * 19 * 19),
+			std::make_tuple(featuresMask::Hjorth,	"Hjorth",	autos::countHjorth,		2 * 19),
+			std::make_tuple(featuresMask::logFFT,	"logFFT",	autos::countLogFFT,		18 * 19)
+
 };
 QString getFeatureString(featuresMask in);
 int getFileLength(int in);
@@ -163,6 +171,11 @@ void IITPstaging(const QString & guyName,
 				 const QString & dirPath = def::iitpSyncFolder);
 void IITPprocessStaged(const QString & guyName,
 					   const QString & dirPath = def::iitpSyncFolder);
+
+void IITPwriteCohsToFile(std::ofstream & outStr,
+						 iitp::iitpData & dt,
+						 int fileNum,
+						 double confidenceLevel);
 /// func 28.11.17
 void IITPdrawCohMaps(const std::vector<iitp::forMap> & forMapsVector,
 					 const QString & guyName,

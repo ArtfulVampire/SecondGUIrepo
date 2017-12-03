@@ -1097,12 +1097,115 @@ void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums)
 //	exit(0);
 }
 
+void IITPwriteCohsToFile(std::ofstream & outStr,
+						 iitp::iitpData & dt,
+						 int fileNum,
+						 double confidenceLevel
+						 )
+{
+	outStr << std::fixed;
+	outStr.precision(3);
+
+	/// eeg-eeg
+	for(int eeg1 : iitp::interestEeg)
+	{
+		for(int eeg2 : iitp::interestEeg)
+		{
+			if(eeg2 <= eeg1) continue;
+
+			for(double fr : iitp::interestFrequencies)
+			{
+				auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg1]),
+										dt.findChannel(iitp::eegNames[eeg2]),
+										fr);
+				if(val == std::complex<double>{})
+				{
+					std::cout << "IITPprocessStaged: bad val period eeg-eeg, "
+							  << "fileNum = " << fileNum << ", "
+							  << "chan1 = " << iitp::eegNames[eeg1]
+							  << ", "
+							  << "chan2 = " << iitp::eegNames[eeg2]
+							  << std::endl;
+				}
+
+//									if(std::abs(val) > 0.01)
+				{
+					outStr
+							<< QString(iitp::eegNames[eeg1]) << '\t'
+							<< QString(iitp::eegNames[eeg2]) << '\t'
+							<< fr << '\t'
+							<< std::pow(std::abs(val), 2) << '\t'
+							<< std::abs(val) << '\t'
+							<< std::arg(val) << '\t'
+							<< "\r\n";
+				}
+			}
+		}
+	}
+
+	/// eeg-emg
+	for(int eeg : iitp::interestEeg)
+	{
+		for(int emg : iitp::interestEmg[fileNum])
+		{
+			for(double fr : iitp::interestFrequencies)
+			{
+				auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
+										dt.findChannel(iitp::emgNames[emg]),
+										fr);
+				if(val == std::complex<double>{})
+				{
+					std::cout << "IITPprocessStaged: bad val period eeg-emg, "
+							  << "fileNum = " << fileNum << ", "
+							  << "chan1 = " << iitp::eegNames[eeg]
+							  << ", "
+							  << "chan2 = " << iitp::emgNames[emg]
+							  << std::endl;
+				}
+//									if(std::abs(val) > 0.01)
+				{
+					outStr
+							<< QString(iitp::eegNames[eeg]) << '\t'
+							<< QString(iitp::emgNames[emg]) << '\t'
+							<< fr << '\t'
+							<< std::pow(std::abs(val), 2) << '\t'
+							<< std::abs(val) << '\t'
+							<< std::arg(val) << '\t'
+							<< "\r\n";
+				}
+			}
+		}
+	}
+	outStr << "confidenceLevel " << dt.confidence(confidenceLevel)
+		   << "\tnumOfPieces " << dt.getPieces().size()
+		   << std::endl;
+}
+
+void IITPmakeResPath(const QString & guyDir)
+{
+	QDir a(def::iitpResFolder);
+	a.mkdir(guyDir);
+	a.cd(guyDir);
+	a.mkdir("coh");
+	a.mkdir("sp");
+	a.mkdir("pic");
+	a.mkdir("cohPics");
+	a.mkdir("cohPicsMax");
+}
+
 void IITPprocessStaged(const QString & guyName,
 					   const QString & dirPath)
 {
 	const double periodicOverlap	= 0.5;
 	const double continiousOverlap	= 0.5;
 	const double confidenceLevel	= 0.05; /// for threshold value only
+
+	/// added 2, 6, 10 due to letter 03.11.17
+	const QVector<int> interestingForLegs{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 24, 25};  /// for maps drawing
+
+	/// added due to talk 28.11.17
+	const QVector<int> interestingForWrists{0, 1, 6, 8, 10, 13, 14, 26, 27, 28, 29};  /// for maps drawing
+
 
 	for(const QString add : {"", "_car"})
 	{
@@ -1113,14 +1216,7 @@ void IITPprocessStaged(const QString & guyName,
 
 		if(!QDir(direct).exists()) { continue; }
 
-		QDir a(def::iitpResFolder);
-		a.mkdir(guyDir);
-		a.cd(guyDir);
-		a.mkdir("coh");
-		a.mkdir("sp");
-		a.mkdir("pic");
-		a.mkdir("cohPics");
-		a.mkdir("cohPicsMax");
+		IITPmakeResPath(guyDir);
 
 		auto filePath = [=](int i) -> QString
 		{
@@ -1136,21 +1232,6 @@ void IITPprocessStaged(const QString & guyName,
 		{
 			return resultsPathPrefix + "coh/" + guyName + "_" + rn(i, 2) + "_" + goni + "_extension.txt";
 		};
-
-//		///
-//		static const std::vector<QString> cohTypes{"free", "flex", "ext"};
-//		/// coh, fileNum, 0-rest, 1-flex, 2-ext
-//		typedef std::tuple<iitp::iitpData::cohsType, int, int> cohItem;
-//		std::vector<cohItem> cohs;
-
-		/// added 2, 6, 10 due to letter 03.11.17
-		QVector<int> interestingForLegs{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 24, 25};  /// for maps drawing
-
-		/// added due to talk 28.11.17
-		QVector<int> interestingForWrists{0, 1, 6, 8, 10, 13, 14, 26, 27, 28, 29};  /// for maps drawing
-
-
-
 		std::vector<iitp::forMap> forMapsVector;
 
 		std::cout << guyName << std::endl;
@@ -1158,7 +1239,15 @@ void IITPprocessStaged(const QString & guyName,
 		{
 			std::cout << "file " << fileNum << " in process" << std::endl;
 
-			/// check bad files - no EMG, terrible EMG, etc
+			/// check existence
+			if(!QFile::exists(filePath(fileNum)))
+			{
+				std::cout << "IITPprocessStaged: file doesn't exist = "
+						  << filePath(fileNum) << std::endl;
+				continue;
+			}
+
+			/// check bad files by list - no EMG, terrible EMG, etc
 			try
 			{
 				if(myLib::contains(iitp::badFiles.at(guyName), fileNum))
@@ -1168,18 +1257,19 @@ void IITPprocessStaged(const QString & guyName,
 					continue;
 				}
 			}
+			catch (std::out_of_range a)
+			{
+				/* do nothing, it's okay */
+//				std::cout << "check bad files - out_of_range exception" << std::endl;
+//				std::cout << a.what() << std::endl;
+//				continue;
+			}
 			catch (...)
 			{
+				std::cout << "check bad files - some other exception was thrown" << std::endl;
 				continue;
 			}
 
-
-			if(!QFile::exists(filePath(fileNum)))
-			{
-				std::cout << "IITPprocessStaged: file doesn't exist = "
-						  << filePath(fileNum) << std::endl;
-				continue;
-			}
 
 			iitp::iitpData dt;
 			dt.readEdfFile(filePath(fileNum));
@@ -1187,432 +1277,217 @@ void IITPprocessStaged(const QString & guyName,
 			/// rest, stat, imag - continious task
 			if(iitp::interestGonios[fileNum].size() == 0)
 			{
-//				dt.countContiniousTaskSpectra();
 				dt.cutPiecesW(continiousOverlap);
 				dt.countContiniousTaskSpectraW(def::iitpResFolder + "/" + guyDir,
 											   continiousOverlap);
-//				continue;
-
 				/// coherencies
+				std::ofstream outStr;
+				outStr.open((resultsPathPrefix + "coh/"
+							 + guyName + "_" + rn(fileNum, 2)
+							 + "_" + iitp::trialTypesNames[iitp::trialTypes[fileNum]]
+							+ ".txt").toStdString());
+				IITPwriteCohsToFile(outStr, dt, fileNum, confidenceLevel);
+				outStr.close();
+
+				if(interestingForLegs.contains(fileNum) ||
+				   interestingForWrists.contains(fileNum) )
 				{
-
-					std::ofstream outStr;
-					outStr.open((resultsPathPrefix + "coh/"
-								 + guyName + "_" + rn(fileNum, 2)
-								 + "_" + iitp::trialTypesNames[iitp::trialTypes[fileNum]]
-								+ ".txt").toStdString());
-
-					outStr << std::fixed;
-					outStr.precision(3);
-
-
-					/// eeg-eeg
-					for(int eeg1 : iitp::interestEeg)
-					{
-						for(int eeg2 : iitp::interestEeg)
-						{
-							if(eeg2 <= eeg1) continue;
-
-							for(double fr : iitp::interestFrequencies)
-							{
-								auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg1]),
-														dt.findChannel(iitp::eegNames[eeg2]),
-														fr);
-								if(val == std::complex<double>{})
-								{
-									std::cout << "IITPprocessStaged: bad val static eeg-eeg, "
-											  << "fileNum = " << fileNum << ", "
-											  << "chan1 = " << iitp::eegNames[eeg1]
-											  << ", "
-											  << "chan2 = " << iitp::eegNames[eeg2]
-											  << std::endl;
-								}
-
-								//							if(std::abs(val) > 0.01)
-								{
-									outStr
-											<< QString(iitp::eegNames[eeg1]) << '\t'
-											<< QString(iitp::eegNames[eeg2]) << '\t'
-											<< fr << '\t'
-											<< std::pow(std::abs(val), 2) << '\t'
-											<< std::abs(val) << '\t'
-											<< std::arg(val) << '\t'
-											<< "\r\n";
-								}
-							}
-						}
-					}
-
-					/// eeg-emg
-					for(int eeg : iitp::interestEeg)
-					{
-						for(int emg : iitp::interestEmg[fileNum])
-						{
-							for(double fr : iitp::interestFrequencies)
-							{
-								auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
-														dt.findChannel(iitp::emgNames[emg]),
-														fr);
-								if(val == std::complex<double>{})
-								{
-									std::cout << "IITPprocessStaged: bad val static eeg-emg, "
-											  << "fileNum = " << fileNum << ", "
-											  << "chan1 = " << iitp::eegNames[eeg]
-											  << ", "
-											  << "chan2 = " << iitp::emgNames[emg]
-											  << std::endl;
-								}
-
-								//							if(std::abs(val) > 0.01)
-								{
-									outStr
-											<< QString(iitp::eegNames[eeg]) << '\t'
-											<< QString(iitp::emgNames[emg]) << '\t'
-											<< fr << '\t'
-											<< std::pow(std::abs(val), 2) << '\t'
-											<< std::abs(val) << '\t'
-											<< std::arg(val) << '\t'
-											<< "\r\n";
-								}
-							}
-						}
-					}
-					outStr << "confidenceLevel " << dt.confidence(confidenceLevel)
-						   << "\tnumOfPieces " << dt.getPieces().size()
-						   << std::endl;
-					outStr.close();
-				}
-				if(interestingForLegs.contains(fileNum)
-				   || interestingForWrists.contains(fileNum)
-				   )
-				{
-//					cohs.push_back(cohItem(dt.getCoherencies(), fileNum, 0));
-//					std::cout << 1 << std::endl;
-					auto a = iitp::forMap(dt.getMSCoherencies(), dt, fileNum, "free");
-//					std::cout << 2 << std::endl;
-					forMapsVector.push_back(a);
-//					std::cout << 3 << std::endl;
-//					exit(0);
+					forMapsVector.push_back(iitp::forMap(dt.getMSCoherencies(),
+														 dt,
+														 fileNum,
+														 "free",
+														 QString{}));
 				}
 			}
-
 			else /// real or passive - periodic task
 			{
 				for(int gonio : iitp::interestGonios[fileNum]) /// for each joint
 				{
 					int minMarker = iitp::gonioMinMarker(gonio);
-//					dt.countFlexExtSpectra(minMarker, minMarker + 1);
-//					std::cout << iitp::gonioNames[gonio] << "\t";
 					dt.countFlexExtSpectraW(def::iitpResFolder + "/" + guyDir,
 											minMarker, minMarker + 1, periodicOverlap);
-//					continue;
-
 
 					for(int type : {0, 1}) /// 0 - flexion, 1 - extension
 					{
 						std::ofstream outStr;
 						if(type == 0)
 						{
-//							dt.setPieces(minMarker, minMarker + 1);
 							dt.setPiecesW(minMarker, minMarker + 1, periodicOverlap);
 							outStr.open(resFlex(fileNum, iitp::gonioNames[gonio]).toStdString());
 						}
 						else
 						{
-//							dt.setPieces(minMarker + 1, minMarker);
 							dt.setPiecesW(minMarker + 1, minMarker, periodicOverlap);
 							outStr.open(resExt(fileNum, iitp::gonioNames[gonio]).toStdString());
 						}
-
-						outStr << std::fixed;
-						outStr.precision(3);
-
-						/// eeg-eeg
-						for(int eeg1 : iitp::interestEeg)
-						{
-							for(int eeg2 : iitp::interestEeg)
-							{
-								if(eeg2 <= eeg1) continue;
-
-								for(double fr : iitp::interestFrequencies)
-								{
-									auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg1]),
-															dt.findChannel(iitp::eegNames[eeg2]),
-															fr);
-									if(val == std::complex<double>{})
-									{
-										std::cout << "IITPprocessStaged: bad val period eeg-eeg, "
-												  << "fileNum = " << fileNum << ", "
-												  << "chan1 = " << iitp::eegNames[eeg1]
-												  << ", "
-												  << "chan2 = " << iitp::eegNames[eeg2]
-												  << std::endl;
-									}
-
-//									if(std::abs(val) > 0.01)
-									{
-										outStr
-												<< QString(iitp::eegNames[eeg1]) << '\t'
-												<< QString(iitp::eegNames[eeg2]) << '\t'
-												<< fr << '\t'
-												<< std::pow(std::abs(val), 2) << '\t'
-												<< std::abs(val) << '\t'
-												<< std::arg(val) << '\t'
-												<< "\r\n";
-									}
-								}
-							}
-						}
-
-						/// eeg-emg
-						for(int eeg : iitp::interestEeg)
-						{
-							for(int emg : iitp::interestEmg[fileNum])
-							{
-								for(double fr : iitp::interestFrequencies)
-								{
-									auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
-															dt.findChannel(iitp::emgNames[emg]),
-															fr);
-									if(val == std::complex<double>{})
-									{
-										std::cout << "IITPprocessStaged: bad val period eeg-emg, "
-												  << "fileNum = " << fileNum << ", "
-												  << "chan1 = " << iitp::eegNames[eeg]
-												  << ", "
-												  << "chan2 = " << iitp::emgNames[emg]
-												  << std::endl;
-									}
-//									if(std::abs(val) > 0.01)
-									{
-										outStr
-												<< QString(iitp::eegNames[eeg]) << '\t'
-												<< QString(iitp::emgNames[emg]) << '\t'
-												<< fr << '\t'
-												<< std::pow(std::abs(val), 2) << '\t'
-												<< std::abs(val) << '\t'
-												<< std::arg(val) << '\t'
-												<< "\r\n";
-									}
-								}
-							}
-						}
-						outStr << "confidenceLevel " << dt.confidence(confidenceLevel)
-							   << "\tnumOfPieces " << dt.getPieces().size()
-							   << std::endl;
+						IITPwriteCohsToFile(outStr, dt, fileNum, confidenceLevel);
 						outStr.close();
-						if((interestingForLegs.contains(fileNum) && type == 0) // flexion only
-						   || (interestingForWrists.contains(fileNum) && type == 0)
-					)
+
+						 // flexion only
+						if((interestingForLegs.contains(fileNum) && type == 0) ||
+						   (interestingForWrists.contains(fileNum) && type == 0) )
 						{
-//							cohs.push_back(cohItem(dt.getCoherencies(), fileNum, type + 1));
-							forMapsVector.push_back(iitp::forMap(dt.getMSCoherencies(), dt, fileNum, "flex"));
+							forMapsVector.push_back(iitp::forMap(dt.getMSCoherencies(),
+																 dt,
+																 fileNum,
+																 "flex",
+																 iitp::gonioNames[gonio]));
 						}
-					} /// end for flex/ext
-				} /// end for gonio joints
-			} /// end of real/passive
-		} /// end for all fileNums
-#if 01
+					}
+				}
+			}
+		}
+		std::cout << 1 << std::endl;
 		IITPdrawCohMaps(forMapsVector, guyName, resultsPathPrefix);
-#elif 0
-		/// old
-		std::cout << "cohs size = " << cohs.size() << std::endl;
-
-		/// draw maps by cohs vector
-		/// find maxValue
-		double maxVal = 0.;
-		for(const auto & cohTuple : cohs)
-		{
-			for(const auto & chan1 : iitp::interestEeg)
-			{
-				for(const auto & chan2 : {iitp::Ta_l, iitp::Ta_r})
-				{
-					for(const auto & freq : iitp::interestFrequencies)
-					{
-						maxVal = std::max(maxVal,
-										  std::abs(
-											  std::get<0>(cohTuple)
-											  [dt.findChannel(iitp::eegNames[chan1])]
-										  [dt.findChannel(iitp::emgNames[chan2])]
-								 [freq]));
-					}
-				}
-			}
-		}
-		/// round to 1 decimal up
-		maxVal = std::ceil(maxVal * 10) / 10.;
-
-		std::cout << "guy = " << guyName << "\t"
-				  << "maxValue = " << maxVal << std::endl;
-
-		std::valarray<double> drawData(19);
-		drawData = 0;
-		for(const auto & cohTuple : cohs)
-		{
-			for(const auto & freq : iitp::interestFrequencies)
-			{
-				for(const auto & chan2 : {iitp::Ta_l, iitp::Ta_r})
-				{
-					for(const auto & chan1 : iitp::interestEeg)
-					{
-						drawData[chan1] = std::abs(
-											  std::get<0>(cohTuple)
-											  [dt.findChannel(iitp::eegNames[chan1])]
-										  [dt.findChannel(iitp::emgNames[chan2])]
-										  [freq]);
-					}
-					myLib::drw::drawOneMap(drawData, maxVal, myLib::drw::ColorScale::jet).save(
-								def::iitpResFolder + "/" + guyName + "/cohPics/" +
-								guyName +
-								"_" + rn(std::get<1>(cohTuple), 2) +		// fileNum
-								"_" + cohTypes[std::get<2>(cohTuple)] +		// free/flex/ext
-							"_" + iitp::emgNames[chan2] +					// Ta_l/Ta_r
-							"_fr_" + rn(freq, 2) +							// _fr_10
-							".jpg"
-							, 0, 100);
-					drawData = 0;
-				}
-			}
-		}
-#endif
+		std::cout << 2 << std::endl;
 	}
+	std::cout << 3 << std::endl;
+}
+
+void IITPdoShit(const QString & resultsPathPrefix,
+				const QString & guyName,
+				int i,
+				int j,
+				const iitp::forMap & in,
+				const matrix & maxes)
+{
+
+	QString picName =  guyName +
+					   "_" + rn(in.fileNum, 2) +		// fileNum
+					   "_" + in.gonio +					// joint
+					   "_" + in.fileType +				// free/flex/ext
+					   "_" + iitp::forMapEmgNames[i] +	// muscle
+					   "_" + iitp::forMapRangeNames[j] +// rhythm
+					   ".jpg";
+
+
+#if 0
+	std::ofstream outFil;
+	outFil.open("/media/Files/Data/iitp4.txt");
+
+	std::ostream & outStr = std::cout;
+	outStr << std::fixed;
+	outStr.precision(4);
+
+	std::cout << mapValPath << std::endl;
+	std::cout << "fileNum = " << in.fileNum << "   "
+			  << "fileType = " << in.fileType << "   "
+			  << "gonio = " << in.gonio << "   "
+			  << "i = " << i << "   "
+			  << "j = " << j << "   "
+			  << std::endl;
+	outStr << (in.forMapRanges[i][j]).getMeanVal() << std::endl;
+	outStr << (in.forMapRanges[i][j]).getMaxVal() << std::endl;
+	outStr << maxes[i][j] << std::endl;
+
+	outStr << std::defaultfloat;
+
+	outFil.close();
+#endif
+
+#if 01
+	myLib::drw::drawOneMap(in.forMapRanges[i][j].getMeanVal(),
+						   maxes[i][j],
+						   myLib::drw::ColorScale::jet,
+						   true).save(resultsPathPrefix + "cohPics/" + picName,
+									  0, 100);
+#endif
+
+#if 0
+	/// doubt
+	myLib::drw::drawOneMap(in.forMapRanges[i][j].getMaxVal(),
+						   maxesM[i][j],
+						   myLib::drw::ColorScale::jet,
+						   true).save(resultsPathPrefix + "cohPicsMax/" + picName,
+									  0, 100);
+#endif
 }
 
 void IITPdrawCohMaps(const std::vector<iitp::forMap> & forMapsVector,
 					 const QString & guyName,
 					 const QString & resultsPathPrefix)
 {
-
-
-
-	/// add something about left leg due to letter 3.11.17
+	/// added something about left leg due to letter 3.11.17
 	/// added something about wrists 28.11.17
 
 	/// find maxs
-	const int numEmgs = iitp::forMapEmgNames.size();
-	const int numRhythms = iitp::forMapRangeNames.size();
-
-
-
-//	std::cout << 321 << std::endl;
-//	QPixmap a(310, 240);
-//	std::cout << 322 << std::endl;
+	const int numEmgs = iitp::forMapEmgNames.size();		/// == 6
+	const int numRhythms = iitp::forMapRangeNames.size();	/// == 3
 
 	/// for meanVal
-	matrix maxes(numEmgs, numRhythms); /// [numEmg][numRange]
+	matrix maxes(numEmgs, numRhythms);
 	maxes = 0.;
 
 	/// for maxVal
-	matrix maxesM(numEmgs, numRhythms); /// [numEmg][numRange]
+	matrix maxesM(numEmgs, numRhythms);
 	maxesM = 0.;
 
-
-//	std::cout << 321 << std::endl;
-//	QPixmap b(310, 240);
-//	std::cout << 322 << std::endl;
-
-	for(iitp::forMap in : forMapsVector)
+#if 01
+	/// calc maxes
+	/// HERE ERROR
+	for(const iitp::forMap & in : forMapsVector)
 	{
 		for(int i = 0; i < numEmgs; ++i)
 		{
-			if(in.fmChans[i] == -1) { continue; } /// e.g. no Wrists after 13th file
+			if(in.isBad(i)) { continue; }
 			for(int j = 0; j < numRhythms; ++j)
 			{
 				maxes[i][j] = std::max(maxes[i][j],
-									   in.forMapRanges[i][j].meanVal.max());
+									   in.forMapRanges[i][j].getMeanVal().max());
+
 				maxesM[i][j] = std::max(maxesM[i][j],
-										in.forMapRanges[i][j].maxVal.max());
+										in.forMapRanges[i][j].getMaxVal().max());
 			}
 		}
 	}
+#endif
 
+
+#if 0
 	/// round to 1 decimal?
-	if(0)
+	for(int i = 0; i < numEmgs; ++i)
 	{
-		for(int i = 0; i < numEmgs; ++i)
+		for(int j = 0; j < numRhythms; ++j)
 		{
-			for(int j = 0; j < numRhythms; ++j)
-			{
-				maxes[i][j] = std::ceil(maxes[i][j] * 10) / 10.;
-				maxesM[i][j] = std::ceil(maxesM[i][j] * 10) / 10.;
-			}
+			maxes[i][j] = std::ceil(maxes[i][j] * 10) / 10.;
+			maxesM[i][j] = std::ceil(maxesM[i][j] * 10) / 10.;
 		}
 	}
+#endif
 
-	if(0)
+#if 0
+	/// cout maxes
+	for(int i = 0; i < numEmgs; ++i)
 	{
-		for(int i = 0; i < numEmgs; ++i)
+		std::cout << iitp::forMapEmgNames[i] << std::endl;
+		for(int j = 0; j < numRhythms; ++j)
 		{
-			std::cout << iitp::forMapEmgNames[i] << std::endl;
-			for(int j = 0; j < numRhythms; ++j)
-			{
-				std::cout << "max " << iitp::forMapRangeNames[j] << " = "
-						  << maxes[i][j] << "\n";
-			}
-			std::cout << std::endl;
-
+			std::cout << "max " << iitp::forMapRangeNames[j] << " = "
+					  << maxes[i][j] << "\n";
 		}
+		std::cout << std::endl;
+
 	}
+#endif
 
-//	std::cout << "forMaps size = " << sizeof(forMapsVector) << std::endl;
-
+#if 01
 	/// draw
-	for(iitp::forMap in : forMapsVector)
+	for(const iitp::forMap & in : forMapsVector)
 	{
 		for(int i = 0; i < numEmgs; ++i)
 		{
-			if(in.fmChans[i] == -1) { continue; } /// e.g. no Wrists after 13th file
-			if(!myLib::contains(iitp::interestEmg[in.fileNum],
-								myLib::indexOfVal(iitp::emgNames,
-												  iitp::forMapEmgNames[i]))) { continue; }
+			if(in.isBad(i)) { continue; }
 			for(int j = 0; j < numRhythms; ++j)
 			{
-//				std::this_thread::sleep_for(std::chrono::seconds{5});
-				if(01)
-				{
-					std::cout << "arr = " << in.forMapRanges[i][j].meanVal << std::endl;
-					std::cout << "max = " << maxes[i][j] << std::endl;
-					std::cout << "outPath = " << resultsPathPrefix + "cohPics/" +
-								 guyName +
-								 "_" + rn(in.fileNum, 2) +			// fileNum
-								 "_" + in.fileType +				// free/flex/ext
-								 "_" + iitp::forMapEmgNames[i] +	// muscle
-								 "_" + iitp::forMapRangeNames[j] +	// rhythm
-								 ".jpg" << std::endl;
-				}
-
-
-				myLib::drw::drawOneMap(in.forMapRanges[i][j].meanVal,
-									   maxes[i][j],
-									   myLib::drw::ColorScale::jet,
-									   true).save(
-							resultsPathPrefix + "cohPics/" +
-							guyName +
-							"_" + rn(in.fileNum, 2) +			// fileNum
-							"_" + in.fileType +					// free/flex/ext
-							"_" + iitp::forMapEmgNames[i] +		// muscle
-							"_" + iitp::forMapRangeNames[j] +	// rhythm
-							".jpg"
-							, 0, 100);
-//				std::cout << 1 << std::endl;
-
-
-				/// doubt
-//				myLib::drw::drawOneMap(in.forMapRanges[i][j].maxVal,
-//									   maxesM[i][j],
-//									   myLib::drw::ColorScale::jet,
-//									   true).save(
-//							resultsPathPrefix + "cohPicsMax/" +
-//							guyName +
-//							"_" + rn(in.fileNum, 2) +			// fileNum
-//							"_" + in.fileType +					// free/flex/ext
-//							"_" + iitp::forMapEmgNames[i] +		// muscle
-//							"_" + iitp::forMapRangeNames[j] +	// rhythm
-//							".jpg"
-//							, 0, 100);
+				IITPdoShit(resultsPathPrefix,
+						   guyName,
+						   i,
+						   j,
+						   in, maxes);
 			}
 		}
 	}
+#endif
 }
 
 void IITPdrawSpectralMaps(const QString & guyName,

@@ -111,6 +111,7 @@ public:
 		return myData[i];
 	}
 
+	matrix & operator =(double other);
 	matrix operator = (const matrix & other);
 	matrix operator = (const matrixType & other);
 
