@@ -237,7 +237,7 @@ void Cut::applyLog(const QString & logPath)
 bool Cut::checkBadRange(int start, int end, QString func)
 {
 	if(end - start == this->dataCutLocal.cols()
-	   || (end - start > this->edfFil.getFreq() * 60 * 5)	/// magic const 5 min
+	   || (end - start > this->edfFil.getFreq() * 60 * 10)	/// magic const 10 min
 	   )
 	{
 		std::cout << "Cut::" << func << ":"

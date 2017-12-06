@@ -40,8 +40,6 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-//	return;
-
 //	QString g = "/media/Files/Data/iitp/Results";
 //	for(QString dr : QDir(g).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
 //	{
@@ -51,6 +49,8 @@ void MainWindow::customFunc()
 //					g + "/cohPicsAll/" + dr);
 //	}
 //	exit(0);
+
+	return;
 
 #if 0
 	/// check marks
@@ -168,19 +168,19 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 01
+#if 0
 	/// IITP
 	QStringList guyList{
-		"Alex"		//
-//		"Boris",	//
-//		"Dima",		//
-//		"Egor",		//
-//		"Galya",	//
-//		"Ira",		//
-//		"Isakov",	//
-//		"Levik",	//
-//		"Oleg",		//
-//		"Victor"	//
+		"Alex",		//
+		"Boris",	//
+		"Dima",		//
+		"Egor",		//
+		"Galya",	//
+		"Ira",		//
+		"Isakov",	//
+		"Levik",	//
+		"Oleg",		//
+		"Victor"	//
 	};
 
 
