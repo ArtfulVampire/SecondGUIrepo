@@ -70,7 +70,7 @@ template <typename Container, typename Typ>
 bool contains(const Container & cont, Typ val);
 
 template <typename Container, typename Typ>
-std::pair<bool, Typ> contains(const Container & cont, const std::initializer_list<Typ> & val);
+std::pair<bool, Typ> contains(const Container & cont, const std::vector<Typ> & val);
 
 template <class InputIterator, class Typ>
 InputIterator find_back(InputIterator last, InputIterator first, const Typ & val);

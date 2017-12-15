@@ -281,7 +281,7 @@ template bool contains(const std::valarray<int> & cont, uint val);
 template bool contains(const std::vector<QString> & cont, QString val);
 
 template <typename Container, typename Typ>
-std::pair<bool, Typ> contains(const Container & cont, const std::initializer_list<Typ> & val)
+std::pair<bool, Typ> contains(const Container & cont, const std::vector<Typ> & val)
 {
 	for(Typ in : cont)
 	{
@@ -293,7 +293,9 @@ std::pair<bool, Typ> contains(const Container & cont, const std::initializer_lis
 	return std::make_pair(false, 0);
 }
 template std::pair<bool, double> contains(const std::valarray<double> & cont,
-										  const std::initializer_list<double> & val);
+										  const std::vector<double> & val);
+template std::pair<bool, int> contains(const std::valarray<double> & cont,
+										  const std::vector<int> & val);
 
 
 template <class InputIterator, class Typ>

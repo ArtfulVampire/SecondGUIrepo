@@ -55,7 +55,7 @@ void MainWindow::customFunc()
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackFinal/")
-						 + "Demchishin";
+						 + "Parshikov";
 	for(QString fl : QDir(path).entryList(def::edfFilters))
 	{
 		autos::checkMarkFBfinal(path + "/" + fl);

@@ -97,17 +97,24 @@ void MainWindow::sliceWinds()
 
 	QString helpString;
 
+	const std::vector<double> staMarks{241., 247.};
+	const std::vector<double> endMarks{254.};
+	const std::vector<double> allMarks = smLib::unite<std::vector<double>>({staMarks, endMarks});
+
 	const edfFile & fil = globalEdf;
 
 	const int wndLength = std::round(fil.getFreq() * ui->windowLengthSpinBox->value());
 	const int timeShift = std::round(fil.getFreq() * ui->timeShiftSpinBox->value());
-//	std::cout << timeShift << std::endl;
 
 	const std::valarray<double> & marks = fil.getMarkArr();
 
-	uint sta = std::min(
-					myLib::indexOfVal(marks, 241.),
-					myLib::indexOfVal(marks, 247.)) + 1;
+
+	uint sta = myLib::indexOfVal(marks, staMarks[0]);
+	for(int i = 1; i < staMarks.size(); ++i)
+	{
+		sta = std::min( myLib::indexOfVal(marks, staMarks[i]), sta );
+	}
+	sta += 1;
 
 	/// start, typ, filepath
 	std::vector<std::tuple<int, int, QString>> forSave;
@@ -115,8 +122,10 @@ void MainWindow::sliceWinds()
 	int typ = -1;
 
 	QString marker;
-	if(marks[sta - 1] == 241.) { typ = 0; marker = "241"; }
-	else if(marks[sta - 1] == 247.) { typ = 1; marker = "247"; }
+	for(int i = 0; i < allMarks.size(); ++i)
+	{
+		if(marks[sta - 1] == allMarks[i]) { typ = i; marker = nm(allMarks[i]); break; }
+	}
 
 	int numSkipStartWinds = 2;
 	int windowCounter = 0;
@@ -127,15 +136,17 @@ void MainWindow::sliceWinds()
 	forSave.reserve(fil.getDataLen() / timeShift);
 	for(uint i = sta; i < fil.getDataLen() - wndLength; i += timeShift)
 	{
-		auto mark = smLib::contSubsec(marks, i, i + wndLength);
+		std::valarray<double> mark = smLib::contSubsec(marks, i, i + wndLength);
 
 		/// hope only one of them occurs
-		std::pair<bool, double> a = myLib::contains(mark, {241., 247., 254.});
+		/// if it's not true - skip
+		std::pair<bool, double> a = myLib::contains(mark, allMarks);
 		if(a.first)
 		{
-			if(a.second == 241.) typ = 0;
-			else if(a.second == 247.) typ = 1;
-			else if(a.second == 254.) typ = 2;
+			for(int i = 0; i < allMarks.size(); ++i)
+			{
+				if(a.second == allMarks[i]) { typ = i; }
+			}
 			marker = nm(a.second);
 
 			++numReal;
@@ -195,7 +206,6 @@ void MainWindow::sliceWinds()
 
 				ui->progressBar->setValue( succCounter.sum() * 100. / (3. * succMax));
 			}
-//			std::cout << succCounter << std::endl;
 		}
 	}
 	else

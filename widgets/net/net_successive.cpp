@@ -33,7 +33,7 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1,
 	{
 		auto mark = smLib::contSubsec(markers1, i, i + suc::windLength * freq1);
 
-		std::pair<bool, double> a = myLib::contains(mark, {241., 247., 254.});
+		std::pair<bool, double> a = myLib::contains(mark, std::vector<double>{241., 247., 254.});
 		if(a.first)
 		{
 			if(a.second == 241.) typ = 0;
@@ -115,7 +115,7 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1,
 	{
 		auto mark = smLib::contSubsec(markers2, i, i + suc::windLength * freq2);
 
-		std::pair<bool, double> a = myLib::contains(mark, {241., 247., 254.});
+		std::pair<bool, double> a = myLib::contains(mark, std::vector<double>{241., 247., 254.});
 		if(a.first)
 		{
 			if(a.second == 241.) typ = 0;
