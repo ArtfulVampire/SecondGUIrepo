@@ -55,21 +55,28 @@ void MainWindow::customFunc()
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackFinal/")
-						 + "Parshikov";
+						 + "Medvedeva";
 	for(QString fl : QDir(path).entryList(def::edfFilters))
 	{
 		autos::checkMarkFBfinal(path + "/" + fl);
 	}
+	return;
 	exit(0);
 #endif
 
 #if 0
 	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
-						  "Broshevitskaya", "BND");
+						  "Demchishin_ua_n", "DDS");
 	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
-						  "Kartavova", "KKE");
+						  "Belousov_ua_n", "BDA");
 	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
-						  "Korchun", "KAV");
+						  "Ryizhov", "RMS");
+	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
+						  "Avdeev", "AKV");
+	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
+						  "Parshikov", "PNU");
+	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
+						  "Medvedeva", "MSO");
 	exit(0);
 #endif
 
