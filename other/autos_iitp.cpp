@@ -452,7 +452,7 @@ void IITPtestCoh(const QString & guyName)
 
 void IITPconcat(const QString & guyName,
 				const QString & eegPostfix,
-				const QString emgPostfix)
+				const QString & emgPostfix)
 {
 	/// iitp
 	///  0 - downsample EMG, 1 - upsample EEG

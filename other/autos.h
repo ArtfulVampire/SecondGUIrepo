@@ -126,7 +126,7 @@ void Xenia_repairTable(const QString & initPath,
 /// IITP
 void IITPconcat(const QString & guyName,
 				const QString & eegPostfix,
-				const QString emgPostfix);
+				const QString & emgPostfix);
 void IITPdatToEdf(const QString & guyName);
 
 

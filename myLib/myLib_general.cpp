@@ -158,6 +158,25 @@ QString getExt(const QString & filePath)
     }
 }
 
+QString kyrToLatin(const QString & in)
+{
+	QString res{};
+	res.reserve(in.size());
+	for(const QChar & ch : in)
+	{
+		int num = ch.unicode();
+		if(coords::kyrToLatin.find(num) != coords::kyrToLatin.end())
+		{
+			res += coords::kyrToLatin.at(num);
+		}
+		else
+		{
+			res += ch;
+		}
+	}
+	return res;
+}
+
 QString getFileName(const QString & filePath, bool withExtension)
 {
     QString helpString = (filePath);

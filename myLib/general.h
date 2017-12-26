@@ -30,6 +30,7 @@ std::string funcName(std::string in);
 void writeWavFile(const std::vector<double> & inData, const QString & outPath);
 int len(const QString & s); // string length for EDF+ annotations
 
+QString kyrToLatin(const QString & in);
 QString getFileName(const QString & filePath, bool withExtension = true);
 QString getExpNameLib(const QString & filePath, bool shortened = false);
 QString getDirPathLib(const QString & filePath);

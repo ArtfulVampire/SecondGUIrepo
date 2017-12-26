@@ -50,7 +50,7 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-	return;
+//	return;
 
 #if 0
 	/// check marks
@@ -174,11 +174,38 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
 #if 0
+	/// IITP filenames prep
+	const QString wrk = "/media/Files/Data/iitp/Aliev2";
+	QStringList lst = QDir(wrk).entryList({"*.*"}, QDir::Files|QDir::NoDotAndDotDot);
+	for(QString str : lst)
+	{
+		QString newName = str;
+//		newName.remove("virt");
+//		newName.remove("VR");
+//		newName.replace("Aliev", "Aliev2");
+		newName.replace(".EDF", "_eeg.edf");
+		if(0)
+		{
+			std::cout << str << std::endl;
+			std::cout << newName << std::endl;
+			std::cout << std::endl;
+		}
+		else
+		{
+			QFile::rename(wrk + "/" + str,
+						  wrk + "/" + newName);
+		}
+	}
+	exit(0);
+#endif
+
+#if 01
 	/// IITP
 	QStringList guyList{
 		"Alex",		//
+		"Aliev",	//
+		"Aliev2",	//
 		"Boris",	//
 		"Dima",		//
 		"Egor",		//
@@ -207,8 +234,8 @@ void MainWindow::customFunc()
 
 //	return;
 
-//	QString guy = "Boris";
-	for(QString guy : guyList)
+	QString guy = "Aliev2";
+//	for(QString guy : guyList)
 	{
 		if(0)
 		{
@@ -232,7 +259,7 @@ void MainWindow::customFunc()
 		}
 		if(0)
 		{
-//			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
+			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
 			autos::IITPdatToEdf(guy);
 			if(guy == "Victor")
 			{
@@ -241,10 +268,10 @@ void MainWindow::customFunc()
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
-		if(0)
+		if(01)
 		{
 //			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
-			autos::IITPconcat(guy, "_eeg", "_emg");				/// resampling inside
+			autos::IITPconcat(guy, "_eeg_new", "_emg");				/// resampling inside
 			return; /// manual sync
 		}
 
@@ -273,7 +300,7 @@ void MainWindow::customFunc()
 //			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
 //			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
-			continue;
+//			continue;
 //			exit(0);
 		}
 
