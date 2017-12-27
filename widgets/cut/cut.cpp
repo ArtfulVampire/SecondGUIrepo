@@ -340,7 +340,19 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				{
 					return false;
 				}
-				ui->paintStartDoubleSpinBox->stepBy(offset > 0 ? 4 : -4);
+
+				/// check shift
+				if(scrollEvent->modifiers().testFlag(Qt::ShiftModifier))
+				{
+					ui->paintStartDoubleSpinBox->setValue(ui->paintStartDoubleSpinBox->value() +
+														  ui->paintLengthDoubleSpinBox->value() *
+														  (offset > 0 ? 0.5 : -0.5)
+														  );
+				}
+				else
+				{
+					ui->paintStartDoubleSpinBox->stepBy(offset > 0 ? 4 : -4);
+				}
 				return true;
 			}
 			else { return false; }

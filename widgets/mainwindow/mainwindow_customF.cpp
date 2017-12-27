@@ -268,7 +268,7 @@ void MainWindow::customFunc()
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
-		if(01)
+		if(0)
 		{
 //			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
 			autos::IITPconcat(guy, "_eeg_new", "_emg");				/// resampling inside
@@ -277,7 +277,7 @@ void MainWindow::customFunc()
 
 		/// copy files to SYNCED
 
-//		return;
+		return;
 
 //		std::cout << 1 << std::endl;
 //		std::valarray<double> drawThing{0,	0,
