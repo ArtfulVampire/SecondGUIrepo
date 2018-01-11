@@ -7,6 +7,7 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/temp.h>
 #include <myLib/statistics.h>
+#include <other/subjects.h>
 #include <thread>
 
 using namespace myOut;
@@ -50,7 +51,7 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-//	return;
+	return;
 
 #if 0
 	/// check marks
@@ -119,7 +120,8 @@ void MainWindow::customFunc()
 	}
 #endif
 
-#if 0
+
+#if 01
 	/// prepare FeedbackFinalMark for eyes clean
 	const QString path = def::dataFolder + "/FeedbackFinalMark";
 
@@ -128,23 +130,40 @@ void MainWindow::customFunc()
 		const QString dr = std::get<0>(in);
 		const QString ExpName = std::get<1>(in);
 
-		for(int i : {2, 3})
+		Cut * cut = new Cut();
+		for(int i : {1, 2, 3})
 		{
 			QString fn = path + "/" + dr + "/" + ExpName + "_" + nm(i);
 
+			std::cout << std::endl << ExpName << " " << i << std::endl;
 
-			Cut * cut = new Cut();
+			if(0)
+			{
+				/// rename all EDF to edf
+				if(QFile::exists(fn + ".EDF"))
+				{
+					if(QFile::exists(fn + ".edf"))
+					{
+						std::cout << "both files exist " << ExpName << " " << i << std::endl;
+						continue;
+					}
+					QFile::rename(fn + ".EDF", fn + ".edf");
+				}
+				continue;
+
+			}
 			cut->openFile(fn + ".edf");
 			cut->cutPausesSlot();
 			cut->saveSlot();
-			cut->close();
 
-			this->setEdfFile(fn + "_new.edf");
-			this->rereferenceDataSlot();
-			this->setEdfFile(fn + "_new_rr.edf");
-			this->refilterDataSlot();
+//			this->setEdfFile(fn + "_new.edf");
+//			this->rereferenceDataSlot();
+//			this->setEdfFile(fn + "_new_rr.edf");
+//			this->refilterDataSlot();
 		}
 //		break;
+//		cut->close();
+		delete cut;
 	}
 	exit(0);
 #endif

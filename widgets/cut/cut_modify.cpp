@@ -328,6 +328,7 @@ void Cut::cutPausesSlot()
 		}
 		else
 		{
+			std::cout << "sta or fin wasn't found" << std::endl;
 			break;
 		}
 	}
@@ -482,8 +483,11 @@ void Cut::split(int start, int end)
 	}
 	else
 	{
+		std::cout << 1 << " "; std::cout.flush();
 		matrix data2 = dataCutLocal.subCols(end, dataCutLocal.cols());
+		std::cout << 2 << " "; std::cout.flush();
 		dataCutLocal.resizeCols(start).horzCat(data2); /// +1 to save first marker in reals
+		std::cout << 3 << std::endl; std::cout.flush();
 	}
 }
 

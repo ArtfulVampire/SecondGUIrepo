@@ -134,7 +134,8 @@ other/edffile.h \
     other/defaults.h \
     myLib/qtlib.h \
     myLib/temp.h \
-    myLib/vectr.h
+    myLib/vectr.h \
+    other/subjects.h
 
 FORMS+= mainwindow.ui \
 cut.ui \
