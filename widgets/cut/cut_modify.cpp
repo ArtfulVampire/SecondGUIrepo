@@ -288,7 +288,7 @@ void Cut::zero(int start, int end)
 		}
 		undoData.pop_back();
 	};
-	undos.push_back(undoAction);
+	undoActions.push_back(undoAction);
 
 
 	logAction("zeroData", start, end);
@@ -328,7 +328,6 @@ void Cut::cutPausesSlot()
 		}
 		else
 		{
-			std::cout << "sta or fin wasn't found" << std::endl;
 			break;
 		}
 	}
@@ -368,7 +367,7 @@ void Cut::paste(int start, const matrix & inData, bool addUndo)
 		{
 			this->splitSemiSlot(start, start + cls, false);
 		};
-		undos.push_back(undoAction);
+		undoActions.push_back(undoAction);
 	}
 
 	matrix data2 = this->dataCutLocal.subCols(ui->leftLimitSpinBox->value(), dataCutLocal.cols());
@@ -387,13 +386,13 @@ void Cut::pasteSlot()
 
 void Cut::undo()
 {
-	if(undos.empty())
+	if(undoActions.empty())
 	{
 		std::cout << "Cut::undoSlot: undos empty" << std::endl;
 		return;
 	}
-	undos.back()();
-	undos.pop_back();
+	undoActions.back()();
+	undoActions.pop_back();
 
 	paint();
 }
@@ -442,7 +441,7 @@ void Cut::setMarker(int offset, int newVal)
 
 		int val = dataCutLocal[num][offset];
 		auto undoAction = [num, offset, val, this](){ this->dataCutLocal[num][offset] = val; };
-		undos.push_back(undoAction);
+		undoActions.push_back(undoAction);
 
 		dataCutLocal[num][offset] = newVal;
 	}
@@ -452,7 +451,7 @@ void Cut::setMarker(int offset, int newVal)
 
 		int val = dataCutLocal[num][offset];
 		auto undoAction = [num, offset, val, this](){ dataCutLocal[num][offset] = val; };
-		undos.push_back(undoAction);
+		undoActions.push_back(undoAction);
 
 		dataCutLocal[num][offset] = newVal;
 	}
@@ -483,12 +482,13 @@ void Cut::split(int start, int end)
 	}
 	else
 	{
-		std::cout << 1 << " "; std::cout.flush();
 		matrix data2 = dataCutLocal.subCols(end, dataCutLocal.cols());
-		std::cout << 2 << " "; std::cout.flush();
 		dataCutLocal.resizeCols(start).horzCat(data2); /// +1 to save first marker in reals
-		std::cout << 3 << std::endl; std::cout.flush();
 	}
+
+	/// passage from setValuesByEdf
+	ui->rightLimitSpinBox->setMaximum(dataCutLocal.cols());
+	ui->rightTimeSpinBox->setMaximum(dataCutLocal.cols() / edfFil.getFreq());
 }
 
 /// DANGER markers
@@ -531,7 +531,7 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 			this->paste(start, undoData.back(), false);
 			undoData.pop_back();
 		};
-		undos.push_back(undoAction);
+		undoActions.push_back(undoAction);
 	}
 
 	this->split(start, end);
@@ -539,10 +539,15 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 
 	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
 
+	/// crutch with drawFlag
+	this->drawFlag = false;
 	resetLimits();
 	ui->paintStartDoubleSpinBox->setValue(start / edfFil.getFreq() - 1.5);
 	ui->leftLimitSpinBox->setValue(start); /// really needed?
+	this->drawFlag = true;
+
 	paint();
+
 }
 
 void Cut::splitSlot()

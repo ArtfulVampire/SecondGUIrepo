@@ -51,7 +51,7 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-	return;
+//	return;
 
 #if 0
 	/// check marks
@@ -125,12 +125,13 @@ void MainWindow::customFunc()
 	/// prepare FeedbackFinalMark for eyes clean
 	const QString path = def::dataFolder + "/FeedbackFinalMark";
 
+	Cut * cut = new Cut();
 	for(auto in : subj::guysFBfinal)
 	{
 		const QString dr = std::get<0>(in);
 		const QString ExpName = std::get<1>(in);
 
-		Cut * cut = new Cut();
+
 		for(int i : {1, 2, 3})
 		{
 			QString fn = path + "/" + dr + "/" + ExpName + "_" + nm(i);
@@ -156,15 +157,15 @@ void MainWindow::customFunc()
 			cut->cutPausesSlot();
 			cut->saveSlot();
 
-//			this->setEdfFile(fn + "_new.edf");
-//			this->rereferenceDataSlot();
-//			this->setEdfFile(fn + "_new_rr.edf");
-//			this->refilterDataSlot();
+			this->setEdfFile(fn + "_new.edf");
+			this->rereferenceDataSlot();
+			this->setEdfFile(fn + "_new_rr.edf");
+			this->refilterDataSlot();
 		}
 //		break;
-//		cut->close();
-		delete cut;
 	}
+	cut->close();
+	delete cut;
 	exit(0);
 #endif
 

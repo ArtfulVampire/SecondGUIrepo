@@ -159,8 +159,7 @@ private:
 	/// copy, split, paste, undo
 	matrix copyData{};
 	std::vector<matrix> undoData;
-//	std::function<void(void)> undoAction;
-	std::vector<std::function<void(void)>> undos;
+	std::vector<std::function<void(void)>> undoActions;
 
 
 	/// for auto lookup for bad points

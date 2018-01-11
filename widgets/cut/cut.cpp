@@ -447,8 +447,8 @@ void Cut::resetLimits()
 {
 	if( !fileOpened ) { return; }
 
-	ui->leftLimitSpinBox->setValue(0); /// sometimes fails under Windows
 	ui->rightLimitSpinBox->setValue(dataCutLocal.cols());
+	ui->leftLimitSpinBox->setValue(0); /// sometimes fails under Windows
 }
 
 void Cut::showDerivatives()
