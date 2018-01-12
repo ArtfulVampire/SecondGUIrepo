@@ -667,21 +667,27 @@ void FeedbackClass::checkStatTimes(taskType typ, ansType howSolved)
 	std::valarray<double> vals2 = timesToArray(typ, fileNum::third, howSolved);
 
 
-	if(typ == taskType::spat)		{ std::cout << "spatTime:" << "\n"; }
-	else if(typ == taskType::verb)	{ std::cout << "verbTime:" << "\n"; }
+	if(0)
+	{
+		if(typ == taskType::spat)		{ std::cout << "spatTime:" << "\n"; }
+		else if(typ == taskType::verb)	{ std::cout << "verbTime:" << "\n"; }
+	}
 
 	switch(myLib::MannWhitney(vals1, vals2, 0.05))
 	{
-	case 0: { std::cout << "not different"; break; }
-	case 1: { std::cout << "time1 > time3"; break; }
-	case 2: { std::cout << "time1 < time3"; break; }
+	case 0: { std::cout << "0"; break; }
+	case 1: { std::cout << "1"; break; }
+	case 2: { std::cout << "-1"; break; }
 	default: { break; }
 	}
+	std::cout << "\t";
 
-	std::cout << "\t"
-			  << "av.acceleration = "
-			  << (smLib::mean(vals1) - smLib::mean(vals2)) / smLib::mean(vals1)
-			  << std::endl;
+
+	std::cout
+//			  << "av.acceleration = "
+			  << (smLib::mean(vals1) - smLib::mean(vals2)) / smLib::mean(vals1) << "\t"
+//			  << std::endl
+				 ;
 }
 
 void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
@@ -699,12 +705,23 @@ void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 		if(in.first == int(howSolved)) { ++num2; }
 	}
 
-	if(typ == taskType::spat)		{ std::cout << "spatNum:" << "\n"; }
-	else if(typ == taskType::verb)	{ std::cout << "verbNum:" << "\n"; }
+	if(0)
+	{
+		if(typ == taskType::spat)		{ std::cout << "spatNum:" << "\n"; }
+		else if(typ == taskType::verb)	{ std::cout << "verbNum:" << "\n"; }
+	}
 
-	std::cout << "p-value = " <<  myLib::binomialOneTailed(num1, num2, numTasks)
-			  << "\t" << "improvement = " << double(num2 - num1) / num1
-			  << std::endl;
+	auto a = myLib::binomialOneTailed(num1, num2, numTasks);
+	std::cout
+			<< num1 << "\t"
+			<< num2 << "\t"
+//			<< "p-value = "
+			<< a << "\t"
+			<< (a <= 0.05) << "\t"
+//			<< "improvement = "
+			<< double(num2 - num1) / num1 << "\t"
+//			<< std::endl
+			   ;
 }
 
 void FeedbackClass::checkStat()
@@ -714,9 +731,9 @@ void FeedbackClass::checkStat()
 	for(auto typ : {taskType::spat, taskType::verb})
 	{
 		checkStatSolving(typ, ansType::right);
-		std::cout << std::endl;
-		checkStatTimes(typ, ansType::right);
-		std::cout << std::endl;
+//		std::cout << std::endl;
+		checkStatTimes(typ, ansType::right);	/// compares times of solved tasks
+//		std::cout << std::endl;
 	}
 	std::cout << std::endl;
 	std::cout << std::defaultfloat;
@@ -767,14 +784,20 @@ void FeedbackClass::writeFile()
 					}
 				});
 				auto vl = smLib::vecToValar(vals);
-				outStr << smLib::mean(vl) << "\t"
-					   << smLib::median(vl) << "\t"
-					   << smLib::sigma(vl) << "\t";
+
+				/// output times (right, wring, answered)
+				if(0)
+				{
+					outStr << smLib::mean(vl) << "\t"
+						   << smLib::median(vl) << "\t"
+						   << smLib::sigma(vl) << "\t";
+				}
 			}
 			outStr << std::defaultfloat;
 
 			for(ansType ans : {ansType::right, ansType::wrong, ansType::skip})
 			{
+				/// output num of right, wrong, unanswered
 				outStr << std::count_if(std::begin(tsk),
 										std::end(tsk),
 										[ans](const auto & in)

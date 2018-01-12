@@ -51,33 +51,17 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-//	return;
+	return;
 
 #if 0
 	/// check marks
-	const QString path = QString("/media/Files/Data/FeedbackFinal/")
-						 + "Medvedeva";
+	const QString path = QString("/media/Files/Data/FeedbackFinalMark/")
+						 + "Parshikov";
 	for(QString fl : QDir(path).entryList(def::edfFilters))
 	{
 		autos::checkMarkFBfinal(path + "/" + fl);
 	}
 	return;
-	exit(0);
-#endif
-
-#if 0
-	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
-						  "Demchishin_ua_n", "DDS");
-	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
-						  "Belousov_ua_n", "BDA");
-	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
-						  "Ryizhov", "RMS");
-	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
-						  "Avdeev", "AKV");
-	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
-						  "Parshikov", "PNU");
-	autos::createAnsFiles(def::dataFolder + "/FeedbackFinalMark/" +
-						  "Medvedeva", "MSO");
 	exit(0);
 #endif
 
@@ -121,7 +105,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 01
+#if 0
 	/// prepare FeedbackFinalMark for eyes clean
 	const QString path = def::dataFolder + "/FeedbackFinalMark";
 
@@ -169,11 +153,11 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
 #if 0
 	/// count correctness and average times
 //	for(auto in : subj::guysFBnew)
 	for(auto in : subj::guysFBfinal)
+//	std::pair<QString, QString> in{"Parshikov", "PNU"};
 	{
 		const QString guyPath = def::dataFolder
 								+ "/FeedbackFinalMark/"
@@ -181,8 +165,8 @@ void MainWindow::customFunc()
 
 		if(!QDir(guyPath).exists()) { continue; }
 
-		autos::FeedbackClass fb(guyPath, in.second, "");
-		std::cout << in.second << std::endl;
+		autos::FeedbackClass fb(guyPath, in.second, "_new");
+		std::cout << in.second << "\t";
 		fb.countTimes();
 		fb.checkStat();
 		fb.writeFile();
@@ -220,7 +204,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// IITP
 	QStringList guyList{
 		"Alex",		//

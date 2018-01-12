@@ -252,7 +252,7 @@ std::vector<double> timesFromFile(const QString & timesPath, int howSolved);
 void feedbackFinalTimes(const QString & guyPath,
 						const QString & guyName,
 						const QString & postfix = QString());
-void  checkStatResults(const QString & guyPath, const QString & guyName);
+void checkStatResults(const QString & guyPath, const QString & guyName);
 
 void successiveNetPrecleanWinds(const QString & windsPath);
 

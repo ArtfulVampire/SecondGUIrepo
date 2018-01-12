@@ -25,23 +25,25 @@ const std::vector<std::pair<QString, QString>> guysFBnew {
 };
 
 const std::vector<std::pair<QString, QString>> guysFBfinal {
+	/// experiment
 	std::make_pair("Avdeev", "AKV"),
-	std::make_pair("Beketova", "BAM"),
-			std::make_pair("Belousov_ua_n", "BDA"),
-			std::make_pair("Broshevitskaya_n", "BND"),
+			std::make_pair("Beketova", "BAM"),
 			std::make_pair("Burtcev", "BAV"),
-			std::make_pair("Demchishin_ua_n", "DDS"),
 			std::make_pair("Dovbyish", "DEG"),
-			std::make_pair("Evstratov_n", "ENV"),
 			std::make_pair("Ilyin", "IAE"),
-			std::make_pair("Kartavova_n", "KKE"),
-			std::make_pair("Korchun_n", "KAV"),
 			std::make_pair("Markina", "MAM"),
 			std::make_pair("Matasov", "MII"),
 			std::make_pair("Medvedeva", "MSO"),
 			std::make_pair("Nikonenko", "NUA"),
 			std::make_pair("Parshikov", "PNU"),
 			std::make_pair("Ryizhov", "RMS"),
+			/// norm
+			std::make_pair("Belousov_ua_n", "BDA"),
+			std::make_pair("Broshevitskaya_n", "BND"),
+			std::make_pair("Demchishin_ua_n", "DDS"),
+			std::make_pair("Evstratov_n", "ENV"),
+			std::make_pair("Kartavova_n", "KKE"),
+			std::make_pair("Korchun_n", "KAV"),
 			std::make_pair("Semyonov_n", "SAV"),
 			std::make_pair("Sergeev_n", "SAA")
 };
