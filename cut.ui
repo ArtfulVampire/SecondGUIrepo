@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1515</width>
-    <height>685</height>
+    <width>1850</width>
+    <height>701</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -36,8 +36,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>230</y>
-     <width>1501</width>
+     <y>240</y>
+     <width>1831</width>
      <height>441</height>
     </rect>
    </property>
@@ -73,7 +73,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1499</width>
+      <width>1829</width>
       <height>439</height>
      </rect>
     </property>
@@ -110,7 +110,7 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>840</x>
+     <x>940</x>
      <y>100</y>
      <width>220</width>
      <height>121</height>
@@ -174,10 +174,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>410</x>
-     <y>146</y>
+     <x>530</x>
+     <y>150</y>
      <width>310</width>
-     <height>77</height>
+     <height>80</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="derivativesGridLayout">
@@ -238,10 +238,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>408</x>
+     <x>490</x>
      <y>31</y>
      <width>420</width>
-     <height>110</height>
+     <height>120</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
@@ -372,8 +372,8 @@
     <rect>
      <x>0</x>
      <y>30</y>
-     <width>400</width>
-     <height>192</height>
+     <width>483</width>
+     <height>190</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -607,10 +607,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>835</x>
+     <x>935</x>
      <y>4</y>
      <width>311</width>
-     <height>87</height>
+     <height>92</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_5">
@@ -685,7 +685,7 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>1270</x>
+     <x>1390</x>
      <y>20</y>
      <width>379</width>
      <height>188</height>
@@ -796,13 +796,13 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>1150</x>
+     <x>1250</x>
      <y>0</y>
-     <width>90</width>
-     <height>102</height>
+     <width>100</width>
+     <height>114</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="linearApproxVertLayout">
@@ -836,13 +836,13 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>1070</x>
-     <y>100</y>
-     <width>172</width>
-     <height>44</height>
+     <x>1170</x>
+     <y>120</y>
+     <width>193</width>
+     <height>50</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">

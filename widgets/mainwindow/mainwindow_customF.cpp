@@ -51,6 +51,11 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
+//	std::valarray<double> exp{0.05, 0.081, 0.83, 0.361, 0.5, 0.86, 0.68, 0.23, 0.08};
+//	std::valarray<double> norm{0.005, 0.01, 0.26, 0.59, -0.2, 0.71, 0.360, 0.2};
+//	std::cout << myLib::MannWhitney(exp, norm) << std::endl;
+//	exit(0);
+
 	return;
 
 #if 0

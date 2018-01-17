@@ -102,15 +102,15 @@ MainWindow::MainWindow() :
     ui->vectwDoubleSpinBox->setValue(12.0);
     ui->vectwDoubleSpinBox->setSingleStep(0.5);
 
-	ui->cleanRealsCheckBox->setChecked(true);
-    ui->cleanRealsSpectraCheckBox->setChecked(true);
-	ui->cleanWindsCheckBox->setChecked(false);
-	ui->cleanWindsSpectraCheckBox->setChecked(true);
-	ui->cleanRealsSignalsCheckBox->setChecked(true);
-	ui->cleanWindsSignalsCheckBox->setChecked(true);
-	ui->cleanFromRealsCheckBox->setChecked(true);
-    ui->cleanMarkersCheckBox->setChecked(true);
-    ui->cleanSpectraImgCheckBox->setChecked(true);
+	ui->cleanRealsCheckBox->setChecked(false);
+	ui->cleanWindsCheckBox->setChecked(true);
+	ui->cleanRealsSpectraCheckBox->setChecked(false);
+	ui->cleanWindsSpectraCheckBox->setChecked(false);
+	ui->cleanRealsSignalsCheckBox->setChecked(false);
+	ui->cleanWindsSignalsCheckBox->setChecked(false);
+	ui->cleanFromRealsCheckBox->setChecked(false);
+	ui->cleanMarkersCheckBox->setChecked(false);
+	ui->cleanSpectraImgCheckBox->setChecked(false);
 
     ui->highFreqFilterDoubleSpinBox->setValue(40.);
     ui->highFreqFilterDoubleSpinBox->setSingleStep(1.0);
