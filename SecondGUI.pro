@@ -63,7 +63,6 @@ classifier/classifier_dist.cpp \
 classifier/classifier_nbc.cpp \
 classifier/classifier_knn.cpp \
 classifier/classifier_rda.cpp \
-other/edffile.cpp \
 other/edfFile_repair.cpp \
 other/coord.cpp \
 other/matrix.cpp \
@@ -101,10 +100,11 @@ myLib/myLib_qtlib.cpp \
     widgets/cut/cut_iitp.cpp \
     widgets/cut/cut_files.cpp \
     widgets/mainwindow/mainwindow_mati.cpp \
-    other/autos_fb.cpp \
     other/autos_galya.cpp \
     other/autos.cpp \
-    myLib/myLib_vectr.cpp
+    myLib/myLib_vectr.cpp \
+    other/feedback.cpp \
+    other/edfFile.cpp
 
 HEADERS  += \
 widgets/cut.h \
@@ -135,7 +135,8 @@ other/edffile.h \
     myLib/qtlib.h \
     myLib/temp.h \
     myLib/vectr.h \
-    other/subjects.h
+    other/subjects.h \
+    other/feedback.h
 
 FORMS+= mainwindow.ui \
 cut.ui \

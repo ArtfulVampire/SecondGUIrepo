@@ -1,4 +1,4 @@
-#include <other/autos.h>
+#include <other/feedback.h>
 
 #include <myLib/output.h>
 #include <myLib/statistics.h>
@@ -16,7 +16,7 @@
 
 using namespace myOut;
 
-namespace autos
+namespace fb
 {
 void checkMarkFBfinal(const QString & filePath)
 {
@@ -80,13 +80,13 @@ void checkStatTimesSolving(const QString & guyPath, const QString & guyName, int
 	/// couts statistics of solving time
 	int howSolved = 1; /// 0 - skip, 1 - correct, 2 - incorrect
 	std::valarray<double> vals1 = smLib::vecToValar(
-									  autos::timesFromFile(
-										  autos::timesPath(guyPath, guyName, 1, typ),
+									  fb::timesFromFile(
+										  fb::timesPath(guyPath, guyName, 1, typ),
 										  howSolved)
 									  );
 	std::valarray<double> vals2 = smLib::vecToValar(
-									  autos::timesFromFile(
-										  autos::timesPath(guyPath, guyName, 3, typ),
+									  fb::timesFromFile(
+										  fb::timesPath(guyPath, guyName, 3, typ),
 										  howSolved)
 									  );
 	if(typ == 241)		{ std::cout << "spatTime:" << "\n"; }
@@ -163,7 +163,7 @@ void checkStatResults(const QString & guyPath, const QString & guyName)
 			  << "p-value = " <<  myLib::binomialOneTailed(vals[0][9], vals[2][9], 40)
 			<< "\t" << "improvement = " << (vals[2][9] - vals[0][9]) / vals[0][9]
 			<< std::endl << std::endl;
-	autos::checkStatTimesSolving(guyPath, guyName, 241); std::cout << std::endl;
+	fb::checkStatTimesSolving(guyPath, guyName, 241); std::cout << std::endl;
 
 
 
@@ -172,7 +172,7 @@ void checkStatResults(const QString & guyPath, const QString & guyName)
 			  << "p-value = " <<  myLib::binomialOneTailed(vals[0][21], vals[2][21], 40)
 			<< "\t" << "improvement = " << (vals[2][21] - vals[0][21]) / vals[0][21]
 			<< std::endl << std::endl;
-	autos::checkStatTimesSolving(guyPath, guyName, 247);
+	fb::checkStatTimesSolving(guyPath, guyName, 247);
 
 
 	std::cout << std::endl;
@@ -385,7 +385,7 @@ void timesSolving(const QString & guyPath,
 		/// remove old times files
 		for(int i : nums)
 		{
-			QFile::remove(autos::timesPath(guyPath, guyName, numSession, i));
+			QFile::remove(fb::timesPath(guyPath, guyName, numSession, i));
 		}
 
 		std::ifstream answers;
@@ -421,7 +421,7 @@ void timesSolving(const QString & guyPath,
 				answers >> ans;
 				if(ans == '\n' || ans == '\r') answers >> ans; /// skip bad symbols
 
-				out.open((autos::timesPath(guyPath, guyName, numSession, nums[typ])).toStdString(), std::ios_base::app);
+				out.open((fb::timesPath(guyPath, guyName, numSession, nums[typ])).toStdString(), std::ios_base::app);
 				out << ans << "\t"
 					<< (fin - sta) / fil.getFreq() << "\r\n";
 				out.close();
@@ -818,4 +818,4 @@ QString FeedbackClass::ansPath(int numSes)
 }
 
 
-} // end namespace autos
+} // end namespace fb

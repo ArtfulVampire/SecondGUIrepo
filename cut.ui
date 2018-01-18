@@ -2,18 +2,30 @@
 <ui version="4.0">
  <class>Cut</class>
  <widget class="QWidget" name="Cut">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>1850</width>
-    <height>701</height>
+    <height>692</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>800</width>
     <height>650</height>
+   </size>
+  </property>
+  <property name="sizeIncrement">
+   <size>
+    <width>25</width>
+    <height>0</height>
    </size>
   </property>
   <property name="windowTitle">

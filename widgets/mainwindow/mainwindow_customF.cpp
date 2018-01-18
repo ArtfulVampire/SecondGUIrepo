@@ -20,40 +20,8 @@ void MainWindow::customFunc()
 	ui->elenaSliceCheckBox->setChecked(true); // Elena
 	ui->eogBipolarCheckBox->setChecked(false); // Elena
 #endif
-
-//	edfFile file1;
-//	file1.readEdfFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_FB_1.EDF");
-//	file1.concatFile("/media/Files/Data/FeedbackFinal/Ilyin/IAE_FB_2.EDF",
-//					 "/media/Files/Data/FeedbackFinal/Ilyin/IAE_2.edf");
-//	exit(0);
-
 //	testNewClassifiers();
 //	testSuccessive();
-//	exit(0);
-
-
-//	const QString p = "/media/Files/Data/Galya/SomeData9Nov17/out/";
-//	const QString d = "/media/Files/Data/Galya/SomeData9Nov17/out2/";
-//	for(QString n :{"fracDim", "spectre", "Hilbert", "alpha"})
-//	{
-//		QFile::copy(p + n + "_people.txt",
-//					d + n + "_people.txt");
-//	}
-//	exit(0);
-
-//	QString g = "/media/Files/Data/iitp/Results";
-//	for(QString dr : QDir(g).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
-//	{
-//		if(dr == "cohPicsAll") { continue; }
-
-//		QFile::copy(g + "/" + dr + "/cohPics",
-//					g + "/cohPicsAll/" + dr);
-//	}
-//	exit(0);
-
-//	std::valarray<double> exp{0.05, 0.081, 0.83, 0.361, 0.5, 0.86, 0.68, 0.23, 0.08};
-//	std::valarray<double> norm{0.005, 0.01, 0.26, 0.59, -0.2, 0.71, 0.360, 0.2};
-//	std::cout << myLib::MannWhitney(exp, norm) << std::endl;
 //	exit(0);
 
 	return;
@@ -64,9 +32,25 @@ void MainWindow::customFunc()
 						 + "Parshikov";
 	for(QString fl : QDir(path).entryList(def::edfFilters))
 	{
-		autos::checkMarkFBfinal(path + "/" + fl);
+		fb::checkMarkFBfinal(path + "/" + fl);
 	}
 	return;
+	exit(0);
+#endif
+
+#if 0
+	/// cut central 9 channels
+	QPixmap pic;
+	QDir tmp("/media/michael/Files/IHNA/Pew");
+	QStringList lii = tmp.entryList(QDir::Files);
+	for(QString picPath : lii)
+	{
+		pic = QPixmap(tmp.absolutePath() + "/" + picPath);
+		QPixmap cut = pic.copy(QRect(330, 350, 900, 900));
+		QString out = tmp.absolutePath() + "/" + picPath;
+		out.replace(".jpg", "_cut.jpg");
+		cut.save(out, 0, 100);
+	}
 	exit(0);
 #endif
 
@@ -74,6 +58,7 @@ void MainWindow::customFunc()
 	/// count correctness and average times
 //	for(auto in : subj::guysFBnew)
 	for(auto in : subj::guysFBfinal)
+//	std::pair<QString, QString> in{"Parshikov", "PNU"};
 	{
 		const QString guyPath = def::dataFolder
 								+ "/FeedbackFinalMark/"
@@ -81,34 +66,39 @@ void MainWindow::customFunc()
 
 		if(!QDir(guyPath).exists()) { continue; }
 
-		autos::FeedbackClass fb(guyPath, in.second, "");
-		std::cout << in.second << std::endl;
+		fb::FeedbackClass fb(guyPath, in.second, "_new");
+		std::cout << in.second << "\t";
 		fb.countTimes();
 		fb.checkStat();
 		fb.writeFile();
 
-//		autos::feedbackFinalTimes(guyPath, in.second);
-//		autos::timesSolving(guyPath, in.second);
-//		autos::checkStatResults(guyPath, in.second);
+//		fb::feedbackFinalTimes(guyPath, in.second);
+//		fb::timesSolving(guyPath, in.second);
+//		fb::checkStatResults(guyPath, in.second);
 	}
 	exit(0);
 #endif
 
 #if 0
-	/// defs Singleton test
+	/// draw Wts from a folder
+	const QString inDir = "/media/Files/Data/FeedbackTest/GA_FB/GA_FB_weights";
+	ANN * net = new ANN();
+	ClassifierData cl = ClassifierData("/media/Files/Data/FeedbackTest/GA_FB/winds/fromreal");
+	net->setClassifierData(cl);
+
+//	std::cout << net->getClassifierData()->getData().cols() << std::endl;
+	def::fftLength = 1024;
+
+	for(QString fileName : QDir(inDir).entryList({"*.wts"}))
 	{
-		auto & S = defs::inst();
-		defs d1;
-
-
-		std::cout << S.getDirPath() << std::endl;
-		S.setDir("/media/Files");
-		std::cout << S.getDirPath() << std::endl;
-
-		exit(0);
+		QString drawName = fileName;
+		drawName.replace(".wts", ".jpg");
+		net->drawWeight(inDir + "/" + fileName,
+					   inDir + "/" + drawName);
+//		break;
 	}
+	exit(0);
 #endif
-
 
 #if 0
 	/// prepare FeedbackFinalMark for eyes clean
@@ -158,30 +148,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
-	/// count correctness and average times
-//	for(auto in : subj::guysFBnew)
-	for(auto in : subj::guysFBfinal)
-//	std::pair<QString, QString> in{"Parshikov", "PNU"};
-	{
-		const QString guyPath = def::dataFolder
-								+ "/FeedbackFinalMark/"
-								+ in.first;
-
-		if(!QDir(guyPath).exists()) { continue; }
-
-		autos::FeedbackClass fb(guyPath, in.second, "_new");
-		std::cout << in.second << "\t";
-		fb.countTimes();
-		fb.checkStat();
-		fb.writeFile();
-
-//		autos::feedbackFinalTimes(guyPath, in.second);
-//		autos::timesSolving(guyPath, in.second);
-//		autos::checkStatResults(guyPath, in.second);
-	}
-	exit(0);
-#endif
 
 #if 0
 	/// IITP filenames prep
@@ -335,6 +301,22 @@ void MainWindow::customFunc()
 //							"_emg_f");
 	exit(0);
 //	return;
+#endif
+
+
+#if 0
+	/// defs Singleton test
+	{
+		auto & S = defs::inst();
+		defs d1;
+
+
+		std::cout << S.getDirPath() << std::endl;
+		S.setDir("/media/Files");
+		std::cout << S.getDirPath() << std::endl;
+
+		exit(0);
+	}
 #endif
 
 #if 0
@@ -599,45 +581,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
-	/// check markers in FeedbackFinal
-
-	for(auto in : subj::guysFBfinal)
-	{
-		const QString dr = in.first;
-		const QString guy = in.second;
-
-		auto name1 = [dr, guy](int i) -> QString
-		{
-			return def::dataFolder + "/FeedbackFinal/"
-					+ dr + "/"
-					+ guy + "_" + nm(i) + "_new.edf";
-		};
-		auto name2 = [dr, guy](int i) -> QString
-		{
-			return def::dataFolder + "/FeedbackFinal/"
-					+ dr + "/"
-					+ guy + "_" + nm(i) + ".EDF";
-		};
-		for(int i : {1, 2, 3}) /// numSession
-		{
-			std::function<QString(int)> name = name1;
-			if(!QFile(name(i)).exists())
-			{
-				name = name2;
-			}
-			autos::checkMarkFBfinal(name(i));
-		}
-	}
-	exit(0);
-#endif
-
-
-//	edfFile f;
-//	f.readEdfFile("/media/Files/Data/Dasha/Totable_new/Berlin/Berlin_wc.edf");
-//	myLib::drw::drawOneSpectrum(f.getData().subCols(0, 2048)[0],
-//			0.5, 4, 250., 0).save("/media/Files/Data/D.jpg");
-//	exit(0);
 
 #if 0
 	/// Dasha ToTable processing for Galya's paper
@@ -813,9 +756,6 @@ void MainWindow::customFunc()
 
 #if 0
 	/// many Higuchi tests
-
-
-
 	edfFile fil;
 //	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
 //	fil.writeEdfFile("/media/Files/Data/AAX/AAX_final_str.edf");
@@ -901,8 +841,6 @@ void MainWindow::customFunc()
 											 "/media/Files/Data/AAX_FD.jpg")
 				  << std::endl;
 	}
-
-
 	if(1)
 	{
 		/// from poli... 2010, Weierstrass cosines
@@ -1438,26 +1376,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
-	/// draw Wts from a folder
-	const QString inDir = "/media/Files/Data/FeedbackTest/GA_FB/GA_FB_weights";
-	ANN * net = new ANN();
-	ClassifierData cl = ClassifierData("/media/Files/Data/FeedbackTest/GA_FB/winds/fromreal");
-	net->setClassifierData(cl);
-
-//	std::cout << net->getClassifierData()->getData().cols() << std::endl;
-	def::fftLength = 1024;
-
-	for(QString fileName : QDir(inDir).entryList({"*.wts"}))
-	{
-		QString drawName = fileName;
-		drawName.replace(".wts", ".jpg");
-		net->drawWeight(inDir + "/" + fileName,
-					   inDir + "/" + drawName);
-//		break;
-	}
-	exit(0);
-#endif
 
 #if 0
 	/// Baklushev histograms
@@ -1906,25 +1824,7 @@ exit(0);
     return;
 #endif
 
-#if 0
-    /// cut central 9 channels
 
-    QPixmap pic;
-    QDir tmp("/media/michael/Files/IHNA/Pew");
-    QStringList lii = tmp.entryList(QDir::Files);
-    for(QString picPath : lii)
-    {
-		pic = QPixmap(tmp.absolutePath() + "/" + picPath);
-        QPixmap cut = pic.copy(QRect(330, 350, 900, 900));
-		QString out = tmp.absolutePath() + "/" + picPath;
-        out.replace(".jpg", "_cut.jpg");
-        cut.save(out, 0, 100);
-    }
-
-
-    exit(0);
-
-#endif
 
 #if 0
     /// uncode matlab color scale
@@ -1972,7 +1872,6 @@ exit(0);
 
     exit(0);
 #endif
-
 
 #if 0
     /// read ica data from matlab
@@ -2023,8 +1922,6 @@ exit(0);
 
     exit(0);
 #endif
-
-
 
 #if 0
 	/// concat all mati sessions

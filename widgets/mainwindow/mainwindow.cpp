@@ -7,6 +7,7 @@
 #include <myLib/general.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/qtlib.h>
+#include <other/feedback.h>
 
 using namespace myOut;
 
@@ -180,7 +181,7 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->drawMapsPushButton, SIGNAL(clicked()), this, SLOT(drawMapsSlot()));
 	QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(processEyes()));
 	QObject::connect(ui->succPrecleanPushButton, &QPushButton::clicked,
-					 [this](){ autos::successiveNetPrecleanWinds(
+					 [this](){ fb::successiveNetPrecleanWinds(
 					this->globalEdf.getDirPath() + "/SpectraSmooth/winds"); });
 
 	/// slice
