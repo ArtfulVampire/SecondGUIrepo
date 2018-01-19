@@ -95,22 +95,17 @@ std::vector<int> FBedf::readAns(const QString & ansPath)
 	return corrs;
 }
 
-double FBedf::spectreDispersion()
-{
-	return 0.;
-}
-
-
 std::valarray<double> FBedf::spectralRow(taskType type, int chan, double freq)
 {
 	std::valarray<double> res(realsSpectra[int(type)].size());
 
 	for(int i = 0; i < res.size(); ++i)
 	{
-		res[i] = realsSpectra[int(type)][i][chan][ freq / this->spStep ];
+		res[i] = realsSpectra[int(type)][i][chan][ std::floor(freq / this->spStep) ];
 	}
 	return res;
 }
+
 
 
 
