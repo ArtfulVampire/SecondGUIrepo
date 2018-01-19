@@ -104,7 +104,8 @@ myLib/myLib_qtlib.cpp \
     other/autos.cpp \
     myLib/myLib_vectr.cpp \
     other/feedback.cpp \
-    other/edfFile.cpp
+    other/edfFile.cpp \
+    myLib/myLib_highlevel.cpp
 
 HEADERS  += \
 widgets/cut.h \
@@ -136,7 +137,8 @@ other/edffile.h \
     myLib/temp.h \
     myLib/vectr.h \
     other/subjects.h \
-    other/feedback.h
+    other/feedback.h \
+    myLib/highlevel.h
 
 FORMS+= mainwindow.ui \
 cut.ui \

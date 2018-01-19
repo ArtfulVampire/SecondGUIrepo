@@ -12,6 +12,9 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	QTime myTime;
 	myTime.start();
 
+
+
+
 	if(ui->sliceCheckBox->isChecked())
 	{
 		if(ui->matiCheckBox->isChecked())
@@ -48,6 +51,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 					}
 					else
 					{
+						/// remake using myLib::sliceData
 						sliceOneByOne();
 //						sliceOneByOneNew(); /// by number after 241/247
 					}
@@ -109,7 +113,7 @@ void MainWindow::sliceWinds()
 	const std::valarray<double> & marks = fil.getMarkArr();
 
 
-	uint sta = myLib::indexOfVal(marks, staMarks[0]);
+	int sta = myLib::indexOfVal(marks, staMarks[0]);
 	for(int i = 1; i < staMarks.size(); ++i)
 	{
 		sta = std::min( myLib::indexOfVal(marks, staMarks[i]), sta );

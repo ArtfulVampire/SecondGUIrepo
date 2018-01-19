@@ -11,17 +11,22 @@ public:
 	enum class taskType : int {spat = 0, verb = 1, rest = 2};
 private:
 
-	/// [type] = times
-	std::vector<std::valarray<double>> solvTime;
+	/// [type][numReal] = realMatrix
+	std::vector<std::vector<matrix>> realsSignals;
+
+	/// [type][numReal] = length
+	std::vector<std::vector<matrix>> solvTime;
+
+	/// [type][numReal]
+	std::vector<std::vector<int>> ans;
 
 	/// [type][numOfReal] = spectre
-	std::vector<std::vector<std::valarray<double>>> realsSpectra;
+	std::vector<std::vector<matrix>> realsSpectra;
 
-	/// [type][numOfReal][channel] = spectre
-	std::vector<std::vector<std::vector<std::valarray<double>>>> realsSpectraByChans;
+	static const int numTasks = 40;
 
-	/// from 0
-	static const std::vector<int> chansToProcess{
+	/// from 0 - for dispersion, distance, etc
+	const std::vector<int> chansToProcess{
 //		0, 1,		// Fp1,	Fp2
 //		2, 6,		// F7,	F8
 		3, 4, 5,	// F3,	Fz,	F4
@@ -32,8 +37,10 @@ private:
 //		17, 18		// O1,	O2
 	};
 
+	static constexpr double spStep = 250. / 4096.;
+
 public:
-	/// solvTime ans spectre inside
+	/// solvTime? ans spectre inside
 	FBedf(const QString & edfPath, const QString & ansPath);
 
 	double spectreDispersion();
@@ -41,13 +48,16 @@ public:
 	double insightPartOfAll(double thres);
 	double insightPartOfSolved(double thres);
 	QPixmap kdeForSolvTime(taskType typ);
-	QPixmap verbShortLong(double thres);
+	QPixmap verbShortLong(double thres);		/// spectra of short and long anagramms
+
+private:
+	std::vector<int> readAns(const QString & ansPath);
+	std::valarray<double> spectralRow(taskType type, int chan, double freq);
 };
 
 
 /// accuracy, part of frame presence. Weights save inside. Add thresholds.
 std::pair<double, double> imitateFB(const QString & edfPath1, const QString & edfPath2);
-
 
 
 /// feedback

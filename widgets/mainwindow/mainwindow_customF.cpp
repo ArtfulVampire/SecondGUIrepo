@@ -24,6 +24,8 @@ void MainWindow::customFunc()
 //	testSuccessive();
 //	exit(0);
 
+
+
 	return;
 
 #if 0
