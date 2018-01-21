@@ -15,7 +15,7 @@ Cut::Cut() :
 {
 	ui->setupUi(this);
 	this->setAttribute(Qt::WA_DeleteOnClose);
-    this->setWindowTitle("Cut-e");
+	this->setWindowTitle("Cut");
 
 	/// files
 	ui->subdirComboBox->addItem("");
@@ -114,10 +114,6 @@ Cut::Cut() :
 	ui->backwardFrameButton->setShortcut(QKeySequence::Back);
 	ui->forwardFrameButton->setShortcut(tr("e"));
 	ui->backwardFrameButton->setShortcut(tr("q"));
-	QShortcut * undoShortcut = new QShortcut(QKeySequence(tr("Ctrl+z")), this);
-	QShortcut * copyShortcut = new QShortcut(QKeySequence(tr("Ctrl+c")), this);
-	QShortcut * pasteShortcut = new QShortcut(QKeySequence(tr("Ctrl+v")), this);
-	QShortcut * cutShortcut = new QShortcut(QKeySequence(tr("Ctrl+x")), this);
 
 	/// files
 	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browseSlot()));
@@ -128,10 +124,6 @@ Cut::Cut() :
 	QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
 
 	/// modify
-	QObject::connect(undoShortcut, SIGNAL(activated()), this, SLOT(undoSlot()));
-	QObject::connect(copyShortcut, SIGNAL(activated()), this, SLOT(copySlot()));
-	QObject::connect(pasteShortcut, SIGNAL(activated()), this, SLOT(pasteSlot()));
-	QObject::connect(cutShortcut, SIGNAL(activated()), this, SLOT(cutSlot()));
 	QObject::connect(ui->linearApproxPushButton, SIGNAL(clicked()), this, SLOT(linearApproxSlot()));
 	QObject::connect(ui->zeroButton, SIGNAL(clicked()), this, SLOT(zeroSlot()));
 	QObject::connect(ui->splitButton, SIGNAL(clicked()), this, SLOT(splitSlot()));
@@ -317,19 +309,39 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		{
 		case QEvent::Wheel:
 		{
-			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);			
-			if(scrollEvent->modifiers().testFlag(Qt::ControlModifier))
+			/// for one "wheel step" there are TWO identical(?) wheel events
+
+			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
+			if(scrollEvent->modifiers().testFlag(Qt::ControlModifier) &&
+			   !scrollEvent->modifiers().testFlag(Qt::ShiftModifier))
 			{
 				ui->yNormDoubleSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
 				return true;
 			}
 
-			int offset = -0.8 * scrollEvent->delta();
+			/// offset in seconds
+			double offset = (scrollEvent->delta() > 0) ? -1. : 1.;
+			if(scrollEvent->modifiers().testFlag(Qt::ShiftModifier))
+			{
+				if(!scrollEvent->modifiers().testFlag(Qt::ControlModifier))
+				{
+					offset *= ui->paintLengthDoubleSpinBox->value() / 2;
+				}
+				else
+				{
+					offset *= ui->paintLengthDoubleSpinBox->value() * 2.5;
+				}
+			}
+			else
+			{
+				offset *= 0.4;
+			}
 
-			if(myFileType == fileType::real)
+			if(myFileType == fileType::real) /// to deprecate
 			{
 				ui->scrollArea->horizontalScrollBar()->setSliderPosition(
-							ui->scrollArea->horizontalScrollBar()->sliderPosition() + offset);
+							ui->scrollArea->horizontalScrollBar()->sliderPosition()
+							+ offset * def::freq);
 				return true;
 			}
 			else if(myFileType == fileType::edf)
@@ -341,18 +353,8 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 					return false;
 				}
 
-				/// check shift
-				if(scrollEvent->modifiers().testFlag(Qt::ShiftModifier))
-				{
-					ui->paintStartDoubleSpinBox->setValue(ui->paintStartDoubleSpinBox->value() +
-														  ui->paintLengthDoubleSpinBox->value() *
-														  (offset > 0 ? 0.5 : -0.5)
-														  );
-				}
-				else
-				{
-					ui->paintStartDoubleSpinBox->stepBy(offset > 0 ? 4 : -4);
-				}
+				ui->paintStartDoubleSpinBox->setValue(
+							ui->paintStartDoubleSpinBox->value() + offset);
 				return true;
 			}
 			else { return false; }
@@ -363,11 +365,29 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			QMouseEvent * clickEvent = static_cast<QMouseEvent*>(event);
 			switch(clickEvent->button())
 			{
-			case Qt::BackButton:	{ this->backwardFrameSlot(); break; }
-			case Qt::ForwardButton:	{ this->forwardFrameSlot(); break; }
-			case Qt::LeftButton:	{ this->mousePressSlot(clickEvent->button(), clickEvent->x()); break; }
-			case Qt::RightButton:	{ this->mousePressSlot(clickEvent->button(), clickEvent->x()); break; }
-			case Qt::MiddleButton:	{ ui->yNormDoubleSpinBox->setValue(1.); break; }
+			case Qt::BackButton:
+			{
+				if(!clickEvent->modifiers().testFlag(Qt::ShiftModifier))
+				{ this->backwardFrameSlot(); }
+				else
+				{ ui->paintStartDoubleSpinBox->setValue(0.); }
+				break;
+			}
+			case Qt::ForwardButton:
+			{
+				if(!clickEvent->modifiers().testFlag(Qt::ShiftModifier))
+				{ this->forwardFrameSlot(); }
+				else
+				{ ui->paintStartDoubleSpinBox->setValue(
+								this->dataCutLocal.cols() / def::freq -
+								ui->paintLengthDoubleSpinBox->value()); }
+				break;
+			}
+			case Qt::LeftButton:	{ this->mousePressSlot(clickEvent->button(),
+														   clickEvent->x());	break; }
+			case Qt::RightButton:	{ this->mousePressSlot(clickEvent->button(),
+														   clickEvent->x());	break; }
+			case Qt::MiddleButton:	{ ui->yNormDoubleSpinBox->setValue(1.);		break; }
 			default: { return false; }
 			}
 			return true;
@@ -377,22 +397,44 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		case QEvent::KeyPress:
 		{
 			QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
-			auto * targetSpin = ui->leftLimitSpinBox;
-			if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
-			{
-				targetSpin = ui->rightLimitSpinBox;
-			}
 
-			switch(keyEvent->key())
+			if(keyEvent->key() == Qt::Key_Left ||
+			   keyEvent->key() == Qt::Key_Right)
 			{
-			case Qt::Key_Left:	{ targetSpin->stepDown(); break; }
-			case Qt::Key_Right:	{ targetSpin->stepUp(); break; }
-			default:			{ return false; }
-			}
-			showDerivatives();
-			paintLimits();
-			return true;
+				auto * targetSpin = ui->leftLimitSpinBox;
+				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
+				{
+					targetSpin = ui->rightLimitSpinBox;
+				}
 
+				switch(keyEvent->key())
+				{
+				case Qt::Key_Left:	{ targetSpin->stepDown();	break; }
+				case Qt::Key_Right:	{ targetSpin->stepUp();		break; }
+				default:			{ return false; }
+				}
+				showDerivatives();
+				paintLimits();
+				return true;
+			}
+			else if(keyEvent->key() == Qt::Key_Z ||
+					keyEvent->key() == Qt::Key_X ||
+					keyEvent->key() == Qt::Key_C ||
+					keyEvent->key() == Qt::Key_V)
+			{
+				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
+				{
+					/// Ctrl is ON
+					switch(keyEvent->key())
+					{
+					case Qt::Key_Z:	{ undoSlot();	break; }
+					case Qt::Key_X:	{ cutSlot();	break; }
+					case Qt::Key_C:	{ copySlot();	break; }
+					case Qt::Key_V:	{ pasteSlot();	break; }
+					default:			{ return false; }
+					}
+				}
+			}
 			break;
 		}
 		default: { return false; }
@@ -406,8 +448,8 @@ void Cut::resetLimits()
 {
 	if( !fileOpened ) { return; }
 
-	ui->leftLimitSpinBox->setValue(0); /// sometimes fails under Windows
 	ui->rightLimitSpinBox->setValue(dataCutLocal.cols());
+	ui->leftLimitSpinBox->setValue(0); /// sometimes fails under Windows
 }
 
 void Cut::showDerivatives()

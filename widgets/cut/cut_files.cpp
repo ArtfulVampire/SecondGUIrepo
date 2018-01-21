@@ -209,7 +209,7 @@ void Cut::browseSlot()
 
 
 	undoData.clear();
-	undos.clear();
+	undoActions.clear();
 	copyData.clear();
 
 	openFile(helpString);

@@ -439,6 +439,9 @@ int MannWhitney(const std::valarray<double> & arr1,
 	const double beliefLimit = quantile( (1.00 + (1. - p) ) / 2.);
 	const double ourValue = (U - average) / dispersion;
 
+//	std::cout << "beliefLimit = " << beliefLimit << std::endl;
+//	std::cout << "ourValue = " << ourValue << std::endl;
+
 	// old
 	if(std::abs(ourValue) > beliefLimit)
 	{

@@ -65,7 +65,7 @@ template <typename Container>
 uint indexOfMin(const Container & cont);
 
 template <typename Container, typename Typ>
-uint indexOfVal(const Container & cont, Typ val);
+int indexOfVal(const Container & cont, Typ val);
 
 template <typename Container, typename Typ>
 bool contains(const Container & cont, Typ val);

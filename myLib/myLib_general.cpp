@@ -273,19 +273,19 @@ uint indexOfMin(const Container & cont)
 }
 
 template <typename Container, typename Typ>
-uint indexOfVal(const Container & cont, Typ val)
+int indexOfVal(const Container & cont, Typ val)
 {
 	int i = 0;
 	for(auto it = std::begin(cont); it != std::end(cont); ++it, ++i)
 	{
-		if(*it == val) break;
+		if(*it == val) return i;
 	}
-	return i;
+	return -1;
 }
-template uint indexOfVal(const std::valarray<double> & cont, double val);
-template uint indexOfVal(const std::vector<double> & cont, double val);
-template uint indexOfVal(const std::vector<int> & cont, int val);
-template uint indexOfVal(const std::vector<QString> & cont, QString val);
+template int indexOfVal(const std::valarray<double> & cont, double val);
+template int indexOfVal(const std::vector<double> & cont, double val);
+template int indexOfVal(const std::vector<int> & cont, int val);
+template int indexOfVal(const std::vector<QString> & cont, QString val);
 
 template <typename Container, typename Typ>
 bool contains(const Container & cont, Typ val)
@@ -617,7 +617,6 @@ void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 
 
 
-template uint indexOfVal(const std::vector<QString> & cont, const QString & val);
 
 template uint indexOfMax(const std::vector<int> & cont);
 template uint indexOfMax(const std::vector<double> & cont);
