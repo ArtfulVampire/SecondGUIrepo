@@ -18,6 +18,7 @@ namespace myLib
 
 void kernelEst(const std::valarray<double> & arr, QString picPath);
 void kernelEst(QString filePath, QString picPath);
+QPixmap kernelEst(const std::valarray<double> & arr);
 
 void histogram(const std::valarray<double> & arr,
 			   int numSteps,

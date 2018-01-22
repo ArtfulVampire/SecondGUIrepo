@@ -50,7 +50,7 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 
 		for(int real = 0; real < realsSignals[typ].size(); ++real)
 		{
-			solvTime[typ][real] = realsSignals[typ][real].cols();
+			solvTime[typ][real] = realsSignals[typ][real].cols() / this->srate;
 
 
 			matrix a = myLib::countSpectre(realsSignals[typ][real],
@@ -58,7 +58,7 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 										   15);
 			if(!a.isEmpty()) { realsSpectra[typ].push_back(a); }
 		}
-	}
+	}	
 }
 
 std::vector<int> FBedf::readAns(const QString & ansPath)
@@ -106,8 +106,63 @@ std::valarray<double> FBedf::spectralRow(taskType type, int chan, double freq)
 	return res;
 }
 
+double FBedf::distSpec(taskType type1, taskType type2)
+{
+	int all = 0;
+	int diff = 0;
+
+	for(int chan : chansToProcess)
+	{
+		for(double freq = this->leftFreq; freq < this->rightFreq; freq += this->spStep)
+		{
+			auto a = myLib::MannWhitney(this->spectralRow(type1, chan, freq),
+										this->spectralRow(type2, chan, freq));
+			++all;
+			if(a != 0) { ++diff; }
+		}
+	}
+
+	return double(diff) / all;
+}
+
+double FBedf::insightPartOfAll(double thres)
+{
+	auto & times = solvTime[int(taskType::verb)];
+	int insight = 0;
+	std::for_each(std::begin(times), std::end(times),
+				  [&insight, thres](double in){ if(in <= thres) { ++insight; } });
+	return double(insight) / times.size();
+}
+
+double FBedf::insightPartOfSolved(double thres)
+{
+	auto & times = solvTime[int(taskType::verb)];
+	int insight = 0;
+	int solved = 0;
+	std::for_each(std::begin(times), std::end(times),
+				  [&insight, &solved, thres](double in)
+	{
+		if(in <= thres) { ++insight; }
+		if(in <= 0.98 * this->solveThres) { ++solved; }
+	});
+	return double(insight) / solved;
+}
+
+double FBedf::spectreDispersion()
+{
+	return 0.;
+}
 
 
+QPixmap FBedf::kdeForSolvTime(taskType typ)
+{
+	return myLib::kernelEst(solvTime[int(typ)]);
+}
+
+QPixmap FBedf::verbShortLong(double thres)
+{
+	return {};
+}
 
 
 

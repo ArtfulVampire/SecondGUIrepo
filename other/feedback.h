@@ -15,7 +15,7 @@ private:
 	std::vector<std::vector<matrix>> realsSignals;
 
 	/// [type][numReal] = length
-	std::vector<std::vector<matrix>> solvTime;
+	std::vector<std::valarray<double>> solvTime;
 
 	/// [type][numReal]
 	std::vector<std::vector<int>> ans;
@@ -38,6 +38,9 @@ private:
 	};
 
 	static constexpr double spStep = 250. / 4096.;
+	static constexpr double leftFreq = 5.;
+	static constexpr double rightFreq = 5.;
+	static constexpr double solveThres = 40.;			/// 40 sec for a task
 
 public:
 	/// solvTime? ans spectre inside

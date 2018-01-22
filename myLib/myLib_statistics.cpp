@@ -227,6 +227,86 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 	pic.save(picPath, 0, 100);
 }
 
+
+QPixmap kernelEst(const std::valarray<double> & arr)
+{
+	double sigma = 0.;
+	int length = arr.size();
+
+	sigma = smLib::variance(arr);
+	sigma = sqrt(sigma);
+	double h = 1.06 * sigma * pow(length, -0.2);
+
+	QPixmap pic(1000, 400);
+	QPainter pnt;
+	pic.fill();
+	pnt.begin(&pic);
+	pnt.setPen("black");
+
+	std::vector<double> values(pic.width(), 0.);
+
+	double xMin, xMax;
+
+	xMin = *std::min_element(std::begin(arr),
+							 std::end(arr));
+	xMax = *std::max_element(std::begin(arr),
+							 std::end(arr));
+
+	xMin = floor(xMin);
+	xMax = ceil(xMax);
+
+	//    sigma = (xMax - xMin);
+	//    xMin -= 0.1 * sigma;
+	//    xMax += 0.1 * sigma;
+
+	//    // generality
+	//    xMin = -20;
+	//    xMax = 20;
+
+	//    xMin = 65;
+	//    xMax = 100;
+
+
+	for(int i = 0; i < pic.width(); ++i)
+	{
+		for(int j = 0; j < length; ++j)
+		{
+			values[i] += 1 / (length * h)
+						 * smLib::gaussian((xMin + (xMax - xMin) / double(pic.width()) * i - arr[j]) / h);
+		}
+	}
+
+	double valueMax;
+	valueMax = *std::max_element(std::begin(values),
+								 std::end(values));
+
+	for(int i = 0; i < pic.width() - 1; ++i)
+	{
+		pnt.drawLine(i,
+					 pic.height() * 0.9 * ( 1. - values[i] / valueMax),
+					 i + 1,
+					 pic.height() * 0.9 * (1. - values[i + 1] / valueMax));
+
+	}
+	pnt.drawLine(0,
+				 pic.height() * 0.9,
+				 pic.width(),
+				 pic.height() * 0.9);
+
+	// x markers - 10 items
+	for(int i = xMin; i <= xMax; i += (xMax - xMin) / 10)
+	{
+		pnt.drawLine((i - xMin) / (xMax - xMin) * pic.width(),
+					 pic.height() * 0.9,
+					 (i - xMin) / (xMax - xMin) * pic.width(),
+					 pic.height());
+		pnt.drawText((i - xMin) / (xMax - xMin) * pic.width(),
+					 pic.height() * 0.95,
+					 nm(i));
+	}
+	return pic;
+}
+
 /*
 bool gaussApproval(double * arr, int length) // kobzar page 239
 {

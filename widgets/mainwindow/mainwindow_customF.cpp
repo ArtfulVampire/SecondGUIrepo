@@ -24,8 +24,6 @@ void MainWindow::customFunc()
 //	testSuccessive();
 //	exit(0);
 
-
-
 	return;
 
 #if 0
@@ -149,7 +147,6 @@ void MainWindow::customFunc()
 	delete cut;
 	exit(0);
 #endif
-
 
 #if 0
 	/// IITP filenames prep
@@ -304,7 +301,6 @@ void MainWindow::customFunc()
 	exit(0);
 //	return;
 #endif
-
 
 #if 0
 	/// defs Singleton test
@@ -582,7 +578,6 @@ void MainWindow::customFunc()
 
 	exit(0);
 #endif
-
 
 #if 0
 	/// Dasha ToTable processing for Galya's paper
@@ -1049,7 +1044,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
 #if 0
 	/// Galya_tactile things
 
@@ -1378,7 +1372,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
 #if 0
 	/// Baklushev histograms
 
@@ -1520,8 +1513,6 @@ void MainWindow::customFunc()
 
 #endif
 
-
-
 #if 0
 	/// Xenia - check all files markers
 	QString p = def::XeniaFolder + "/15Nov";
@@ -1553,7 +1544,6 @@ void MainWindow::customFunc()
 	}
 	exit(0);
 #endif
-
 
 #if 0
 	/// backuping
