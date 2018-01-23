@@ -433,7 +433,13 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 					case Qt::Key_V:	{ pasteSlot();	break; }
 					default:			{ return false; }
 					}
+					return true;
 				}
+			}
+			else if(keyEvent->key() == Qt::Key_L)
+			{
+				this->linearApproxSlot();
+				return true;
 			}
 			break;
 		}

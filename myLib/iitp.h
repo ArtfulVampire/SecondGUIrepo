@@ -70,45 +70,7 @@ enum trialType {rest	= 0,
 				passive	= 3,
 				stat	= 4};
 
-/// 0 - old usual, 1 - new VR
-#define VR 01
 
-#if VR
-const std::valarray<int> trialTypes{
-	// 0 eyes closed
-	trialType::rest,
-	// 1 eyes open
-	trialType::rest,
-	// 2 legs moving
-	trialType::real,
-	// 3 legs moving, second file
-	trialType::real,
-	// 4 VR legs observation
-	trialType::imag,
-	// 5 VR legs moving
-	trialType::real,
-	// 6 VR legs moving, second file
-	trialType::real,
-	// 7 arms moving
-	trialType::real,
-	// 8 VR arms observe
-	trialType::imag,
-	// 9 VR arms move
-	trialType::real,
-	// 10 VR arms move, second file
-	trialType::rest,
-	// 11 legs + arms
-	trialType::real,
-	// 12 VR legs + arms observe
-	trialType::imag,
-	// 13 VR legs + arms
-	trialType::real,
-	// 14 eyes closed
-	trialType::rest,
-	// 15 eyes open
-	trialType::rest
-};
-#else
 const std::valarray<int> trialTypes{
 	// 0 eyes closed
 	trialType::rest,
@@ -169,9 +131,22 @@ const std::valarray<int> trialTypes{
 	// 28 weak Ecr_l
 	trialType::stat,
 	// 29 weak Ecr_r
-	trialType::stat
+	trialType::stat,
+
+			/// VR
+	// 30 some VR
+	trialType::real,
+	// 31 some VR
+	trialType::real,
+	// 32 some VR
+	trialType::real,
+	// 33 some VR
+	trialType::real,
+	// 34 some VR
+	trialType::real,
+	// 35 some VR
+	trialType::real
 };
-#endif
 
 
 enum gonioChans {Ankle_l	= 0,
@@ -193,44 +168,6 @@ const std::vector<QString> gonioNames {
 	"Wrist_l",
 	"Wrist_r"};
 
-
-
-#if VR
-const std::vector<std::valarray<int>> interestGonios{
-	// 0 eyes closed
-	{},
-	// 1 eyes open
-	{},
-	// 2 legs moving
-	{Knee_l /*, Knee_r */},					// no right leg movement
-	// 3 legs moving, second file
-	{/* Knee_l, */ Knee_r},					// bad left leg
-	// 4 VR legs observation
-	{Knee_l, Knee_r},
-	// 5 VR legs moving
-	{Knee_l, Knee_r},
-	// 6 VR legs moving, second file
-	{/* Knee_l, */ Knee_r},					// bad left leg
-	// 7 arms moving
-	{Elbow_l, Elbow_r},
-	// 8 VR arms observe
-	{Elbow_l, Elbow_r},
-	// 9 VR arms move
-	{Elbow_l, Elbow_r},
-	// 10 VR arms move, second file
-	{Elbow_l, Elbow_r},
-	// 11 legs + arms
-	{Knee_l, Knee_r, Elbow_l, Elbow_r},
-	// 12 VR legs + arms observe
-	{Knee_l, Knee_r, Elbow_l, Elbow_r},
-	// 13 VR legs + arms
-	{Knee_l, Knee_r, Elbow_l, Elbow_r},
-	// 14 eyes closed
-	{},
-	// 15 eyes open
-	{}
-};
-#else
 /// [numFile] - interestingChannels
 /// commented wrists and ankles - letter 7-Nov-17
 const std::vector<std::valarray<int>> interestGonios{
@@ -293,9 +230,22 @@ const std::vector<std::valarray<int>> interestGonios{
 	// 28 weak Ecr_l
 	{},
 	// 29 weak Ecr_r
+	{},
+
+		/// VR
+	// 30 some VR
+	{},
+	// 31 some VR
+	{},
+	// 32 some VR
+	{},
+	// 33 some VR
+	{},
+	// 34 some VR
+	{},
+	// 35 some VR
 	{}
 };
-#endif
 
 
 
@@ -342,42 +292,7 @@ const std::vector<QString> emgNames {
 /// [numFile] - interestingChannels
 /// maybe all EMGs for rest and/or stat
 /// 1 May 17 - added Ta_l, Ta_r everywhere for maps drawing
-#if VR
-const std::vector<std::valarray<int>> interestEmg{
-	// 0 eyes closed
-	{Ta_l, Ta_r, Bf_l, Bf_r, Da_l, Da_r, Dp_l, Dp_r},
-	// 1 eyes open
-	{Ta_l, Ta_r, Bf_l, Bf_r, Da_l, Da_r, Dp_l, Dp_r},
-	// 2 legs moving
-	{Ta_l, Ta_r, Bf_l, Bf_r},
-	// 3 legs moving, second file
-	{Ta_l, Ta_r, Bf_l, Bf_r},
-	// 4 VR legs observation
-	{Ta_l, Ta_r, Bf_l, Bf_r},
-	// 5 VR legs moving
-	{Ta_l, Ta_r, Bf_l, Bf_r},
-	// 6 VR legs moving, second file
-	{Ta_l, Ta_r, Bf_l, Bf_r},
-	// 7 arms moving
-	{Da_l, Da_r, Dp_l, Dp_r},
-	// 8 VR arms observe
-	{Da_l, Da_r, Dp_l, Dp_r},
-	// 9 VR arms move
-	{Da_l, Da_r, Dp_l, Dp_r},
-	// 10 VR arms move, second file
-	{Da_l, Da_r, Dp_l, Dp_r},
-	// 11 legs + arms
-	{Ta_l, Ta_r, Bf_l, Bf_r, Da_l, Da_r, Dp_l, Dp_r},
-	// 12 VR legs + arms observe
-	{Ta_l, Ta_r, Bf_l, Bf_r, Da_l, Da_r, Dp_l, Dp_r},
-	// 13 VR legs + arms
-	{Ta_l, Ta_r, Bf_l, Bf_r, Da_l, Da_r, Dp_l, Dp_r},
-	// 14 eyes closed
-	{Ta_l, Ta_r, Bf_l, Bf_r, Da_l, Da_r, Dp_l, Dp_r},
-	// 15 eyes open
-	{Ta_l, Ta_r, Bf_l, Bf_r, Da_l, Da_r, Dp_l, Dp_r}
-};
-#else
+
 const std::vector<std::valarray<int>> interestEmg{
 	// 0 eyes closed
 	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
@@ -438,9 +353,22 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 28 weak Ecr_l
 	{Ecr_l,    Ta_l, Ta_r},
 	// 29 weak Ecr_r
+	{Ecr_r,    Ta_l, Ta_r},
+
+		/// VR
+	// 30 some VR
+	{Ecr_r,    Ta_l, Ta_r},
+	// 31 some VR
+	{Ecr_r,    Ta_l, Ta_r},
+	// 32 some VR
+	{Ecr_r,    Ta_l, Ta_r},
+	// 33 some VR
+	{Ecr_r,    Ta_l, Ta_r},
+	// 34 some VR
+	{Ecr_r,    Ta_l, Ta_r},
+	// 35 some VR
 	{Ecr_r,    Ta_l, Ta_r}
 };
-#endif
 
 const std::vector<QString> eegNames{
 	"Fp1",
@@ -489,27 +417,11 @@ const std::vector<int> interestEeg{
 const double leftFr = 4.;
 const double rightFr = 40.;
 const myLib::windowName iitpWindow = myLib::windowName::Hamming;
-
 const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 45 + 1);
 
-
-#if VR
-const std::valarray<double> fileNums = smLib::range(0, 15+1);
-//const std::valarray<double> fileNums{3};
-#else
-/// all without 12th
-//const std::valarray<double> fileNums = smLib::unite({smLib::range(0,  11 + 1),
-//													 smLib::range(13, 29 + 1)});
 /// all with 12th
-const std::valarray<double> fileNums = smLib::range(0, 29+1);
-
-/// test
-//const std::valarray<double> fileNums = smLib::range(0, 8);
-//const std::valarray<double> fileNums = smLib::range(22, 22+1);
-//const std::valarray<double> fileNums = smLib::range(0, 12);
-//const std::valarray<double> fileNums{0, 1, 8, 22, 23, 26, 27};
-//const std::valarray<double> fileNums{15, 16, 17, 18, 22, 23, 24, 25, 26, 27};
-#endif
+//const std::valarray<double> fileNums = smLib::range(0, 35 + 1);
+const std::valarray<double> fileNums{2};
 
 
 /// added 2, 6, 10 due to letter 03.11.17
@@ -520,7 +432,7 @@ const QVector<int> interestingForWrists{0, 1, 6, 8, 10, 13, 14, 26, 27, 28, 29};
 
 const QVector<int> interestingForVR{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};  /// for maps drawing
 
-
+/// don't apply any processing for these files
 const std::map<QString, std::vector<int>> badFiles{
 	{"Alex",	{0, 1, 2, 3, 4, 5}},
 	{"Boris",	{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
@@ -656,10 +568,15 @@ public:
 };
 
 
-#if VR
 const std::vector<QString> forMapEmgNames {
 	"Ta_l",
 	"Ta_r",
+	"Fcr_l",
+	"Fcr_r",
+	"Ecr_l",
+	"Ecr_r",
+
+		/// VR
 	"Bf_l",
 	"Bf_r",
 	"Da_l",
@@ -667,16 +584,6 @@ const std::vector<QString> forMapEmgNames {
 	"Dp_l",
 	"Dp_r"
 };
-#else
-const std::vector<QString> forMapEmgNames {
-	"Ta_l",
-	"Ta_r",
-	"Fcr_l",
-	"Fcr_r",
-	"Ecr_l",
-	"Ecr_r"
-};
-#endif
 
 const std::vector<QString> forMapRangeNames {
 	"alpha",

@@ -23,7 +23,6 @@ private:
 	/// [type][numOfReal] = spectre
 	std::vector<std::vector<matrix>> realsSpectra;
 
-	static const int numTasks = 40;
 
 	/// from 0 - for dispersion, distance, etc
 	const std::vector<int> chansToProcess{
@@ -37,16 +36,17 @@ private:
 //		17, 18		// O1,	O2
 	};
 
+	static const int numTasks = 40;
 	static constexpr double spStep = 250. / 4096.;
 	static constexpr double leftFreq = 5.;
-	static constexpr double rightFreq = 5.;
+	static constexpr double rightFreq = 20.;
 	static constexpr double solveThres = 40.;			/// 40 sec for a task
 
 public:
 	/// solvTime? ans spectre inside
 	FBedf(const QString & edfPath, const QString & ansPath);
 
-	double spectreDispersion();
+	double spectreDispersion(taskType typ);
 	double distSpec(taskType type1, taskType type2);
 	double insightPartOfAll(double thres);
 	double insightPartOfSolved(double thres);
@@ -54,6 +54,7 @@ public:
 	QPixmap verbShortLong(double thres);		/// spectra of short and long anagramms
 
 private:
+	std::vector<double> freqs;
 	std::vector<int> readAns(const QString & ansPath);
 	std::valarray<double> spectralRow(taskType type, int chan, double freq);
 };

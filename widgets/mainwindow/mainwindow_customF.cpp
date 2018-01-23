@@ -24,8 +24,7 @@ void MainWindow::customFunc()
 //	testSuccessive();
 //	exit(0);
 
-	return;
-
+//	return;
 
 #if 0
 	/// check marks
@@ -209,12 +208,12 @@ void MainWindow::customFunc()
 
 //	return;
 
-	QString guy = "Aliev2";
+	QString guy = "Victor2";
 //	for(QString guy : guyList)
 	{
 		if(0)
 		{
-			/// check Da/Dp channels
+			/// check Da/Dp channels - should appear in 15th file and further
 			const QString ph = def::iitpSyncFolder + "/" + guy;
 			for(QString fn : QDir(ph).entryList({"*_sum_new.edf"}))
 			{
@@ -229,51 +228,26 @@ void MainWindow::customFunc()
 					std::cout << "Dp: " << fn << std::endl;
 				}
 			}
-//			continue;
-//			exit(0);
 		}
 		if(0)
 		{
 			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
 			autos::IITPdatToEdf(guy);
-			if(guy == "Victor")
-			{
-//				autos::IITPcopyChannel(guy, "Wrist_r", "Artefac");		/// rewrites _emg.edf
-			}
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
-			return; /// clean init eeg - zero in the beginning for better filering
+//			return; /// clean init eeg - zero in the beginning for better filering
 		}
-		if(0)
+		if(01)
 		{
+			/// filter eeg 0.5-70, notch 45-55
 //			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
-			autos::IITPconcat(guy, "_eeg_new", "_emg");				/// resampling inside
+
+			autos::IITPconcat(guy, "_eeg_new", "_emg");				/// if cleaned init eeg
+//			autos::IITPconcat(guy, "_eeg", "_emg");				/// if NOT cleaned init eeg
 			return; /// manual sync
 		}
-
 		/// copy files to SYNCED
-
-		return;
-
-//		std::cout << 1 << std::endl;
-//		std::valarray<double> drawThing{0,	0,
-//			0.06399744,	0.04252348,	0.001983,	0,	0.00257324,
-//			0.00359005,	0.00174666,	0.00243207,	0.00294025,	0.00430815,
-//			0.00256283,	0.00187166,	0.00312526,	0,	0.00420443,
-//			0.0035522,	0.00442235};
-//		double mx = 0.0838959;
-//		QString pPath = "/media/Files/Data/iitp/Results/Alex/cohPics/Alex_00_free_Ta_l_alpha.jpg";
-//		myLib::drw::drawOneMap(drawThing,
-//							   mx,
-//							   myLib::drw::ColorScale::jet,
-//							   true).save(pPath, 0, 100);
-//		exit(0);
-
-
-
-
 //		return;
-//		autos::IITPremoveZchans(guy, def::iitpSyncFolder); exit(0);
-		if(01)
+		if(0)
 		{
 			autos::IITPstaging(guy);							/// flex/extend markers
 			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
@@ -284,7 +258,7 @@ void MainWindow::customFunc()
 //			exit(0);
 		}
 
-//		exit(0);
+		exit(0);
 //		continue;
 
 		/// deleted lists 14.10.2017

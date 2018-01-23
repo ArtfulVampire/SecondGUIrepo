@@ -7,6 +7,7 @@
 #include <myLib/output.h>
 #include <myLib/highlevel.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/drw.h>
 
 /// for successive preclean
 #include <widgets/net.h>
@@ -58,7 +59,15 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 										   15);
 			if(!a.isEmpty()) { realsSpectra[typ].push_back(a); }
 		}
-	}	
+	}
+
+	freqs.clear();
+	for(int i = std::floor(this->leftFreq / this->spStep);
+		i < std::ceil(this->rightFreq/this->spStep);
+		++i)
+	{
+		freqs.push_back(i * this->spStep);
+	}
 }
 
 std::vector<int> FBedf::readAns(const QString & ansPath)
@@ -113,7 +122,7 @@ double FBedf::distSpec(taskType type1, taskType type2)
 
 	for(int chan : chansToProcess)
 	{
-		for(double freq = this->leftFreq; freq < this->rightFreq; freq += this->spStep)
+		for(double freq : this->freqs)
 		{
 			auto a = myLib::MannWhitney(this->spectralRow(type1, chan, freq),
 										this->spectralRow(type2, chan, freq));
@@ -140,7 +149,7 @@ double FBedf::insightPartOfSolved(double thres)
 	int insight = 0;
 	int solved = 0;
 	std::for_each(std::begin(times), std::end(times),
-				  [&insight, &solved, thres](double in)
+				  [&insight, &solved, thres, this](double in)
 	{
 		if(in <= thres) { ++insight; }
 		if(in <= 0.98 * this->solveThres) { ++solved; }
@@ -148,9 +157,18 @@ double FBedf::insightPartOfSolved(double thres)
 	return double(insight) / solved;
 }
 
-double FBedf::spectreDispersion()
+double FBedf::spectreDispersion(taskType typ)
 {
-	return 0.;
+	double res = 0.;
+	for(int chan : this->chansToProcess)
+	{
+		for(double freq : this->freqs)
+		{
+			auto row = this->spectralRow(typ, chan, freq);
+			res += smLib::sigma(row);
+		}
+	}
+	return res;
 }
 
 
@@ -161,7 +179,33 @@ QPixmap FBedf::kdeForSolvTime(taskType typ)
 
 QPixmap FBedf::verbShortLong(double thres)
 {
-	return {};
+	std::vector<matrix> shrts;
+	std::vector<matrix> lngs;
+	for(int i = 0; i < solvTime[1].size(); ++i)
+	{
+		if(solvTime[1][i] > thres) { lngs.push_back(realsSpectra[1][i]);	}
+		else { shrts.push_back(realsSpectra[1][i]); }
+	}
+
+	matrix shrt	= shrts[0];	shrt.fill(0.);
+	matrix lng	= lngs[0];	lng.fill(0.);
+	for(const auto & sp : lngs)
+	{
+		lng += sp;
+	}
+	lng /= lngs.size();
+
+	for(const auto & sp : shrts)
+	{
+		shrt += sp;
+	}
+	shrt /= shrts.size();
+	matrix both(2, 1);
+	both[0] = shrt.toVectorByRows();
+	both[1] = lng.toVectorByRows();
+
+	auto tmplt = myLib::drw::drawTemplate(true, this->leftFreq, this->rightFreq, 19);
+	return myLib::drw::drawArrays(tmplt, both);
 }
 
 

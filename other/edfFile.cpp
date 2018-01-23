@@ -348,15 +348,13 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 	}
 }
 
-
-
-
 edfFile & edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 {
     QTime myTime;
     myTime.start();
-    this->fftData.clear(); /// crucial
-	this->markers.clear();
+//    this->fftData.clear(); /// crucial
+//	this->markers.clear();
+	*this = edfFile{}; /// pewpewpewpewpepw
 
     handleEdfFile(EDFpath, true, headerOnly);
 

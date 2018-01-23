@@ -1403,15 +1403,6 @@ void IITPdoShit(const QString & resultsPathPrefix,
 						   true).save(resultsPathPrefix + "cohPics/" + picName,
 									  0, 100);
 #endif
-
-#if 0
-	/// doubt
-	myLib::drw::drawOneMap(in.forMapRanges[i][j].getMaxVal(),
-						   maxesM[i][j],
-						   myLib::drw::ColorScale::jet,
-						   true).save(resultsPathPrefix + "cohPicsMax/" + picName,
-									  0, 100);
-#endif
 }
 
 void IITPdrawCohMaps(const std::vector<iitp::forMap> & forMapsVector,
@@ -1422,7 +1413,7 @@ void IITPdrawCohMaps(const std::vector<iitp::forMap> & forMapsVector,
 	/// added something about wrists 28.11.17
 
 	/// find maxs
-	const int numEmgs = iitp::forMapEmgNames.size();		/// == 6 for usual or 8 for VR
+	const int numEmgs = iitp::forMapEmgNames.size();		/// == 6 for usual or 12 for VR
 	const int numRhythms = iitp::forMapRangeNames.size();	/// == 3
 
 	/// for meanVal
