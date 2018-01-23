@@ -1289,8 +1289,12 @@ void IITPprocessStaged(const QString & guyName,
 				IITPwriteCohsToFile(outStr, dt, fileNum, confidenceLevel);
 				outStr.close();
 
-				if(interestingForLegs.contains(fileNum) ||
-				   interestingForWrists.contains(fileNum) )
+#if VR
+				if(iitp::interestingForVR.contains(fileNum))
+#else
+				if(iitp::interestingForLegs.contains(fileNum) ||
+				   iitp::interestingForWrists.contains(fileNum) )
+#endif
 				{
 					forMapsVector.push_back(iitp::forMap(dt.getMSCoherencies(),
 														 dt,
@@ -1323,9 +1327,16 @@ void IITPprocessStaged(const QString & guyName,
 						IITPwriteCohsToFile(outStr, dt, fileNum, confidenceLevel);
 						outStr.close();
 
-						 // flexion only
-						if((interestingForLegs.contains(fileNum) && type == 0) ||
-						   (interestingForWrists.contains(fileNum) && type == 0) )
+						// flexion only
+						if(type == 0 &&
+#if VR
+						   iitp::interestingForVR.contains(fileNum)
+#else
+						   // flexion only
+						   (iitp::interestingForLegs.contains(fileNum) ||
+						   iitp::interestingForWrists.contains(fileNum))
+#endif
+						   )
 						{
 							forMapsVector.push_back(iitp::forMap(dt.getMSCoherencies(),
 																 dt,
@@ -1411,7 +1422,7 @@ void IITPdrawCohMaps(const std::vector<iitp::forMap> & forMapsVector,
 	/// added something about wrists 28.11.17
 
 	/// find maxs
-	const int numEmgs = iitp::forMapEmgNames.size();		/// == 6
+	const int numEmgs = iitp::forMapEmgNames.size();		/// == 6 for usual or 8 for VR
 	const int numRhythms = iitp::forMapRangeNames.size();	/// == 3
 
 	/// for meanVal

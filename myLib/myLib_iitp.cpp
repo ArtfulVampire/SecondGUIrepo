@@ -745,7 +745,7 @@ iitpData & iitpData::staging(const QString & chanName,
 //	std::ostream & os = of;
 
 //	os << chanName << std::endl;
-	for(int i = 0; i < chan.size(); ++i)
+	for(int i = 0; i < chan.size() - 1; ++i) // -1 for stability
 	{
 
 		if(sign(chan[i]) != currSign)

@@ -26,6 +26,7 @@ void MainWindow::customFunc()
 
 	return;
 
+
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackFinalMark/")
@@ -174,7 +175,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 		"Alex",		//
@@ -267,13 +268,18 @@ void MainWindow::customFunc()
 //							   true).save(pPath, 0, 100);
 //		exit(0);
 
+
+
+
+//		return;
+//		autos::IITPremoveZchans(guy, def::iitpSyncFolder); exit(0);
 		if(01)
 		{
-//			autos::IITPstaging(guy);							/// flex/extend markers
-//			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
-//			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
+			autos::IITPstaging(guy);							/// flex/extend markers
+			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
+			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
-//			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
+			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
 //			continue;
 //			exit(0);
 		}
