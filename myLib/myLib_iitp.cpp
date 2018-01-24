@@ -143,7 +143,7 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 {
 	if(chan1 == -1 || chan2 == -1)
 	{
-		std::cout << "iitpData::coherency: no such channel " << std::endl;
+		std::cout << "iitpDa::coherency: no such channel " << std::endl;
 		return {};
 	}
 	/// usual
@@ -752,6 +752,7 @@ iitpData & iitpData::staging(const QString & chanName,
 		{
 //			os << "start = " << start << std::endl;
 			int end = i - 1;
+			if(end - start < 10) { break; }
 
 
 			std::valarray<double> val = smLib::contSubsec(chan, start, end);

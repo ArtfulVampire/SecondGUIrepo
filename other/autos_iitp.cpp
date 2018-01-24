@@ -1058,7 +1058,9 @@ void IITPstaging(const QString & guyName,
 			{
 				for(int ch : iitp::interestGonios[fileNum])
 				{
+					std::cout << guyName << " " << iitp::gonioNames[ch] << " beg" << std::endl;
 					fil.staging(ch);
+					std::cout << guyName << " " << iitp::gonioNames[ch] << " end" << std::endl;
 				}
 			}
 			filePath = ExpNamePre + postfix + "_stag" + ".edf";
@@ -1148,6 +1150,11 @@ void IITPwriteCohsToFile(std::ofstream & outStr,
 	{
 		for(int emg : iitp::interestEmg[fileNum])
 		{
+			if(dt.findChannel(iitp::emgNames[emg]) == -1)
+			{
+				continue;
+			}
+
 			for(double fr : iitp::interestFrequencies)
 			{
 				auto val = dt.coherency(dt.findChannel(iitp::eegNames[eeg]),
@@ -1199,13 +1206,6 @@ void IITPprocessStaged(const QString & guyName,
 	const double periodicOverlap	= 0.5;
 	const double continiousOverlap	= 0.5;
 	const double confidenceLevel	= 0.05; /// for threshold value only
-
-	/// added 2, 6, 10 due to letter 03.11.17
-	const QVector<int> interestingForLegs{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 24, 25};  /// for maps drawing
-
-	/// added due to talk 28.11.17
-	const QVector<int> interestingForWrists{0, 1, 6, 8, 10, 13, 14, 26, 27, 28, 29};  /// for maps drawing
-
 
 	for(const QString add : {"", "_car"})
 	{
@@ -1289,12 +1289,8 @@ void IITPprocessStaged(const QString & guyName,
 				IITPwriteCohsToFile(outStr, dt, fileNum, confidenceLevel);
 				outStr.close();
 
-#if VR
-				if(iitp::interestingForVR.contains(fileNum))
-#else
 				if(iitp::interestingForLegs.contains(fileNum) ||
 				   iitp::interestingForWrists.contains(fileNum) )
-#endif
 				{
 					forMapsVector.push_back(iitp::forMap(dt.getMSCoherencies(),
 														 dt,
@@ -1329,13 +1325,8 @@ void IITPprocessStaged(const QString & guyName,
 
 						// flexion only
 						if(type == 0 &&
-#if VR
-						   iitp::interestingForVR.contains(fileNum)
-#else
-						   // flexion only
 						   (iitp::interestingForLegs.contains(fileNum) ||
 						   iitp::interestingForWrists.contains(fileNum))
-#endif
 						   )
 						{
 							forMapsVector.push_back(iitp::forMap(dt.getMSCoherencies(),
@@ -1348,11 +1339,8 @@ void IITPprocessStaged(const QString & guyName,
 				}
 			}
 		}
-		std::cout << 1 << std::endl;
 		IITPdrawCohMaps(forMapsVector, guyName, resultsPathPrefix);
-		std::cout << 2 << std::endl;
 	}
-	std::cout << 3 << std::endl;
 }
 
 void IITPdoShit(const QString & resultsPathPrefix,

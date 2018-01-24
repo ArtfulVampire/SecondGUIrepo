@@ -134,17 +134,17 @@ const std::valarray<int> trialTypes{
 	trialType::stat,
 
 			/// VR
-	// 30 some VR
+	// 30 VR + legs slow
 	trialType::real,
-	// 31 some VR
+	// 31 VR + legs fast
 	trialType::real,
-	// 32 some VR
+	// 32 VR + arms slow
 	trialType::real,
-	// 33 some VR
+	// 33 VR + arms fast
 	trialType::real,
-	// 34 some VR
+	// 34 VR + arms, legs slow
 	trialType::real,
-	// 35 some VR
+	// 34 VR + arms, legs fast
 	trialType::real
 };
 
@@ -233,18 +233,18 @@ const std::vector<std::valarray<int>> interestGonios{
 	{},
 
 		/// VR
-	// 30 some VR
-	{},
-	// 31 some VR
-	{},
-	// 32 some VR
-	{},
-	// 33 some VR
-	{},
-	// 34 some VR
-	{},
-	// 35 some VR
-	{}
+	// 30 VR + legs slow
+	{Knee_l, Knee_r},
+	// 31 VR + legs fast
+	{Knee_l, Knee_r},
+	// 32 VR + arms slow
+	{Elbow_l, Elbow_r},
+	// 33 VR + arms fast
+	{Elbow_l, Elbow_r},
+	// 34 VR + arms, legs slow
+	{Knee_l, Knee_r, Elbow_l, Elbow_r},
+	// 35 VR + arms, legs fast
+	{Knee_l, Knee_r, Elbow_l, Elbow_r}
 };
 
 
@@ -356,18 +356,18 @@ const std::vector<std::valarray<int>> interestEmg{
 	{Ecr_r,    Ta_l, Ta_r},
 
 		/// VR
-	// 30 some VR
-	{Ecr_r,    Ta_l, Ta_r},
-	// 31 some VR
-	{Ecr_r,    Ta_l, Ta_r},
-	// 32 some VR
-	{Ecr_r,    Ta_l, Ta_r},
-	// 33 some VR
-	{Ecr_r,    Ta_l, Ta_r},
-	// 34 some VR
-	{Ecr_r,    Ta_l, Ta_r},
-	// 35 some VR
-	{Ecr_r,    Ta_l, Ta_r}
+	// 30 VR + legs slow
+	{Ta_l, Ta_r, Bf_l, Bf_r},
+	// 31 VR + legs fast
+	{Ta_l, Ta_r, Bf_l, Bf_r},
+	// 32 VR + arms slow
+	{Da_l, Da_r, Dp_l, Dp_r},
+	// 33 VR + arms fast
+	{Da_l, Da_r, Dp_l, Dp_r},
+	// 34 VR + arms, legs slow
+	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
+	// 35 VR + arms, legs fast
+	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r}
 };
 
 const std::vector<QString> eegNames{
@@ -420,17 +420,15 @@ const myLib::windowName iitpWindow = myLib::windowName::Hamming;
 const std::vector<double> interestFrequencies = smLib::range<std::vector<double>>(8, 45 + 1);
 
 /// all with 12th
-//const std::valarray<double> fileNums = smLib::range(0, 35 + 1);
-const std::valarray<double> fileNums{2};
+const std::valarray<double> fileNums = smLib::range(0, 35 + 1);
+//const std::valarray<double> fileNums{0};
 
 
 /// added 2, 6, 10 due to letter 03.11.17
-const QVector<int> interestingForLegs{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 24, 25};  /// for maps drawing
+const QVector<int> interestingForLegs{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 24, 25, 30, 31, 34, 35};  /// for maps drawing
 
 /// added due to talk 28.11.17
 const QVector<int> interestingForWrists{0, 1, 6, 8, 10, 13, 14, 26, 27, 28, 29};  /// for maps drawing
-
-const QVector<int> interestingForVR{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};  /// for maps drawing
 
 /// don't apply any processing for these files
 const std::map<QString, std::vector<int>> badFiles{
@@ -440,7 +438,8 @@ const std::map<QString, std::vector<int>> badFiles{
 	{"Egor",	{5}},
 	{"Ira",		{11, 13}},
 	{"Isakov",	{9}},
-	{"Victor",	{9}}
+	{"Victor",	{9}},
+	{"Aliev2",	{16, 31}}
 };
 
 class iitpData : public edfFile

@@ -174,6 +174,27 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+#if 0
+	/// IITP invert channels
+	const QString toInvert{"Knee_l"};
+	const QStringList guyList{"Aliev2", "Dima2", "Victor2"};
+	for(QString guy : guyList)
+	{
+		const QString workDir = def::iitpSyncFolder + "/" + guy;
+		for(const QString & fn : QDir(workDir).entryList(def::edfFilters))
+		{
+			edfFile fil;
+			fil.readEdfFile(workDir + "/" + fn);
+
+			const auto newRow = -fil.getData(toInvert);
+			fil.setData(fil.findChannel(toInvert), newRow);
+			fil.writeEdfFile(workDir + "/" + fn);
+		}
+	}
+	exit(0);
+#endif
+
+
 #if 01
 	/// IITP
 	QStringList guyList{
@@ -190,7 +211,12 @@ void MainWindow::customFunc()
 		"Oleg",		//
 		"Victor"	//
 	};
-
+	QStringList vrList{
+		"Aliev2"
+//		"Dima2",
+//		"Ira2",
+//		"Victor2"
+	};
 
 
 	//	edfFile f;
@@ -208,8 +234,9 @@ void MainWindow::customFunc()
 
 //	return;
 
-	QString guy = "Victor2";
+	QString guy = "Ira2";
 //	for(QString guy : guyList)
+//	for(QString guy : vrList)
 	{
 		if(0)
 		{
@@ -234,12 +261,12 @@ void MainWindow::customFunc()
 			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
 			autos::IITPdatToEdf(guy);
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
-//			return; /// clean init eeg - zero in the beginning for better filering
+			return; /// clean init eeg - zero in the beginning for better filering
 		}
-		if(01)
+		if(0)
 		{
 			/// filter eeg 0.5-70, notch 45-55
-//			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
+			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
 
 			autos::IITPconcat(guy, "_eeg_new", "_emg");				/// if cleaned init eeg
 //			autos::IITPconcat(guy, "_eeg", "_emg");				/// if NOT cleaned init eeg
@@ -247,11 +274,11 @@ void MainWindow::customFunc()
 		}
 		/// copy files to SYNCED
 //		return;
-		if(0)
+		if(01)
 		{
-			autos::IITPstaging(guy);							/// flex/extend markers
-			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
-			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
+//			autos::IITPstaging(guy);							/// flex/extend markers
+//			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
+//			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
 			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
 //			continue;
@@ -271,15 +298,7 @@ void MainWindow::customFunc()
 		autos::IITPdrawSameScale(guy, smLib::range<Typ>(0, 11 + 1));
 		exit(0);
 	}
-
-
-
-//	autos::IITPprocessStaged("Victor",
-//							 "_sum_f_new_gon_stag");
-//	autos::IITPfilterGonios("Oleg",
-//							"_emg_f");
 	exit(0);
-//	return;
 #endif
 
 #if 0
