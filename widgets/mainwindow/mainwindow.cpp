@@ -52,6 +52,7 @@ MainWindow::MainWindow() :
     }
     helpString.resize(helpString.size() - 2); // remove the last "; "
     ui->fileMarkersLineEdit->setText(helpString);
+	ui->fileMarkersLineEdit->setText(helpString);
 
 	ui->reduceChannelsComboBox->addItem("EEG,reref,EOG,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,reref,mark");
