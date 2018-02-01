@@ -12,9 +12,6 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	QTime myTime;
 	myTime.start();
 
-
-
-
 	if(ui->sliceCheckBox->isChecked())
 	{
 		if(ui->matiCheckBox->isChecked())
@@ -444,7 +441,7 @@ void MainWindow::sliceOneByOne()
 
             if(finish > start)
             {
-				if(finish - start <= def::freq * 62) /// const generality limit
+				if(finish - start <= def::freq * 62) /// magic const generality limit
                 {
                     helpString += "_" + marker;
 					fil.saveSubsection(start,

@@ -24,7 +24,11 @@ void MainWindow::customFunc()
 //	testSuccessive();
 //	exit(0);
 
-//	return;
+	return;
+
+//	std::cout << myLib::binomialOneTailed(133, 186, 360) << std::endl;
+//	std::cout << myLib::binomialOneTailed(142, 170, 320) << std::endl;
+//	exit(0);
 
 #if 0
 	/// check marks
