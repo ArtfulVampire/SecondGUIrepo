@@ -9,6 +9,7 @@
 
 #include <classifier/classifier.h>
 #include <classifier/classifierdata.h>
+#include <other/feedback.h>
 
 #include <QFileDialog>
 #include <QButtonGroup>
@@ -56,6 +57,8 @@ private:
 	void successiveLearning(const std::valarray<double> & newSpectre,
 							const uint newType,
 							const QString & newFileName);
+	void successiveLearningFinal(const matrix & newSpectra,
+								 const int newType);
 
 
     /// data
@@ -85,7 +88,12 @@ public:
 
     /// NEED CHECK
     void successiveProcessing();
-	Classifier::avType successiveByEDF(const QString & edfPath1, const QString & edfPath2);
+	Classifier::avType successiveByEDF(const QString & edfPath1, const QString & ansPath1,
+									   const QString & edfPath2, const QString & ansPath2);
+	Classifier::avType successiveByEDFfinal(const QString & edfPath1,
+											const QString & ansPath1,
+											const QString & edfPath2,
+											const QString & ansPath2);
 	void successivePreclean(const QString & spectraPath,
 							const QStringList & filters = {"*_train*"});
 

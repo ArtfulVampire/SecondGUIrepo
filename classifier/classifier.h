@@ -12,6 +12,7 @@
 #include <myLib/small.h>
 #include <myLib/output.h>
 #include <myLib/draws.h>
+#include <myLib/drw.h>
 #include <myLib/general.h>
 
 #include <other/coord.h>
@@ -108,8 +109,8 @@ public:
 	std::pair<uint, double> classifyDatumLast();
 
 protected:
-	std::pair<uint, double> classifyDatum(uint vecNum); // return class and error
-	virtual void classifyDatum1(uint vecNum) = 0;
+	std::pair<uint, double> classifyDatum(uint vecNum); // return class and error, effect on confMat
+	virtual void classifyDatum1(uint vecNum) = 0;		// just count outputLayer
 	void classifyDatumLast1();
 
 };

@@ -59,6 +59,8 @@ void MainWindow::makeEvoked(const QString & realsPath,
 	myLib::writeMatrixFile(outPath, res);
 }
 
+
+/// successiveByEDF ansPathes
 void MainWindow::testSuccessive2()
 {
 	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
@@ -84,8 +86,8 @@ void MainWindow::testSuccessive2()
 
 		std::cout << name << std::endl;
 		res.push_back(
-					net->successiveByEDF(path + name + "_train" + ".edf",
-										 path + name + "_test" + ".edf")
+					net->successiveByEDF(path + name + "_train" + ".edf", "",
+										 path + name + "_test" + ".edf", "")
 					.first);
 		delete net;
 	}

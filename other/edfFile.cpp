@@ -361,6 +361,7 @@ edfFile & edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 	/// experimental
 	def::ns = this->ns;
 	def::freq = srate;
+	def::ExpName = myLib::getExpNameLib(this->filePath, true);
 
 	return *this;
 }

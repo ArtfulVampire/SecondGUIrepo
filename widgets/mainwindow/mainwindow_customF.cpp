@@ -24,11 +24,19 @@ void MainWindow::customFunc()
 //	testSuccessive();
 //	exit(0);
 
-	return;
+//	return;
 
 //	std::cout << myLib::binomialOneTailed(133, 186, 360) << std::endl;
 //	std::cout << myLib::binomialOneTailed(142, 170, 320) << std::endl;
 //	exit(0);
+
+	const QString wrk = def::dataFolder + "/FeedbackFinalMark/Avdeev";
+	Net * net = new Net();
+	net->successiveByEDFfinal(wrk + "/AKV_1_fin.edf",
+							  wrk + "/AKV_ans1.txt",
+							  wrk + "/AKV_2_fin.edf",
+							  wrk + "/AKV_ans2.txt");
+	exit(0);
 
 #if 0
 	/// check marks

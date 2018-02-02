@@ -476,9 +476,7 @@ void ANN::drawWeight(QString wtsPath,
     }
 	twovector<std::valarray<double>> tempWeights; /// [0][3][NetLen]
 	readWeight(wtsPath, &tempWeights);
-    matrix drawWts; // 3 arrays of weights
-
-    drawWts = tempWeights[0];
+	matrix drawWts = tempWeights[0];
 	drawWts.resizeCols(drawWts.cols() - 1); // fck the bias?
 
     if(picPath.isEmpty())
@@ -486,10 +484,16 @@ void ANN::drawWeight(QString wtsPath,
         picPath = wtsPath;
         picPath.replace(".wts", "_wts.jpg"); /// make default suffixes
     }
-	myLib::drawTemplate(picPath);
-	myLib::drawArrays(picPath,
-					  drawWts,
-					  true);
+	/// old
+//	myLib::drawTemplate(picPath);
+//	myLib::drawArrays(picPath,
+//					  drawWts,
+//					  true);
+	/// new 2.02.2018
+	myLib::drw::drawArrays(myLib::drw::drawTemplate(),
+						   drawWts,
+						   0.,
+						   true).save(picPath, 0, 100);
 }
 
 

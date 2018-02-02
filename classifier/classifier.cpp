@@ -64,6 +64,7 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 std::pair<uint, double> Classifier::classifyDatum(uint vecNum)
 {
 	this->classifyDatum1(vecNum);
+
 	const int outClass = myLib::indexOfMax(outputLayer);
 
 	if(this->testCleanFlag) /// here or inside deleteFile ?
@@ -79,16 +80,7 @@ std::pair<uint, double> Classifier::classifyDatum(uint vecNum)
 
 std::pair<uint, double> Classifier::classifyDatumLast()
 {
-	classifyDatumLast1();
-
-#if INERTIA
-	/// myLib::indexOfMax(fbVal) or myLib::indexOfMax(outputLayer) ???
-	return std::make_pair(myLib::indexOfMax(fbVal),
-						  clLib::countError(fbVal, myClassData->getTypes().back()));
-#else
-	return std::make_pair(myLib::indexOfMax(outputLayer),
-						  clLib::countError(outputLayer, myClassData->getTypes().back()));
-#endif
+	return classifyDatum(myClassData->getData().rows() - 1);
 }
 
 void Classifier::classifyDatumLast1()

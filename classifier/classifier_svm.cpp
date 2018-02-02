@@ -20,7 +20,7 @@ void SVM::learn(std::vector<uint> & indices)
 //                         + " -v " + fold
                          + " -t " + nm(kernelNum) + " -q "
                          + learnFileName;
-    system(helpString.toStdString().c_str());
+	system(helpString.toStdString().c_str());
 //    std::cout << std::endl << "LEARN finish" << std::endl << std::endl;
 }
 

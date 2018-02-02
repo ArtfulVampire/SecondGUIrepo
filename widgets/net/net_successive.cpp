@@ -6,141 +6,268 @@
 
 using namespace myOut;
 
-Classifier::avType Net::successiveByEDF(const QString & edfPath1,
-						  const QString & edfPath2)
+
+Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString & ansPath1,
+										const QString & edfPath2, const QString & ansPath2)
 {
+	const QString helpPath = def::dataFolder + "/FeedbackFinalMark/Help";
+
 	QTime myTime;
 	myTime.start();
 
-	edfFile fil1;
-	fil1.readEdfFile(edfPath1);
+	fb::FBedf file1(edfPath1, ansPath1);
+	fb::FBedf file2(edfPath2, ansPath2);
 
-	const std::valarray<double> & markers1 = fil1.getMarkArr();
-	const double freq1 = fil1.getFreq();
+	const auto & markers1 = file1.getMarkers();
+	const auto & markArr1 = file1.getMarkArr();
+	const double freq1 = file1.getFreq();
 
-	uint sta1 = std::min(
-					myLib::indexOfVal(markers1, 241.),
-					myLib::indexOfVal(markers1, 247.)) + 1;
+	auto staIt1 = std::find_if(std::begin(markers1),
+							   std::end(markers1),
+							   [](const std::pair<int, int> & in)
+	{ return (in.second == 241) || (in.second == 247); });
 
-	int typ = -1;
-	if(markers1[sta1 - 1] == 241.) typ = 0;
-	else if(markers1[sta1 - 1] == 247.) typ = 1;
+	int sta1 = (*staIt1).first;
+
+	fb::FBedf::taskType typ = fb::FBedf::taskType::rest;
+	if((*staIt1).second == 241.)		{ typ = fb::FBedf::taskType::spat; }
+	else if((*staIt1).second == 247.)	{ typ = fb::FBedf::taskType::verb; }
 
 	myClassifierData = ClassifierData();
 
-	matrix dt1 = fil1.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
+	matrix dt1 = file1.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
+
 	for(uint i = sta1; i < dt1.cols() - suc::windLength * freq1; i += freq1 * suc::shiftLearn)
 	{
-		auto mark = smLib::contSubsec(markers1, i, i + suc::windLength * freq1);
-
+		auto mark = smLib::contSubsec(markArr1, i, i + suc::windLength * freq1);
 		std::pair<bool, double> a = myLib::contains(mark, std::vector<double>{241., 247., 254.});
 		if(a.first)
 		{
-			if(a.second == 241.) typ = 0;
-			else if(a.second == 247.) typ = 1;
-			else if(a.second == 254.) typ = 2;
+			if(a.second == 241.)		{ typ = fb::FBedf::taskType::spat; }
+			else if(a.second == 247.)	{ typ = fb::FBedf::taskType::verb; }
+			else if(a.second == 254.)	{ typ = fb::FBedf::taskType::rest; }
 			i = i + myLib::indexOfVal(mark, a.second) + 1
-//				+ 1. * freq1 /// to loose some first windows
+				+ 1. * freq1 /// to loose some first windows
 				;
 			continue;
 		}
-
 		matrix wind = dt1.subCols(i, i + suc::windLength * freq1);
-
-
 		matrix spec = myLib::countSpectre(wind, 1024, suc::numSmooth);
 		if(spec.isEmpty()) continue;
-		spec = spec.subCols(fftLimit(5., fil1.getFreq(), 1024),
-							fftLimit(20., fil1.getFreq(), 1024) + 1);
-
-
-//		std::cout << count1++ << " " << typ << " " << "L " + nm(i) << std::endl;
-		myClassifierData.push_back(spec.toVectorByRows(), typ, "L " + nm(i));
+		spec = spec.subCols(fftLimit(5., file1.getFreq(), 1024),
+							fftLimit(20., file1.getFreq(), 1024) + 1);
+		myClassifierData.push_back(spec.toVectorByRows(), int(typ), "L " + nm(i));
 	}
 
 	std::cout << "file 1 time = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 	myTime.restart();
 
+	myClassifierData.reduceSize(suc::learnSetStay);
 	myClassifierData.setApriori(myClassifierData.getClassCount());
-
-//	myClassifierData.erase(
-//				smLib::range<std::vector<uint>>
-//				(0,
-//				 myClassifierData.getData().rows() - 600));
-
 	myClassifierData.z_transform();
 
 	this->setClassifier(ModelType::NBC);
 	this->setClassifier(ModelType::ANN);
-
-	/// consts - set prelearn
-	setErrCrit(0.05);
-	setLrate(0.002);
-
-	myModel->learnAll(); /// get initial weights on train set
-	myClassifierData.reduceSize(suc::learnSetStay);
-
 	ANN * myANN = dynamic_cast<ANN *>(myModel);
-	if(!myANN) { std::cout << "Net::successiveByEDF: ANN bad cast" << std::endl; } // return?
+	if(!myANN)
+	{
+		std::cout << "Net::successiveByEDF: ANN bad cast" << std::endl;
+		return {};
+	}
 
-	myANN->writeWeight("/media/Files/Data/Feedback/SuccessClass/2.txt");
-	myANN->drawWeight("/media/Files/Data/Feedback/SuccessClass/2.txt",
-					  "/media/Files/Data/Feedback/SuccessClass/2.jpg");
+	myANN->setCritError(0.05);
+	myANN->setLrate(0.002);
+	myANN->learnAll(); /// get initial weights on train set
+	myANN->writeWeight(helpPath + "/" + file1.getExpName() + "_1.wts");
+	myANN->drawWeight(helpPath + "/" + file1.getExpName() + "_1.wts",
+					  helpPath + "/" + file1.getExpName() + "_1.jpg");
 
 	/// consts - set postlearn
-	setErrCrit(0.01);
-	setLrate(0.005);
+	myANN->setCritError(0.01);
+	myANN->setLrate(0.005);
 
 	this->passed.resize(this->myClassifierData.getNumOfCl());
 	this->passed = 0.;
 
+	const auto & markers2 = file2.getMarkers();
+	const std::valarray<double> & markArr2 = file2.getMarkArr();
+	const double freq2 = file2.getFreq();
 
-	edfFile fil2;
-	fil2.readEdfFile(edfPath2);
+	auto staIt2 = std::find_if(std::begin(markers2),
+							   std::end(markers2),
+							   [](const auto & in)
+	{ return (in.second == 241) || (in.second == 247); });
 
-	const std::valarray<double> & markers2 = fil2.getMarkArr();
-	const double freq2 = fil2.getFreq();
+	int sta2 = (*staIt2).first;
 
-	uint sta2 = std::min(
-				   myLib::indexOfVal(markers2, 241.),
-			myLib::indexOfVal(markers2, 247.)) + 1;
+	typ = fb::FBedf::taskType::rest;
+	if((*staIt2).second == 241.)		{ typ = fb::FBedf::taskType::spat; }
+	else if((*staIt2).second == 247.)	{ typ = fb::FBedf::taskType::verb; }
 
-	typ = -1;
-	if(markers2[sta2 - 1] == 241.) typ = 0;
-	else if(markers2[sta2 - 1] == 247.) typ = 1;
+	matrix dt2 = file2.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
 
-	matrix dt2 = fil2.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1)); /// EEG only
-	for(uint i = sta2; i < dt2.cols() - suc::windLength * freq2; i += freq2 * suc::shiftTest)
+	for(int i = sta2; i < dt2.cols() - suc::windLength * freq2; i += freq2 * suc::shiftTest)
 	{
-		auto mark = smLib::contSubsec(markers2, i, i + suc::windLength * freq2);
+		auto mark = smLib::contSubsec(markArr2, i, i + suc::windLength * freq2);
 
 		std::pair<bool, double> a = myLib::contains(mark, std::vector<double>{241., 247., 254.});
 		if(a.first)
 		{
-			if(a.second == 241.) typ = 0;
-			else if(a.second == 247.) typ = 1;
-			else if(a.second == 254.) typ = 2;
+			if(a.second == 241.)		{ typ = fb::FBedf::taskType::spat; }
+			else if(a.second == 247.)	{ typ = fb::FBedf::taskType::verb; }
+			else if(a.second == 254.)	{ typ = fb::FBedf::taskType::rest; }
 			i = i + myLib::indexOfVal(mark, a.second) + 1;
 			continue;
 		}
 		matrix wind = dt2.subCols(i, i + suc::windLength * freq2);
-
 		matrix spec = myLib::countSpectre(wind, 1024, suc::numSmooth);
 		if(spec.isEmpty()) continue;
-		spec = spec.subCols(fftLimit(5., fil2.getFreq(), 1024),
-							fftLimit(20., fil2.getFreq(), 1024) + 1);
+		spec = spec.subCols(fftLimit(5., file2.getFreq(), 1024),
+							fftLimit(20., file2.getFreq(), 1024) + 1);
 
-
-//		std::cout << count2++ << " " << typ << " " << "T " + nm(i) << std::endl;
-		successiveLearning(spec.toVectorByRows(), typ, "T " + nm(i));
-
+		successiveLearning(spec.toVectorByRows(), int(typ), "T " + nm(i));
 	}
 	std::cout << "file 2 time = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 
 	return myModel->averageClassification();
 }
+
+/// with correctness, etc
+Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QString & ansPath1,
+											 const QString & edfPath2, const QString & ansPath2)
+{
+	def::fftLength = 1024;
+	fb::FBedf file1(edfPath1, ansPath1);
+	fb::FBedf file2(edfPath2, ansPath2);
+
+	const auto & markers1 = file1.getMarkers();
+	const auto & markArr1 = file1.getMarkArr();
+	const double freq1 = file1.getFreq();
+
+	auto staIt1 = std::find_if(std::begin(markers1),
+							   std::end(markers1),
+							   [](const auto & in)
+	{ return (in.second == 241) || (in.second == 247); });
+
+	int sta1 = (*staIt1).first;
+
+	fb::FBedf::taskType typ = fb::FBedf::taskType::rest;
+	if((*staIt1).second == 241.)		{ typ = fb::FBedf::taskType::spat; }
+	else if((*staIt1).second == 247.)	{ typ = fb::FBedf::taskType::verb; }
+
+	myClassifierData = ClassifierData();
+
+	matrix dt1 = file1.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
+
+	for(uint i = sta1; i < dt1.cols() - suc::windLength * freq1; i += freq1 * suc::shiftLearn)
+	{
+		auto mark = smLib::contSubsec(markArr1, i, i + suc::windLength * freq1);
+		std::pair<bool, double> a = myLib::contains(mark, std::vector<double>{241., 247., 254.});
+		if(a.first)
+		{
+			if(a.second == 241.)		{ typ = fb::FBedf::taskType::spat; }
+			else if(a.second == 247.)	{ typ = fb::FBedf::taskType::verb; }
+			else if(a.second == 254.)	{ typ = fb::FBedf::taskType::rest; }
+			i = i + myLib::indexOfVal(mark, a.second) + 1
+				+ 1. * freq1 /// to loose some first windows
+				;
+			continue;
+		}
+		matrix wind = dt1.subCols(i, i + suc::windLength * freq1);
+		matrix spec = myLib::countSpectre(wind, 1024, suc::numSmooth);
+		if(spec.isEmpty()) continue;
+		spec = spec.subCols(fftLimit(5., file1.getFreq(), 1024),
+							fftLimit(20., file1.getFreq(), 1024) + 1);
+		myClassifierData.push_back(spec.toVectorByRows(), int(typ), "L " + nm(i));
+	}
+
+
+	myClassifierData.reduceSize(suc::learnSetStay);
+	myClassifierData.setApriori(myClassifierData.getClassCount());
+	myClassifierData.z_transform();
+
+//	std::cout << "learn data size = " << myClassifierData.getData().size() << std::endl;
+
+	this->setClassifier(ModelType::NBC);
+	this->setClassifier(ModelType::ANN);
+	ANN * myANN = dynamic_cast<ANN *>(myModel);
+	if(!myANN)
+	{
+		std::cout << "Net::successiveByEDF: ANN bad cast" << std::endl;
+		return {};
+	}
+
+	myANN->setCritError(0.05);
+	myANN->setLrate(0.002);
+	myANN->learnAll(); /// get initial weights on train set
+	myANN->writeWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts");
+	myANN->drawWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts",
+					  def::helpPath + "/" + file1.getExpName() + "_init.jpg");
+
+	return {};
+
+	/// consts - set postlearn
+	myANN->setCritError(0.01);
+	myANN->setLrate(0.005);
+
+	this->passed.resize(this->myClassifierData.getNumOfCl());
+	this->passed = 0.;
+
+	QDir(def::helpPath).mkdir(def::ExpName);
+
+
+
+	const auto & markers2 = file2.getMarkers();
+	const std::valarray<double> & markArr2 = file2.getMarkArr();
+	const double freq2 = file2.getFreq();
+
+	auto staIt2 = std::find_if(std::begin(markers2),
+							   std::end(markers2),
+							   [](const auto & in)
+	{ return (in.second == 241) || (in.second == 247); });
+
+	int sta2 = (*staIt2).first;
+
+	typ = fb::FBedf::taskType::rest;
+	if((*staIt2).second == 241)		{ typ = fb::FBedf::taskType::spat; }
+	else if((*staIt2).second == 247){ typ = fb::FBedf::taskType::verb; }
+	int numTask = 0;
+
+	matrix dt2 = file2.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
+
+	matrix relearn{};
+	for(int i = sta2; i < dt2.cols() - suc::windLength * freq2; i += freq2 * suc::shiftTest)
+	{
+		auto mark = smLib::contSubsec(markArr2, i, i + suc::windLength * freq2);
+
+		std::pair<bool, double> a = myLib::contains(mark, std::vector<double>{241., 247., 254.});
+		if(a.first)
+		{
+			if(!relearn.isEmpty()) { successiveLearningFinal(relearn, int(typ)); relearn.clear(); }
+
+			if(a.second == 241.)		{ typ = fb::FBedf::taskType::spat; ++numTask; }
+			else if(a.second == 247.)	{ typ = fb::FBedf::taskType::verb; ++numTask; }
+			else if(a.second == 254.)	{ typ = fb::FBedf::taskType::rest; }
+			i = i + myLib::indexOfVal(mark, a.second) + 1;
+			continue;
+		}
+		matrix wind = dt2.subCols(i, i + suc::windLength * freq2);
+		matrix spec = myLib::countSpectre(wind, 1024, suc::numSmooth);
+		if(spec.isEmpty()) continue;
+		spec = spec.subCols(fftLimit(5., file2.getFreq(), 1024),
+							fftLimit(20., file2.getFreq(), 1024) + 1);
+
+		if(typ == fb::FBedf::taskType::rest || file2.getAns(numTask) == 1)
+		{
+			relearn.push_back(spec.toVectorByRows());
+		}
+
+	}
+	return myModel->averageClassification();
+}
+
 
 void Net::successiveProcessing()
 {
@@ -260,6 +387,44 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
 	if(numGoodNew >= suc::numGoodNewLimit)
 	{
 		myModel->successiveRelearn();
+		ANN * myANN = dynamic_cast<ANN *>(myModel);
+
+		myANN->writeWeight();
+
 		numGoodNew = 0;
 	}
+}
+
+void Net::successiveLearningFinal(const matrix & newSpectra,
+								  const int newType)
+{
+	for(const auto & in : newSpectra)
+	{
+		/// I don't care about fileNames
+		myClassifierData.addItem(in, newType, "");
+
+		/// take the last and increment confusion matrix
+		const std::pair<int, double> outType = myModel->classifyDatumLast();
+
+		if((outType.first == newType && outType.second < suc::errorThreshold)
+		   || passed[newType] < suc::learnSetStay /// add first learnSetStay windows unconditionally
+		   )
+		{
+			/// delete older row of the same type
+			myClassifierData.removeFirstItemOfType(newType);
+		}
+		else
+		{
+			myClassifierData.pop_back();
+		}
+		++passed[newType];
+	}
+	myModel->successiveRelearn();
+
+	static int wtsCounter = 0;
+
+	ANN * myANN = dynamic_cast<ANN *>(myModel);
+	myANN->writeWeight(def::helpPath
+					   + "/" + def::ExpName
+					   + "/" + def::ExpName + "_" + nm(wtsCounter++) + ".wts");
 }

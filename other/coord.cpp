@@ -64,7 +64,7 @@ double errorThreshold = 1.0;
 double inertiaCoef = std::exp(-5. / 7);
 
 double windLength = 4.;
-double shiftLearn = 0.2;
-double shiftTest = 0.2;
+double shiftLearn = 0.5;
+double shiftTest = 0.5;
 double numSmooth = 8;
 }

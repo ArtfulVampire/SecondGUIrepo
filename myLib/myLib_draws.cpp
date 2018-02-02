@@ -1006,9 +1006,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 				  const double scaling,
 				  const int lineWidth)
 {
-	QPixmap pic = templPixmap;
-	QPainter paint;
-	paint.begin(&pic);
+
 
 	QString helpString;
 	int numOfChan = inMatrix.cols() / def::spLength();
@@ -1016,18 +1014,14 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 	// test size
 	int shouldSize = numOfChan * def::spLength();
 
-	std::for_each(inMatrix.begin(),
-				  inMatrix.end(),
-				  [shouldSize](std::valarray<double> inData)
+	for(const auto & inData : inMatrix)
 	{
 		if(inData.size() > shouldSize)
 		{
 			std::cout << "drawArrays: inappropriate array size = " << inData.size() << std::endl;
-			return;
+			return templPixmap;
 		}
-	});
-
-
+	}
 
 	if(norm <= 0.)
 	{
@@ -1044,6 +1038,11 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 		}
 	}
 
+
+	QPixmap pic = templPixmap;
+	QPainter paint;
+	paint.begin(&pic);
+
 	const double graphHeight = paint.device()->height() * coords::scale;
 	const double graphWidth = paint.device()->width() * coords::scale;
 	const double graphScale = def::spLength() / graphWidth;
@@ -1056,7 +1055,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 
 	const double normBC = norm;
 
-	for(int c2 = 0; c2 < BaklushevChans; ++c2)  // exept markers channel
+	for(int c2 = 0; c2 < numOfChan; ++c2)
 	{
 		const double Y = paint.device()->height() * coords::y[c2];
 		const double X = paint.device()->width() * coords::x[c2];

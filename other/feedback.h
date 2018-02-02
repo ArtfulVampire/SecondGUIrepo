@@ -20,6 +20,9 @@ private:
 	/// [type][numReal]
 	std::vector<std::vector<int>> ans;
 
+	/// [numReal]
+	std::vector<int> ansRow;
+
 	/// [type][numOfReal] = spectre
 	std::vector<std::vector<matrix>> realsSpectra;
 
@@ -53,6 +56,8 @@ public:
 	QPixmap kdeForSolvTime(taskType typ);
 	QPixmap verbShortLong(double thres);		/// spectra of short and long anagramms
 
+	int getAns(int i) { return ansRow[i]; }
+
 private:
 	std::vector<double> freqs;
 	std::vector<int> readAns(const QString & ansPath);
@@ -60,8 +65,6 @@ private:
 };
 
 
-/// accuracy, part of frame presence. Weights save inside. Add thresholds.
-std::pair<double, double> imitateFB(const QString & edfPath1, const QString & edfPath2);
 
 
 /// feedback

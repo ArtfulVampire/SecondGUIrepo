@@ -25,15 +25,15 @@ namespace fb
 FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 {
 	this->readEdfFile(edfPath);
-	auto tempAns = this->readAns(ansPath);
 
 	/// arrange ans
+	this->ansRow = this->readAns(ansPath);
 	this->ans.resize(2);
 	int c = 0;
 	for(auto mrk : this->markers)
 	{
-		if(mrk.second == 241) { this->ans[0].push_back(tempAns[c++]); }
-		else if(mrk.second == 247)  { this->ans[1].push_back(tempAns[c++]); }
+		if(mrk.second == 241) { this->ans[0].push_back(this->ansRow[c++]); }
+		else if(mrk.second == 247)  { this->ans[1].push_back(this->ansRow[c++]); }
 	}
 
 	/// divide to reals
@@ -61,6 +61,7 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 		}
 	}
 
+	/// make freqs vector
 	freqs.clear();
 	for(int i = std::floor(this->leftFreq / this->spStep);
 		i < std::ceil(this->rightFreq/this->spStep);
@@ -183,8 +184,8 @@ QPixmap FBedf::verbShortLong(double thres)
 	std::vector<matrix> lngs;
 	for(int i = 0; i < solvTime[1].size(); ++i)
 	{
-		if(solvTime[1][i] > thres) { lngs.push_back(realsSpectra[1][i]);	}
-		else { shrts.push_back(realsSpectra[1][i]); }
+		if(solvTime[1][i] > thres)	{ lngs.push_back(realsSpectra[1][i]);	}
+		else						{ shrts.push_back(realsSpectra[1][i]);	}
 	}
 
 	matrix shrt	= shrts[0];	shrt.fill(0.);
