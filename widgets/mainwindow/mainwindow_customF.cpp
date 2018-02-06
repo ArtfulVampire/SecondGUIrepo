@@ -26,17 +26,13 @@ void MainWindow::customFunc()
 
 //	return;
 
-//	std::cout << myLib::binomialOneTailed(133, 186, 360) << std::endl;
-//	std::cout << myLib::binomialOneTailed(142, 170, 320) << std::endl;
+//	const QString wrk = def::dataFolder + "/FeedbackFinalMark/Avdeev";
+//	Net * net = new Net();
+//	net->successiveByEDFfinal(wrk + "/AKV_1_fin.edf",
+//							  wrk + "/AKV_ans1.txt",
+//							  wrk + "/AKV_2_fin.edf",
+//							  wrk + "/AKV_ans2.txt");
 //	exit(0);
-
-	const QString wrk = def::dataFolder + "/FeedbackFinalMark/Avdeev";
-	Net * net = new Net();
-	net->successiveByEDFfinal(wrk + "/AKV_1_fin.edf",
-							  wrk + "/AKV_ans1.txt",
-							  wrk + "/AKV_2_fin.edf",
-							  wrk + "/AKV_ans2.txt");
-	exit(0);
 
 #if 0
 	/// check marks
@@ -246,7 +242,7 @@ void MainWindow::customFunc()
 
 //	return;
 
-	QString guy = "Ira2";
+	QString guy = "Victor3";
 //	for(QString guy : guyList)
 //	for(QString guy : vrList)
 	{
@@ -277,20 +273,25 @@ void MainWindow::customFunc()
 		}
 		if(0)
 		{
-			/// filter eeg 0.5-70, notch 45-55
-			autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
-
-			autos::IITPconcat(guy, "_eeg_new", "_emg");				/// if cleaned init eeg
-//			autos::IITPconcat(guy, "_eeg", "_emg");				/// if NOT cleaned init eeg
+			if(01)
+			{
+				/// filter eeg 0.5-70, notch 45-55
+//				autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
+				autos::IITPconcat(guy, "_eeg_new", "_emg");				/// if cleaned init eeg
+			}
+			else
+			{
+//				autos::IITPconcat(guy, "_eeg", "_emg");				/// if NOT cleaned init eeg
+			}
 			return; /// manual sync
 		}
 		/// copy files to SYNCED
 //		return;
 		if(01)
 		{
-//			autos::IITPstaging(guy);							/// flex/extend markers
-//			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
-//			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
+			autos::IITPstaging(guy);							/// flex/extend markers
+			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
+			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
 			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
 //			continue;
