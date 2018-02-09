@@ -35,6 +35,7 @@ std::valarray<double> oneHot(uint siz, uint hotIndex);
 
 } /// end of namespace clLib
 
+
 class Classifier
 {
 public:
@@ -112,7 +113,6 @@ protected:
 	std::pair<uint, double> classifyDatum(uint vecNum); // return class and error, effect on confMat
 	virtual void classifyDatum1(uint vecNum) = 0;		// just count outputLayer
 	void classifyDatumLast1();
-
 };
 
 

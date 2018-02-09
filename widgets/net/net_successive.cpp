@@ -10,11 +10,6 @@ using namespace myOut;
 Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString & ansPath1,
 										const QString & edfPath2, const QString & ansPath2)
 {
-	const QString helpPath = def::dataFolder + "/FeedbackFinalMark/Help";
-
-	QTime myTime;
-	myTime.start();
-
 	fb::FBedf file1(edfPath1, ansPath1);
 	fb::FBedf file2(edfPath2, ansPath2);
 
@@ -53,9 +48,10 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 		}
 		matrix wind = dt1.subCols(i, i + suc::windLength * freq1);
 		matrix spec = myLib::countSpectre(wind, 1024, suc::numSmooth);
+
 		if(spec.isEmpty()) continue;
-		spec = spec.subCols(fftLimit(5., file1.getFreq(), 1024),
-							fftLimit(20., file1.getFreq(), 1024) + 1);
+		spec = spec.subCols(fftLimit(5., freq1, 1024),
+							fftLimit(20., freq1, 1024) + 1);
 		myClassifierData.push_back(spec.toVectorByRows(), int(typ), "L " + nm(i));
 	}
 
@@ -79,9 +75,9 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 	myANN->setCritError(0.05);
 	myANN->setLrate(0.002);
 	myANN->learnAll(); /// get initial weights on train set
-	myANN->writeWeight(helpPath + "/" + file1.getExpName() + "_1.wts");
-	myANN->drawWeight(helpPath + "/" + file1.getExpName() + "_1.wts",
-					  helpPath + "/" + file1.getExpName() + "_1.jpg");
+	myANN->writeWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts");
+	myANN->drawWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts",
+					  def::helpPath + "/" + file1.getExpName() + "_init.jpg");
 
 	/// consts - set postlearn
 	myANN->setCritError(0.01);
@@ -89,6 +85,8 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 
 	this->passed.resize(this->myClassifierData.getNumOfCl());
 	this->passed = 0.;
+
+
 
 	const auto & markers2 = file2.getMarkers();
 	const std::valarray<double> & markArr2 = file2.getMarkArr();
@@ -123,13 +121,11 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 		matrix wind = dt2.subCols(i, i + suc::windLength * freq2);
 		matrix spec = myLib::countSpectre(wind, 1024, suc::numSmooth);
 		if(spec.isEmpty()) continue;
-		spec = spec.subCols(fftLimit(5., file2.getFreq(), 1024),
-							fftLimit(20., file2.getFreq(), 1024) + 1);
+		spec = spec.subCols(fftLimit(5., freq2, 1024),
+							fftLimit(20., freq2, 1024) + 1);
 
 		successiveLearning(spec.toVectorByRows(), int(typ), "T " + nm(i));
 	}
-	std::cout << "file 2 time = "
-			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 
 	return myModel->averageClassification();
 }
@@ -206,8 +202,6 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 	myANN->drawWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts",
 					  def::helpPath + "/" + file1.getExpName() + "_init.jpg");
 
-	return {};
-
 	/// consts - set postlearn
 	myANN->setCritError(0.01);
 	myANN->setLrate(0.005);
@@ -255,6 +249,7 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 		}
 		matrix wind = dt2.subCols(i, i + suc::windLength * freq2);
 		matrix spec = myLib::countSpectre(wind, 1024, suc::numSmooth);
+
 		if(spec.isEmpty()) continue;
 		spec = spec.subCols(fftLimit(5., file2.getFreq(), 1024),
 							fftLimit(20., file2.getFreq(), 1024) + 1);
@@ -263,8 +258,10 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 		{
 			relearn.push_back(spec.toVectorByRows());
 		}
-
 	}
+	myANN->writeWeight(def::helpPath + "/" + file1.getExpName() + "_last.wts");
+	myANN->drawWeight(def::helpPath + "/" + file1.getExpName() + "_last.wts",
+					  def::helpPath + "/" + file1.getExpName() + "_last.jpg");
 	return myModel->averageClassification();
 }
 
