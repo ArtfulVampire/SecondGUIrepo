@@ -54,11 +54,6 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 							fftLimit(20., freq1, 1024) + 1);
 		myClassifierData.push_back(spec.toVectorByRows(), int(typ), "L " + nm(i));
 	}
-
-	std::cout << "file 1 time = "
-			  << myTime.elapsed() / 1000. << " sec" << std::endl;
-	myTime.restart();
-
 	myClassifierData.reduceSize(suc::learnSetStay);
 	myClassifierData.setApriori(myClassifierData.getClassCount());
 	myClassifierData.z_transform();
