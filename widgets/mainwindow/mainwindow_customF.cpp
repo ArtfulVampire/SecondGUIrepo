@@ -24,16 +24,6 @@ void MainWindow::customFunc()
 //	testSuccessive();
 //	exit(0);
 
-	return;
-
-//	const QString wrk = def::dataFolder + "/FeedbackFinalMark/Avdeev";
-//	Net * net = new Net();
-//	net->successiveByEDFfinal(wrk + "/AKV_1_fin.edf",
-//							  wrk + "/AKV_ans1.txt",
-//							  wrk + "/AKV_2_fin.edf",
-//							  wrk + "/AKV_ans2.txt");
-//	exit(0);
-
 	/// feedback successive
 //	const QString wrk = def::dataFolder + "/FeedbackFinalMark/Avdeev";
 //	Net * net = new Net();
@@ -43,15 +33,45 @@ void MainWindow::customFunc()
 //							  wrk + "/AKV_ans2.txt");
 //	exit(0);
 
+//	return;
 #if 0
 	/// check marks
-	const QString path = QString("/media/Files/Data/FeedbackFinalMark/")
-						 + "Parshikov";
-	for(QString fl : QDir(path).entryList(def::edfFilters))
+	const QString path = QString("/media/Files/Data/FeedbackNewMark/");
+	for(const QString & subdir : QDir(path).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
-		fb::checkMarkFBfinal(path + "/" + fl);
+		for(QString fl : QDir(path + "/" + subdir).entryList({"*_good.edf", "*_good.EDF"}))
+		{
+			fb::checkMarkFBfinal(path + "/" + subdir + "/" + fl);
+		}
 	}
-	return;
+	exit(0);
+#endif
+
+
+#if 01
+	/// count correctness and average times
+	for(auto in : subj::guysFBnew)
+//	for(auto in : subj::guysFBfinal)
+//	std::pair<QString, QString> in{"Parshikov", "PNU"};
+	{
+		const QString guyPath = def::dataFolder
+//								+ "/FeedbackFinalMark/"
+								+ "/FeedbackNewMark/"
+								+ in.first;
+
+		if(!QDir(guyPath).exists()) { continue; }
+
+//		fb::FeedbackClass fb(guyPath, in.second, "_new");
+		fb::FeedbackClass fb(guyPath, in.second, "_good");
+		std::cout << in.second << "\t";
+		fb.countTimes();
+		fb.checkStat();		/// cout inside
+		fb.writeFile();
+
+//		fb::feedbackFinalTimes(guyPath, in.second);
+//		fb::timesSolving(guyPath, in.second);
+//		fb::checkStatResults(guyPath, in.second);
+	}
 	exit(0);
 #endif
 
@@ -67,31 +87,6 @@ void MainWindow::customFunc()
 		QString out = tmp.absolutePath() + "/" + picPath;
 		out.replace(".jpg", "_cut.jpg");
 		cut.save(out, 0, 100);
-	}
-	exit(0);
-#endif
-
-#if 0
-	/// count correctness and average times
-//	for(auto in : subj::guysFBnew)
-	for(auto in : subj::guysFBfinal)
-//	std::pair<QString, QString> in{"Parshikov", "PNU"};
-	{
-		const QString guyPath = def::dataFolder
-								+ "/FeedbackFinalMark/"
-								+ in.first;
-
-		if(!QDir(guyPath).exists()) { continue; }
-
-		fb::FeedbackClass fb(guyPath, in.second, "_new");
-		std::cout << in.second << "\t";
-		fb.countTimes();
-		fb.checkStat();
-		fb.writeFile();
-
-//		fb::feedbackFinalTimes(guyPath, in.second);
-//		fb::timesSolving(guyPath, in.second);
-//		fb::checkStatResults(guyPath, in.second);
 	}
 	exit(0);
 #endif
