@@ -114,6 +114,7 @@ Cut::Cut() :
 	ui->backwardFrameButton->setShortcut(QKeySequence::Back);
 	ui->forwardFrameButton->setShortcut(tr("e"));
 	ui->backwardFrameButton->setShortcut(tr("q"));
+	ui->linearApproxPushButton->setShortcut(tr("l"));
 
 	/// files
 	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browseSlot()));
@@ -435,11 +436,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 					}
 					return true;
 				}
-			}
-			else if(keyEvent->key() == Qt::Key_L)
-			{
-				this->linearApproxSlot();
-				return true;
 			}
 			break;
 		}

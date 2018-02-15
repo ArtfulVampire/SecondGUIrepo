@@ -578,6 +578,24 @@ void Cut::linearApprox(int lef, int rig, std::vector<int> chanList)
 		chanList = smLib::range<decltype(chanList)>(0, dataCutLocal.rows());
 	}
 
+	/// addUndo
+	if(1)
+	{
+		undoData.push_back(dataCutLocal.subCols(lef, rig));
+		auto undoAction = [lef, chanList, this]()
+		{
+			for(int k : chanList) /// don't affect markers def::nsWOM()
+			{
+				std::copy(std::begin(undoData.back()[k]),
+						  std::end(undoData.back()[k]),
+						  std::begin(dataCutLocal[k]) + lef);
+			}
+			undoData.pop_back();
+		};
+		undoActions.push_back(undoAction);
+	}
+
+
 	for(int ch : chanList)
 	{
 		const double coeff = (dataCutLocal[ch][rig] - dataCutLocal[ch][lef]) / (rig - lef);
@@ -596,7 +614,7 @@ void Cut::linearApproxSlot()
 	const int rig = ui->rightLimitSpinBox->value();
 
 
-	std::vector<int> chanList;
+	std::vector<int> chanList{};
 	for(int i = 0; i < dataCutLocal.rows(); ++i)
 	{
 		if(ui->linearApproxAllEegCheckBox->isChecked()
@@ -622,9 +640,14 @@ void Cut::linearApproxSlot()
 		chanList.push_back(ui->color3SpinBox->value());
 	}
 
-	this->linearApprox(lef, rig, chanList);
+	/// if chanList.empty() - approx all channels
+
+
 	logAction("linearApprox", lef, rig, chanList);
+	this->linearApprox(lef, rig, chanList);
+	resetLimits();
 	paint();
+	ui->scrollArea->setFocus();
 }
 
 template void Cut::logAction(const QString & in);

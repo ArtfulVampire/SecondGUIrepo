@@ -48,7 +48,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 01
+#if 0
 	/// count correctness and average times
 
 
@@ -176,6 +176,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+
 #if 0
 	/// IITP invert channels
 	const QString toInvert{"Knee_l"};
@@ -197,7 +198,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 		"Alex",		//
@@ -234,9 +235,9 @@ void MainWindow::customFunc()
 //	autos::IITPfilter("Levik", "_sum_new", false, false, true);			/// rewrites _sum_new.edf
 //	exit(0);
 
-//	return;
+	return;
 
-	QString guy = "Victor3";
+	QString guy = "Alex2";
 //	for(QString guy : guyList)
 //	for(QString guy : vrList)
 	{
@@ -270,7 +271,7 @@ void MainWindow::customFunc()
 			if(01)
 			{
 				/// filter eeg 0.5-70, notch 45-55
-//				autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
+				autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
 				autos::IITPconcat(guy, "_eeg_new", "_emg");				/// if cleaned init eeg
 			}
 			else
