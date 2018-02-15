@@ -5,10 +5,12 @@
 namespace fb
 {
 
+enum class taskType : int {spat = 0, verb = 1};
+enum class fileNum  : int {first = 0, third = 1};
+enum class ansType  : int {skip = 0, right = 1, wrong = 2, answrd = 3, all = 4};
+
 class FBedf : public edfFile
 {
-public:
-	enum class taskType : int {spat = 0, verb = 1, rest = 2};
 private:
 
 	/// [type][numReal] = realMatrix
@@ -26,19 +28,7 @@ private:
 	/// [type][numOfReal] = spectre
 	std::vector<std::vector<matrix>> realsSpectra;
 
-
-	/// from 0 - for dispersion, distance, etc
-	const std::vector<int> chansToProcess{
-//		0, 1,		// Fp1,	Fp2
-//		2, 6,		// F7,	F8
-		3, 4, 5,	// F3,	Fz,	F4
-//		7, 11,		// T3, T4
-		8, 9, 10,	// C3,	Cz,	C4
-//		12, 16,		// T5,	T6
-		13, 14, 15,	// P3,	Pz,	P4
-//		17, 18		// O1,	O2
-	};
-
+	static const std::vector<int> chansToProcess;
 	static const int numTasks = 40;
 	static constexpr double spStep = 250. / 4096.;
 	static constexpr double leftFreq = 5.;
@@ -47,6 +37,7 @@ private:
 
 public:
 	/// solvTime? ans spectre inside
+	FBedf() {}
 	FBedf(const QString & edfPath, const QString & ansPath);
 
 	double spectreDispersion(taskType typ);
@@ -56,7 +47,14 @@ public:
 	QPixmap kdeForSolvTime(taskType typ);
 	QPixmap verbShortLong(double thres);		/// spectra of short and long anagramms
 
+	///for FeedbackClass [taskType][taskNum][ansType, time]
+	std::vector<std::vector<std::pair<int, double>>> solvTimesTransform();
+
 	int getAns(int i) { return ansRow[i]; }
+
+	/// FeedbackClass interface
+	std::valarray<double> getTimes(taskType typ, ansType howSolved);
+	int getNum(taskType typ, ansType howSolved);
 
 private:
 	std::vector<double> freqs;
@@ -68,41 +66,35 @@ private:
 
 
 /// feedback
+/// includes both 1st and 3rd files
 class FeedbackClass
 {
 public:
+
 	FeedbackClass() {}
+
 	FeedbackClass(const QString & guyPath_,
 				  const QString & guyName_,
-				  const QString & postfix_)
-		: guyPath(guyPath_), guyName(guyName_), postfix(postfix_) {}
+				  const QString & postfix_);
+
 	~FeedbackClass() {}
 
-	enum class taskType : int {spat = 0, verb = 1};
-	enum class fileNum  : int {first = 0, third = 1};
-	enum class ansType  : int {skip = 0, right = 1, wrong = 2};
 
 	void checkStat();
 	void writeFile();
 
 	void checkStatTimes(taskType in, ansType howSolved);
 	void checkStatSolving(taskType typ, ansType howSolved);
-	void countTimes();
 
 	static const int numTasks = 40;
 
 private:
-	QString ansPath(int numSes);
-	std::vector<int> readAnsFile(int numSes);
-	std::valarray<double> timesToArray(taskType in, fileNum filNum, ansType howSolved);
+	FBedf files[2];
 
 private:
 	QString guyPath;
 	QString guyName;
 	QString postfix;
-
-	std::vector<std::pair<int, double>> times[2][2]; /// [numFile][taskType][taskNum][ansType, time]
-
 };
 
 

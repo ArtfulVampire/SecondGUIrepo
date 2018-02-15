@@ -64,7 +64,6 @@ void MainWindow::customFunc()
 //		fb::FeedbackClass fb(guyPath, in.second, "_new");
 		fb::FeedbackClass fb(guyPath, in.second, "_good");
 		std::cout << in.second << "\t";
-		fb.countTimes();
 		fb.checkStat();		/// cout inside
 		fb.writeFile();
 
