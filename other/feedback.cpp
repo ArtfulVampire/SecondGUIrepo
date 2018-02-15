@@ -38,16 +38,23 @@ const std::vector<int> FBedf::chansToProcess{
 
 FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 {
+	isGood = false;
+	if(!QFile::exists(edfPath) ||
+	   !QFile::exists(ansPath))
+	{
+		return;
+	}
+
 	this->readEdfFile(edfPath);
 
 	/// arrange ans
-	this->ansRow = this->readAns(ansPath);
+	this->ansInRow = this->readAns(ansPath);
 	this->ans.resize(2);
 	int c = 0;
 	for(auto mrk : this->markers)
 	{
-		if(mrk.second == 241) { this->ans[0].push_back(this->ansRow[c++]); }
-		else if(mrk.second == 247)  { this->ans[1].push_back(this->ansRow[c++]); }
+		if(mrk.second == 241) { this->ans[0].push_back(this->ansInRow[c++]); }
+		else if(mrk.second == 247)  { this->ans[1].push_back(this->ansInRow[c++]); }
 	}
 
 	/// divide to reals
@@ -89,6 +96,7 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 	{
 		freqs.push_back(i * this->spStep);
 	}
+	isGood = true;
 }
 
 std::vector<int> FBedf::readAns(const QString & ansPath)
@@ -157,25 +165,12 @@ double FBedf::distSpec(taskType type1, taskType type2)
 
 double FBedf::insightPartOfAll(double thres)
 {
-	auto & times = solvTime[int(taskType::verb)];
-	int insight = 0;
-	std::for_each(std::begin(times), std::end(times),
-				  [&insight, thres](double in){ if(in <= thres) { ++insight; } });
-	return double(insight) / times.size();
+	return this->getInsight(thres) / this->getNum(taskType::verb, ansType::all);
 }
 
 double FBedf::insightPartOfSolved(double thres)
 {
-	auto & times = solvTime[int(taskType::verb)];
-	int insight = 0;
-	int solved = 0;
-	std::for_each(std::begin(times), std::end(times),
-				  [&insight, &solved, thres, this](double in)
-	{
-		if(in <= thres) { ++insight; }
-		if(in <= 0.98 * this->solveThres) { ++solved; }
-	});
-	return double(insight) / solved;
+	return this->getInsight(thres) / this->getNum(taskType::verb, ansType::answrd);
 }
 
 double FBedf::spectreDispersion(taskType typ)
@@ -192,7 +187,7 @@ double FBedf::spectreDispersion(taskType typ)
 	return res;
 }
 
-std::valarray<double> FBedf::getTimes(taskType typ, ansType howSolved)
+std::valarray<double> FBedf::getTimes(taskType typ, ansType howSolved) const
 {
 	std::vector<double> res;
 	if(howSolved == ansType::all)
@@ -223,7 +218,7 @@ std::valarray<double> FBedf::getTimes(taskType typ, ansType howSolved)
 	return smLib::vecToValar(res);
 }
 
-int FBedf::getNum(taskType typ, ansType howSolved)
+int FBedf::getNum(taskType typ, ansType howSolved) const
 {
 	int num = 0;
 	if(howSolved == ansType::answrd) /// not yet needed
@@ -247,6 +242,20 @@ int FBedf::getNum(taskType typ, ansType howSolved)
 	}
 	return num;
 }
+
+
+int FBedf::getInsight(double thres)
+{
+	auto & times = solvTime[int(taskType::verb)];
+	int res = 0;
+	std::for_each(std::begin(times), std::end(times),
+				  [&res, thres](double in)
+	{
+		if(in <= thres) { ++res; }
+	});
+	return res;
+}
+
 
 QPixmap FBedf::kdeForSolvTime(taskType typ)
 {
@@ -292,6 +301,7 @@ FeedbackClass::FeedbackClass(const QString & guyPath_,
 							 const QString & postfix_)
 	: guyPath(guyPath_), guyName(guyName_), postfix(postfix_)
 {
+	isGood = false;
 	auto filePath = [this](int numSes) -> QString
 	{
 		return guyPath + "/" + guyName + "_" + nm(numSes) + postfix + ".edf";
@@ -303,14 +313,21 @@ FeedbackClass::FeedbackClass(const QString & guyPath_,
 
 	for(int i : {1, 3})
 	{
-		files[int(i != 1)] = FBedf(filePath(i), ansPath(i));
+		auto & fil = files[int(i != 1)];
+		fil = FBedf(filePath(i), ansPath(i));
+		if(!fil)
+		{
+			this->isGood = false;
+			return;
+		}
 	}
+	isGood = true;
 }
 
 void FeedbackClass::checkStatTimes(taskType typ, ansType howSolved)
 {
-	std::valarray<double> vals1 = files[0].getTimes(typ, howSolved);
-	std::valarray<double> vals2 = files[1].getTimes(typ, howSolved);
+	std::valarray<double> vals1 = files[int(fileNum::first)].getTimes(typ, howSolved);
+	std::valarray<double> vals2 = files[int(fileNum::third)].getTimes(typ, howSolved);
 
 	if(0)
 	{
@@ -337,8 +354,8 @@ void FeedbackClass::checkStatTimes(taskType typ, ansType howSolved)
 
 void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 {
-	int num1 = files[0].getNum(typ, howSolved); /// solved in the  first file
-	int num2 = files[1].getNum(typ, howSolved); /// solved in the second file
+	int num1 = files[int(fileNum::first)].getNum(typ, howSolved); /// solved in the  first file
+	int num2 = files[int(fileNum::third)].getNum(typ, howSolved); /// solved in the second file
 
 	if(0)
 	{
@@ -346,7 +363,7 @@ void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 		else if(typ == taskType::verb)	{ std::cout << "verbNum:" << "\n"; }
 	}
 
-	auto a = myLib::binomialOneTailed(num1, num2, numTasks);
+	auto a = myLib::binomialOneTailed(num1, num2, FBedf::numTasks);
 	std::cout
 			<< num1 << "\t"
 			<< num2 << "\t"
@@ -359,6 +376,43 @@ void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 			   ;
 }
 
+void FeedbackClass::checkStatInsight(double thres)
+{
+	int num1 = files[int(fileNum::first)].getInsight(thres);
+	int num2 = files[int(fileNum::third)].getInsight(thres);
+	int numAll1 = files[int(fileNum::first)].getNum(taskType::verb,
+													ansType::answrd);
+	int numAll2 = files[int(fileNum::third)].getNum(taskType::verb,
+													ansType::answrd);
+
+	/// of all
+	auto a = myLib::binomialOneTailed(num1, num2, FBedf::numTasks);
+	std::cout
+			<< num1 << "\t"
+			<< num2 << "\t"
+//			<< "p-value = "
+			<< a << "\t"
+			<< (a <= 0.05) << "\t"
+//			<< "improvement = "
+//			<< std::endl
+			   ;
+
+	/// of solved
+	auto b = myLib::binomialOneTailed(num1, num2, numAll1, numAll2);
+	std::cout
+			<< num1 / double(numAll1) << "\t"
+			<< num2 / double(numAll2) << "\t"
+//			<< "p-value = "
+			<< b << "\t"
+			<< (b <= 0.05) << "\t"
+//			<< "improvement = "
+//			<< std::endl
+			   ;
+
+
+
+}
+
 void FeedbackClass::checkStat()
 {
 	std::cout << std::fixed;
@@ -368,6 +422,9 @@ void FeedbackClass::checkStat()
 		checkStatSolving(typ, ansType::right);
 		checkStatTimes(typ, ansType::right);	/// compares times of solved tasks
 	}
+	checkStatInsight(4.);
+	checkStatInsight(6.);
+
 	std::cout << std::endl;
 	std::cout << std::defaultfloat;
 }
@@ -375,7 +432,7 @@ void FeedbackClass::checkStat()
 void FeedbackClass::writeFile()
 {
 	std::ofstream outStr;
-	outStr.open((this->guyPath + "/" + this->guyName + "_timesResults_new.txt").toStdString());
+	outStr.open((this->guyPath + "/" + this->guyName + "_res.txt").toStdString());
 
 	/// write in a row:
 	/// spatial
@@ -434,6 +491,25 @@ void FeedbackClass::writeFile()
 
 
 /// other functions and autos
+void countStats(const QString & dear,
+				const std::vector<std::pair<QString, QString> > & guysList,
+				const QString & postfix)
+{
+	const QString guysPath = def::dataFolder + "/" + dear;
+
+	for(const auto & in : guysList)
+	{
+		const QString guyPath = guysPath + "/" + in.first;
+		if(!QDir(guyPath).exists()) { continue; }
+
+		fb::FeedbackClass fb(guyPath, in.second, postfix);
+		if(!fb) { continue; }
+		std::cout << in.second << "\t";
+		fb.checkStat();		/// cout inside
+		fb.writeFile();
+	}
+}
+
 void checkMarkFBfinal(const QString & filePath)
 {
 	/// checks number of 241, 247, 254 markers
@@ -457,11 +533,12 @@ void checkMarkFBfinal(const QString & filePath)
 	else
 	{
 		std::cout << "markers count is OK" << std::endl;
+		return; /// ?
 	}
 
 	std::pair<int, int> prev{0, 254};
 	int taskNum = 1;
-	for(std::pair<int, int> in : fil.getMarkers())
+	for(const std::pair<int, int> & in : fil.getMarkers())
 	{
 		/// only interesting marks
 		if(in.second != 241 && in.second != 247 && in.second != 254) { continue; }
@@ -491,261 +568,6 @@ void checkMarkFBfinal(const QString & filePath)
 	}
 }
 
-void checkStatTimesSolving(const QString & guyPath, const QString & guyName, int typ)
-{
-	/// couts statistics of solving time
-	int howSolved = 1; /// 0 - skip, 1 - correct, 2 - incorrect
-	std::valarray<double> vals1 = smLib::vecToValar(
-									  fb::timesFromFile(
-										  fb::timesPath(guyPath, guyName, 1, typ),
-										  howSolved)
-									  );
-	std::valarray<double> vals2 = smLib::vecToValar(
-									  fb::timesFromFile(
-										  fb::timesPath(guyPath, guyName, 3, typ),
-										  howSolved)
-									  );
-	if(typ == 241)		{ std::cout << "spatTime:" << "\n"; }
-	else if(typ == 247)	{ std::cout << "verbTime:" << "\n"; }
-	else				{ std::cout << "checkStatTimesSolving: bad typ = "
-									<< typ << std::endl; return; }
-
-	switch(myLib::MannWhitney(vals1, vals2, 0.05))
-	{
-	case 0: { std::cout << "not different"; break; }
-	case 1: { std::cout << "time1 > time2"; break; }
-	case 2: { std::cout << "time1 < time2"; break; }
-	default: { break; }
-	}
-	std::cout << "\t"
-			  << "av.acceleration = "
-			  << (smLib::mean(vals1) - smLib::mean(vals2)) / smLib::mean(vals1)
-			  << std::endl;
-}
-
-void checkStatResults(const QString & guyPath, const QString & guyName)
-{
-	/// couts statistics of solving - number of solved tasks and av.time
-
-	const QString timesPath = guyPath + "/" + guyName + "_timesResults.txt";
-
-	QFile inFil(timesPath);
-	if(!inFil.exists())
-	{
-		std::cout << "checkStatTimes: timesResults file not found " << guyName << std::endl;
-		return;
-	}
-	inFil.open(QIODevice::ReadOnly);
-
-	std::vector<std::vector<double>> vals(3);
-	for(int i = 0; i < 3; ++i)
-	{
-		if(inFil.atEnd())
-		{
-			std::cout << "checkStatResults: timesResults file atEnd "
-					  << guyName << " " << i << std::endl;
-			return;
-		}
-		auto lst = QString(inFil.readLine()).split("\t", QString::SkipEmptyParts);
-		bool ok{};
-		for(const QString & str : lst)
-		{
-			double val = str.toDouble(&ok);
-			if(ok) { vals[i].push_back(val); }
-			else   { vals[i].push_back(-1); }		/// for nan
-		}
-	}
-	inFil.close();
-
-	/// spatial
-	/// 0, 1, 2 - mean, median, sigma of correct
-	/// 3, 4, 5 - mean, median, sigma of incorrect
-	/// 6, 7, 8 - mean, median, sigma of answered
-	/// 9, 10, 11 - correct, incorrect, not answered
-	/// verbal
-	/// 12, 13, 14 - mean, median, sigma of correct
-	/// 15, 16, 17 - mean, median, sigma of incorrect
-	/// 18, 19, 20 - mean, median, sigma of answered
-	/// 21, 22, 23 - correct, incorrect, not answered
-
-
-	std::cout << std::fixed;
-	std::cout.precision(2);
-
-	std::cout << guyName << std::endl;
-
-	/// SPAT
-	std::cout << "spatNum:" << "\n"
-			  << "p-value = " <<  myLib::binomialOneTailed(vals[0][9], vals[2][9], 40)
-			<< "\t" << "improvement = " << (vals[2][9] - vals[0][9]) / vals[0][9]
-			<< std::endl << std::endl;
-	fb::checkStatTimesSolving(guyPath, guyName, 241); std::cout << std::endl;
-
-
-
-	/// VERB
-	std::cout << "verbNum:" << "\n"
-			  << "p-value = " <<  myLib::binomialOneTailed(vals[0][21], vals[2][21], 40)
-			<< "\t" << "improvement = " << (vals[2][21] - vals[0][21]) / vals[0][21]
-			<< std::endl << std::endl;
-	fb::checkStatTimesSolving(guyPath, guyName, 247);
-
-
-	std::cout << std::endl;
-	std::cout << std::defaultfloat;
-
-
-}
-
-void feedbackFinalTimes(const QString & guyPath,
-						const QString & guyName,
-						const QString & postfix)
-{
-	/// creates timesResults.txt file
-	/// spatial
-	/// 0, 1, 2 - mean, median, sigma of correct
-	/// 3, 4, 5 - mean, median, sigma of incorrect
-	/// 6, 7, 8 - mean, median, sigma of answered
-	/// 9, 10, 11 - correct, incorrect, not answered
-	/// verbal
-	/// 12, 13, 14 - mean, median, sigma of correct
-	/// 15, 16, 17 - mean, median, sigma of incorrect
-	/// 18, 19, 20 - mean, median, sigma of answered
-	/// 21, 22, 23 - correct, incorrect, not answered
-
-	std::ofstream outStr;
-	outStr.open((guyPath + "/" + guyName + "_timesResults.txt").toStdString());
-
-	for(int numSess : {1, 2, 3})
-	{
-		auto filePath = [guyPath, guyName, postfix](int i) -> QString
-		{
-			return guyPath + "/" + guyName + "_" + nm(i) + postfix + ".edf";
-		};
-
-		if(!QFile::exists(filePath(numSess)))
-		{
-			std::cout << "feedbackFinalTimes: file not found - " << filePath(numSess) << std::endl;
-			continue;
-			return;
-		}
-
-		edfFile fil;
-		fil.readEdfFile(filePath(numSess));
-
-		const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
-
-		std::vector<int> nums = {241, 247};
-		int sta = 0;
-//		int fin = 0;
-		int num = -1;
-
-		/// [time, corr, type]
-		std::vector<std::tuple<double, int, int>> values; values.reserve(80);
-
-		/// read answers file
-		std::vector<int> corrs; corrs.reserve(80);
-		std::ifstream answers;
-		const QString ansPath = guyPath + "/" + guyName + "_ans" + nm(numSess) + ".txt";
-		if(!QFile::exists(ansPath))
-		{
-			std::cout << "feedbackFinalTimes: file not found - " << ansPath << std::endl;
-			continue;
-			return;
-		}
-		answers.open(ansPath.toStdString());
-		char ans;
-		while(answers >> ans)
-		{
-			if(ans == '\n' || ans == '\r') answers >> ans;
-			corrs.push_back(QString(ans).toInt());
-		}
-		answers.close();
-
-		int count = 0;
-		for(const std::pair<int, int> & mrk : markers)
-		{
-			int mark = mrk.second;
-
-			if(myLib::contains(nums, mark))
-			{
-				sta = mrk.first;
-				num = (mark == 241) ? 0 : 1;
-			}
-			else if(mark == 254)
-			{
-				values.push_back(std::make_tuple(mrk.first - sta,
-												 corrs[count++],
-												 num)
-								 );
-			}
-		}
-//		std::cout << values.size() << std::endl;
-
-//		for(auto in : values)
-//		{
-//			std::cout << std::get<0>(in) << "\t" // time
-//					  << std::get<1>(in) << "\t" // corr
-//					  << std::get<2>(in) << "\t" // type
-//					  << std::endl;
-//		}
-//		return;
-
-		/// write in a row:
-		/// spatial
-		/// 0, 1, 2 - mean, median, sigma of correct
-		/// 3, 4, 5 - mean, median, sigma of incorrect
-		/// 6, 7, 8 - mean, median, sigma of answered
-		/// 9, 10, 11 - correct, incorrect, not answered
-		/// verbal
-		/// 12, 13, 14 - mean, median, sigma of correct
-		/// 15, 16, 17 - mean, median, sigma of incorrect
-		/// 18, 19, 20 - mean, median, sigma of answered
-		/// 21, 22, 23 - correct, incorrect, not answered
-
-		for(int typ : {0, 1}) /// 241, 247
-		{
-
-			outStr << std::fixed;
-			outStr.precision(1);
-
-			for(std::vector<int> anss :
-				std::vector<std::vector<int>>{{1}, {2}, {1,2}}) /// corr, incorr, answrd
-			{
-				std::vector<double> vals{};
-
-				std::for_each(std::begin(values),
-							  std::end(values),
-							  [&vals, typ, anss](const auto & in)
-				{
-					if(std::get<2>(in) == typ && myLib::contains(anss, std::get<1>(in)))
-					{
-						vals.push_back(std::get<0>(in));
-					}
-				});
-				auto vl = smLib::vecToValar(vals);
-				vl /= fil.getFreq();
-				outStr << smLib::mean(vl) << "\t"
-					   << smLib::median(vl) << "\t"
-					   << smLib::sigma(vl) << "\t";
-			}
-			outStr << std::defaultfloat;
-
-			for(int ans : {1, 2, 0}) /// corr, incorr, skipped
-			{
-				outStr << std::count_if(std::begin(values),
-										std::end(values),
-										[typ, ans](const auto & in)
-				{
-					return (std::get<2>(in) == typ) && (std::get<1>(in) == ans);
-				})
-					   << "\t";
-			}
-		}
-		outStr << "\r\n";
-	}
-	outStr.close();
-}
 
 void createAnsFiles(const QString & guyPath, QString guyName)
 {
@@ -757,129 +579,6 @@ void createAnsFiles(const QString & guyPath, QString guyName)
 	}
 }
 
-QString timesPath(const QString & guyPath,
-				  const QString & guyName,
-				  int numSes,
-				  int typ)
-{
-	return guyPath + "/"
-			+ guyName + "_times_"
-			+ nm(numSes) + "_"
-			+ nm(typ) + ".txt";
-}
-
-void timesSolving(const QString & guyPath,
-				  const QString & guyName,
-				  const QString & postfix)
-{
-	/// creates times files with correctness and solving time
-
-	for(int numSession : {1, 3})
-	{
-		const QString filePath = guyPath + "/"
-							  + guyName + "_" + nm(numSession) + postfix + ".edf";
-		if(!QFile::exists(filePath))
-		{
-			std::cout << "timesSolving: edf file not found - " << filePath << std::endl;
-			continue;
-			return;
-		}
-
-		edfFile fil;
-		fil.readEdfFile(filePath);
-		const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
-
-
-
-
-		int sta = 0;
-		int fin = 0;
-
-		const std::vector<int> nums = {241, 247};
-		int typ = -1;
-
-		/// remove old times files
-		for(int i : nums)
-		{
-			QFile::remove(fb::timesPath(guyPath, guyName, numSession, i));
-		}
-
-		std::ifstream answers;
-		const QString ansPath = guyPath
-								+ "/" + guyName + "_ans"
-								+ nm(numSession) + ".txt";
-		if(!QFile::exists(ansPath))
-		{
-			std::cout << "timesSolving: ans file not found - " << ansPath << std::endl;
-			continue;
-			return;
-		}
-
-		answers.open(ansPath.toStdString());
-
-		std::ofstream out;
-		for(const std::pair<int, int> & mrk : markers)
-		{
-			int mark = mrk.second;
-
-			if(mark == nums[0] || mark == nums[1])
-			{
-				sta = mrk.first;
-
-				if(mark == 241) typ = 0;
-				else typ = 1;
-			}
-			else if(mark == 254)
-			{
-				fin = mrk.first;
-
-				char ans;
-				answers >> ans;
-				if(ans == '\n' || ans == '\r') answers >> ans; /// skip bad symbols
-
-				out.open((fb::timesPath(guyPath, guyName, numSession, nums[typ])).toStdString(), std::ios_base::app);
-				out << ans << "\t"
-					<< (fin - sta) / fil.getFreq() << "\r\n";
-				out.close();
-			}
-		}
-		answers.close();
-	}
-}
-
-std::vector<double> timesFromFile(const QString & timesPath, int howSolved)
-{
-	/// data from times file into vector
-
-	QFile fil(timesPath);
-	if(!fil.exists())
-	{
-		std::cout << "timesFromFile: file not found " << timesPath << std::endl;
-		return {};
-	}
-	fil.open(QIODevice::ReadOnly);
-
-	std::vector<double> res;
-
-	int numRead = 0;
-	while(!fil.atEnd())
-	{
-		QString A = fil.readLine();
-		if(A.isEmpty()) { break; }
-		++numRead;
-		QStringList lst = A.split("\t", QString::SkipEmptyParts);
-
-		if(lst[0].toInt() == howSolved)
-		{
-			res.push_back(lst[1].toDouble());
-		}
-	}
-//	std::cout << "timesFromFile: num lines read = " << numRead << std::endl;
-	fil.close();
-	return res;
-}
-
-
 
 /// CHECK, what it does
 void repairMarkersInNewFB(QString edfPath, int numSession)
@@ -889,7 +588,7 @@ void repairMarkersInNewFB(QString edfPath, int numSession)
 	edfFile fil;
 	fil.readEdfFile(edfPath);
 
-	const std::valarray<double> & mrk = fil.getData()[fil.getMarkChan()];
+	const std::valarray<double> & mrk = fil.getMarkArr();
 	std::vector<int> marks;
 
 	bool startFlag = true;

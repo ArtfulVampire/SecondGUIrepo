@@ -24,9 +24,9 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 
 	int sta1 = (*staIt1).first;
 
-	fb::FBedf::taskType typ = fb::FBedf::taskType::rest;
-	if((*staIt1).second == 241.)		{ typ = fb::FBedf::taskType::spat; }
-	else if((*staIt1).second == 247.)	{ typ = fb::FBedf::taskType::verb; }
+	fb::taskType typ = fb::taskType::rest;
+	if((*staIt1).second == 241.)		{ typ = fb::taskType::spat; }
+	else if((*staIt1).second == 247.)	{ typ = fb::taskType::verb; }
 
 	myClassifierData = ClassifierData();
 
@@ -38,9 +38,9 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 		std::pair<bool, double> a = myLib::contains(mark, std::vector<double>{241., 247., 254.});
 		if(a.first)
 		{
-			if(a.second == 241.)		{ typ = fb::FBedf::taskType::spat; }
-			else if(a.second == 247.)	{ typ = fb::FBedf::taskType::verb; }
-			else if(a.second == 254.)	{ typ = fb::FBedf::taskType::rest; }
+			if(a.second == 241.)		{ typ = fb::taskType::spat; }
+			else if(a.second == 247.)	{ typ = fb::taskType::verb; }
+			else if(a.second == 254.)	{ typ = fb::taskType::rest; }
 			i = i + myLib::indexOfVal(mark, a.second) + 1
 				+ 1. * freq1 /// to loose some first windows
 				;
@@ -94,9 +94,9 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 
 	int sta2 = (*staIt2).first;
 
-	typ = fb::FBedf::taskType::rest;
-	if((*staIt2).second == 241.)		{ typ = fb::FBedf::taskType::spat; }
-	else if((*staIt2).second == 247.)	{ typ = fb::FBedf::taskType::verb; }
+	typ = fb::taskType::rest;
+	if((*staIt2).second == 241.)		{ typ = fb::taskType::spat; }
+	else if((*staIt2).second == 247.)	{ typ = fb::taskType::verb; }
 
 	matrix dt2 = file2.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
 
@@ -107,9 +107,9 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 		std::pair<bool, double> a = myLib::contains(mark, std::vector<double>{241., 247., 254.});
 		if(a.first)
 		{
-			if(a.second == 241.)		{ typ = fb::FBedf::taskType::spat; }
-			else if(a.second == 247.)	{ typ = fb::FBedf::taskType::verb; }
-			else if(a.second == 254.)	{ typ = fb::FBedf::taskType::rest; }
+			if(a.second == 241.)		{ typ = fb::taskType::spat; }
+			else if(a.second == 247.)	{ typ = fb::taskType::verb; }
+			else if(a.second == 254.)	{ typ = fb::taskType::rest; }
 			i = i + myLib::indexOfVal(mark, a.second) + 1;
 			continue;
 		}
@@ -144,9 +144,9 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 
 	int sta1 = (*staIt1).first;
 
-	fb::FBedf::taskType typ = fb::FBedf::taskType::rest;
-	if((*staIt1).second == 241.)		{ typ = fb::FBedf::taskType::spat; }
-	else if((*staIt1).second == 247.)	{ typ = fb::FBedf::taskType::verb; }
+	fb::taskType typ = fb::taskType::rest;
+	if((*staIt1).second == 241.)		{ typ = fb::taskType::spat; }
+	else if((*staIt1).second == 247.)	{ typ = fb::taskType::verb; }
 
 	myClassifierData = ClassifierData();
 
@@ -158,9 +158,9 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 		std::pair<bool, double> a = myLib::contains(mark, std::vector<double>{241., 247., 254.});
 		if(a.first)
 		{
-			if(a.second == 241.)		{ typ = fb::FBedf::taskType::spat; }
-			else if(a.second == 247.)	{ typ = fb::FBedf::taskType::verb; }
-			else if(a.second == 254.)	{ typ = fb::FBedf::taskType::rest; }
+			if(a.second == 241.)		{ typ = fb::taskType::spat; }
+			else if(a.second == 247.)	{ typ = fb::taskType::verb; }
+			else if(a.second == 254.)	{ typ = fb::taskType::rest; }
 			i = i + myLib::indexOfVal(mark, a.second) + 1
 				+ 1. * freq1 /// to loose some first windows
 				;
@@ -219,9 +219,9 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 
 	int sta2 = (*staIt2).first;
 
-	typ = fb::FBedf::taskType::rest;
-	if((*staIt2).second == 241)		{ typ = fb::FBedf::taskType::spat; }
-	else if((*staIt2).second == 247){ typ = fb::FBedf::taskType::verb; }
+	typ = fb::taskType::rest;
+	if((*staIt2).second == 241)		{ typ = fb::taskType::spat; }
+	else if((*staIt2).second == 247){ typ = fb::taskType::verb; }
 	int numTask = 0;
 
 	matrix dt2 = file2.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
@@ -236,9 +236,9 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 		{
 			if(!relearn.isEmpty()) { successiveLearningFinal(relearn, int(typ)); relearn.clear(); }
 
-			if(a.second == 241.)		{ typ = fb::FBedf::taskType::spat; ++numTask; }
-			else if(a.second == 247.)	{ typ = fb::FBedf::taskType::verb; ++numTask; }
-			else if(a.second == 254.)	{ typ = fb::FBedf::taskType::rest; }
+			if(a.second == 241.)		{ typ = fb::taskType::spat; ++numTask; }
+			else if(a.second == 247.)	{ typ = fb::taskType::verb; ++numTask; }
+			else if(a.second == 254.)	{ typ = fb::taskType::rest; }
 			i = i + myLib::indexOfVal(mark, a.second) + 1;
 			continue;
 		}
@@ -249,7 +249,7 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 		spec = spec.subCols(fftLimit(5., file2.getFreq(), 1024),
 							fftLimit(20., file2.getFreq(), 1024) + 1);
 
-		if(typ == fb::FBedf::taskType::rest || file2.getAns(numTask) == 1)
+		if(typ == fb::taskType::rest || file2.getAns(numTask) == 1)
 		{
 			relearn.push_back(spec.toVectorByRows());
 		}

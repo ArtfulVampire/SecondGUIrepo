@@ -50,27 +50,18 @@ void MainWindow::customFunc()
 
 #if 01
 	/// count correctness and average times
-	for(auto in : subj::guysFBnew)
-//	for(auto in : subj::guysFBfinal)
-//	std::pair<QString, QString> in{"Parshikov", "PNU"};
-	{
-		const QString guyPath = def::dataFolder
-//								+ "/FeedbackFinalMark/"
-								+ "/FeedbackNewMark/"
-								+ in.first;
 
-		if(!QDir(guyPath).exists()) { continue; }
 
-//		fb::FeedbackClass fb(guyPath, in.second, "_new");
-		fb::FeedbackClass fb(guyPath, in.second, "_good");
-		std::cout << in.second << "\t";
-		fb.checkStat();		/// cout inside
-		fb.writeFile();
-
-//		fb::feedbackFinalTimes(guyPath, in.second);
-//		fb::timesSolving(guyPath, in.second);
-//		fb::checkStatResults(guyPath, in.second);
-	}
+#if 0 /// new (~10 people)
+	const QString dear = "FeedbackNewMark";
+	const auto & guysList = subj::guysFBnew;
+	const QString postfix = "_good";
+#else /// final (~16 people)
+	const QString dear = "FeedbackFinalMark";
+	const auto & guysList = subj::guysFBfinal;
+	const QString postfix = "_fin";
+#endif
+	fb::countStats(dear, guysList, postfix);
 	exit(0);
 #endif
 

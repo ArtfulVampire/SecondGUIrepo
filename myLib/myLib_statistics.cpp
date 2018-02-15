@@ -21,22 +21,22 @@ long long combination(int k, int n)
 	return int(ans);
 }
 
-double binomialOneTailed(int num1, int num2, int numAll)
+double binomialOneTailed(int num1, int num2, int numAll1, int numAll2)
 {
-	double p = num1 / double(numAll);
+	double p = num1 / double(numAll1);
+	if(numAll2 == 0) { numAll2 = numAll1; }
 
 
 	double sum = 0.;
-	for(int i = num2; i <= numAll; ++i)
+	for(int i = num2; i <= numAll2; ++i)
 	{
 		/// combination inside, too large values
-		long double a = std::pow(1. - p, numAll - i) * std::pow(p, i);
-		for(int j = 0; j < std::min(i, numAll - i); ++j)
+		long double a = std::pow(1. - p, numAll2 - i) * std::pow(p, i);
+		for(int j = 0; j < std::min(i, numAll2 - i); ++j)
 		{
-			a *= (numAll - j);
+			a *= (numAll2 - j);
 			a /= (j + 1);
 		}
-//		std::cout << a << std::endl;
 		sum += a;
 	}
 	return sum;

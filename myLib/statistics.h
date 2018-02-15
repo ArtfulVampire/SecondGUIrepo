@@ -67,7 +67,7 @@ void countRCP(QString filename,
 			  double * outMean = nullptr,
 			  double * outSigma = nullptr);
 
-double binomialOneTailed(int num1, int num2, int numAll);
+double binomialOneTailed(int num1, int num2, int numAll1, int numAll2 = 0);
 long long combination(int k, int n);
 
 }

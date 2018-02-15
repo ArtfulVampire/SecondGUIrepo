@@ -134,6 +134,8 @@ public:
 
 	edfFile & operator=(const edfFile & other)=default;
 	edfFile & operator=(edfFile && other)=default;
+
+	operator bool() { return edfData.isEmpty(); }
 	bool isEmpty() { return edfData.isEmpty(); }
 
 	/// read/write
