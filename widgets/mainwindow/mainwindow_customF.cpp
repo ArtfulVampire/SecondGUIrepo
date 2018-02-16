@@ -50,8 +50,6 @@ void MainWindow::customFunc()
 
 #if 0
 	/// count correctness and average times
-
-
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
@@ -235,7 +233,7 @@ void MainWindow::customFunc()
 //	autos::IITPfilter("Levik", "_sum_new", false, false, true);			/// rewrites _sum_new.edf
 //	exit(0);
 
-	return;
+//	return;
 
 	QString guy = "Alex2";
 //	for(QString guy : guyList)
@@ -266,12 +264,12 @@ void MainWindow::customFunc()
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
-		if(0)
+		if(01)
 		{
 			if(01)
 			{
 				/// filter eeg 0.5-70, notch 45-55
-				autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
+//				autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
 				autos::IITPconcat(guy, "_eeg_new", "_emg");				/// if cleaned init eeg
 			}
 			else

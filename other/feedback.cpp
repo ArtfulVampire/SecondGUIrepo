@@ -91,7 +91,7 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 	/// make freqs vector
 	freqs.clear();
 	for(int i = std::floor(this->leftFreq / this->spStep);
-		i < std::ceil(this->rightFreq/this->spStep);
+		i < std::ceil(this->rightFreq / this->spStep);
 		++i)
 	{
 		freqs.push_back(i * this->spStep);
@@ -102,7 +102,7 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 std::vector<int> FBedf::readAns(const QString & ansPath)
 {
 	/// read answers
-	std::vector<int> corrs; corrs.reserve(80);
+	std::vector<int> res; res.reserve(80);
 
 	std::ifstream answers;
 	answers.open(ansPath.toStdString());
@@ -115,7 +115,7 @@ std::vector<int> FBedf::readAns(const QString & ansPath)
 		bool ok{};
 		int tmp = QString(ans).toInt(&ok);
 
-		if(ok) { corrs.push_back(tmp); }
+		if(ok) { res.push_back(tmp); }
 		else
 		{
 			std::cout << "FeedbackClass::readAnsFile: wrong char in file = "
@@ -124,13 +124,14 @@ std::vector<int> FBedf::readAns(const QString & ansPath)
 	}
 	answers.close();
 
-	if(corrs.size() != 2 * numTasks)
+	if(res.size() != 2 * numTasks)
 	{
-		std::cout << "FeedbackClass::readAnsFile: wrong num of anwers = " << corrs.size()
+		std::cout << "FeedbackClass::readAnsFile: wrong num of anwers = "
+				  << res.size()
 				  << ", expected = " << 2 * numTasks << std::endl;
 	}
 
-	return corrs;
+	return res;
 }
 
 std::valarray<double> FBedf::spectralRow(taskType type, int chan, double freq)
