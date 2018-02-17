@@ -5,10 +5,94 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
 
+#include <myLib/iitp_consts.h>
+#include <myLib/iitp_variables.h>
+
 using namespace myOut;
 
 namespace autos
 {
+
+bool IITPtestInitialFiles(const QString & guyName)
+{
+	/// all eeg channels presence
+	/// Fpz, Oz absence
+	/// emg file channels - interest emg
+	/// emg file channels - interest gonios
+	return true;
+}
+
+
+std::vector<std::pair<QString, std::vector<QString>>> IITPtestEegChannels(const QString & guyDir,
+																		  const QString & postfix)
+{
+	/// check all EEG channels presence
+	std::vector<std::pair<QString, std::vector<QString>>> res;
+	const auto filesList = QDir(guyDir).entryList({"*" + postfix + ".edf"});
+	for(auto edf : filesList)
+	{
+		edfFile fil;
+		fil.readEdfFile(guyDir + "/" + edf);
+
+		std::vector<QString> absChans{};
+		for(auto chan : iitp::eegNames) /// good order
+		{
+			bool absent = true;
+			for(auto inChan : fil.getLabels())
+			{
+				if(inChan.contains(chan)) { absent = false; break; }
+			}
+			if(absent)
+			{
+				absChans.push_back(chan);
+			}
+		}
+		if(!absChans.empty())
+		{
+			res.push_back({edf, absChans});
+
+			/// cout
+			if(0)
+			{
+				std::cout << edf << ": ";
+				for(auto ch : absChans)
+				{
+					std::cout << ch << " ";
+				}
+				std::cout << std::endl;
+			}
+		}
+	}
+	return res;
+}
+
+void IITPinsertChannels(const QString & guyDir,
+						const std::vector<std::pair<QString, std::vector<QString>>> & forInsert)
+{
+	///  - make std::vector<...> of parameters, what to insert
+	/// in simpliest case - weighted sum of neighbours or just contralateral channel
+	/// USED ALGORITHM - insert previous channel by number
+	for(const auto & in : forInsert)
+	{
+		edfFile fil;
+		fil.readEdfFile(guyDir + "/" + in.first);
+		for(auto chan : in.second)
+		{
+			int num = myLib::indexOfVal(iitp::eegNames, chan);
+
+			/// should be special function, these could be also absent
+			int substit = (num == 0) ? (num + 1) : (num - 1);
+
+			edfChannel newChan = fil.getChannels(substit);
+			newChan.label.replace(iitp::eegNames[substit], iitp::eegNames[num]);
+
+			fil.insertChannel(num, fil.getData(substit), newChan);
+		}
+		fil.rewriteEdfFile();
+	}
+}
+
+
 QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 					double minFreq,
 					double maxFreq,
@@ -936,20 +1020,27 @@ void IITPrerefCAR(const QString & guyName,
 	{
 		if(!addFilter.isEmpty() && !fileName.contains(addFilter)) { continue; }
 
+//		std::cout << fileName << std::endl;
+
 		edfFile fil;
 		fil.readEdfFile(workPath + "/" + fileName);
+
 
 		/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - Ref
 		std::valarray<double> refArr(fil.getDataLen());
 		for(QString chanName : usedLabels)
 		{
+//			std::cout << chanName << " st" << std::endl;
 			int ref = fil.findChannel(chanName);
 			refArr += fil.getData(ref);
+//			std::cout << chanName << " en" << std::endl;
 		}
 		refArr /= usedLabels.size();
 
+
 		for(int i = 0; i < fil.getNs(); ++i)
 		{
+//			std::cout << i << " "; std::cout.flush();
 			auto it = std::find_if(std::begin(rerefLabels),
 								   std::end(rerefLabels),
 								   [fil, i](const QString & in)
@@ -966,6 +1057,7 @@ void IITPrerefCAR(const QString & guyName,
 				fil.setLabel(i, newLabel);
 			}
 		}
+//		std::cout << std::endl;
 		fil.writeEdfFile(workPath + "/" + fileName
 //						 .replace(".edf", "_car.edf") /// add name or not
 						 );
@@ -1058,9 +1150,9 @@ void IITPstaging(const QString & guyName,
 			{
 				for(int ch : iitp::interestGonios[fileNum])
 				{
-					std::cout << guyName << " " << iitp::gonioNames[ch] << " beg" << std::endl;
+//					std::cout << guyName << " " << iitp::gonioNames[ch] << " beg" << std::endl;
 					fil.staging(ch);
-					std::cout << guyName << " " << iitp::gonioNames[ch] << " end" << std::endl;
+//					std::cout << guyName << " " << iitp::gonioNames[ch] << " end" << std::endl;
 				}
 			}
 			filePath = ExpNamePre + postfix + "_stag" + ".edf";
@@ -1242,8 +1334,9 @@ void IITPprocessStaged(const QString & guyName,
 			/// check existence
 			if(!QFile::exists(filePath(fileNum)))
 			{
+				const auto a = filePath(fileNum);
 				std::cout << "IITPprocessStaged: file doesn't exist = "
-						  << filePath(fileNum) << std::endl;
+						  << a.mid(a.lastIndexOf("/")) << std::endl;
 				continue;
 			}
 

@@ -1,4 +1,6 @@
 #include <myLib/iitp.h>
+#include <myLib/iitp_consts.h>
+#include <myLib/iitp_variables.h>
 #include <typeinfo>
 
 #include <myLib/signalProcessing.h>
@@ -863,6 +865,121 @@ void iitpData::setFftLen(int in)
 {
 	this->fftLen = smLib::fftL(in);
 	this->spStep = this->srate / double(this->fftLen);
+}
+
+
+
+
+/// forMap
+///
+forMap::forMap(const iitp::iitpData::mscohsType & in,
+			   const iitp::iitpData & inFile,
+			   int filNum,
+			   QString typ,
+			   QString gon)
+{
+	fileNum = filNum;
+	fileType = typ;
+	gonio = gon;
+
+
+
+	fmChans.clear();
+	for(QString emgNam : iitp::forMapEmgNames)
+	{
+//			int a = inFile.findChannel(emgNam);
+//			if(a != -1)
+//			{
+//				fmChans.push_back(a);
+//			}
+		fmChans.push_back(inFile.findChannel(emgNam));
+	}
+
+	/// new 28.11.17 - EXPERIMENTAL
+//		std::cout << fmChans << std::endl;
+	forMapRanges.resize(iitp::forMapEmgNames.size());
+	for(int i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
+	{
+		if(isBad(i)) { continue; }
+
+		for(int j = 0; j < forMapRanges[i].size(); ++j) /// j ~ alpha/beta/gamma
+		{
+
+			fmRange & pewpew = forMapRanges[i][j];
+
+			pewpew.maxValZero();
+			pewpew.meanValZero();
+
+			for(int eegNum : iitp::interestEeg)
+			{
+				for(int FR = pewpew.lef(); FR < pewpew.rig(); ++FR)
+				{
+					const auto & val = in[eegNum][fmChans[i]][FR / inFile.getSpStepW()];
+					if(std::abs(val) >= 1.0)
+					{
+						std::cout << "abs(coh) > 1"
+								  << " fileNum " << fileNum
+								  << " type " << typ
+									 << " eeg " << inFile.getLabels(eegNum)
+									 << " EMG " << iitp::forMapEmgNames[i]
+									 << " freq " << FR
+									 << " rhythm " << iitp::forMapRangeNames[j]
+										<< std::endl;
+					}
+//						pewpew.meanVal[eegNum] += val;
+//						pewpew.maxVal[eegNum] = std::max(pewpew.maxVal[eegNum], val);
+
+					pewpew.setMeanVal(eegNum, val);
+					pewpew.setMaxVal(eegNum,
+									 std::max(pewpew.getMaxVal(eegNum), val));
+				}
+			}
+//				pewpew.meanVal /= pewpew.rightLim - pewpew.leftLim;
+			pewpew.meanValDivide(pewpew.rig() - pewpew.lef());
+		}
+	}
+
+	if(0)
+	{
+		std::cout << fileType << std::endl;
+		std::cout << std::fixed;
+		std::cout.precision(3);
+		for(int i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
+		{
+			for(int j = 0; j < forMapRanges[i].size(); ++j) /// j ~ alpha/beta/gamma
+			{
+				const fmRange & pewpew = forMapRanges[i][j];
+
+				std::cout << fileNum << " " << i << " " << j << " : " << std::endl;
+//					std::cout << pewpew.meanVal << std::endl;
+//					std::cout << pewpew.maxVal << std::endl;
+
+				std::cout << pewpew.getMeanVal() << std::endl;
+				std::cout << pewpew.getMaxVal() << std::endl;
+			}
+			std::cout << std::endl;
+		}
+		std::cout << std::defaultfloat;
+	}
+
+}
+
+
+bool forMap::isBad(int numEmg) const
+{
+	/// may not have such Emg channel
+	/// OR it is not interesting EMG,
+	/// i.e. the signal may be bad and coherencies weren't calced
+	///
+//		std::cout << "isGood(" << numEmg << "):" << std::endl;
+//		std::cout << "num of chan (should != -1) " << fmChans[numEmg] << std::endl;
+//		std::cout << "is emg in interest chans? " << myLib::contains(iitp::interestEmg[fileNum],
+//																	 myLib::indexOfVal(iitp::emgNames,
+//																					   iitp::forMapEmgNames[numEmg])) << std::endl;
+	return (fmChans[numEmg] == -1) ||
+			(!myLib::contains(iitp::interestEmg[fileNum],
+							 myLib::indexOfVal(iitp::emgNames,
+											   iitp::forMapEmgNames[numEmg])));
 }
 
 

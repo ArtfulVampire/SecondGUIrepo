@@ -347,6 +347,7 @@ public:
 	const QString & getHeaderRest() const { return headerRest; }
 
 	const std::vector<edfChannel> & getChannels() const { return channels; }
+	const edfChannel & getChannels(int i) const { return channels[i]; }
 
 	const QString & getFilePath() const { return filePath; }
 	const QString & getDirPath() const  { return dirPath; }

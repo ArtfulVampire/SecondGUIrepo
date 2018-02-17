@@ -138,7 +138,9 @@ other/edffile.h \
     myLib/vectr.h \
     other/subjects.h \
     other/feedback.h \
-    myLib/highlevel.h
+    myLib/highlevel.h \
+    myLib/iitp_consts.h \
+    myLib/iitp_variables.h
 
 FORMS+= mainwindow.ui \
 cut.ui \

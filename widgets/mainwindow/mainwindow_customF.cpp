@@ -197,6 +197,18 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+#if 0
+	{
+		const QString guy = "Alex2";
+		const QString guyPath = def::iitpSyncFolder + "/" + guy;
+		const QString postfix = "_sum_new";
+		auto badFiles = autos::IITPtestEegChannels(guyPath, postfix);
+		autos::IITPinsertChannels(guyPath, badFiles);
+		exit(0);
+	}
+#endif
+
+//	return;
 
 #if 01
 	/// IITP
@@ -222,20 +234,7 @@ void MainWindow::customFunc()
 	};
 
 
-	//	edfFile f;
-	//	f.readEdfFile("/media/Files/Data/iitp/Alex/Alex_05_sum_new.edf");
-	//	auto z = f.getData(0); z = 0;
-	//	for(uint emg : f.findChannels("EMG"))
-	//	{
-	//		f.setData(emg, z);
-	//	}
-	//	f.writeEdfFile("/media/Files/Data/iitp/Alex/Alex_05_sum_new.edf");
-	//	exit(0);
-
-//	autos::IITPfilter("Levik", "_sum_new", false, false, true);			/// rewrites _sum_new.edf
-//	exit(0);
-
-	return;
+//	return;
 
 	QString guy = "Alex2";
 //	for(QString guy : guyList)
@@ -261,6 +260,10 @@ void MainWindow::customFunc()
 		}
 		if(0)
 		{
+			if(!autos::IITPtestInitialFiles(guy))
+			{
+				exit(0);
+			}
 			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
 			autos::IITPdatToEdf(guy);
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
@@ -271,7 +274,7 @@ void MainWindow::customFunc()
 			if(01)
 			{
 				/// filter eeg 0.5-70, notch 45-55
-				autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
+//				autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
 				autos::IITPconcat(guy, "_eeg_new", "_emg");				/// if cleaned init eeg
 			}
 			else
@@ -284,11 +287,17 @@ void MainWindow::customFunc()
 //		return;
 		if(01)
 		{
+			std::cout << "staging start" << std::endl;
 			autos::IITPstaging(guy);							/// flex/extend markers
+			std::cout << "staging end, copy start" << std::endl;
 			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
+			std::cout << "copy end, reref start" << std::endl;
 			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
+			std::cout << "copy end, process start" << std::endl;
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
+			std::cout << "process end, draw start" << std::endl;
 			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
+			std::cout << "all end" << std::endl;
 //			continue;
 //			exit(0);
 		}
@@ -296,6 +305,7 @@ void MainWindow::customFunc()
 		exit(0);
 //		continue;
 
+#if 0
 		/// deleted lists 14.10.2017
 		myLib::drw::trueChans = iitp::interestEeg;
 
@@ -305,6 +315,7 @@ void MainWindow::customFunc()
 //		nums.erase(std::find(std::begin(nums), std::end(nums), 8));
 		autos::IITPdrawSameScale(guy, smLib::range<Typ>(0, 11 + 1));
 		exit(0);
+#endif
 	}
 	exit(0);
 #endif

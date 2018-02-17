@@ -130,6 +130,13 @@ void IITPconcat(const QString & guyName,
 				const QString & emgPostfix);
 void IITPdatToEdf(const QString & guyName);
 
+bool IITPtestInitialFiles(const QString & guyName);
+std::vector<std::pair<QString, std::vector<QString>>> IITPtestEegChannels(const QString & guyDir,
+																		  const QString & postfix);
+
+void IITPinsertChannels(const QString & guyDir,
+						const std::vector<std::pair<QString, std::vector<QString>>> & forInsert);
+
 
 void IITPcopyChannel(const QString & guy,
 					 const QString & whatChan,
