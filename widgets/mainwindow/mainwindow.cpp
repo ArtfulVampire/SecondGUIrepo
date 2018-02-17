@@ -623,7 +623,6 @@ void MainWindow::drawMapsSlot()
 					   def::ExpName);
 }
 
-
 void MainWindow::stop()
 {
     stopFlag = 1;

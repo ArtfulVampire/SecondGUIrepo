@@ -3,6 +3,7 @@
 
 #include <myLib/mati.h>
 #include <myLib/dataHandlers.h>
+#include <functional>
 
 using namespace myOut;
 
@@ -31,6 +32,11 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 				sliceWinds();
 //				sliceJustWinds(); /// IITP
 			}
+//			else if(ui->pauseRadioButton->isChecked())
+//			{
+//				bool a = ui->typeCheckButton->isChecked();
+//				pausePieces(a);
+//			}
 			else if(ui->realsButton->isChecked())
 			{
 				if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) // generality
@@ -544,7 +550,7 @@ void MainWindow::sliceOneByOneNew()
             continue;
         }
         else if((markChanArr[i] > 200 && markChanArr[i] < 241) ||
-                markChanArr[i] == 255 ||
+				markChanArr[i] == 255 ||
                 markChanArr[i] == 250 ||
 				markChanArr[i] == 251) // all not interesting markers
         {
@@ -602,8 +608,8 @@ void MainWindow::sliceOneByOneNew()
             }
 
             marker.clear();
-            if(h == 0) marker = "241";
-            else if(h == 1) marker = "247";
+			if(h == 0)			{ marker = "241"; }
+			else if(h == 1)		{ marker = "247"; }
             h = -1;
             j = i;
             continue;
@@ -823,14 +829,12 @@ void MainWindow::sliceMati()
         {
             if(type != 3) // dont write rests
             {
-                helpString = (def::dirPath()
-
-													  + "/auxEdfs"
-
-													  + "/" + def::ExpName
-													  + "_" + nm(type)
-													  + "_" + nm(session[type])
-                                                      + ".edf");
+				helpString = def::dirPath()
+							 + "/auxEdfs"
+							 + "/" + def::ExpName
+							 + "_" + nm(type)
+							 + "_" + nm(session[type])
+							 + ".edf";
 
                 fil.saveSubsection(start,
                                    end,
@@ -850,7 +854,7 @@ void MainWindow::sliceMati()
         }
     }
     ui->progressBar->setValue(0);
-	std::cout << "sliceMati: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
+	std::cout << "sliceMati: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
     stopFlag = 0;
 }
 
@@ -973,3 +977,43 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     }
 	std::cout << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
+
+//void MainWindow::pausePieces(bool in)
+//{
+
+//	std::function<bool(char)> cond1;
+//	std::function<bool(char)> cond2;
+//	std::function<bool(char)> cond3;
+//	QString mark1;
+//	QString mark2;
+//	QString mark3;
+
+//	if(in)	/// in == true - ans/noans
+//	{
+//		cond1 = [](char a) -> bool { return a == '0'; };
+//		mark1 = "260";
+//		cond2 = [](char a) -> bool { return a == '1' || a == '2'; };
+//		mark2 = "261";
+//		cond3 = [](char a) -> bool { return true; };
+//		mark3 = "000";
+//	}
+//	else /// in == false - right/wrong
+//	{
+//		cond1 = [](char a) -> bool { return a == '1'; };
+//		mark1 = "262";
+//		cond2 = [](char a) -> bool { return a == '2'; };
+//		mark2 = "263";
+//		cond3 = [](char a) -> bool { return a == '0'; };
+//		mark3 = "264";
+//	}
+
+//	for(...)
+//	{
+//		char h;
+//		fin >> h;
+//		if(cond1(h)) { marker = mark1; }
+//		else if(cond2(h)) { marker = mark2; }
+//		else if(cond3(h)) { marker = mark3; }
+//	}
+
+//}

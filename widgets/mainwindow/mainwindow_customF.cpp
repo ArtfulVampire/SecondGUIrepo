@@ -50,8 +50,6 @@ void MainWindow::customFunc()
 
 #if 0
 	/// count correctness and average times
-
-
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
@@ -233,7 +231,6 @@ void MainWindow::customFunc()
 //		"Victor2"
 	};
 
-
 //	return;
 
 	QString guy = "Alex2";
@@ -269,7 +266,7 @@ void MainWindow::customFunc()
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
-		if(0)
+		if(01)
 		{
 			if(01)
 			{
