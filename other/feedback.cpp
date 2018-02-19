@@ -63,9 +63,10 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 	if(this->realsSignals[0].size() != numTasks)
 	{ std::cout << "spatTasks num = " << this->realsSignals[0].size() << std::endl; }
 	if(this->realsSignals[1].size() != numTasks)
-	{ std::cout << "spatTasks num = " << this->realsSignals[1].size() << std::endl; }
+	{ std::cout << "verbTasks num = " << this->realsSignals[1].size() << std::endl; }
+	/// last rest till 255 cross included ( or make from 254 + 8 sec?)
 	if(this->realsSignals[2].size() != numTasks * 2)
-	{ std::cout << "spatTasks num = " << this->realsSignals[2].size() << std::endl; }
+	{ std::cout << "rests num = " << this->realsSignals[2].size() << std::endl; }
 
 	realsSpectra.resize(realsSignals.size());
 	solvTime.resize(realsSignals.size());

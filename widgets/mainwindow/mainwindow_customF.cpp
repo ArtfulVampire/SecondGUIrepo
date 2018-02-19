@@ -48,7 +48,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 0
+#if 01
 	/// count correctness and average times
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
@@ -58,6 +58,7 @@ void MainWindow::customFunc()
 	const QString dear = "FeedbackFinalMark";
 	const auto & guysList = subj::guysFBfinal;
 	const QString postfix = "_fin";
+	/// make all data_fin
 #endif
 	fb::countStats(dear, guysList, postfix);
 	exit(0);

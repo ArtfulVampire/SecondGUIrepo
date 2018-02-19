@@ -143,7 +143,7 @@ std::valarray<double> softmax(const std::valarray<double> & in)
 template <typename Container>
 Container contReverse(const Container & in)
 {
-	Container res{in.size()};
+	Container res{in};
 	std::reverse_copy(std::begin(in), std::end(in), std::begin(res));
 	return res;
 }
