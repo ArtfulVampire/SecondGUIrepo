@@ -267,16 +267,17 @@ void MainWindow::sliceElena()
 									[eyesMarks, typ](const auto & in)
 		{ return in.second == eyesMarks[typ][1]; }); /// [1] - finish
 
+		int counter = 0;
 		for(int i = (*openSta).first;
 			i < (*openFin).first - restWindow * fil.getFreq();
-			i += restShift * fil.getFreq())
+			i += restShift * fil.getFreq(), ++counter)
 		{
 			helpString = def::dirPath()
 						 + "/Reals"
 						 + "/" + def::ExpName
-						 + "_n_0"
+						 + "_n_0_" + nm(counter)
 						 + "_m_" + nm(eyesMarks[typ][0])
-						 + "_t_" + nm(eyesCodes[0]);
+						 + "_t_" + nm(eyesCodes[typ]);
 			fil.saveSubsection(i,
 							   i + restWindow * fil.getFreq(),
 							   helpString,
