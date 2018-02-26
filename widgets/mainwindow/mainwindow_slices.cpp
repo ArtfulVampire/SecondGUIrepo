@@ -241,12 +241,51 @@ void MainWindow::sliceElena()
 	int number = -1;
 	int start = -1;
 	bool startFlag = false;
+	const int numOfTasks = 180;
+
+
+	const std::vector<std::vector<int>> eyesMarks{{210, 211}, {212, 213}};
+	const std::vector<int> eyesCodes{214, 215};
+
+	const double restWindow = 10.;	/// window length in seconds
+	const double restShift = 7.;	/// time shift between windows in seconds
 
 	const edfFile & fil = globalEdf;
 	const std::valarray<double> & markChanArr = fil.getMarkArr();
+	const auto & marks = fil.getMarkers();
+
+	/// slice rest backgrounds
+	for(int typ = 0; typ < 2; ++typ)	/// 0 - closed, 1 - open
+	{
+		auto openSta = std::find_if(std::begin(marks),
+									std::end(marks),
+									[eyesMarks, typ](const auto & in)
+		{ return in.second == eyesMarks[typ][0]; }); /// [0] - start
+
+		auto openFin = std::find_if(std::begin(marks),
+									std::end(marks),
+									[eyesMarks, typ](const auto & in)
+		{ return in.second == eyesMarks[typ][1]; }); /// [1] - finish
+
+		for(int i = (*openSta).first;
+			i < (*openFin).first - restWindow * fil.getFreq();
+			i += restShift * fil.getFreq())
+		{
+			helpString = def::dirPath()
+						 + "/Reals"
+						 + "/" + def::ExpName
+						 + "_n_0"
+						 + "_m_" + nm(eyesMarks[typ][0])
+						 + "_t_" + nm(eyesCodes[0]);
+			fil.saveSubsection(i,
+							   i + restWindow * fil.getFreq(),
+							   helpString,
+							   true);
+		}
+	}
 
 	std::set<int> allNumbers;
-	for(int i = 1; i < 240; ++i)
+	for(int i = 1; i < numOfTasks; ++i)
 	{
 		allNumbers.emplace(i);
 	}

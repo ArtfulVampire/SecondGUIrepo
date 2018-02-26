@@ -327,10 +327,10 @@ public:
 	int getBytes() const { return bytes; }
 	const QString & getHeaderReserved() const { return headerReservedField; }
 
-	int getNdr() const { return ndr; }
-	double getDdr() const { return ddr; }
-	int getNs() const { return ns; }
-	double getFreq() const { return srate; } /// wow wow
+	int getNdr() const		{ return ndr; }
+	double getDdr() const	{ return ddr; }
+	int getNs() const		{ return ns; }
+	double getFreq() const	{ return srate; } /// wow wow
 
 	const std::vector<QString> & getLabels() const { return labels; }
 	const QString & getLabels(int i) const { return labels[i]; }
