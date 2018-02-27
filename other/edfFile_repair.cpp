@@ -113,11 +113,11 @@ void deleteSpacesFolders(const QString & dirPath)
     QString newName;
     for(const QString & dirName : lst)
     {
-        newName = dirName;
-        newName.replace(' ', '_');
-        newName.remove(R"(')");
-        newName.replace("__", "_");
-        tmp.rename(dirName,
+		newName = dirName;
+		newName.replace(' ', '_');
+		newName.remove(R"(')");
+		newName.replace(QRegExp(R"(_{1,})"), "_");
+		tmp.rename(dirName,
                    newName);
     }
 }

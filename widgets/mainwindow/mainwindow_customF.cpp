@@ -33,7 +33,7 @@ void MainWindow::customFunc()
 //							  wrk + "/AKV_ans2.txt");
 //	exit(0);
 
-	return;
+//	return;
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackNewMark/");
@@ -48,7 +48,7 @@ void MainWindow::customFunc()
 #endif
 
 
-#if 01
+#if 0
 	/// count correctness and average times
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
@@ -207,9 +207,7 @@ void MainWindow::customFunc()
 	}
 #endif
 
-//	return;
-
-#if 01
+#if 0
 	/// IITP
 	QStringList guyList{
 		"Alex",		//
@@ -596,7 +594,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-	/// Dasha ToTable processing for Galya's paper
+	/// Dasha ToTable processing for Galya's paper on tactile spaces
 //	myLib::areEqualFiles("/media/Files/Data/Dasha/Totable/Berlin_brush.edf",
 //						 "/media/Files/Data/Dasha/Totable/Berlin/Berlin_brush.edf");
 //	exit(0);
@@ -1060,24 +1058,21 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
-	/// Galya_tactile things
+#if 01
+	/// Galya processing things
 
-//	autos::EdfsToFolders("/media/Files/Data/Galya/AllTactile");
-//	exit(0);
+
+	const QString workPath = def::GalyaFolder + "/count26feb";
 
 	if(0)
 	{
 		/// initial copying
 //		for(QString add : {"young", "adults"})
 		{
-			const QString workPath = def::GalyaFolder + "/Rest9Oct17/edf";
-//			const QString workPath = def::GalyaFolder + "/NormSept17/" + add;
 //			repair::toLatinDir(workPath);
 //			repair::deleteSpacesDir(workPath);
 //			repair::toLowerDir(workPath);
-
-			/// clear names
+			/// some special names cleaning
 			for(QString fileName : QDir(workPath).entryList(def::edfFilters))
 			{
 				QString newName = fileName;
@@ -1091,8 +1086,9 @@ void MainWindow::customFunc()
 				QFile::rename(workPath + "/" + fileName,
 							  workPath + "/" + newName);
 			}
-//			repair::toLowerDir(workPath);
-//			autos::GalyaToFolders(workPath);
+
+//			autos::EdfsToFolders(workPath);
+
 		}
 		exit(0);
 	}
@@ -1107,12 +1103,12 @@ void MainWindow::customFunc()
 		}
 //		for(QString add : {"young", "adults"})
 //		{
-			const QString tact = def::GalyaFolder + "/AllTactile";
+			const QString tact = workPath;
 			auto dirList = QDir(tact).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-			for(QString dr : dirList)
+			for(QString dr : dirList) /// each guy
 			{
 				const QString pt = tact + "/" + dr;
-				auto filList = QDir(pt).entryList(def::edfFilters);
+				auto filList = QDir(pt).entryList(def::edfFilters); /// edfs of one guy
 				for(QString fl : filList)
 				{
 					edfFile file;
@@ -1138,9 +1134,9 @@ void MainWindow::customFunc()
 	{
 		/// counting
 		def::currAutosUser = def::autosUser::Galya;
-//		autos::ProcessAllInOneFolder(def::GalyaFolder + "/AllTactile");
-		autos::ProcessByFolders(def::GalyaFolder + "/AllTactile");
-	exit(0);
+//		autos::ProcessAllInOneFolder(workPath);
+		autos::ProcessByFolders(workPath);
+		exit(0);
 	}
 	exit(0);
 #endif
