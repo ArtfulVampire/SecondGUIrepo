@@ -63,9 +63,9 @@ private:
 
 	/// replace in code
 	QString defaultInPath = def::dirPath()
-                            + "/" +"Reals";
+							+ "/" + "Reals";
 	QString defaultOutPath = def::dirPath()
-                             + "/" +"SpectraSmooth";
+							 + "/" + "SpectraSmooth";
 
 	QString defaultInPathW = def::dirPath()
                              + "/winds"

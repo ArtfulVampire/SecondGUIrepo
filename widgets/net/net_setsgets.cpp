@@ -283,7 +283,7 @@ void Net::aaDefaultSettings()
 {
     /// mode
     ui->crossRadioButton->setChecked(true); /// k-fold
-    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
+//    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
 //    ui->trainTestRadioButton->setChecked(true); /// train-test
 
     /// source
@@ -291,8 +291,8 @@ void Net::aaDefaultSettings()
 //        ui->windsRadioButton->setChecked(true); /// winds
 //    ui->pcaRadioButton->setChecked(true); /// PCA
 
-    ui->foldSpinBox->setValue(2); /////// fold
-    ui->numOfPairsBox->setValue(1); //// pairs
+	ui->foldSpinBox->setValue(5); /////// fold
+	ui->numOfPairsBox->setValue(5); //// pairs
     ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
     ui->learnRateBox->setValue(0.05); /// lrate PEWPEW
 }
