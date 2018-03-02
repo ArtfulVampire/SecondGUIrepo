@@ -39,6 +39,8 @@ double rankit(int i, int length, double k = 0.375);
 int MannWhitney(const std::valarray<double> & arr1,
 				 const std::valarray<double> & arr2,
 				 const double p = 0.05);
+void writeMannWhitney(const trivector<int> & MW,
+					  const QString & outPath);
 void countMannWhitney(trivector<int> & outMW,
 					  const QString & spectraPath,
 					  matrix * averageSpectraOut = nullptr,

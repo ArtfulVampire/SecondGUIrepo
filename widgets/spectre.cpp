@@ -405,9 +405,6 @@ void Spectre::psaSlot()
         drawData.push_back(tempVec);
     }
 
-	helpString = def::dirPath()
-				 + "/Help"
-				 + "/" + def::ExpName + "_all.jpg";
 
     trivector<int> MW;
 
@@ -415,11 +412,17 @@ void Spectre::psaSlot()
     {
 		myLib::countMannWhitney(MW,
 								ui->lineEdit_1->text());
+		helpString = def::dirPath()
+					 + "/" + def::ExpName + "_MannWhitney.txt";
+		myLib::writeMannWhitney(MW, helpString);
     }
 
     if(drawData.cols() == 19 * def::spLength() ||
        drawData.cols() == 21 * def::spLength())
     {
+		helpString = def::dirPath()
+					 + "/Help"
+					 + "/" + def::ExpName + "_all.jpg";
 		myLib::drawTemplate(helpString);
 
         std::vector<QColor> colors;

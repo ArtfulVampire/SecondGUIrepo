@@ -24,12 +24,12 @@ double freq = 250.;
 int fftLength = 4096;
 
 //QStringList fileMarkers;
-//QStringList fileMarkers{"_241", "_247", "_254 _244"}; // Me
+QStringList fileMarkers{"_241", "_247", "_254 _244"}; // Me
 //QStringList fileMarkers{"_241", "_242", "_243", "_244"}; // Elena
 //QStringList fileMarkers{"_241", "_242", "_245", "_246"}; // Ossadtchi
 //QStringList fileMarkers{"_241 _242", "_245 _246"}; // Ossadtchi
 //QStringList fileMarkers{"_242", "_245"}; // Ossadtchi
-QStringList fileMarkers{"_261", "_262", "_263"}; // Polina
+//QStringList fileMarkers{"_261", "_262", "_263"}; // Polina
 }
 
 /// begin defs Singleton

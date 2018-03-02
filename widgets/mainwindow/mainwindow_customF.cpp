@@ -33,7 +33,11 @@ void MainWindow::customFunc()
 //							  wrk + "/AKV_ans2.txt");
 //	exit(0);
 
-//	return;
+
+//this->setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+//	Spectre * sp = new Spectre();
+//	sp->show();
+	return;
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackNewMark/");
