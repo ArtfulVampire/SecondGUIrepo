@@ -54,7 +54,7 @@ void GalyaProcessing(const QString & procDirPath,
 		dir.mkpath(outPath);
 	}
 
-	const QStringList filesList = dir.entryList(def::edfFilters,
+	const QStringList filesList = dir.entryList(defs::edfFilters,
 												QDir::NoFilter,
 												QDir::Size
 												| QDir::Reversed
@@ -62,36 +62,9 @@ void GalyaProcessing(const QString & procDirPath,
 	const auto filesVec = filesList.toVector();
 
 
-	int Mask{};
-	switch(def::currAutosUser)
-	{
-		case def::autosUser::Galya:
-		{
-			Mask = autos::featuresMask::alpha |
-				   autos::featuresMask::spectre |
-				   autos::featuresMask::Hilbert |
-				   autos::featuresMask::fracDim |
-				   autos::featuresMask::Hjorth |
-//				   autos::featuresMask::wavelet |
-				   autos::featuresMask::logFFT
-				   ;
+	const int Mask = DEFS.getAutosMask();
 
-			break;
-		}
-		case def::autosUser::Xenia:
-		{
-			Mask = autos::featuresMask::alpha |
-				   autos::featuresMask::spectre |
-				   autos::featuresMask::Hilbert |
-				   autos::featuresMask::fracDim |
-				   autos::featuresMask::wavelet;
-			break;
-		}
-		default:
-		{ /* do nothing */ }
-	}
-
-	if(Mask & autos::featuresMask::wavelet)
+	if(Mask & featuresMask::wavelet)
 	{
 #if WAVELET_MATLAB
 		if(!wvlt::isInit)
@@ -133,13 +106,13 @@ void GalyaProcessing(const QString & procDirPath,
 
 		matrix tmpData = initEdf.getData();
 		tmpData.resizeRows(numChan); /// saves the data stored in first numChan rows
-		switch(def::currAutosUser)
+		switch(DEFS.getAutosUser())
 		{
-			case def::autosUser::Galya:
+			case autosUser::Galya:
 			{
 				break;
 			}
-			case def::autosUser::Xenia:
+			case autosUser::Xenia:
 			{
 				tmpData = tmpData.subCols(0, 30 * 250); /// not resizeCols
 				break;
@@ -294,9 +267,9 @@ void countHilbert(const matrix & inData,
 		}
 	}
 
-	switch(def::currAutosUser)
+	switch(DEFS.getAutosUser())
 	{
-		case def::autosUser::Galya:
+		case autosUser::Galya:
 		{
 			for(int func : {0, 1}) /// carr or SD
 			{
@@ -310,7 +283,7 @@ void countHilbert(const matrix & inData,
 			}
 			break;
 		}
-		case def::autosUser::Xenia:
+		case autosUser::Xenia:
 		{
 			for(int filt : {0, 1, 2}) /// whole, theta, alpha
 			{
@@ -415,22 +388,22 @@ void countLogFFT(const matrix & inData,
 /// further generalizations
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 {
-	def::ntFlag = false;
+	DEFS.setNtFlag(false);
 
 	for(QString guy : guyList)
 	{
 		if(cutOnlyFlag)
 		{
-			autos::cutFilesInFolder(def::mriFolder + "/" + guy, 2);
+			autos::cutFilesInFolder(defs::mriFolder + "/" + guy, 2);
 			continue;
 		}
 
 		/// PEWPEWPWEPWEPPEWWPEWPEEPPWPEPWEPWEPWPEPWEPWPEWPEWPEPWEPWEPWEPWPEWP
-//		autos::GalyaFull(def::mriFolder +
+//		autos::GalyaFull(defs::mriFolder +
 //						 "/" + guy +
 //						 "/" + guy + "_winds_cleaned");
 
-		QString outPath = def::mriFolder + "/OUT/" + guy;
+		QString outPath = defs::mriFolder + "/OUT/" + guy;
 		QString dropPath = "/media/Files/Dropbox/DifferentData/EEG-MRI/Results";
 		QStringList files = QDir(outPath).entryList({"*.txt"});
 
@@ -459,7 +432,7 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 /// recount FD
 void EEG_MRI_FD()
 {
-	def::ntFlag = false;
+	DEFS.setNtFlag(false);
 
 	const QString workDir = "/media/Files/Data/MRI_winds";
 	const QString OUT = "/media/Files/Data/MRI_winds_out";
@@ -545,7 +518,7 @@ void Xenia_repairTable(const QString & initPath,
 void Xenia_TBI(const QString & tbi_path)
 {
 	/// TBI Xenia cut, process, tables
-	def::ntFlag = false;
+	DEFS.setNtFlag(false);
 
 	QStringList markers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
 //	QStringList markers{"_isopropanol", "_vanilla", "_needles", "_brush",
@@ -592,7 +565,7 @@ void Xenia_TBI(const QString & tbi_path)
 
 
 
-			QStringList t = QDir(workPath + "/" + guy).entryList(def::edfFilters);
+			QStringList t = QDir(workPath + "/" + guy).entryList(defs::edfFilters);
 			if(t.isEmpty()) continue;
 
 			QString ExpName = t[0];
@@ -626,12 +599,12 @@ void Xenia_TBI(const QString & tbi_path)
 			for(QString marker : markers)
 			{
 				fileNames.clear();
-				for(autos::featuresMask type : {
-					autos::featuresMask::alpha,
-					autos::featuresMask::fracDim,
-					autos::featuresMask::Hilbert,
-					autos::featuresMask::spectre,
-					autos::featuresMask::wavelet})
+				for(featuresMask type : {
+					featuresMask::alpha,
+					featuresMask::fracDim,
+					featuresMask::Hilbert,
+					featuresMask::spectre,
+					featuresMask::wavelet})
 				{
 					QString typ = "_" + autos::getFeatureString(type);
 					fileNames << ExpName + marker + typ + ".txt";
@@ -708,7 +681,7 @@ void Xenia_TBI_final(const QString & finalPath,
 	myTime.start();
 
 	/// TBI Xenia cut, process, tables
-	def::ntFlag = false;
+	DEFS.setNtFlag(false);
 	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
 
 	QStringList subdirs = QDir(finalPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
@@ -757,7 +730,7 @@ void Xenia_TBI_final(const QString & finalPath,
 				repair::toLowerDir(guyPath);
 			}
 
-			QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
+			QStringList edfs = QDir(guyPath).entryList(defs::edfFilters);
 			if(edfs.isEmpty())
 			{
 				std::cout << "Xenia_TBI_final: guyPath is empty " << guyPath << std::endl;
@@ -816,12 +789,12 @@ void Xenia_TBI_final(const QString & finalPath,
 				for(QString mark : tbiMarkers)
 				{
 					QStringList fileNamesToArrange;
-					for(autos::featuresMask func : {
-						autos::featuresMask::spectre,
-						autos::featuresMask::fracDim,
-						autos::featuresMask::Hilbert,
-						autos::featuresMask::wavelet,
-						autos::featuresMask::alpha})
+					for(featuresMask func : {
+						featuresMask::spectre,
+						featuresMask::fracDim,
+						featuresMask::Hilbert,
+						featuresMask::wavelet,
+						featuresMask::alpha})
 					{
 						fileNamesToArrange.push_back(ExpName + mark
 													 + "_" + autos::getFeatureString(func) + ".txt");
@@ -1034,10 +1007,10 @@ void cutFilesInFolder(const QString & path,
 	}
 
 	/// to change
-	const QString logPath = def::GalyaFolder + "/log.txt";
+	const QString logPath = defs::GalyaFolder + "/log.txt";
 	std::ofstream logStream(logPath.toStdString(), std::ios_base::app);
 
-	const QStringList leest1 = tmpDir.entryList(def::edfFilters);
+	const QStringList leest1 = tmpDir.entryList(defs::edfFilters);
 	const auto filesVec = leest1.toVector();
 
 	/// ??????????????????????
@@ -1079,7 +1052,7 @@ void cutFilesInFolder(const QString & path,
 void rereferenceFolder(const QString & procDirPath,
 					   const QString & newRef)
 {
-	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
+	const QStringList filesList = QDir(procDirPath).entryList(defs::edfFilters,
 															  QDir::NoFilter,
 															  QDir::Size | QDir::Reversed);
 
@@ -1098,7 +1071,7 @@ void refilterFolder(const QString & procDirPath,
 					  bool isNotch)
 {
 
-	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
+	const QStringList filesList = QDir(procDirPath).entryList(defs::edfFilters,
 															  QDir::NoFilter,
 															  QDir::Size | QDir::Reversed);
 
@@ -1113,7 +1086,7 @@ void refilterFolder(const QString & procDirPath,
 
 void EdfsToFolders(const QString & inPath)
 {
-	auto lst = QDir(inPath).entryList(def::edfFilters);
+	auto lst = QDir(inPath).entryList(defs::edfFilters);
 	for(QString in : lst)
 	{
 		QString ExpName = in.left(in.lastIndexOf("_"));
@@ -1132,7 +1105,7 @@ void ProcessAllInOneFolder(const QString & inPath,
 	QTime myTime;
 	myTime.start();
 
-	def::ntFlag = false;
+	DEFS.setNtFlag(false);
 
 	if(outPath == QString())
 	{
@@ -1145,7 +1118,7 @@ void ProcessAllInOneFolder(const QString & inPath,
 	}
 
 
-	QStringList edfs = QDir(inPath).entryList(def::edfFilters);
+	QStringList edfs = QDir(inPath).entryList(defs::edfFilters);
 	if(edfs.isEmpty())
 	{
 		std::cout << "Galya_tactile: inPath is empty " << inPath << std::endl;
@@ -1208,13 +1181,13 @@ void ProcessAllInOneFolder(const QString & inPath,
 			ExpName = ExpName.left(ExpName.indexOf('.'));
 
 			QStringList fileNamesToArrange;
-			for(autos::featuresMask func : {
-				autos::featuresMask::alpha,
-				autos::featuresMask::spectre,
-				autos::featuresMask::Hilbert,
-				autos::featuresMask::fracDim,
-				autos::featuresMask::Hjorth,
-				autos::featuresMask::wavelet
+			for(featuresMask func : {
+				featuresMask::alpha,
+				featuresMask::spectre,
+				featuresMask::Hilbert,
+				featuresMask::fracDim,
+				featuresMask::Hjorth,
+				featuresMask::wavelet
 		})
 			{
 				const QString fileName = ExpName
@@ -1251,11 +1224,11 @@ void ProcessAllInOneFolder(const QString & inPath,
 	if(01)
 	{
 		QDir().mkpath(inPath + "/out2");
-		for(autos::featuresMask func : {
-			autos::featuresMask::alpha,
-			autos::featuresMask::spectre,
-			autos::featuresMask::Hilbert,
-			autos::featuresMask::fracDim
+		for(featuresMask func : {
+			featuresMask::alpha,
+			featuresMask::spectre,
+			featuresMask::Hilbert,
+			featuresMask::fracDim
 	})
 		{
 			const auto str = autos::getFeatureString(func);
@@ -1318,7 +1291,7 @@ void ProcessByFolders(const QString & inPath,
 			repair::toLowerDir(guyPath);
 		}
 
-		QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
+		QStringList edfs = QDir(guyPath).entryList(defs::edfFilters);
 		if(edfs.isEmpty())
 		{
 			std::cout << "Galya_tactile: inPath is empty " << inPath << std::endl;
@@ -1380,14 +1353,14 @@ void ProcessByFolders(const QString & inPath,
 			{
 				QStringList fileNamesToArrange;
 
-					for(autos::featuresMask func : {
-						autos::featuresMask::alpha,
-						autos::featuresMask::spectre,
-						autos::featuresMask::Hilbert,
-						autos::featuresMask::fracDim,
-						autos::featuresMask::Hjorth,
-//						autos::featuresMask::wavelet,
-						autos::featuresMask::logFFT
+					for(featuresMask func : {
+						featuresMask::alpha,
+						featuresMask::spectre,
+						featuresMask::Hilbert,
+						featuresMask::fracDim,
+						featuresMask::Hjorth,
+//						featuresMask::wavelet,
+						featuresMask::logFFT
 			})
 					{
 						const QString fileName = ExpName + mark

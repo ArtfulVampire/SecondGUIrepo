@@ -20,7 +20,7 @@ std::string funcName(std::string in);
 		auto t1 = std::chrono::high_resolution_clock::now();\
 		std::cout << myLib::funcName(#arg) \
 		<< ": time elapsed = "\
-		<< std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0).count()/1000.\
+		<< std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0).count() / 1000.\
 		<< " nsec" << std::endl;\
 	}while(false)
 
@@ -37,7 +37,7 @@ QString getDirPathLib(const QString & filePath);
 QString getExt(const QString & filePath);
 QString getLabelName(const QString & label);
 QString getPicPath(const QString & dataPath,
-				   const QString & ExpNameDir = def::dirPath());
+				   const QString & ExpNameDir = DEFS.dirPath());
 QString getFileMarker(const QString & fileName);
 int getTypeOfFileName(const QString & fileName);
 

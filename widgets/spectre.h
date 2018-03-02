@@ -32,8 +32,8 @@ public:
     void setPow(double);
     void setFftLength(int);
 
-	void writeSpectra(const double leftFreq = def::leftFreq,
-					  const double rightFreq = def::rightFreq);
+	void writeSpectra(const double leftFreq = DEFS.getLeftFreq(),
+					  const double rightFreq = DEFS.getRightFreq());
 
     void setInPath(const QString &);
     void setOutPath(const QString &);
@@ -62,15 +62,15 @@ private:
     QString backupDirPath;
 
 	/// replace in code
-	QString defaultInPath = def::dirPath()
+	QString defaultInPath = DEFS.dirPath()
 							+ "/" + "Reals";
-	QString defaultOutPath = def::dirPath()
+	QString defaultOutPath = DEFS.dirPath()
 							 + "/" + "SpectraSmooth";
 
-	QString defaultInPathW = def::dirPath()
+	QString defaultInPathW = DEFS.dirPath()
                              + "/winds"
                              + "/fromreal";
-	QString defaultOutPathW = def::dirPath()
+	QString defaultOutPathW = DEFS.dirPath()
                              + "/SpectraSmooth"
                              + "/winds";
 

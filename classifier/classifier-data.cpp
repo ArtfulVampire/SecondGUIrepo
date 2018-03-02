@@ -47,10 +47,9 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 
 ClassifierData::ClassifierData(const QString & inPath, const QStringList & filters)
 {
-	QStringList lst;
-	myLib::makeFullFileList(inPath, lst, filters);
+	QStringList lst = myLib::makeFullFileList(inPath, filters);
 
-	this->numOfCl = def::fileMarkers.length();
+	this->numOfCl = DEFS.numOfClasses();
 	this->dataMatrix = matrix();
 	this->types.clear();
 	this->fileNames.clear();
@@ -58,11 +57,9 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 	this->indices.resize(numOfCl);
 	this->classCount.resize(this->numOfCl, 0.);
 
-	std::valarray<double> tempArr;
 	for(const QString & fileName : lst)
 	{
-		myLib::readFileInLine(inPath + "/" + fileName,
-							  tempArr);
+		auto tempArr = myLib::readFileInLine(inPath + "/" + fileName);
 		this->push_back(tempArr,
 						myLib::getTypeOfFileName(fileName),
 						fileName);

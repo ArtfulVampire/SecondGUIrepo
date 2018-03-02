@@ -143,17 +143,16 @@ private:
 	static const int picScaleGapY = 20;
 	bool drawFlag{false}; /// to prevent many slices in e.g. setValuesByEdf()
 
-	/// edf and related globals
+	/// edf and related widget-globals
+	fileType myFileType{fileType::edf}; /// to deprecate, leave edf only
 	edfFile edfFil{};
-	fileType myFileType{fileType::edf};
 	bool fileOpened{false};
 	matrix dataCutLocal{};
-	double currFreq{250}; /// to deprecate
 
 	/// next/prev
 	QStringList filesList;
 	QStringList::iterator fileListIter{};
-	QString currentFile; /// deprecate to edfFile filePath
+	QString currentFile; /// deprecate to edfFile filePath (as fileType::real will be deprecated)
 	int addNum = 0; // for cut() winds
 
 	/// copy, split, paste, undo

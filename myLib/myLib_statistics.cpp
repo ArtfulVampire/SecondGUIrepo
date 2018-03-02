@@ -143,8 +143,7 @@ void histogram(const std::valarray<double> & arr,
 
 void kernelEst(QString filePath, QString picPath)
 {
-	std::valarray<double> arr;
-	readFileInLine(filePath, arr);
+	std::valarray<double> arr = readFileInLine(filePath);
 	kernelEst(arr, picPath);
 }
 
@@ -334,8 +333,7 @@ bool gaussApproval(double * arr, int length) // kobzar page 239
 
 bool gaussApproval(QString filePath)
 {
-	std::vector<double> arr;
-	readFileInLine(filePath, arr);
+//	std::valarray<double> arr = readFileInLine(filePath);
 	return gaussApproval(arr.data(), arr.size());
 }
 
@@ -378,8 +376,7 @@ double rankit(int i, int length, double k)
 
 void countRCP(QString filePath, QString picPath, double * outMean, double * outSigma)
 {
-	std::valarray<double> arr;
-	readFileInLine(filePath, arr);
+	std::valarray<double> arr = readFileInLine(filePath);
 
 	(*outMean) = smLib::mean(arr);
 	(*outSigma) = smLib::sigma(arr);
@@ -542,7 +539,7 @@ int MannWhitney(const std::valarray<double> & arr1,
 void writeMannWhitney(const trivector<int> & MW,
 					  const QString & outPath)
 {
-	const int numOfClasses = def::numOfClasses();
+	const int numOfClasses = DEFS.numOfClasses();
 	std::ofstream fil;
 	fil.open(outPath.toStdString());
 
@@ -551,11 +548,11 @@ void writeMannWhitney(const trivector<int> & MW,
 	{
 		for(int j = i + 1; j < numOfClasses; ++j)
 		{
-			for(int ch = 0; ch < def::nsWOM(); ++ch)
+			for(int ch = 0; ch < DEFS.nsWOM(); ++ch)
 			{
-				for(int sp = 0; sp < def::spLength(); ++sp)
+				for(int sp = 0; sp < DEFS.spLength(); ++sp)
 				{
-					fil << MW[i][j - i][sp + ch * def::spLength()];
+					fil << MW[i][j - i][sp + ch * DEFS.spLength()];
 				}
 				fil << std::endl;
 			}
@@ -571,18 +568,18 @@ void countMannWhitney(trivector<int> & outMW,
 					  matrix * distancesOut)
 {
 
-	const int NetLength = def::nsWOM() * def::spLength();
-	const int numOfClasses = def::numOfClasses();
+	const int NetLength = DEFS.nsWOM() * DEFS.spLength();
+	const int numOfClasses = DEFS.numOfClasses();
 
 	QString helpString;
 	const QDir dir_(spectraPath);
-	std::vector<QStringList> lst; // 0 - Spatial, 1 - Verbal, 2 - Rest
 	std::vector<matrix> spectra(numOfClasses);
 
 	matrix averageSpectra(numOfClasses, NetLength, 0);
 	matrix distances(numOfClasses, numOfClasses, 0);
 
-	makeFileLists(spectraPath, lst);
+	// 0 - Spatial, 1 - Verbal, 2 - Rest
+	std::vector<QStringList> lst = makeFileLists(spectraPath);
 
 	for(int i = 0; i < numOfClasses; ++i)
 	{
@@ -590,7 +587,7 @@ void countMannWhitney(trivector<int> & outMW,
 		for(int j = 0; j < lst[i].length(); ++j) /// remake : lst[i]
 		{
 			helpString = dir_.absolutePath() + "/" + lst[i][j];
-			readFileInLine(helpString, spectra[i][j]);
+			spectra[i][j] = readFileInLine(helpString);
 		}
 		averageSpectra[i] = spectra[i].averageRow();
 
@@ -669,7 +666,7 @@ void MannWhitneyFromMakepa(const QString & spectraDir, const QString & outPicPat
 	drawMannWitney(outPicPath,
 				   MW);
 
-	QString helpString = def::dirPath() + "/results.txt";
+	QString helpString = DEFS.dirPath() + "/results.txt";
 	std::ofstream outStr;
 	outStr.open(helpString.toStdString(), std::ios_base::app);
 	if(!outStr.good())
@@ -678,9 +675,9 @@ void MannWhitneyFromMakepa(const QString & spectraDir, const QString & outPicPat
 	}
 	else
 	{
-		for(int i = 0; i < def::numOfClasses(); ++i)
+		for(int i = 0; i < DEFS.numOfClasses(); ++i)
 		{
-			for(int j = i + 1; j < def::numOfClasses(); ++j)
+			for(int j = i + 1; j < DEFS.numOfClasses(); ++j)
 			{
 				outStr << "dist " << i << " - " << j << '\t' << dists[i][j - i] << '\n';
 			}

@@ -36,7 +36,7 @@ Net::Net() :
     ui->crossRadioButton->setChecked(true); /// k-fold
     ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
 //    ui->trainTestRadioButton->setChecked(true); /// train-test
-    if(def::OssadtchiFlag)
+	if(DEFS.isUser(username::Ossadtchi))
     {
         ui->trainTestRadioButton->setChecked(true); /// train-test
     }
@@ -213,7 +213,7 @@ void Net::drawWtsSlot()
     }
     QString helpString = QFileDialog::getOpenFileName((QWidget * )this,
                                                       tr("wts to draw"),
-                                                      def::dirPath(),
+													  DEFS.dirPath(),
                                                       tr("wts files (*.wts)"));
     if(helpString.isEmpty())
     {
@@ -236,7 +236,7 @@ void Net::writeWtsSlot()
     {
         helpString = QFileDialog::getSaveFileName((QWidget * )this,
                                                   tr("wts to save"),
-                                                  def::dirPath(),
+												  DEFS.dirPath(),
                                                   tr("wts files (*.wts)"));
         if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
         {
@@ -247,8 +247,7 @@ void Net::writeWtsSlot()
     {
         do
         {
-            helpString = def::dirPath()
-						 + "/" + def::ExpName + nm(wtsCounter) + ".wts";
+			helpString = DEFS.dirPath() + "/Help/wts/weight_" + nm(wtsCounter) + ".wts";
             ++wtsCounter;
         } while(QFile::exists(helpString));
     }
@@ -270,7 +269,7 @@ void Net::readWtsSlot()
     }
     QString helpString = QFileDialog::getOpenFileName((QWidget * )NULL,
                                                       tr("load wts"),
-                                                      def::dirPath(),
+													  DEFS.dirPath(),
                                                       tr("wts files (*.wts)"));
     if(helpString.isEmpty())
 	{
@@ -285,7 +284,7 @@ void Net::loadDataSlot()
 {
 	QString helpString = QFileDialog::getExistingDirectory(nullptr,
                                                            tr("load data"),
-                                                           def::dirPath());
+														   DEFS.dirPath());
     if(helpString.isEmpty())
     {
         return;

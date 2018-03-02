@@ -152,8 +152,8 @@ inline int fftLimit(double inFreq,
 	return std::ceil(inFreq / sampleFreq * fftL - 0.5);
 }
 
-//inline int vvv = 8;
 
+/*
 namespace def
 {
 	enum class filteringTyp{butterworth, fft, dsp};
@@ -190,12 +190,7 @@ namespace def
 	extern double drawNorm;
 
 //    Atanov
-#if ELENA_VARIANT
-//	const QString dataFolder = "C:/Michael/Data";
-#else
-    const QString dataFolder = "/media/Files/Data";
-//	const QString dataFolder = "D:/MichaelAtanov/workData"; // on O.D. comp
-#endif
+	const QString dataFolder = "/media/Files/Data";
     const QString XeniaFolder = "/media/Files/Data/Xenia";
     const QString mriFolder = "/media/Files/Data/MRI";
 	const QString matiFolder = "/media/Files/Data/Mati";
@@ -209,9 +204,6 @@ namespace def
 
     const bool opencl = true;
     const bool openmp = true;
-
-
-
 
 	/// to def class
 
@@ -250,9 +242,30 @@ namespace def
 	inline int spLength()	{ return def::right() - def::left(); }
 	inline double spStep()	{ return def::freq / def::fftLength; }
 }
+*/
 
 
-
+enum class username {MichaelA,
+					 MichaelB,
+					 ElenaC,
+					 XeniaG,
+					 GalyaP,
+					 OlgaK,
+					 Ossadtchi,
+					 Mati,
+					 IITP,
+					 PolinaM};
+enum class autosUser {Xenia, Galya};
+enum featuresMask {
+	spectre	= 0x01,
+	alpha	= 0x02,
+	fracDim	= 0x04,
+	Hilbert	= 0x08,
+	wavelet	= 0x10,
+	Hjorth	= 0x20,
+	logFFT	= 0x40
+};
+enum class spectraNorming {all, each};
 
 class defs
 {
@@ -273,19 +286,11 @@ private:
 	/// Singleton end
 
 public:
-	/// enums
-	enum class username {MichaelA, MichaelB, ElenaC, XeniaG, GalyaP, OlgaK, Ossadtchi, Mati, IITP};
-	enum class autosUser {Xenia, Galya};
-	enum class spectraNorming {all, each};
-
 	/// consts
-	static const bool matiFlag{false};			/// replace with username mati
-	static const bool OssadtchiFlag{false};		/// replace with username Ossadtchi
+	static const bool withMarkersFlag{true};	/// remove everywhere as true
 
-	static const bool withMarkersFlag{true}; /// remove everywhere as true
-
-	static const bool writeLongStartEnd{true};
-	static const bool redirectStdOutFlag{false};
+	static const bool writeLongStartEnd{true};	/// don't know, do I need it?
+	static const bool redirectStdOutFlag{false};/// check how to operator<< to NotificationArea
 
 	static const QString plainDataExtension;
 	static const QString spectraDataExtension;
@@ -299,6 +304,7 @@ public:
 	static const QString GalyaFolder;
 	static const QString DashaFolder;
 	static const QString uciFolder;
+	static const QString helpPath;
 
 
 	static const QString iitpFolder;
@@ -307,36 +313,39 @@ public:
 
 
 public:
-	QString realsDir()			{ return this->dir->absolutePath() + "/Reals"; }
-	QString windsDir()			{ return this->dir->absolutePath() + "/winds"; }
-	QString windsFromRealsDir()	{ return this->dir->absolutePath() + "/winds/fromreal"; }
-	QString realsSpectraDir()	{ return this->dir->absolutePath() + "/SpectraSmooth"; }
-	QString windsSpectraDir()	{ return this->dir->absolutePath() + "/SpectraSmooth/winds"; }
-	QString pcaSpectraDir()		{ return this->dir->absolutePath() + "/SpectraSmooth/PCA"; }
-	QString paDir()				{ return this->dir->absolutePath() + "/Help/PA"; }
-	QString dataFolder();		/// depending on username
+	QString dirPath() const				{ return this->dir->absolutePath(); }
+	QString realsDir() const			{ return this->dirPath() + "/Reals"; }
+	QString windsDir() const			{ return this->dirPath() + "/winds"; }
+	QString windsFromRealsDir() const	{ return this->dirPath() + "/winds/fromreal"; }
+	QString realsSpectraDir() const		{ return this->dirPath() + "/SpectraSmooth"; }
+	QString windsSpectraDir() const		{ return this->dirPath() + "/SpectraSmooth/winds"; }
+	QString pcaSpectraDir() const		{ return this->dirPath() + "/SpectraSmooth/PCA"; }
+	QString paDir() const				{ return this->dirPath() + "/Help/PA"; }
 
+
+	/// legacy
+	int right() const		{ return fftLimit(this->leftFreq, this->freq, this->fftLength); }
+	int left() const		{ return fftLimit(this->rightFreq, this->freq, this->fftLength) + 1; }
+	int spLength() const	{ return this->right() - this->left(); }
+	double spStep() const	{ return this->freq / this->fftLength; }
 	/// to deprecate
-	int numOfClasses()			{ return this->fileMarkers.length(); }
-
-	int right()		{ return fftLimit(this->leftFreq, this->freq, this->fftLength); }
-	int left()		{ return fftLimit(this->rightFreq, this->freq, this->fftLength) + 1; }
-	int spLength()	{ return this->right() - this->left(); }
-	double spStep()	{ return this->freq / this->fftLength; }
+	int numOfClasses() const	{ return this->fileMarkers.length(); }
+	int nsWOM() const		{ return this->ns - 1; }
 
 private:
 	QDir * dir{new QDir(QDir::root())};
 
 	autosUser currAutosUser{autosUser::Xenia};
-
 	username currUser{username::MichaelA};
+	int autosMask{0};
 
 	spectraNorming specNormTyp{spectraNorming::all};
 	double drawNorm{-1.};
 
+	bool ntFlag{false};
+
 	bool opencl{false};		/// unused now
 	bool openmp{false};		/// unused now
-	bool ntFlag{false};
 
 	QString ExpName;		/// to deprecate
 	int ns{20};				/// to deprecate
@@ -348,44 +357,75 @@ private:
 
 	QStringList fileMarkers{"_241", "_247", "_254 _244"};
 public:
+	/// dir operations
+	bool dirCdUp()								{ return this->dir->cdUp(); }
+	bool dirIsRoot() const						{ return this->dir->isRoot(); }
+	bool dirMkdir(const QString & in) const		{ return this->dir->mkdir(in); }
+	QStringList dirEntryList(const QStringList & nameFilters,
+							 QDir::Filters filter = QDir::NoFilter,
+							 QDir::SortFlags sort = QDir::NoSort) const
+	{ return this->dir->entryList(nameFilters, filter, sort); }
+	QStringList dirEntryList(QDir::Filters filter = QDir::NoFilter,
+							 QDir::SortFlags sort = QDir::NoSort) const
+	{ return this->dir->entryList(filter, sort); }
+
+
+public:
 	/// gets/sets
 	void setDir(const QString & in)				{ this->dir->setPath(in); }
-	auto getDir()								{ return this->dir; }
-	auto getDirPath()							{ return this->dir->absolutePath(); }
+	auto getDir() const							{ return this->dir; }
+	auto getDirPath() const						{ return this->dir->absolutePath(); }
 
-	void setAutosUser(autosUser in)				{ this->currAutosUser = in; }
-	auto getAutosUser()							{ return this->currAutosUser; }
+	void setAutosUser(autosUser in);			/// set some parameters
+	auto getAutosUser() const					{ return this->currAutosUser; }
 
-	void setUser(username in)					{ this->currUser = in; }
-	auto getUser()								{ return this->currUser; }
+	bool isUser(username in) const				{ return this->currUser == in; }
+	void setUser(username in);					/// sets many parameters
+	auto getUser() const						{ return this->currUser; }
 
 	void setSpecNorm(spectraNorming in)			{ this->specNormTyp = in; }
-	auto getSpecNorm()							{ return this->specNormTyp; }
+	auto getSpecNorm() const					{ return this->specNormTyp; }
 
 	void setDrawNorm(double in)					{ this->drawNorm = in; }
-	auto getDrawNorm()							{ return this->drawNorm; }
+	auto getDrawNorm() const					{ return this->drawNorm; }
 
 	void setExpName(const QString & in)			{ this->ExpName = in; }
-	auto getExpName()							{ return this->ExpName; }
+	auto getExpName() const						{ return this->ExpName; }
 
 	void setNs(int in)							{ this->ns = in; }
-	auto getNs()								{ return this->ns; }
+	auto getNs() const							{ return this->ns; }
 
 	void setFreq(double in)						{ this->freq = in; }
-	auto getFreq()								{ return this->freq; }
+	auto getFreq() const						{ return this->freq; }
 
 	void setFftLen(int in)						{ this->fftLength = in; }
-	auto getFftLen()							{ return this->fftLength; }
+	auto getFftLen() const						{ return this->fftLength; }
 
 	void setLeftFreq(double in)					{ this->leftFreq = in; }
-	auto getLeftFreq()							{ return this->leftFreq; }
+	auto getLeftFreq() const					{ return this->leftFreq; }
+
+	void setAutosMask(int in)					{ this->autosMask = in; }
+	auto getAutosMask() const					{ return this->autosMask; }
 
 	void setRightFreq(double in)				{ this->rightFreq = in; }
-	auto getRightFreq()							{ return this->rightFreq; }
+	auto getRightFreq() const					{ return this->rightFreq; }
+
+	void setFreqs(double lef, double rig)		{ this->leftFreq = lef; this->rightFreq = rig; }
+	auto getFreqs() const						{ return std::make_pair(this->leftFreq,
+																		this->rightFreq); }
 
 	void setFileMarks(const QStringList & in)	{ this->fileMarkers = in; }
-	auto getFileMarks()							{ return this->fileMarkers; }
+	auto getFileMarks() const					{ return this->fileMarkers; }
+
+	void setNtFlag(bool in)						{ this->ntFlag = in; }
+	auto getNtFlag() const						{ return this->ntFlag; }
+
 };
+
+#define DEFS defs::inst()
+
+
+
 
 namespace coords
 {

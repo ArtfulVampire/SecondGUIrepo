@@ -168,8 +168,8 @@ Cut::Cut() :
 					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 					 [this](double a)
 	{
-		if(this->size().width() == a * currFreq + scrollAreaGapX) return;
-		this->resize(a * currFreq + scrollAreaGapX, this->height());
+		if(this->size().width() == a * DEFS.getFreq() + scrollAreaGapX) return;
+		this->resize(a * DEFS.getFreq() + scrollAreaGapX, this->height());
 	});
 	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
 					 this, SLOT(timesAndDiffSlot()));
@@ -236,11 +236,11 @@ Cut::~Cut()
 
 void Cut::timesAndDiffSlot()
 {
-	ui->rightTimeSpinBox->setValue(ui->rightLimitSpinBox->value() / currFreq);
-	ui->leftTimeSpinBox->setValue(ui->leftLimitSpinBox->value() / currFreq);
+	ui->rightTimeSpinBox->setValue(ui->rightLimitSpinBox->value() / DEFS.getFreq());
+	ui->leftTimeSpinBox->setValue(ui->leftLimitSpinBox->value() / DEFS.getFreq());
 	ui->diffLimitSpinBox->setValue(ui->rightLimitSpinBox->value() -
 								   ui->leftLimitSpinBox->value());
-	ui->diffTimeSpinBox->setValue(ui->diffLimitSpinBox->value() / currFreq);
+	ui->diffTimeSpinBox->setValue(ui->diffLimitSpinBox->value() / DEFS.getFreq());
 	showDerivatives();
 	paintLimits();
 }
@@ -277,7 +277,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 	if(event->size() == event->oldSize()) { return; }
 
     // adjust scrollArea size
-	double newLen = smLib::doubleRound((event->size().width() - scrollAreaGapX) / currFreq,
+	double newLen = smLib::doubleRound((event->size().width() - scrollAreaGapX) / DEFS.getFreq(),
 									   ui->paintLengthDoubleSpinBox->decimals());
 	double newHei = std::max(int(smLib::doubleRound(event->size().height(), -1)),
 							 this->minimumHeight())
@@ -285,7 +285,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 
     ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
                                 ui->scrollArea->geometry().y(),
-								newLen * currFreq,
+								newLen * DEFS.getFreq(),
 								newHei);
 	ui->paintLengthDoubleSpinBox->setValue(newLen);
 
@@ -342,7 +342,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			{
 				ui->scrollArea->horizontalScrollBar()->setSliderPosition(
 							ui->scrollArea->horizontalScrollBar()->sliderPosition()
-							+ offset * def::freq);
+							+ offset * DEFS.getFreq());
 				return true;
 			}
 			else if(myFileType == fileType::edf)
@@ -380,7 +380,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				{ this->forwardFrameSlot(); }
 				else
 				{ ui->paintStartDoubleSpinBox->setValue(
-								this->dataCutLocal.cols() / def::freq -
+								this->dataCutLocal.cols() / DEFS.getFreq() -
 								ui->paintLengthDoubleSpinBox->value()); }
 				break;
 			}
@@ -551,7 +551,7 @@ void Cut::paint()
 	int rightDrawLimit = 0.;
     if(myFileType == fileType::edf)
     {
-		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * currFreq;
+		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * DEFS.getFreq();
 		rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), int(dataCutLocal.cols()));
     }
     else if(myFileType == fileType::real)
@@ -579,7 +579,7 @@ void Cut::paint()
 
 	subData = subData.subRows(std::vector<int>{0, 1, 2,3,4,5,6,7,8,9,10,11, 16,17,18,19});
 	currentPic = myLib::drw::drawEeg(subData * coeff,
-									 currFreq,
+									 DEFS.getFreq(),
 									 colouredChans);
 
 
@@ -619,14 +619,14 @@ void Cut::paintLimits()
 	paint.begin(&tempPic);
 
 	int leftX = ui->leftLimitSpinBox->value() - leftDrawLimit;
-	if(leftX >= 0 && leftX < ui->paintLengthDoubleSpinBox->value() * this->currFreq)
+	if(leftX >= 0 && leftX < ui->paintLengthDoubleSpinBox->value() * DEFS.getFreq())
 	{
 		paint.setPen(QPen(QBrush("blue"), 2));
 		paint.drawLine(leftX, 0, leftX, tempPic.height());
 	}
 
 	int rightX = ui->rightLimitSpinBox->value() - leftDrawLimit;
-	if(rightX >= 0 && rightX < ui->paintLengthDoubleSpinBox->value() * this->currFreq)
+	if(rightX >= 0 && rightX < ui->paintLengthDoubleSpinBox->value() * DEFS.getFreq())
 	{
 		paint.setPen(QPen(QBrush("red"), 2));
 		paint.drawLine(rightX, 0, rightX, tempPic.height());

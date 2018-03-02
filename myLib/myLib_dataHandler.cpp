@@ -7,51 +7,45 @@ using namespace myOut;
 namespace myLib
 {
 
-void makeFileLists(const QString & path,
-				   std::vector<QStringList> & lst,
-				   const QStringList & auxFilters)
+std::vector<QStringList> makeFileLists(const QString & path,
+									   const QStringList & auxFilters)
 {
+	std::vector<QStringList> res;
+
 	QDir localDir(path);
-	QStringList nameFilters, leest;
-	QString helpString;
-	for(const QString & fileMark : def::fileMarkers)
+	for(const QString & fileMark : DEFS.getFileMarks())
 	{
-//		std::cout << fileMark << std::endl;
-		nameFilters.clear();
-		leest.clear();
-		leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
+		QStringList nameFilters;
+		QStringList leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
 		for(const QString & filter : leest)
 		{
-			helpString = "*" + filter + "*";
+			QString helpString = "*" + filter + "*";
 			if(!auxFilters.isEmpty())
 			{
 				for(const QString & aux : auxFilters)
 				{
-//                    nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
 					nameFilters << QString("*" + aux + helpString);
 				}
 			}
 			else
 			{
-//                nameFilters << QString(def::ExpName.left(3) + helpString);
 				nameFilters << helpString;
-
 			}
 		}
-//		std::cout << nameFilters.toStdList() << std::endl;
-		lst.push_back(localDir.entryList(nameFilters,
+		res.push_back(localDir.entryList(nameFilters,
 										 QDir::Files,
 										 QDir::Name)); /// Name ~ order
 	}
+	return res;
 }
 
-void makeFullFileList(const QString & path,
-					  QStringList & lst,
-					  const QStringList & auxFilters)
+QStringList makeFullFileList(const QString & path,
+							 const QStringList & auxFilters)
 {
-	if(def::fileMarkers.isEmpty())
+	QStringList res{};
+	if(DEFS.getFileMarks().isEmpty())
 	{
-		lst = QDir(path).entryList({"*.edf", "*.EDF", QString("*." + def::plainDataExtension)},
+		res = QDir(path).entryList({"*.edf", "*.EDF", QString("*." + defs::plainDataExtension)},
 								   QDir::Files,
 								   QDir::Name); /// Name ~ order
 	}
@@ -60,7 +54,7 @@ void makeFullFileList(const QString & path,
 		QDir localDir(path);
 		QStringList nameFilters, leest;
 		QString helpString;
-		for(const QString & fileMark : def::fileMarkers)
+		for(const QString & fileMark : DEFS.getFileMarks())
 		{
 			leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
 			for(const QString & filter : leest)
@@ -70,7 +64,6 @@ void makeFullFileList(const QString & path,
 				{
 					for(const QString & aux : auxFilters)
 					{
-//                        nameFilters << QString(def::ExpName.left(3) + "*" + aux + helpString);
 						nameFilters << QString("*" + aux + helpString);
 						nameFilters << QString(helpString + aux + "*");
 
@@ -78,54 +71,52 @@ void makeFullFileList(const QString & path,
 				}
 				else
 				{
-//                    nameFilters << QString(def::ExpName.left(3) + helpString);
 					nameFilters << helpString;
 				}
 
 			}
 		}
-//		std::cout << nameFilters << std::endl;
-		lst = localDir.entryList(nameFilters,
+		res = localDir.entryList(nameFilters,
 								 QDir::Files,
 								 QDir::Name); /// Name ~ order
-//		std::cout << lst.size() << std::endl;
 	}
+	return res;
 }
 
 
-void readFileInLineRaw(const QString & filePath,
-					   std::valarray<double> & result)
+std::valarray<double> readFileInLineRaw(const QString & filePath)
 {
+	std::valarray<double> res{};
 	std::ifstream file(filePath.toStdString());
 	if(!file.good())
 	{
 		std::cout << "readFileInLine: bad file " << filePath << std::endl;
-		return;
+		return {};
 	}
-	std::vector<double> res;
+	std::vector<double> vec{};
 	double tmp;
-	while(1)
+	while(file >> tmp)
 	{
-		file >> tmp;
 		if(!file.eof())
 		{
-			res.push_back(tmp);
+			vec.push_back(tmp);
 		}
-		else break;
+		else { break; }
 	}
 	file.close();
-	result.resize(res.size());
-	std::copy(std::begin(res), std::end(res), std::begin(result));
+	res.resize(vec.size());
+	std::copy(std::begin(vec), std::end(vec), std::begin(res));
+	return res;
 }
 
-void readFileInLine(const QString & filePath,
-					std::valarray<double> & result)
+std::valarray<double> readFileInLine(const QString & filePath)
 {
+	std::valarray<double> res;
 	std::ifstream file(filePath.toStdString());
     if(!file.good())
     {
 		std::cout << "readFileInLine: bad file " << filePath << std::endl;
-        return;
+		return {};
     }
     int rows;
     int cols;
@@ -135,12 +126,13 @@ void readFileInLine(const QString & filePath,
     file >> cols;
 
     int len = rows * cols;
-    result.resize(len);
+	res.resize(len);
     for(int i = 0; i < len; ++i)
     {
-        file >> result[i];
+		file >> res[i];
     }
     file.close();
+	return res;
 }
 
 template <typename ArrayType>
@@ -192,15 +184,15 @@ void writePlainData(const QString outPath,
 	if(fin == -1) { fin = data.cols(); }
 
 	std::ofstream outStr;
-    if(outPath.endsWith(def::plainDataExtension))
+	if(outPath.endsWith(defs::plainDataExtension))
     {
         outStr.open(outPath.toStdString());
     }
     else
     {
         QString outPathNew = outPath;
-		outPathNew.remove("." + def::plainDataExtension); /// what is this for?
-        outStr.open((outPathNew + '.' + def::plainDataExtension).toStdString());
+		outPathNew.remove("." + defs::plainDataExtension); /// what is this for?
+		outStr.open((outPathNew + '.' + defs::plainDataExtension).toStdString());
     }
 	outStr << "NumOfSlices " << fin - sta << '\t';
     outStr << "NumOfChannels " << data.rows() << "\r\n";
@@ -222,16 +214,16 @@ void writePlainData(const QString outPath,
     outStr.close();
 }
 
-void readPlainData(const QString & inPath,
-				   matrix & data,
-				   int start)
+matrix readPlainData(const QString & inPath,
+					 int start)
 {
+	matrix res{};
 	std::ifstream inStr;
     inStr.open(inPath.toStdString());
     if(!inStr.good())
     {
 		std::cout << "readPlainData: cannot open file\n" << inPath << std::endl;
-        return;
+		return {};
     }
     int localNs;
 	int numOfSlices;
@@ -240,15 +232,15 @@ void readPlainData(const QString & inPath,
     inStr.ignore(64, ' '); // "NumOfChannels "
     inStr >> localNs;
 
-	data.resize(localNs, start + numOfSlices);
+	res.resize(localNs, start + numOfSlices);
 
     for (int i = 0; i < numOfSlices; ++i)
     {
         for(int j = 0; j < localNs; ++j)
         {
-            inStr >> data[j][i + start];
+			inStr >> res[j][i + start];
             /// Ossadtchi
-//            if(j == ns - 1 && def::OssadtchiFlag)
+//            if(j == ns - 1 && DEFS.isUser(username::Ossadtchi))
 //            {
 //                if(i == 0) data[j][i + start] = inPath.right(3).toDouble();
 //                else if(i == numOfSlices-1) data[j][i + start] = 254;
@@ -258,51 +250,49 @@ void readPlainData(const QString & inPath,
         }
     }
     inStr.close();
+	return res;
 }
 
-void readMatrixFileRaw(const QString & filePath,
-					   matrix & outData)
+matrix readMatrixFileRaw(const QString & filePath)
 {
-	std::ifstream file(filePath.toStdString());
-	if(!file.good())
+	matrix outData{};
+
+	QFile fil(filePath);
+	fil.open(QIODevice::ReadOnly);
+	if(!fil.isOpen())
 	{
-		std::cout << "readMatrixFile: bad input file " << filePath << std::endl;
-		return;
+		std::cout << "readMatrixFile: can't open file " << filePath << std::endl;
+		return {};
 	}
-
-	outData = matrix();
-	std::vector<double> tmp;
-	int bufSiz = 10000;
-	char * tmpStr = new char [bufSiz];
-	QString str;
-	QStringList lst;
-
 	while(1)
 	{
-		file.getline(tmpStr, bufSiz);
-		if(file.eof()) break;
+		/// QFile
+		QString str = fil.readLine();
+		{
+			if(str.isEmpty()) { break; }
+		}
+		QStringList lst = str.split('\t',
+									QString::SkipEmptyParts);
 
-		str = QString(tmpStr);
-		lst = str.split('\t', QString::SkipEmptyParts);
+		std::vector<double> tmp{};
 		for(const QString & item : lst)
 		{
 			tmp.push_back(item.toDouble());
 		}
 		outData.push_back(tmp);
-		tmp.clear();
 	}
-	file.close();
-	delete[] tmpStr;
+	fil.close();
+	return outData;
 }
 
-void readMatrixFile(const QString & filePath,
-                    matrix & outData)
+matrix readMatrixFile(const QString & filePath)
 {
+	matrix res;
 	std::ifstream file(filePath.toStdString());
     if(!file.good())
     {
 		std::cout << "readMatrixFile: bad input file " << filePath << std::endl;
-        return;
+		return {};
     }
     int rows;
     int cols;
@@ -311,16 +301,17 @@ void readMatrixFile(const QString & filePath,
     file.ignore(64, ' ');
     file >> cols;
 
-    outData.resize(rows, cols);
+	res.resize(rows, cols);
 
     for(int i = 0; i < rows; ++i)
     {
         for(int j = 0; j < cols; ++j)
         {
-            file >> outData[i][j];
+			file >> res[i][j];
         }
     }
     file.close();
+	return res;
 }
 
 
@@ -418,11 +409,11 @@ void readUCIdataSet(const QString & setName,
                     std::vector<uint> & outTypes)
 {
     QString newName = setName.toUpper();
-	myLib::readMatrixFile(def::uciFolder + "/" + newName + "_data.txt", outData);
+	outData = myLib::readMatrixFile(defs::uciFolder + "/" + newName + "_data.txt");
 
 
 	std::ifstream inStr;
-	inStr.open((def::uciFolder + "/" + newName + "_types.txt").toStdString());
+	inStr.open((defs::uciFolder + "/" + newName + "_types.txt").toStdString());
 
     int num = 0;
     inStr >> num;
@@ -444,7 +435,7 @@ void readUCIdataSet(const QString & setName,
     }
 }
 
-
+/// transpose?
 void invertMatrixFile(const QString & inPath,
 					  const QString & outPath)
 {
@@ -468,7 +459,7 @@ void invertMatrixFile(const QString & inPath,
 				inStr >> mtrx.back()[i];
 			}
 		}
-		else break;
+		else { break; }
 
 	}
 	inFil.close();

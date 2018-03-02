@@ -67,7 +67,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	QString helpString = "data sliced\nns equals to " + nm(globalEdf.getNs());
 	ui->textEdit->append(helpString);
 
-	std::cout << "sliceAll: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
+	std::cout << "sliceAll: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::sliceJustWinds()
@@ -80,7 +80,7 @@ void MainWindow::sliceJustWinds()
 	int windowCounter = 0;
 	for(int i = 0; i < fil.getDataLen() - wndLength; i += timeShift)
 	{
-		QString helpString = def::windsFromRealsDir()
+		QString helpString = DEFS.windsFromRealsDir()
 							 + "/" + fil.getExpName()
 							 + "." + rn(windowCounter++, 4);
 		fil.saveSubsection(i, i + wndLength, helpString, true);
@@ -166,7 +166,7 @@ void MainWindow::sliceWinds()
 		}
 		else
 		{
-			helpString = def::windsFromRealsDir()
+			helpString = DEFS.windsFromRealsDir()
 						 + "/" + fil.getExpName()
 						 + "." + rn(numReal, 4)
 						 + "_" + marker
@@ -272,9 +272,9 @@ void MainWindow::sliceElena()
 			i < (*openFin).first - restWindow * fil.getFreq();
 			i += restShift * fil.getFreq(), ++counter)
 		{
-			helpString = def::dirPath()
+			helpString = DEFS.dirPath()
 						 + "/Reals"
-						 + "/" + def::ExpName
+						 + "/" + fil.getExpName()
 						 + "_n_0_" + nm(counter)
 						 + "_m_" + nm(eyesMarks[typ][0])
 						 + "_t_" + nm(eyesCodes[typ]);
@@ -322,9 +322,9 @@ void MainWindow::sliceElena()
 			}
 			else if(245 <= markChanArr[i] && markChanArr[i] <= 254) // task end
 			{
-				helpString = def::dirPath()
+				helpString = DEFS.dirPath()
 							 + "/Reals"
-							 + "/" + def::ExpName
+							 + "/" + fil.getExpName()
 							 + "_n_" + nm(number)
 							 + "_m_" + nm(marker)
 							 + "_t_" + nm(markChanArr[i]);
@@ -413,9 +413,9 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker)
         if(h == 2)
         {
             ++number;
-            helpString = def::dirPath()
+			helpString = DEFS.dirPath()
 					+ "/Reals"
-					+ "/" + def::ExpName
+					+ "/" + fil.getExpName()
                     + "_" + marker
 					+ "." + rn(number, 4);
 
@@ -479,15 +479,15 @@ void MainWindow::sliceOneByOne()
 			const int finish = i;
 #endif
 
-            helpString = def::dirPath()
+			helpString = DEFS.dirPath()
 						 + "/Reals"
-						 + "/" + def::ExpName
+						 + "/" + fil.getExpName()
 						 + "." + rn(number++, 4);
 
 
             if(finish > start)
             {
-				if(finish - start <= def::freq * 62) /// magic const generality limit
+				if(finish - start <= DEFS.getFreq() * 62) /// magic const generality limit
                 {
                     helpString += "_" + marker;
 					fil.saveSubsection(start,
@@ -496,7 +496,7 @@ void MainWindow::sliceOneByOne()
                 }
                 else /// pause rest
                 {
-					if(def::writeLongStartEnd)
+					if(defs::writeLongStartEnd)
                     {
                         helpString += "_000";
                         fil.saveSubsection(start,
@@ -537,11 +537,11 @@ void MainWindow::sliceOneByOne()
 
     /// write final
     {
-        helpString = def::dirPath()
+		helpString = DEFS.dirPath()
 					 + "/Reals"
-					 + "/" + def::ExpName
+					 + "/" + fil.getExpName()
 					 + "." + rn(number++, 4);
-        if(fil.getDataLen() - start < 40 * def::freq) /// if last realisation or interstimulus
+		if(fil.getDataLen() - start < 40 * DEFS.getFreq()) /// if last realisation or interstimulus
         {
             helpString += "_" + marker;
             fil.saveSubsection(start,
@@ -550,7 +550,7 @@ void MainWindow::sliceOneByOne()
         }
         else /// just last big rest with eyes closed/open
         {
-			if(def::writeLongStartEnd)
+			if(defs::writeLongStartEnd)
             {
                 helpString += "_000";
                 fil.saveSubsection(start,
@@ -610,21 +610,21 @@ void MainWindow::sliceOneByOneNew()
                 marker = "sht";
             }
 
-            helpString = def::dirPath()
+			helpString = DEFS.dirPath()
 						 + "/Reals"
-						 + "/" + def::ExpName
+						 + "/" + fil.getExpName()
 						 + "." + rn(number++, 4);
 //            std::cout << helpString << std::endl;
             if(i > j)
             {
-                if(i - j <= def::freq * 60) /// const generality limit
+				if(i - j <= DEFS.getFreq() * 60) /// const generality limit
                 {
                     helpString += "_" + marker;
                     fil.saveSubsection(j, i, helpString, true);
                 }
                 else /// pause rest
                 {
-					if(def::writeLongStartEnd)
+					if(defs::writeLongStartEnd)
                     {
                         helpString += "_000";
                         fil.saveSubsection(j, i, helpString, true);
@@ -657,18 +657,18 @@ void MainWindow::sliceOneByOneNew()
     }
     /// write final
     {
-        helpString = def::dirPath()
+		helpString = DEFS.dirPath()
 					 + "/Reals"
-					 + "/" + def::ExpName
+					 + "/" + fil.getExpName()
 					 + "." + rn(number++, 4);
-        if(fil.getDataLen() - j < 40 * def::freq) /// if last realisation or interstimulus
+		if(fil.getDataLen() - j < 40 * DEFS.getFreq()) /// if last realisation or interstimulus
         {
             helpString += "_" + marker;
             fil.saveSubsection(j, fil.getDataLen(), helpString, true);
         }
         else /// just last big rest with eyes closed/open
         {
-			if(def::writeLongStartEnd)
+			if(defs::writeLongStartEnd)
             {
                 helpString += "_000";
                 fil.saveSubsection(j, fil.getDataLen(), helpString, true);
@@ -708,7 +708,7 @@ void MainWindow::sliceMatiSimple()
     const edfFile & fil = globalEdf;
     double currMarker;
     int number;
-    double piece = ui->matiPieceLengthSpinBox->value() * def::freq;
+	double piece = ui->matiPieceLengthSpinBox->value() * DEFS.getFreq();
 
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
@@ -763,9 +763,9 @@ void MainWindow::sliceMatiSimple()
 
                 for(int j = 0; j < number; ++j) // num of pieces
                 {
-                    helpString = (def::dirPath()
+					helpString = (DEFS.dirPath()
 														  + "/Reals"
-														  + "/" + def::ExpName
+														  + "/" + globalEdf.getExpName()
 														  + "_" + nm(type)
 														  + "_" + nm(session[type])
 														  + "_" + rn(j, 2)
@@ -792,7 +792,7 @@ void MainWindow::sliceMatiSimple()
     }
     ui->progressBar->setValue(0);
 
-	std::cout << "sliceMatiSimple: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
+	std::cout << "sliceMatiSimple: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
     stopFlag = 0;
 #endif
 }
@@ -869,9 +869,9 @@ void MainWindow::sliceMati()
         {
             if(type != 3) // dont write rests
             {
-				helpString = def::dirPath()
+				helpString = DEFS.dirPath()
 							 + "/auxEdfs"
-							 + "/" + def::ExpName
+							 + "/" + fil.getExpName()
 							 + "_" + nm(type)
 							 + "_" + nm(session[type])
 							 + ".edf";
@@ -914,7 +914,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     const double pieceLength = ui->matiPieceLengthSpinBox->value();
 	const bool adjustPieces = ui->matiAdjustPiecesCheckBox->isChecked();
 
-    def::dir->cd(globalEdf.getDirPath());
+    DEFS.setDir(globalEdf.getDirPath());
     edfFile fil;
 
     if(pieceLength <= 4.)
@@ -931,7 +931,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 		for(int session = 0; session < 15; ++session) /// magic const
         {
             // edf session path
-			helpString = def::dirPath()
+			helpString = DEFS.dirPath()
 						 + "/auxEdfs"
 						 + "/" + globalEdf.getExpName()
 						 + "_" + nm(type)
@@ -958,7 +958,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                 {
                     do
                     {
-						currEnd = std::min(int(currStart + pieceLength * def::freq), dataLen);
+						currEnd = std::min(int(currStart + pieceLength * DEFS.getFreq()), dataLen);
 
                         if(type == 0 || type == 2)
                         {
@@ -979,12 +979,12 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 
                         if(currEnd <= currStart) // no count answers during pieceLength seconds
                         {
-							currEnd = std::min(int(currStart + pieceLength * def::freq), dataLen);
+							currEnd = std::min(int(currStart + pieceLength * DEFS.getFreq()), dataLen);
                         }
 
                         // type and session already in the fil.ExpName
 
-						helpString = def::dirPath()
+						helpString = DEFS.dirPath()
 									 + "/" + folder
 									 + "/" + fil.getExpName()
 									 + "_" + rn(pieceNum, 2)
@@ -1001,8 +1001,8 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                 {
                     while(currStart < dataLen)
                     {
-						currEnd = std::min(int(currStart + pieceLength * def::freq), dataLen);
-                        helpString = (def::dirPath()
+						currEnd = std::min(int(currStart + pieceLength * DEFS.getFreq()), dataLen);
+						helpString = (DEFS.dirPath()
 															  + "/" + folder
 															  + "/" + fil.getExpName()
 															  + "_" + rn(pieceNum, 2)

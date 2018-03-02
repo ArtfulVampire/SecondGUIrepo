@@ -319,7 +319,7 @@ void ANN::learn(std::vector<uint> & indices)
 	/// std::cout epoch
 //    std::cout << "epoch = " << epoch << "\t"
 //              << "error = " << smLib::doubleRound(currentError, 4) << "\t"
-//              << "time elapsed = " << myTime.elapsed()/1000. << " sec"  << std::endl;
+//              << "time elapsed = " << myTime.elapsed() / 1000. << " sec"  << std::endl;
 }
 
 
@@ -355,7 +355,7 @@ void ANN::classifyDatum1(uint vecNum)
 	/// std::cout results
 	const int numOfLayers = dim.size();
 	std::ofstream resFile;
-	resFile.open((def::dirPath() +
+	resFile.open((DEFS.dirPath() +
 				  "/class.txt").toStdString(),
 				 std::ios_base::app);
 
@@ -384,14 +384,14 @@ const ANN::weightType & ANN::getWeight()
 
 void ANN::writeWeight(const QString & wtsPath) const
 {
-//    static int wtsCounter = 0;
+	static int wtsCounter = 0;
     std::ofstream weightsFile;
     if(wtsPath.isEmpty())
     {
-		weightsFile.open((def::dirPath()
-						  + "/Help/wts/"
-						  + def::ExpName
-//						  + "_" + nm(wtsCounter++)
+		weightsFile.open((DEFS.dirPath()
+						  + "/Help/wts"
+						  + "/weight"
+						  + "_" + nm(wtsCounter++)
 						  + ".wts").toStdString());
     }
     else
@@ -465,15 +465,9 @@ void ANN::drawWeight(QString wtsPath,
 
     if(!QFile::exists(wtsPath))
     {
-		wtsPath = def::dirPath()
-				  + "/Help/wts/"
-				  + def::ExpName + ".wts";
-        if(!QFile::exists(wtsPath))
-        {
-			std::cout << "ANN::drawWeight: cant find wtsFile" << std::endl;
-            return;
-        }
-    }
+		std::cout << "ANN::drawWeight: cant find wtsFile" << std::endl;
+		return;
+	}
 	twovector<std::valarray<double>> tempWeights; /// [0][3][NetLen]
 	readWeight(wtsPath, &tempWeights);
 	matrix drawWts = tempWeights[0];

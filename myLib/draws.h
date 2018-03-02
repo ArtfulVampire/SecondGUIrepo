@@ -45,7 +45,7 @@ void drawRealisation(const QString & inPath);
 QPixmap drawEeg(const matrix & dataD,
 				int ns,
 				int NumOfSlices,
-				int freq = def::freq,
+				int freq = DEFS.getFreq(),
 				const QString & picPath = QString(),
 				double norm = 1.,
 				int blueChan = -1,
@@ -55,7 +55,7 @@ QPixmap drawEeg(const matrix & dataD,
 				int ns,
 				int startSlice,
 				int endSlice,
-				int freq = def::freq,
+				int freq = DEFS.getFreq(),
 				const QString & picPath = QString(),
 				double norm = 1.,
 				int blueChan = -1,
@@ -69,8 +69,8 @@ QPixmap drawOneSignal(const std::valarray<double> & signal,
 QPixmap drawOneTemplate(const int chanNum = -1,
 						const bool channelsFlag = true,
 						const QString & savePath = QString(),
-						const double leftF = def::leftFreq,
-						const double rightF = def::rightFreq);
+						const double leftF = DEFS.getLeftFreq(),
+						const double rightF = DEFS.getRightFreq());
 
 QPixmap drawOneArray(const QString & templPath,
 					 const std::valarray<double> & arr,
@@ -85,14 +85,14 @@ QPixmap drawTemplate(const QString & outPath = QString(),
 
 void drawArray(const QString & templPath,
 			   const matrix & inData,
-//               const def::spectraGraphsNormalization normType = 0, ////// TO DO
+//               const spectraNorming normType = 0, ////// TO DO
 			   const QString & color = "black",
 			   double scaling = 1.,
 			   int lineWidth = 3);
 
 void drawArray(const QString & templPath,
 			   const std::valarray<double> & inData,
-//               const def::spectraGraphsNormalization normType = 0, ////// TO DO
+//               const spectraNorming normType = 0, ////// TO DO
 			   const QString & color = "black",
 			   double scaling = 1.,
 			   int lineWidth = 3);
@@ -104,28 +104,28 @@ void drawArrayWithSigma(const QString & templPath,
 						const QString & color = "blue",
 						int lineWidth = 3);
 
-// inMatrix supposed to be def::spLength() * 19 size
+// inMatrix supposed to be spLength * 19 size
 double drawArrays(const QString & templPath,
 				const matrix & inMatrix,
 				const bool weightsFlag = false,
-				const def::spectraNormTyp normType = def::spectraNormTyp::all,
+				const spectraNorming normType = spectraNorming::all,
 				double norm = 0.,
-				const std::vector<QColor> & colors = def::colours,
+				const std::vector<QColor> & colors = defs::colours,
 				const double scaling = 1.,
 				const int lineWidth = 3);
 
 QPixmap drawArrays(const QPixmap & templPixmap,
 				const matrix & inMatrix,
 				const bool weightsFlag = false,
-				const def::spectraNormTyp normType = def::spectraNormTyp::all,
+				const spectraNorming normType = spectraNorming::all,
 				double norm = 0.,
-				const std::vector<QColor> & colors = def::colours,
+				const std::vector<QColor> & colors = defs::colours,
 				const double scaling = 1.,
 				const int lineWidth = 3);
 
 void drawArraysInLine(const QString & picPath,
 					  const matrix & inMatrix,
-					  const std::vector<QColor> & colors = def::colours,
+					  const std::vector<QColor> & colors = defs::colours,
 					  const double scaling = 1.,
 					  const int lineWidth = 3);
 
@@ -134,20 +134,20 @@ void drawCutOneChannel(const QString & inSpectraPath,
 
 QPixmap drawOneSpectrum(const std::valarray<double> & signal,
 						const QString & outPath = QString(),
-						double leftFr = def::leftFreq,
-						double rightFr = def::rightFreq,
-						double srate = def::freq,
+						double leftFr = DEFS.getLeftFreq(),
+						double rightFr = DEFS.getRightFreq(),
+						double srate = DEFS.getFreq(),
 						int numOfSmooth = 10,
 						const QString & color = "black",
 						int lineWidth = 2);
 
 void drawMannWitney(const QString & templPath,
 					const trivector<int> & inMW,
-					const std::vector<QColor> & inColors = def::colours);
+					const std::vector<QColor> & inColors = defs::colours);
 
 void drawMannWitneyInLine(const QString & picPath,
 						  const trivector<int> & inMW,
-						  const std::vector<QColor> & inColors = def::colours);
+						  const std::vector<QColor> & inColors = defs::colours);
 
 
 

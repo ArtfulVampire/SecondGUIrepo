@@ -35,7 +35,7 @@ matrix makeTestData(const QString & outPath)
 
 	for(int i = 0; i < testSignals.cols(); ++i)
 	{
-		helpDouble = 2. * pi * i / def::freq * 12.5; // 12.5 Hz ~ 20 bins per period
+		helpDouble = 2. * pi * i / DEFS.getFreq() * 12.5; // 12.5 Hz ~ 20 bins per period
 		testSignals[0][i] = sin(helpDouble); // sine
 
 		testSignals[1][i] = (i + 2) % 29;      // saw

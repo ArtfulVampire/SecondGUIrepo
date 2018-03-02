@@ -34,12 +34,13 @@ typedef unsigned int uint;
 #define SHOW_IITP_WIDGETS 01
 #endif
 
-#ifndef ELENA_VARIANT
-#define ELENA_VARIANT 0
-#endif
-
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
+#endif
+
+/// 0 - old namespace def, 1 - new defs singleton
+#ifndef DEF_TYPE
+#define DEF_TYPE 0
 #endif
 
 #endif

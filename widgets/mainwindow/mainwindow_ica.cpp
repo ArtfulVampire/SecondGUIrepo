@@ -24,7 +24,7 @@ void MainWindow::ICA() // fastICA
 
 	// data = A * comps, comps = W * data
 
-	// count components = matrixW*data and write to def::ExpName_ICA.edf
+	// count components = matrixW*data and write to FileName_ICA.edf
 	// count inverse matrixA = matrixW^-1 and draw maps of components
 	// write automatization for classification different sets of components, find best set, explain
 
@@ -33,23 +33,17 @@ void MainWindow::ICA() // fastICA
 
     QTime myTime;
     myTime.start();
+	std::cout << "Ica started: " << std::endl;
 
-    QString helpString;
-    int counter;
 
-    helpString = def::dirPath()
-				 + "/" + def::ExpName + ".edf";
-	std::cout << "Ica started: " << helpString << std::endl;
     readData();
 
 	const uint ns = ui->numOfIcSpinBox->value(); // generality. Bind to reduceChannelsLineEdit?
     const int dataLength = globalEdf.getDataLen();
 
-
-    const double eigenValuesTreshold = pow(10., - ui->svdDoubleSpinBox->value());
-    const double vectorWTreshold = pow(10., - ui->vectwDoubleSpinBox->value());
-    const QString pathForAuxFiles = def::dirPath()
-									+ "/Help/ica";
+	const double eigenValuesTreshold = std::pow(10., - ui->svdDoubleSpinBox->value());
+	const double vectorWTreshold = std::pow(10., - ui->vectwDoubleSpinBox->value());
+	const QString pathForAuxFiles = DEFS.dirPath() + "/Help/ica";
 
 #define NEW_9_3_17 1
 
@@ -70,10 +64,10 @@ void MainWindow::ICA() // fastICA
 						ns);
 
     const QString eigMatPath = pathForAuxFiles
-							   + "/" + def::ExpName
+							   + "/" + globalEdf.getExpName()
 							   + "_eigenMatrix.txt";
     const QString eigValPath = pathForAuxFiles
-							   + "/" + def::ExpName
+							   + "/" + globalEdf.getExpName()
 							   + "_eigenValues.txt";
     /// careful !
     if(!QFile::exists(eigMatPath) &&
@@ -93,11 +87,11 @@ void MainWindow::ICA() // fastICA
     }
     else /// read
     {
-        // write eigenVectors
-		myLib::readMatrixFile(eigMatPath, eigenVectors);
+		// read eigenVectors
+		eigenVectors = myLib::readMatrixFile(eigMatPath);
 
-        // write eigenValues
-		myLib::readFileInLine(eigValPath, eigenValues);
+		// read eigenValues
+		eigenValues = myLib::readFileInLine(eigValPath);
     }
 
 	std::cout << "ICA: svd read = " << myTime.elapsed() / 1000. << " sec" << std::endl;
@@ -150,7 +144,7 @@ void MainWindow::ICA() // fastICA
     myTime.restart();
 
 //    helpString = pathForAuxFiles
-//                 + "/" + def::ExpName + "_vectorW.txt";
+//                 + "/" + globalEdf.getExpName() + "_vectorW.txt";
 //    writeMatrixFile(helpString,
 //                     vectorW);
 
@@ -262,9 +256,9 @@ void MainWindow::ICA() // fastICA
 		std::swap((*it1).second, (*it2).second);
 	}
 
-	helpString = def::dirPath()
+	helpString = DEFS.dirPath()
 				 + "/Help"
-				 + "/" + def::ExpName + "_maps_after_var.txt";
+				 + "/" + globalEdf.getExpName() + "_maps_after_var.txt";
 	myLib::writeMatrixFile(helpString, matrixA); // generality 19-ns
 
     for(int i = 0; i < ns; ++i)
@@ -351,8 +345,8 @@ void MainWindow::ICA() // fastICA
 		std::cout << "comp = " << i+1 << "\t";
 		std::cout << "explVar = " << smLib::doubleRound(explainedVariance[i], 2) << std::endl;
     }
-	helpString = (pathForAuxFiles
-				  + "/" + def::ExpName + "_explainedVariance.txt");
+	QString helpString = (pathForAuxFiles
+				  + "/" + globalEdf.getExpName() + "_explainedVariance.txt");
 	myLib::writeFileInLine(helpString, explainedVariance);
 	// end componets ordering
 #endif
@@ -362,7 +356,7 @@ void MainWindow::ICA() // fastICA
     // test  data = matrixA * comps;
     // again to check reordering and normalizations
 
-    counter = 0;
+	int counter = 0;
     for(int j = 0; j < dataLength; ++j)
     {
         std::valarray<double> currCol = components.getCol(j, ns);
@@ -389,16 +383,14 @@ void MainWindow::ICA() // fastICA
 
 	// now should draw amplitude maps OR write to file
         helpString = pathForAuxFiles
-					 + "/" + def::ExpName + "_maps.txt";
+					 + "/" + globalEdf.getExpName() + "_maps.txt";
 		myLib::writeMatrixFile(helpString, matrixA); // generality 19-ns
 		myLib::drawMapsICA(helpString,
-						   def::dirPath() + "/Help/ica",
-						   def::ExpName);
+						   DEFS.dirPath() + "/Help/ica",
+						   globalEdf.getExpName());
 
 
-    // save components
-    helpString = def::dirPath()
-				 + "/" + def::ExpName + "_ica.edf";
+	// save components
 
     std::vector<int> chanList(ns);
 	std::iota(std::begin(chanList), std::end(chanList), 0);
@@ -408,7 +400,10 @@ void MainWindow::ICA() // fastICA
 //	components.vertCat(resMatBackup);
 	components.push_back(globalEdf.getMarkArr());
 
+	helpString = DEFS.dirPath()
+				 + "/" + globalEdf.getExpName() + "_ica.edf";
 	globalEdf.writeOtherData(components, helpString, chanList);
 
-	std::cout << "ICA ended. time = " << wholeTime.elapsed()/1000. << " sec" << std::endl;
+
+	std::cout << "ICA ended. time = " << wholeTime.elapsed() / 1000. << " sec" << std::endl;
 }

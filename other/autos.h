@@ -38,16 +38,6 @@ void countLogFFT(const matrix & inData,
 				 double srate,
 				 std::ostream & outStr);
 
-enum featuresMask {
-	spectre	= 0x01,
-	alpha	= 0x02,
-	fracDim	= 0x04,
-	Hilbert	= 0x08,
-	wavelet	= 0x10,
-	Hjorth	= 0x20,
-	logFFT	= 0x40
-};
-
 using featureFuncType = std::function<void(const matrix &, double, std::ostream &)>;
 
 const std::vector<std::tuple<int, QString, featureFuncType, int>> FEATURES {
@@ -159,26 +149,26 @@ void IITPfilterGonios(const QString & guyName,
 															"knee",
 															"ankle"});
 
-void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
-void IITPremoveZchans(const QString & guyName, const QString & dirPath = def::iitpSyncFolder);
+void IITPremoveZchans(const QString & hauptDir = defs::iitpSyncFolder);
+void IITPremoveZchans(const QString & guyName, const QString & dirPath = defs::iitpSyncFolder);
 
 
 void IITPcopyToCar(const QString & guyName);
 
 void IITPrerefCAR(const QString & guyName,
-				  const QString & dirPath = def::iitpSyncFolder,
+				  const QString & dirPath = defs::iitpSyncFolder,
 				  const QString & addFilter = QString());
 
 void IITPemgToAbs(const QString & guyName,
 				  QString postfix = "_sum_new",
-				  const QString & dirPath = def::iitpSyncFolder);
+				  const QString & dirPath = defs::iitpSyncFolder);
 void IITPstagedToEnveloped(const QString & guyName,
 						   QString postfix = "_sum_new_f",
-						   const QString & dirPath = def::iitpSyncFolder);
+						   const QString & dirPath = defs::iitpSyncFolder);
 void IITPstaging(const QString & guyName,
-				 const QString & dirPath = def::iitpSyncFolder);
+				 const QString & dirPath = defs::iitpSyncFolder);
 void IITPprocessStaged(const QString & guyName,
-					   const QString & dirPath = def::iitpSyncFolder);
+					   const QString & dirPath = defs::iitpSyncFolder);
 
 void IITPwriteCohsToFile(std::ofstream & outStr,
 						 iitp::iitpData & dt,
@@ -191,7 +181,7 @@ void IITPdrawCohMaps(const std::vector<iitp::forMap> & forMapsVector,
 
 
 void IITPdrawSpectralMaps(const QString & guyName,
-						  const QString & dirPath = def::iitpResFolder);
+						  const QString & dirPath = defs::iitpResFolder);
 
 void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums);
 

@@ -16,16 +16,14 @@ void MainWindow::customFunc()
 {
     ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
-#if ELENA_VARIANT
-	ui->elenaSliceCheckBox->setChecked(true); // Elena
-	ui->eogBipolarCheckBox->setChecked(false); // Elena
-#endif
-//	testNewClassifiers();
-//	testSuccessive();
-//	exit(0);
+	if(DEFS.isUser(username::ElenaC))
+	{
+		ui->elenaSliceCheckBox->setChecked(true); // Elena
+		ui->eogBipolarCheckBox->setChecked(false); // Elena
+	}
 
 	/// feedback successive
-//	const QString wrk = def::dataFolder + "/FeedbackFinalMark/Avdeev";
+//	const QString wrk = DEFS.dirPath() + "/FeedbackFinalMark/Avdeev";
 //	Net * net = new Net();
 //	net->successiveByEDFfinal(wrk + "/AKV_1_fin.edf",
 //							  wrk + "/AKV_ans1.txt",
@@ -33,11 +31,7 @@ void MainWindow::customFunc()
 //							  wrk + "/AKV_ans2.txt");
 //	exit(0);
 
-
-//this->setEdfFile("/media/Files/Data/AAX/AAX_final.edf");
-//	Spectre * sp = new Spectre();
-//	sp->show();
-	return;
+//	return;
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackNewMark/");
@@ -92,7 +86,7 @@ void MainWindow::customFunc()
 	net->setClassifierData(cl);
 
 //	std::cout << net->getClassifierData()->getData().cols() << std::endl;
-	def::fftLength = 1024;
+	DEFS.setFftLen(1024);
 
 	for(QString fileName : QDir(inDir).entryList({"*.wts"}))
 	{
@@ -107,7 +101,7 @@ void MainWindow::customFunc()
 
 #if 0
 	/// prepare FeedbackFinalMark for eyes clean
-	const QString path = def::dataFolder + "/FeedbackFinalMark";
+	const QString path = DEFS.dirPath() + "/FeedbackFinalMark";
 
 	Cut * cut = new Cut();
 	for(auto in : subj::guysFBfinal)
@@ -186,8 +180,8 @@ void MainWindow::customFunc()
 	const QStringList guyList{"Aliev2", "Dima2", "Victor2"};
 	for(QString guy : guyList)
 	{
-		const QString workDir = def::iitpSyncFolder + "/" + guy;
-		for(const QString & fn : QDir(workDir).entryList(def::edfFilters))
+		const QString workDir = defs::iitpSyncFolder + "/" + guy;
+		for(const QString & fn : QDir(workDir).entryList(defs::edfFilters))
 		{
 			edfFile fil;
 			fil.readEdfFile(workDir + "/" + fn);
@@ -203,7 +197,7 @@ void MainWindow::customFunc()
 #if 0
 	{
 		const QString guy = "Alex2";
-		const QString guyPath = def::iitpSyncFolder + "/" + guy;
+		const QString guyPath = defs::iitpSyncFolder + "/" + guy;
 		const QString postfix = "_sum_new";
 		auto badFiles = autos::IITPtestEegChannels(guyPath, postfix);
 		autos::IITPinsertChannels(guyPath, badFiles);
@@ -243,7 +237,7 @@ void MainWindow::customFunc()
 		if(0)
 		{
 			/// check Da/Dp channels - should appear in 15th file and further
-			const QString ph = def::iitpSyncFolder + "/" + guy;
+			const QString ph = defs::iitpSyncFolder + "/" + guy;
 			for(QString fn : QDir(ph).entryList({"*_sum_new.edf"}))
 			{
 				edfFile fl;
@@ -264,7 +258,7 @@ void MainWindow::customFunc()
 			{
 				exit(0);
 			}
-			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
+			autos::IITPremoveZchans(guy, defs::iitpFolder);			/// rewrites _eeg.edf
 			autos::IITPdatToEdf(guy);
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
 			return; /// clean init eeg - zero in the beginning for better filering
@@ -324,8 +318,6 @@ void MainWindow::customFunc()
 	/// defs Singleton test
 	{
 		auto & S = defs::inst();
-		defs d1;
-
 
 		std::cout << S.getDirPath() << std::endl;
 		S.setDir("/media/Files");
@@ -339,11 +331,9 @@ void MainWindow::customFunc()
 	/// check ratio crossSpectrum my and matlab
 	using TT = std::valarray<double>;
 
-	TT c1;
-	myLib::readFileInLine("/media/Files/Data/cSpec12.txt", c1);
+	TT c1 = myLib::readFileInLine("/media/Files/Data/cSpec12.txt");
 
-	TT m1;
-	myLib::readFileInLineRaw("/media/Files/Data/mSpec12.txt", m1);
+	TT m1 = myLib::readFileInLineRaw("/media/Files/Data/mSpec12.txt");
 
 //	smLib::resizeValar(c1, m1.size());
 
@@ -395,7 +385,7 @@ void MainWindow::customFunc()
 
 
 //	std::valarray<double> fromMatlab;
-//	myLib::readFileInLineRaw("/media/Files/Data/mCoh.txt", fromMatlab);
+//	fromMatlab = myLib::readFileInLineRaw("/media/Files/Data/mCoh.txt");
 //	smLib::resizeValar(fromMatlab, siz);
 //	double m = std::max(fromMatlab.max(), usualDraw.max());
 
@@ -603,13 +593,13 @@ void MainWindow::customFunc()
 //						 "/media/Files/Data/Dasha/Totable/Berlin/Berlin_brush.edf");
 //	exit(0);
 
-	def::ntFlag = true; /// for Dasha's and EEGMRI
+	DEFS.setNtFlag(true); /// for Dasha's and EEGMRI
 //	return;
 
-//	const QString pth = def::dataFolder + "/Dasha/Totable_best";
-//	const QString cut = def::dataFolder + "/Dasha/Totable_best_cut";
+//	const QString pth = DEFS.dirPath() + "/Dasha/Totable_best";
+//	const QString cut = DEFS.dirPath() + "/Dasha/Totable_best_cut";
 
-	def::ntFlag = false;
+	DEFS.setNtFlag(false);
 	const QString pth{};
 	const QString cut = "/media/Files/Data/Galya/SomeData9Nov17";
 
@@ -630,7 +620,7 @@ void MainWindow::customFunc()
 		/// process cut
 		if(01)
 		{
-			def::currAutosUser = def::autosUser::Galya;
+			DEFS.setAutosUser(autosUser::Galya);
 			autos::ProcessAllInOneFolder(cut);
 			exit(0);
 		}
@@ -683,7 +673,7 @@ void MainWindow::customFunc()
 	{
 		if(0) /// delete old, remain new
 		{
-			for(const QString fil : QDir(pth + "/" + str).entryList(def::edfFilters))
+			for(const QString fil : QDir(pth + "/" + str).entryList(defs::edfFilters))
 			{
 				if(fil.contains("_new.edf")) { continue; }
 
@@ -721,9 +711,9 @@ void MainWindow::customFunc()
 //								 pth + "/" + str,
 //								 coords::lbl31_good);
 //		repair::testChannelsOrderConsistency(pth + "/" + str);
-//		deleteSpaces(def::DashaFolder + "/" + str);
+//		deleteSpaces(defs::DashaFolder + "/" + str);
 	}
-//	def::currAutosUser = def::autosUser::Galya;
+//	DEFS.setAutosUser(autosUser::Galya);
 //	autos::ProcessByFolders(pth);
 //	return;
 	if(01) /// labels
@@ -922,8 +912,8 @@ void MainWindow::customFunc()
 
 #if 0
 	/// Xenia final count
-	def::currAutosUser = def::autosUser::Xenia;
-	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
+	DEFS.setAutosUser(autosUser::Xenia)
+	autos::Xenia_TBI_final(defs::XeniaFolder + "/FINAL");
 	exit(0);
 
 	/// Xenia FINAL labels
@@ -935,7 +925,7 @@ void MainWindow::customFunc()
 //	const QString sep{"\r\n"};
 
 	std::ofstream lab;
-	lab.open((def::XeniaFolder + "/FINAL_out/labels1_6.txt").toStdString()
+	lab.open((defs::XeniaFolder + "/FINAL_out/labels1_6.txt").toStdString()
 //			 , std::ios_base::app
 			 );
 
@@ -1013,7 +1003,7 @@ void MainWindow::customFunc()
 	exit(0);
 
 	/// count
-	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
+	autos::Xenia_TBI_final(defs::XeniaFolder + "/FINAL");
 	myLib::invertMatrixFile("/media/Files/Data/Xenia/FINAL_out/labels2.txt",
 							"/media/Files/Data/Xenia/FINAL_out/labels2_inv.txt");
 	exit(0);
@@ -1027,7 +1017,7 @@ void MainWindow::customFunc()
 		QStringList in = QDir(ss + dr).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 		for(auto g : in)
 		{
-			auto in = QDir(ss + dr + "/" + g).entryInfoList(def::edfFilters);
+			auto in = QDir(ss + dr + "/" + g).entryInfoList(defs::edfFilters);
 			for(auto i : in)
 			{
 				s = std::min(s, i.size());
@@ -1066,7 +1056,7 @@ void MainWindow::customFunc()
 	/// Galya processing things
 
 
-	const QString workPath = def::GalyaFolder + "/count26feb";
+	const QString workPath = defs::GalyaFolder + "/count26feb";
 
 	if(0)
 	{
@@ -1077,7 +1067,7 @@ void MainWindow::customFunc()
 //			repair::deleteSpacesDir(workPath);
 //			repair::toLowerDir(workPath);
 			/// some special names cleaning
-			for(QString fileName : QDir(workPath).entryList(def::edfFilters))
+			for(QString fileName : QDir(workPath).entryList(defs::edfFilters))
 			{
 				QString newName = fileName;
 //				newName.replace(".edf", "_rest.edf", Qt::CaseInsensitive);
@@ -1112,7 +1102,7 @@ void MainWindow::customFunc()
 			for(QString dr : dirList) /// each guy
 			{
 				const QString pt = tact + "/" + dr;
-				auto filList = QDir(pt).entryList(def::edfFilters); /// edfs of one guy
+				auto filList = QDir(pt).entryList(defs::edfFilters); /// edfs of one guy
 				for(QString fl : filList)
 				{
 					edfFile file;
@@ -1137,7 +1127,7 @@ void MainWindow::customFunc()
 	if(01)
 	{
 		/// counting
-		def::currAutosUser = def::autosUser::Galya;
+		DEFS.setAutosUser(autosUser::Galya);
 //		autos::ProcessAllInOneFolder(workPath);
 		autos::ProcessByFolders(workPath);
 		exit(0);
@@ -1148,7 +1138,7 @@ void MainWindow::customFunc()
 #if 0
 	/// Galya tactile labels
 
-	const QString workPath = def::GalyaFolder + "/AllTactile_out";
+	const QString workPath = defs::GalyaFolder + "/AllTactile_out";
 
 #if 0
 	/// cout results
@@ -1277,7 +1267,7 @@ void MainWindow::customFunc()
 	/// Xenia test 30 sec, 15+15 sec
 	const QString pth = "/media/Files/Data/Xenia/1408/";
 	const int Kmax = 8;
-	QStringList lest = QDir(pth).entryList(def::edfFilters);
+	QStringList lest = QDir(pth).entryList(defs::edfFilters);
 	std::ofstream outStr;
 	outStr.open((pth + "res.txt").toStdString());
 
@@ -1336,7 +1326,7 @@ void MainWindow::customFunc()
 
 #if 0
 	/// Xenia FD tables classification
-	const QString workDir = def::dataFolder + "/Xenia_tables/";
+	const QString workDir = DEFS.dirPath() + "/Xenia_tables/";
 
 	/// repair
 	if(0)
@@ -1395,15 +1385,15 @@ void MainWindow::customFunc()
 	int norm = 8;
 	std::valarray<double> res1;
 	std::valarray<double> res2;
-	readFileInLineRaw(def::dataFolder + "/Baklushev/healthy.txt", res1);
-	readFileInLineRaw(def::dataFolder + "/Baklushev/ill.txt", res2);
+	res1 = readFileInLineRaw(DEFS.dirPath() + "/Baklushev/healthy.txt");
+	res2 = readFileInLineRaw(DEFS.dirPath() + "/Baklushev/ill.txt");
 	for(int steps = 12; steps <= 30; steps += 2)
 	{
 		myLib::histogram(res1, steps,
-						 def::dataFolder + "/Baklushev/healthy_" + nm(steps) + ".jpg",
+						 DEFS.dirPath() + "/Baklushev/healthy_" + nm(steps) + ".jpg",
 		{50., 94.}, "blue", norm);
 		myLib::histogram(res2, steps,
-						 def::dataFolder + "/Baklushev/ill_" + nm(steps) + ".jpg",
+						 DEFS.dirPath() + "/Baklushev/ill_" + nm(steps) + ".jpg",
 		{50., 94.}, "red", norm);
 	}
 	exit(0);
@@ -1412,7 +1402,7 @@ void MainWindow::customFunc()
 #if 0
 	/// compose names for Xenia_TBI tables
 
-	QString dirPath = def::XeniaFolder + "/15Nov";
+	QString dirPath = defs::XeniaFolder + "/15Nov";
 	QStringList markers{"no", "kh", "sm", "cr", "bw", "bd", "fon"};
 	std::vector<QString> waveletFuncs {"max", "min", "mean", "median", "sigma"};
 	const std::vector<QString> & chans = coords::lbl19;
@@ -1515,7 +1505,7 @@ void MainWindow::customFunc()
 
 	for(QString name : names)
 	{
-		def::drawNorm = -1;
+		DEFS.setDrawNorm(-1);
 		setEdfFile(path + name + "_train.edf");
 		sliceAll();
 		countSpectraSimple(4096, 15);
@@ -1531,7 +1521,7 @@ void MainWindow::customFunc()
 
 #if 0
 	/// Xenia - check all files markers
-	QString p = def::XeniaFolder + "/15Nov";
+	QString p = defs::XeniaFolder + "/15Nov";
 	QDir dr(p);
 	for(QString str : {"healthy", "moderate_TBI", "severe_TBI"})
 	{
@@ -1581,7 +1571,7 @@ void MainWindow::customFunc()
 		dest.mkdir(deer);
 		dest.cd(deer);
 
-		QStringList edfF = tmp.entryList(def::edfFilters, QDir::Files, QDir::Time | QDir::Reversed);
+		QStringList edfF = tmp.entryList(defs::edfFilters, QDir::Files, QDir::Time | QDir::Reversed);
 //		QStringList udfF = tmp.entryList({"*.UDF", "*.Hdr"}, QDir::Files);
 //		std::cout << edfF << std::endl;
 
@@ -1616,7 +1606,7 @@ void MainWindow::customFunc()
 #if 0
 	/// Dasha rename files totable
 	QDir dr("/media/Files/Data/Dasha/Totable");
-	QStringList lst = dr.entryList(def::edfFilters);
+	QStringList lst = dr.entryList(defs::edfFilters);
 	for(QString str : lst)
 	{
 		if(!str.contains(".edf") && !str.contains(".EDF"))
@@ -1730,7 +1720,7 @@ exit(0);
     /// clean "new" Dasha files
 	QStringList leest_audio = subj::leest_more + subj::leest_less;
 	leest_audio.sort(Qt::CaseInsensitive); /// alphabet order
-    const QString work = def::DashaFolder + "/CHANS/Audio_to_less_out_ALL";
+	const QString work = defs::DashaFolder + "/CHANS/Audio_to_less_out_ALL";
     QDir deer(work);
 
     QStringList subdirs = deer.entryList(QDir::Dirs|QDir::NoDotAndDotDot);
@@ -1787,14 +1777,14 @@ exit(0);
     /// Ossadtchi
 //    setEdfFile("/media/Files/Data/Ossadtchi/lisa2/lisa2.edf");
     setEdfFile("/media/Files/Data/Ossadtchi/alex1/alex1.edf");
-	def::freq = 100;
-    def::ns = 32;
+	DEFS.getFreq() = 100; /// epwpewpwepepwwpwpwepwewepwep
+	DEFS.setNs(32);
 #if 0
 	// reduce channels in Reals
-    def::ns = 32;
+	DEFS.setNs(32);
     const set<int, std::less<int>> exclude{3, 4, 14};
     QString helpString;
-    for(int i = 0; i < def::ns; ++i)
+	for(int i = 0; i < DEFS.getNs(); ++i)
     {
         if(std::find(exclude.begin(), exclude.end(), i) != exclude.end()) continue;
 		helpString += nm(i + 1) + " ";
@@ -1806,7 +1796,7 @@ exit(0);
 
 
 
-    def::ns = 29;
+	DEFS.setNs(29);
 
     std::vector<pair<int, double>> pew;
     for(int i : {17, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20})
@@ -1815,7 +1805,7 @@ exit(0);
 
         Net * net = new Net();
 
-		net->autoClassification(def::dirPath()
+		net->autoClassification(DEFS.dirPath()
 								+ "/SpectraSmooth"
 								+ "/winds");
 
@@ -1903,8 +1893,7 @@ exit(0);
         }
 
         helpString = pth + oneFile;
-		myLib::readPlainData(helpString,
-					  dataMat);
+		dataMat = myLib::readPlainData(helpString);
 		std::cout << dataMat.cols() << std::endl;
 
         for(int i = 0; i < 20; ++i)
@@ -1933,7 +1922,7 @@ exit(0);
 
 #if 0
 	/// concat all mati sessions
-	QDir locDir(def::matiFolder);
+	QDir locDir(defs::matiFolder);
 	QStringList dirLst = locDir.entryList(QStringList("???"), QDir::Dirs|QDir::NoDotAndDotDot);
     for(QString & guy : dirLst)
     {
@@ -1992,7 +1981,7 @@ exit(0);
 //        ui->reduceChannelsLineEdit->setText("1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
         return;
 
-		QDir locDir(def::matiFolder);
+		QDir locDir(defs::matiFolder);
         QStringList nameFilters;
         nameFilters << "*.edf" << "*.EDF";
         QString fileName;

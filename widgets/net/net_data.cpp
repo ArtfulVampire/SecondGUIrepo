@@ -24,18 +24,18 @@ void Net::loadData(const QString & spectraPath,
 
 void Net::loadDataXenia(const QString & filesPath, const QString & type)
 {
-	matrix xeniaData{};
-	std::vector<uint> xeniaTypes{};
-	std::valarray<double> xeniaTypesTemp{};
-	myLib::readMatrixFileRaw(filesPath + "/" + type + ".txt", xeniaData);
 	int num = QString(type[ type.indexOf("var") - 1]).toInt();
-	myLib::readFileInLineRaw(filesPath + "/Groups_" + nm(num) + ".txt", xeniaTypesTemp);
+
+	matrix xeniaData = myLib::readMatrixFileRaw(filesPath + "/" + type + ".txt");
+	std::valarray<double> xeniaTypesTemp = myLib::readFileInLineRaw(filesPath
+																	+ "/Groups"
+																	+ "_" + nm(num) + ".txt");
+	std::vector<uint> xeniaTypes{};
 	xeniaTypesTemp -= 1;
 	xeniaTypes.resize(xeniaTypesTemp.size());
 	std::copy(std::begin(xeniaTypesTemp), std::end(xeniaTypesTemp), std::begin(xeniaTypes));
 
 	myClassifierData = ClassifierData(xeniaData, xeniaTypes);
-//	std::cout << "loadData ready" << std::endl;
 }
 
 void Net::pca()
@@ -97,10 +97,10 @@ void Net::pca()
 
 	/// save pca matrix
 	QString helpString;
-	helpString = def::dirPath()
+	helpString = DEFS.dirPath()
 				 + "/Help"
 				 + "/ica"
-				 + "/" + def::ExpName + "_pcaMat.txt";
+				 + "/" + DEFS.getExpName() + "_pcaMat.txt";
 	myLib::writeMatrixFile(helpString, eigenVectors);
 
 
@@ -110,7 +110,7 @@ void Net::pca()
 
 	for(int j = 0; j < NumberOfVectors; ++j)
 	{
-		helpString = def::dirPath()
+		helpString = DEFS.dirPath()
 					 + "/SpectraSmooth"
 					 + "/PCA"
 					 + "/" + fileNames[j];
@@ -120,10 +120,10 @@ void Net::pca()
 
 	eigenVectors.transpose();
 	eigenVectors.resizeRows(3); /// ???
-	helpString = def::dirPath()
+	helpString = DEFS.dirPath()
 				 + "/Help"
 				 + "/ica"
-				 + "/" + def::ExpName + "_pcas.jpg";
+				 + "/" + DEFS.getExpName() + "_pcas.jpg";
 	myLib::drawTemplate(helpString);
 	myLib::drawArrays(helpString,
 			   eigenVectors,
