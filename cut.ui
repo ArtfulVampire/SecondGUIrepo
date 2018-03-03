@@ -125,7 +125,7 @@
      <x>940</x>
      <y>100</y>
      <width>220</width>
-     <height>121</height>
+     <height>135</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="iitpGridLayout">
@@ -140,13 +140,6 @@
      <widget class="QCheckBox" name="iitpDisableEcgCheckBox">
       <property name="text">
        <string>disable ECG</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QCheckBox" name="iitpByEegCheckBox">
-      <property name="text">
-       <string>by EEG</string>
       </property>
      </widget>
     </item>
@@ -180,6 +173,24 @@
        <string>Rectify EMG</string>
       </property>
      </widget>
+    </item>
+    <item row="2" column="1">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QCheckBox" name="iitpByEegCheckBox">
+        <property name="text">
+         <string>by EEG</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="iitpInverseCheckBox">
+        <property name="text">
+         <string>vice versa</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -881,6 +892,8 @@
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
+  <zorder>iitpInverseCheckBox</zorder>
+  <zorder>iitpByEegCheckBox</zorder>
  </widget>
  <resources/>
  <connections/>

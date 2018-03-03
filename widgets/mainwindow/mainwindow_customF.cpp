@@ -198,16 +198,16 @@ void MainWindow::customFunc()
 
 #if 0
 	{
-		const QString guy = "Alex2";
-		const QString guyPath = def::iitpSyncFolder + "/" + guy;
-		const QString postfix = "_sum_new";
+		const QString guy = "Michael";
+		const QString guyPath = def::iitpFolder + "/" + guy;
+		const QString postfix = "_eeg";
 		auto badFiles = autos::IITPtestEegChannels(guyPath, postfix);
 		autos::IITPinsertChannels(guyPath, badFiles);
 		exit(0);
 	}
 #endif
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 		"Alex",		//
@@ -230,9 +230,9 @@ void MainWindow::customFunc()
 //		"Victor2"
 	};
 
-//	return;
+	return;
 
-	QString guy = "Alex2";
+	QString guy = "Michael";
 //	for(QString guy : guyList)
 //	for(QString guy : vrList)
 	{
@@ -256,15 +256,16 @@ void MainWindow::customFunc()
 		}
 		if(0)
 		{
+//			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
+//			autos::IITPdatToEdf(guy);								/// all dat files in dir
+//			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites all _emg.edf
 			if(!autos::IITPtestInitialFiles(guy))
 			{
 				exit(0);
 			}
-			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
-			autos::IITPdatToEdf(guy);
-			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites _emg.edf
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
+
 		if(01)
 		{
 			if(01)

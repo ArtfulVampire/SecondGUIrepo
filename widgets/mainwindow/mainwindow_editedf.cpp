@@ -64,7 +64,7 @@ void MainWindow::rereferenceCARSlot()
 	std::valarray<double> refArr(globalEdf.getDataLen());
 	for(QString chanName : usedLabels)
 	{
-		int ref = globalEdf.findChannel(chanName);
+		auto ref = globalEdf.findChannel(chanName);
 		refArr += globalEdf.getData(ref);
 	}
 	refArr /= usedLabels.size();
@@ -267,7 +267,8 @@ void MainWindow::rereferenceData(const QString & newRef)
 	globalEdf.setLabels(label); /// necessary after the processing
 
 	/// inverse EOG2-EOG1 back (look edfFile::reduceChannels near the end)
-	if(int a = globalEdf.findChannel("EOG1-EOG2") != -1)
+	auto a = globalEdf.findChannel("EOG1-EOG2");
+	if(a != -1)
 	{
 		globalEdf.multiplyChannel(a, -1.);
 	}

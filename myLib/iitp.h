@@ -52,7 +52,6 @@ QString gonioName(int marker);
 QString getGuyName(const QString & fileName);
 QString getInitName(const QString & fileName);
 QString getPostfix(const QString & fileName);
-int getFileNum(const QString & fileName);
 
 
 class iitpData : public edfFile
@@ -98,7 +97,6 @@ public:
 	QString getGuy() const { return iitp::getGuyName(this->ExpName); }
 	QString getPost() const { return iitp::getPostfix(this->ExpName); }
 	QString getInit() const { return iitp::getInitName(this->ExpName); }
-	int getNum() const { return iitp::getFileNum(this->ExpName); }
 
 	/// continious task
 	void cutPieces(double length);
@@ -124,6 +122,9 @@ public:
 	int getFftLen() const { return fftLen; }
 	double getSpStep() const { return spStep; }
 	double getSpStepW() const { return srate / fftLenW; }
+	int getFileNum() const { return iitpData::getFileNum(this->fileName); }
+
+	static int getFileNum(const QString & in);
 
 };
 

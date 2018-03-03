@@ -115,6 +115,8 @@ Cut::Cut() :
 	ui->forwardFrameButton->setShortcut(tr("e"));
 	ui->backwardFrameButton->setShortcut(tr("q"));
 	ui->linearApproxPushButton->setShortcut(tr("l"));
+	ui->iitpInverseCheckBox->setShortcut(tr("i"));
+	ui->iitpDisableEcgCheckBox->setShortcut(tr("o"));
 
 	/// files
 	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browseSlot()));
@@ -562,8 +564,8 @@ void Cut::paint()
 	matrix subData = dataCutLocal.subCols(leftDrawLimit, rightDrawLimit);
 
 	/// zero some channels
-	int ecg = edfFil.findChannel("ECG");
-	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg >= 0)
+	auto ecg = edfFil.findChannel("ECG");
+	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg != -1)
 	{
 		subData[ecg] = 0; /// for iitp ecg
 	}

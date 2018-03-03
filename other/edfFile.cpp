@@ -327,22 +327,18 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		{
 			for(QString post : {"_l", "_r"})
 			{
-				int i = this->findChannel(lab + post);
-				if(i >= 0)
+				auto i = this->findChannel(lab + post);
+				if(i != -1)
 				{
 					chanList.push_back(i);
 				}
 			}
 		}
-		int a;
-		if((a = this->findChannel("Artefac")) >= 0)
+		for(auto in : this->findChannels({"Artefac", "Marker"}))
 		{
-			chanList.push_back(a);
+			chanList.push_back(in);
 		}
-		if((a = this->findChannel("Marker")) >= 0)
-		{
-			chanList.push_back(a);
-		}
+
 
 		*this = this->reduceChannels(chanList);
 	}
@@ -461,6 +457,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 	if(readFlag)
 	{
 		filePath = EDFpath;
+		fileName = myLib::getFileName(EDFpath);
 		dirPath = EDFpath.left(EDFpath.lastIndexOf('/'));
 		ExpName = myLib::getExpNameLib(filePath);
 
@@ -1401,7 +1398,7 @@ void edfFile::adjustArraysByChannels()
 
 void edfFile::adjustMarkerChannel()
 {
-	if(this->markerChannel < 0 || this->markerChannel == this->ns - 1) return;
+	if(this->markerChannel == -1 || this->markerChannel == this->ns - 1) return;
 
     if(!(this->channels.back().label.contains("Marker") ||
          this->channels.back().label.contains("Status")))
@@ -1519,7 +1516,7 @@ edfFile & edfFile::multiplyChannels(std::vector<uint> chanNums, double mult)
 	return *this;
 }
 
-int edfFile::findChannel(const QString & str) const
+uint edfFile::findChannel(const QString & str) const
 {
 	for(int i = 0; i < this->ns; ++i)
 	{
@@ -1694,8 +1691,8 @@ edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
 	const int searchLength = 300;
 	const int corrLength = 1600;
 
-	int numECG = this->findChannel("ECG");
-	int numArtefac = this->findChannel("Artefac");
+	auto numECG = this->findChannel("ECG");
+	auto numArtefac = this->findChannel("Artefac");
 
 	if(byEeg) numECG = 0;
 
@@ -1742,8 +1739,8 @@ std::pair<int, int> edfFile::iitpSyncAutoJump(int startSearchEeg,
 											  int startSearchEmg,
 											  bool byEeg)
 {
-	int numECG = this->findChannel("ECG");
-	int numArtefac = this->findChannel("Artefac");
+	auto numECG = this->findChannel("ECG");
+	auto numArtefac = this->findChannel("Artefac");
 
 	if(byEeg) numECG = 0;
 
@@ -2015,7 +2012,7 @@ edfFile edfFile::rereferenceDataCAR() const
 	std::valarray<double> refArr(temp.edfData.cols());
 	for(QString chanName : usedLabels)
 	{
-		int ref = temp.findChannel(chanName);
+		auto ref = temp.findChannel(chanName);
 		refArr += temp[ref];
 	}
 	refArr /= usedLabels.size();
@@ -2083,8 +2080,8 @@ void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
 
 void edfFile::cleanFromEyes(QString eyesPath,
                             bool removeEogChannels,
-                            std::vector<int> eegNums,
-                            std::vector<int> eogNums)
+							std::vector<uint> eegNums,
+							std::vector<uint> eogNums)
 {
     QTime myTime;
     myTime.start();
@@ -2159,7 +2156,7 @@ edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much
 	return temp;
 }
 
-edfFile & edfFile::removeChannels(const std::vector<int> & chanList)
+edfFile & edfFile::removeChannels(const std::vector<uint> & chanList)
 {
     std::set<int, std::greater<int>> excludeSet;
     for(int val : chanList)
@@ -2183,7 +2180,7 @@ edfFile & edfFile::removeChannels(const QStringList & chanList)
 	std::set<int, std::greater<int>> excludeSet;
 	for(const QString & ch : chanList)
 	{
-		int val = this->findChannel(ch);
+		auto val = this->findChannel(ch);
 		if(val != -1) { excludeSet.emplace(val); }
 		else { std::cout << "edfFile::removeChannels(vector<QString>): bad channel "
 						 << ch << std::endl; }
@@ -2218,7 +2215,7 @@ edfFile & edfFile::removeChannel(const QString & nam)
 {
 //	return this->removeChannel(this->findChannel(nam)); /// for short
 
-	int num = this->findChannel(nam);
+	auto num = this->findChannel(nam);
 	if(num == -1)
 	{
 		std::cout << "edfFile::removeChannel(str): no such channel " << nam << std::endl;

@@ -164,12 +164,12 @@ const std::vector<QString> emgNames {
 /// [numFile] - interestingChannels
 /// maybe all EMGs for rest and/or stat
 /// 1 May 17 - added Ta_l, Ta_r everywhere for maps drawing
-
+/// 24 Feb 18 - commented all in rest files
 const std::vector<std::valarray<int>> interestEmg{
 	// 0 eyes closed
-	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
+	{/*Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r*/},
 	// 1 eyes open
-	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
+	{/*Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r*/},
 	// 2 legs
 	{Ta_l, Ta_r, Bf_l, Bf_r},
 	// 3 legs imaginary
@@ -193,9 +193,9 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 12 static stress
 	{},
 	// 13 middle eyes closed
-	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
+	{/*Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r*/},
 	// 14 middle eyes open
-	{Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r},
+	{/*Ta_l, Ta_r, Bf_l, Bf_r, Fcr_l, Fcr_r, Ecr_l, Ecr_r*/},
 	// 15 arms
 	{Da_l, Da_r, Dp_l, Dp_r,    Ta_l, Ta_r},
 	// 16 arms imaginary
@@ -211,9 +211,9 @@ const std::vector<std::valarray<int>> interestEmg{
 	// 21 arms + legs passive
 	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	// 22 final eyes closed
-	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
+	{/*Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r*/},
 	// 23 final eyes open
-	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
+	{/*Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r*/},
 	// 24 weak Ta_l
 	{Ta_l,    Ta_r},
 	// 25 weak Ta_r

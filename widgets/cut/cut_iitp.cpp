@@ -50,9 +50,13 @@ void Cut::rectifyEmgSlot()
 
 void Cut::iitpManualSlot()
 {
+	int artefac	= ui->leftLimitSpinBox->value();
+	int ecg		= ui->rightLimitSpinBox->value();
 
-	edfFil.iitpSyncManual(ui->rightLimitSpinBox->value(),
-						  ui->leftLimitSpinBox->value(),
+	if(ui->iitpInverseCheckBox->isChecked()) { std::swap(ecg, artefac); }
+
+	edfFil.iitpSyncManual(ecg,
+						  artefac,
 						  std::min(200, ui->leftLimitSpinBox->value()));
 	iitpLog("sync");
 

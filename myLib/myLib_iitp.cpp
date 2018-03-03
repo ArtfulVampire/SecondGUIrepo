@@ -209,7 +209,7 @@ void iitpData::countCrossSpectrumW(int chan1, int chan2, double overlap)
 	if(chan1 > chan2) { std::swap(chan1, chan2); }
 
 
-	const auto fileType = iitp::trialTypes[iitp::getFileNum(myLib::getFileName(this->filePath))];
+	const auto fileType = iitp::trialTypes[iitp::iitpData::getFileNum(this->fileName)];
 
 	/// just to be sure it's empty
 	this->crossSpectra[chan1][chan2].resize(fftLenW);
@@ -302,6 +302,24 @@ void iitpData::getPiecesParams()
 {
 	std::cout << "size = " << this->piecesData.size() << std::endl;
 	std::cout << "length = " << this->piecesData[0].cols() << std::endl;
+}
+
+int iitpData::getFileNum(const QString & in)
+{
+	int num{-1};
+	bool ok{false};
+	auto lst = in.split(QRegExp(R"([\._])"), QString::SkipEmptyParts);
+	for(const auto & str : lst)
+	{
+		num = str.toInt(&ok);
+		if(ok) { break; }
+	}
+	if(!ok)
+	{
+		std::cout << "can't find state number in file " << in << std::endl;
+		num = -1;
+	}
+	return num;
 }
 
 void iitpData::cutPieces(double length)
@@ -423,14 +441,14 @@ void iitpData::countContiniousTaskSpectra()
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
-	int num = this->getNum();
+	int num = this->getFileNum();
 	QString add = iitp::trialTypesNames[trialTypes[num]];
 
 	myLib::writeFileInLine(def::iitpResFolder
 						   + "/" + this->getGuy()
 						   + "/sp"
 						   + "/" + this->getInit()
-						   + "_" + iitp::trialTypesNames[iitp::trialTypes[this->getNum()]]
+						   + "_" + iitp::trialTypesNames[iitp::trialTypes[this->getFileNum()]]
 						   + "_sp.txt",
 						   spectre);
 
@@ -471,7 +489,7 @@ void iitpData::countContiniousTaskSpectraW(const QString & resPath, double overl
 	myLib::writeFileInLine(resPath
 						   + "/sp"
 						   + "/" + this->getInit()
-						   + "_" + iitp::trialTypesNames[iitp::trialTypes[this->getNum()]]
+						   + "_" + iitp::trialTypesNames[iitp::trialTypes[this->getFileNum()]]
 						   + "_sp.txt",
 						   spectre);
 
@@ -665,11 +683,6 @@ QString getPostfix(const QString & fileName)
 	return fileName.mid(lef, rig-lef);
 }
 
-int getFileNum(const QString & fileName)
-{
-	return fileName.split("_", QString::SkipEmptyParts)[1].toInt();
-}
-
 
 iitpData & iitpData::staging(int numGonioChan)
 {
@@ -682,7 +695,7 @@ iitpData & iitpData::staging(const QString & chanName,
 							 int markerMin,
 							 int markerMax)
 {
-	int chanNum = this->findChannel(chanName);
+	auto chanNum = this->findChannel(chanName);
 	if(chanNum == -1)
 	{
 		std::cout << "iitpData::staging: no such channel: " << chanName << "\n"
@@ -887,7 +900,7 @@ forMap::forMap(const iitp::iitpData::mscohsType & in,
 	fmChans.clear();
 	for(QString emgNam : iitp::forMapEmgNames)
 	{
-//			int a = inFile.findChannel(emgNam);
+//			auto a = inFile.findChannel(emgNam);
 //			if(a != -1)
 //			{
 //				fmChans.push_back(a);

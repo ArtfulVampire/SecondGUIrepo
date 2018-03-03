@@ -198,7 +198,7 @@ public:
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
 	edfFile reduceChannels(const QString & chanString) const;
 
-	edfFile & removeChannels(const std::vector<int> & chanList);
+	edfFile & removeChannels(const std::vector<uint> & chanList);
 	edfFile & removeChannels(const QStringList & chanList);
 	edfFile & removeChannel(int num);
 	edfFile & removeChannel(const QString & nam);
@@ -213,7 +213,7 @@ public:
 
 	edfFile & zeroChannels(const std::vector<uint> & chanNums);
 
-	int findChannel(const QString & str) const;
+	uint findChannel(const QString & str) const;
 	std::vector<uint> findChannels(const QString & filter) const;
 	std::vector<uint> findChannels(const std::vector<QString> & strs) const;
 
@@ -224,10 +224,10 @@ public:
 	void setLabel(int i, const QString & inLabel);
 
 	void setChannels(const std::vector<edfChannel> & inChannels);
-    void cleanFromEyes(QString eyesPath = QString(),
-                       bool removeEogChannels = false,
-                       std::vector<int> eegNums = {},
-                       std::vector<int> eogNums = {});
+	void cleanFromEyes(QString eyesPath = QString(),
+					   bool removeEogChannels = false,
+					   std::vector<uint> eegNums = {},
+					   std::vector<uint> eogNums = {});
 
 
 
@@ -267,6 +267,7 @@ private:
 
 protected:
 	QString filePath = QString();
+	QString fileName = QString(); /// add to other constructors
 	QString ExpName = QString();
 	QString dirPath = QString();
 
@@ -307,7 +308,7 @@ protected:
 
 	// fast access for slicing (time-bin, marker)
 	std::vector<std::pair<int, int>> markers{};
-	int markerChannel = -1;
+	uint markerChannel = -1;
 
     std::vector<edfChannel> channels;
 
@@ -373,11 +374,11 @@ public:
 	const std::valarray<double> & getData(int i) const { return edfData[i]; }
 	const std::valarray<double> & getMarkArr() const { return edfData[markerChannel]; }
 	int getDataLen() const { return edfData.cols(); }
-	int getMarkChan() const { return markerChannel; }
+	uint getMarkChan() const { return markerChannel; }
 	const std::valarray<double> & getData(const QString & ch) const
 	{
 		static std::valarray<double> badRes{};
-		int a = this->findChannel(ch);
+		auto a = this->findChannel(ch);
 		if(a == -1)
 		{
 			std::cout << "edfFile::getData(QString): no such label - ";

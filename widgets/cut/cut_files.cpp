@@ -281,8 +281,8 @@ void Cut::setValuesByEdf()
 		blueStr = "Artefac";
 	}
 
-	int eog1 = edfFil.findChannel(blueStr);
-	int eog2 = edfFil.findChannel(redStr);
+	auto eog1 = edfFil.findChannel(blueStr);
+	auto eog2 = edfFil.findChannel(redStr);
 	if(eog2 == eog1) { eog2 = edfFil.findChannel("EOG3"); }
 
 	if(iitpFlag)
