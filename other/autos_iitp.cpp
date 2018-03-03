@@ -15,12 +15,12 @@ namespace autos
 
 bool IITPtestInitialFiles(const QString & guyName)
 {
-	QStringList eegs = QDir(def::iitpFolder + "/" + guyName).entryList({"*_eeg.edf"});
-	QStringList emgs = QDir(def::iitpFolder + "/" + guyName).entryList({"*_emg.edf"});
+	QStringList eegs = QDir(defs::iitpFolder + "/" + guyName).entryList({"*_eeg.edf"});
+	QStringList emgs = QDir(defs::iitpFolder + "/" + guyName).entryList({"*_emg.edf"});
 
 	auto filePath = [guyName](const QString & fileName) -> QString
 	{
-		return def::iitpFolder + "/" + guyName + "/" + fileName;
+		return defs::iitpFolder + "/" + guyName + "/" + fileName;
 	};
 
 
@@ -30,7 +30,7 @@ bool IITPtestInitialFiles(const QString & guyName)
 		QString emg = eeg;
 		emg.replace("_eeg.", "_emg.");
 
-		if(!QFile::exists(def::iitpFolder
+		if(!QFile::exists(defs::iitpFolder
 						  + "/" + guyName
 						  + "/" + emg))
 		{
@@ -722,10 +722,10 @@ void IITPdatToEdf(const QString & guyName)
 {
 	DEFS.setNtFlag(true);
 
-	const QStringList fils = QDir(def::iitpFolder + "/" + guyName).entryList({"*.dat"});
+	const QStringList fils = QDir(defs::iitpFolder + "/" + guyName).entryList({"*.dat"});
 	for(const QString & fl : fils)
 	{
-		QString filePath = def::iitpFolder
+		QString filePath = defs::iitpFolder
 						   + "/" + guyName
 						   + "/" + fl;
 
@@ -747,10 +747,10 @@ void IITPfilter(const QString & guyName,
 {
 	DEFS.setNtFlag(true);
 
-	const auto fils = QDir(def::iitpFolder + "/" + guyName).entryList({"*" + postfix + ".edf"});
+	const auto fils = QDir(defs::iitpFolder + "/" + guyName).entryList({"*" + postfix + ".edf"});
 	for(const QString & fl : fils)
 	{
-		QString filePath = def::iitpFolder
+		QString filePath = defs::iitpFolder
 						   + "/" + guyName
 						   + "/" + fl;
 		edfFile fil;
