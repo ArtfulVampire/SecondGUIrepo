@@ -112,11 +112,11 @@ public:
 	const ClassifierData & getClassifierData() const { return myClassifierData; }
 
 	/// data
-    void loadData(const QString & spectraPath = def::dirPath()
+    void loadData(const QString & spectraPath = DEFS.dirPath()
 												+ "/SpectraSmooth",
 				  const QStringList & filters = {"*.psd"});
 	void loadDataUCI(const QString & setName);
-	void loadDataXenia(const QString & filesPath = def::dataFolder + "/Xenia_tables",
+	void loadDataXenia(const QString & filesPath = DEFS.dirPath() + "/Xenia_tables",
 					   const QString & type = "bd_new");
 
 

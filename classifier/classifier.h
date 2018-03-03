@@ -57,13 +57,13 @@ protected:
 
 
 /// sheeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeet
-	QString resultsPath = def::dirPath() + "/results.txt";
-	QString workDir = def::dirPath() + "/Help/PA";
-	QString filesPath = def::windsSpectraDir();
+	QString resultsPath = DEFS.dirPath() + "/results.txt";
+	QString workDir = DEFS.dirPath() + "/Help/PA";
+	QString filesPath = DEFS.windsSpectraDir();
 
 #if INERTIA
 	std::valarray<double> fbVal;
-//	const double inertiaCoef = def::inertiaCoef;
+//	const double inertiaCoef = suc::inertiaCoef;
 	uint curType = 15; // not any of types
 #endif
 

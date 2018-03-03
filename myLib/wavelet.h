@@ -19,8 +19,8 @@ namespace wvlt
 #define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
 
 extern const int timeStep;
-extern const double freqMax; // def::rightFreq
-extern const double freqMin; // def::leftFreq
+extern const double freqMax; // DEFS.getRightFreq()
+extern const double freqMin; // DEFS.getLeftFreq()
 extern const double freqStep;
 extern const int range;
 extern const int numberOfFreqs;

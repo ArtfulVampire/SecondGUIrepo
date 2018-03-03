@@ -21,8 +21,8 @@ void Cut::forwardStepSlot()
 		return;
 	}
 
-	leftDrawLimit = std::min(leftDrawLimit + currFreq, double(dataCutLocal.cols()));
-	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
+	leftDrawLimit = std::min(leftDrawLimit + DEFS.getFreq(), double(dataCutLocal.cols()));
+	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / DEFS.getFreq());
 }
 void Cut::backwardStepSlot()
 {
@@ -33,8 +33,8 @@ void Cut::backwardStepSlot()
 		std::cout << "begin of file" << std::endl;
 		return;
 	}
-	leftDrawLimit = std::max(leftDrawLimit - currFreq, 0.);
-	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
+	leftDrawLimit = std::max(leftDrawLimit - DEFS.getFreq(), 0.);
+	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / DEFS.getFreq());
 }
 void Cut::forwardFrameSlot()
 {
@@ -46,9 +46,9 @@ void Cut::forwardFrameSlot()
 		return;
 	}
 	leftDrawLimit = std::min(leftDrawLimit +
-							 ui->paintLengthDoubleSpinBox->value() * currFreq,
+							 ui->paintLengthDoubleSpinBox->value() * DEFS.getFreq(),
 							 double(dataCutLocal.cols()));
-	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
+	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / DEFS.getFreq());
 }
 void Cut::backwardFrameSlot()
 {
@@ -60,8 +60,8 @@ void Cut::backwardFrameSlot()
 		return;
 	}
 	leftDrawLimit = std::max(leftDrawLimit -
-							 ui->paintLengthDoubleSpinBox->value() * currFreq, 0.);
-	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / currFreq);
+							 ui->paintLengthDoubleSpinBox->value() * DEFS.getFreq(), 0.);
+	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / DEFS.getFreq());
 }
 
 

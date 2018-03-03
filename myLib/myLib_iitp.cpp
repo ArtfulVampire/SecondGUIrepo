@@ -444,7 +444,7 @@ void iitpData::countContiniousTaskSpectra()
 	int num = this->getFileNum();
 	QString add = iitp::trialTypesNames[trialTypes[num]];
 
-	myLib::writeFileInLine(def::iitpResFolder
+	myLib::writeFileInLine(defs::iitpResFolder
 						   + "/" + this->getGuy()
 						   + "/sp"
 						   + "/" + this->getInit()
@@ -454,7 +454,7 @@ void iitpData::countContiniousTaskSpectra()
 
 //	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
 //	templ = myLib::drw::drawArray(templ, spectre);
-//	templ.save(def::iitpResFolder + "/" + this->getGuy()
+//	templ.save(defs::iitpResFolder + "/" + this->getGuy()
 //			   + "/pic"
 //			   + "/" + this->getInit() + ".jpg", 0, 100);
 }
@@ -495,7 +495,7 @@ void iitpData::countContiniousTaskSpectraW(const QString & resPath, double overl
 
 //	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
 //	templ = myLib::drw::drawArray(templ, spectre);
-//	templ.save(def::iitpResFolder + "/" + this->getGuy()
+//	templ.save(defs::iitpResFolder + "/" + this->getGuy()
 //			   + "/pic"
 //			   + "/" + this->getInit() + ".jpg", 0, 100);
 }
@@ -532,7 +532,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 				  std::begin(spectre) + i * spLen);
 	}
 	spectra[0] = spectre;
-	myLib::writeFileInLine(def::iitpResFolder
+	myLib::writeFileInLine(defs::iitpResFolder
 						   + "/" + this->getGuy()
 						   + "/sp"
 						   + "/" + this->getInit() + joint + "_flexion_sp.txt",
@@ -555,7 +555,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 				  std::begin(spectre) + i * spLen);
 	}
 	spectra[1] = spectre;
-	myLib::writeFileInLine(def::iitpResFolder
+	myLib::writeFileInLine(defs::iitpResFolder
 						   + "/" + this->getGuy()
 						   + "/sp"
 						   + "/" + this->getInit() + joint + "_extension_sp.txt",
@@ -564,7 +564,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 
 	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
 	templ = myLib::drw::drawArrays(templ, spectra);
-	templ.save(def::iitpResFolder + "/" + this->getGuy()
+	templ.save(defs::iitpResFolder + "/" + this->getGuy()
 			   + "/pic"
 			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
 }
@@ -642,7 +642,7 @@ void iitpData::countFlexExtSpectraW(const QString & resPath, int mark1, int mark
 
 //	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
 //	templ = myLib::drw::drawArrays(templ, spectra);
-//	templ.save(def::iitpResFolder + "/" + this->getGuy()
+//	templ.save(defs::iitpResFolder + "/" + this->getGuy()
 //			   + "/pic"
 //			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
 }

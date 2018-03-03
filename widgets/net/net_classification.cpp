@@ -49,7 +49,7 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
 
 void Net::autoClassificationSimple()
 {
-    QString helpString = def::dirPath()
+	QString helpString = DEFS.dirPath()
 						 + "/SpectraSmooth";
     switch(Source)
     {
@@ -106,7 +106,7 @@ void Net::crossClassification()
     const int fold = ui->foldSpinBox->value();
 
     std::vector<std::vector<uint>> arr; // [class][index]
-    arr.resize(def::numOfClasses());
+    arr.resize(DEFS.numOfClasses());
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
         arr[ types[i] ].push_back(i);
@@ -118,7 +118,7 @@ void Net::crossClassification()
         std::cout << i + 1 << " "; std::cout.flush();
 
         // mix arr for one "pair"-iteration
-        for(int i = 0; i < def::numOfClasses(); ++i)
+        for(int i = 0; i < DEFS.numOfClasses(); ++i)
         {
 			smLib::mix(arr[i]);
         }
@@ -267,9 +267,9 @@ void Net::customF()
         });
 
         ofstream outStr;
-        outStr.open((def::dirPath()
+		outStr.open((DEFS.dirPath()
 					 + "/" + outFileName).toStdString(), std::ios_base::app);
-        outStr << def::ExpName << std::endl;
+        outStr << DEFS.getExpName() << std::endl;
 
         int num = 0;
         for(auto vec : results)

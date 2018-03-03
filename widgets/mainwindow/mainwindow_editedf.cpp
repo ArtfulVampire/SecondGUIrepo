@@ -345,19 +345,19 @@ void MainWindow::reduceChannelsEDFSlot()
 		/// do nothing
 	}
 
-	std::cout << "reduceChannelsEDF: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
+	std::cout << "reduceChannelsEDF: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 /// Ossadtchi only ?
 void MainWindow::reduceChannelsSlot()
 {
+	/// reduce channels in Reals
 #if 0
-	// reduce channels in Reals
     QStringList lst;
     matrix dataR;
 
     std::set<int, std::greater<int>> excludeList;
-    for(int i = 0; i < def::ns; ++i)
+	for(int i = 0; i < DEFS.getNs(); ++i)
     {
         excludeList.emplace(i);
     }
@@ -378,7 +378,7 @@ void MainWindow::reduceChannelsSlot()
     }
 	std::cout << std::endl;
 
-    QDir localDir(def::dirPath());
+	QDir localDir(DEFS.dirPath());
 	localDir.cd("Reals");
     lst = localDir.entryList(QDir::Files, QDir::NoSort);
 
@@ -386,10 +386,10 @@ void MainWindow::reduceChannelsSlot()
     int localNs;
     for(const QString & fileName : lst)
     {
-        localNs = def::ns;
+		localNs = DEFS.getNs();
         helpString = (localDir.absolutePath()
 											  + "/" + fileName);
-		myLib::readPlainData(helpString, dataR);
+		dataR = myLib::readPlainData(helpString);
 		localNs = dataR.rows(); /// needed?
         for(int exclChan : excludeList)
         {
@@ -399,13 +399,13 @@ void MainWindow::reduceChannelsSlot()
 		myLib::writePlainData(helpString, dataR);
     }
 
-    def::ns -= excludeList.size();
+	DEFS.setNs(DEFS.getNs() - excludeList.size());
 
     helpString = "channels reduced ";
     ui->textEdit->append(helpString);
 
     helpString = "ns equals to ";
-	helpString += nm(def::ns);
+	helpString += nm(DEFS.getNs());
     ui->textEdit->append(helpString);
 
 	std::cout << "reduceChannelsSlot: finished";

@@ -130,7 +130,7 @@ QString getDirPathLib(const QString & filePath)
 
 QString getFileMarker(const QString & fileName)
 {
-    for(const QString & fileMark : def::fileMarkers)
+    for(const QString & fileMark : DEFS.getFileMarks())
     {
         QStringList lst = fileMark.split(' ', QString::SkipEmptyParts);
         for(const QString & filter : lst)
@@ -216,7 +216,7 @@ int getTypeOfFileName(const QString & fileName)
 {
     QStringList leest;
     int res = 0;
-    for(const QString & marker : def::fileMarkers)
+    for(const QString & marker : DEFS.getFileMarks())
     {
         leest.clear();
         leest = marker.split(QRegExp("[,; ]"), QString::SkipEmptyParts);

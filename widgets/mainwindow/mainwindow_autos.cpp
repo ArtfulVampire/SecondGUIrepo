@@ -52,8 +52,7 @@ void MainWindow::makeEvoked(const QString & realsPath,
 	int i = 0;
 	for(QString fileName : reals)
 	{
-		myLib::readMatrixFile(realsPath + "/" + fileName,
-							  dat[i++]);
+		dat[i++] = myLib::readMatrixFile(realsPath + "/" + fileName);
 	}
 	auto res = countEvoked(dat, length);
 	myLib::writeMatrixFile(outPath, res);
@@ -133,12 +132,11 @@ void MainWindow::testSuccessive(const std::vector<double> & vals)
 //			countSpectraSimple(1024, numSmooth);
 
 
-			QStringList windsList;
 			/// delete first three winds from each realisation
-			windsList = QDir(path + "winds/fromreal").entryList({"*_train*.00",
-																 "*_train*.01",
-																 "*_train*.02"},
-																QDir::Files);
+			QStringList windsList = QDir(path + "winds/fromreal").entryList({"*_train*.00",
+																			 "*_train*.01",
+																			 "*_train*.02"},
+																			QDir::Files);
 			/// delete first some winds from reals
 			for(const QString & name : windsList)
 			{
@@ -148,8 +146,7 @@ void MainWindow::testSuccessive(const std::vector<double> & vals)
 			/// magic constant
 			/// leave last 600 winds (some will fall out further due to zeros)
 			/// REMAKE - leave 120 each type
-			myLib::makeFullFileList(path + "winds/fromreal",
-									windsList, {def::ExpName.left(3) + "_train"});
+			windsList = myLib::makeFullFileList(path + "winds/fromreal", {"_train"});
 			for(int i = 0; i < windsList.length() - 800; ++i) /// constant
 			{
 				QFile::remove(path + "winds/fromreal/" + windsList[i]);
@@ -179,7 +176,7 @@ void MainWindow::testSuccessive(const std::vector<double> & vals)
 		countSpectraSimple(1024, numSmooth);
 		/// should not change averageDatum and sigmaVector ?
 		Net * net = new Net();
-		net->loadData(def::windsSpectraDir(), {name + "_train"});
+		net->loadData(DEFS.windsSpectraDir(), {name + "_train"});
 
 		net->setClassifier(ModelType::ANN);
 		net->setSource("w");
@@ -207,7 +204,7 @@ void MainWindow::testNewClassifiers()
 //			readData();
 
 			Net * net = new Net();
-			net->loadData(paath + "/SpectraSmooth/winds", {def::ExpName});
+			net->loadData(paath + "/SpectraSmooth/winds", {guy + suff});
 
 			net->setClassifier(ModelType::ANN);
 			net->setMode("k");
@@ -306,7 +303,7 @@ void MainWindow::BaklushevDraw(const QString & workPath, const QString & edfName
 
 		for(int j = 0; j < numOfReals[i]; ++j)
 		{
-			myLib::readFileInLine(spectraPath + "/" + lst[i][j], drawMat[i][j]);
+			drawMat[i][j] = myLib::readFileInLine(spectraPath + "/" + lst[i][j]);
 		}
 	}
 	double norm = 0;

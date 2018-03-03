@@ -133,13 +133,13 @@ void drawWaveletMtlb(const matrix & inData, QString picPath)
 	}
 
 	painter.setPen(Qt::SolidLine);
-	for(int i = 0; i < int(inData.cols() / def::freq); ++i)
+	for(int i = 0; i < int(inData.cols() / DEFS.getFreq()); ++i)
 	{
-		painter.drawLine(i * def::freq * barL,
+		painter.drawLine(i * DEFS.getFreq() * barL,
 						 pic.height(),
-						 i * def::freq * barL,
+						 i * DEFS.getFreq() * barL,
 						 pic.height() - 20);
-		painter.drawText(i * def::freq * barL - 8,
+		painter.drawText(i * DEFS.getFreq() * barL - 8,
 						 pic.height() - 2,
 						 nm(i));
 
@@ -152,9 +152,9 @@ void drawWaveletMtlb(const matrix & inData, QString picPath)
 
 
 
-const int timeStep = ceil(0.02 * def::freq);
-const double freqMax = 20.; // def::rightFreq
-const double freqMin = 2.; // def::leftFreq
+const int timeStep = ceil(0.02 * DEFS.getFreq());
+const double freqMax = 20.; // DEFS.getRightFreq()
+const double freqMin = 2.; // DEFS.getLeftFreq()
 const double freqStep = 1.;
 const int range = 1024;
 const double pi_sqrt = sqrt(M_PI);
@@ -174,8 +174,8 @@ double morletCosNew(double const freq1, // Hz
 {
 	double freq = freq1 * 2. * pi;
 	double res =  sqrt(2. * freq / pi_sqrt / morletFall)
-				  * cos(freq * (time - timeShift) / def::freq)
-				  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
+				  * cos(freq * (time - timeShift) / DEFS.getFreq())
+				  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / DEFS.getFreq(), 2));
 	return res;
 }
 
@@ -185,8 +185,8 @@ double morletSinNew(double const freq1,
 {
 	double freq = freq1 * 2. * pi;
 	double res =  sqrt(2. * freq / pi_sqrt / morletFall)
-				  * sin(freq * (time - timeShift) / def::freq)
-				  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / def::freq, 2));
+				  * sin(freq * (time - timeShift) / DEFS.getFreq())
+				  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / DEFS.getFreq(), 2));
 	return res;
 }
 
@@ -198,8 +198,7 @@ void wavelet(QString filePath,
 	// continious
 	double helpDouble;
 
-	matrix fileData;
-	myLib::readPlainData(filePath, fileData);
+	matrix fileData = myLib::readPlainData(filePath);
 
 	std::valarray<double> input = fileData[channelNumber];
 
@@ -236,7 +235,7 @@ void wavelet(QString filePath,
 	   freq -= wvlt::freqStep)
 #endif
 	{
-		//        timeStep = def::freqFreq / 2.5;  // in time-bins 250 Hz
+		//        timeStep = DEFS.getFreq()Freq / 2.5;  // in time-bins 250 Hz
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < fileData.cols(); currSlice += wvlt::timeStep)
 		{
@@ -246,8 +245,8 @@ void wavelet(QString filePath,
 
 			/////// TO LOOK
 			// set left & right limits of counting - should be 2.5 * morletFall... but works so
-			kMin = std::max(0, int(currSlice - 3 * morletFall * def::freq / freq));
-			kMax = std::min(int(fileData.cols()), int(currSlice + 3 * morletFall * def::freq / freq));
+			kMin = std::max(0, int(currSlice - 3 * morletFall * DEFS.getFreq() / freq));
+			kMax = std::min(int(fileData.cols()), int(currSlice + 3 * morletFall * DEFS.getFreq() / freq));
 
 			for(int k = kMin; k < kMax; ++k)
 			{
@@ -284,7 +283,7 @@ void wavelet(QString filePath,
 	   freq -= wvlt::freqStep)
 #endif
 	{
-		//        timeStep = def::freqFreq / 2.5;  // in time-bins 250 Hz
+		//        timeStep = DEFS.getFreq()Freq / 2.5;  // in time-bins 250 Hz
 
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < fileData.cols(); currSlice += wvlt::timeStep)
@@ -337,13 +336,13 @@ void wavelet(QString filePath,
 
 	}
 	painter.setPen(Qt::SolidLine);
-	for(int i = 0; i < int(fileData.cols() / def::freq); ++i)
+	for(int i = 0; i < int(fileData.cols() / DEFS.getFreq()); ++i)
 	{
-		painter.drawLine(pic.width() * i * def::freq / fileData.cols(),
+		painter.drawLine(pic.width() * i * DEFS.getFreq() / fileData.cols(),
 						 pic.height(),
-						 pic.width() * i * def::freq / fileData.cols(),
+						 pic.width() * i * DEFS.getFreq() / fileData.cols(),
 						 pic.height() - 20);
-		painter.drawText(pic.width() * i * def::freq / fileData.cols() - 8,
+		painter.drawText(pic.width() * i * DEFS.getFreq() / fileData.cols() - 8,
 						 pic.height() - 2,
 						 nm(i));
 
@@ -379,7 +378,7 @@ matrix countWavelet(const signalType & inSignal)
 	   freq -= wvlt::freqStep)
 #endif
 	{
-		//        timeStep = def::freqFreq / 2.5;  // in time-bins 250 Hz
+		//        timeStep = DEFS.getFreq()Freq / 2.5;  // in time-bins 250 Hz
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
 		{
@@ -389,8 +388,8 @@ matrix countWavelet(const signalType & inSignal)
 
 			/////// TO LOOK
 			// set left & right limits of counting - should be 2.5 * morletFall... but works so
-			kMin = std::max(0, int(currSlice - 3 * morletFall * def::freq / freq));
-			kMax = std::min(NumOfSlices, int(currSlice + 3 * morletFall * def::freq / freq));
+			kMin = std::max(0, int(currSlice - 3 * morletFall * DEFS.getFreq() / freq));
+			kMax = std::min(NumOfSlices, int(currSlice + 3 * morletFall * DEFS.getFreq() / freq));
 
 			for(int k = kMin; k < kMax; ++k)
 			{
@@ -552,13 +551,13 @@ void drawWavelet(QString picPath,
 
 	}
 	painter.setPen(Qt::SolidLine);
-	for(int i = 0; i < int(NumOfSlices / def::freq); ++i)
+	for(int i = 0; i < int(NumOfSlices / DEFS.getFreq()); ++i)
 	{
-		painter.drawLine(pic.width() * i * def::freq / NumOfSlices,
+		painter.drawLine(pic.width() * i * DEFS.getFreq() / NumOfSlices,
 						 pic.height(),
-						 pic.width() * i * def::freq / NumOfSlices,
+						 pic.width() * i * DEFS.getFreq() / NumOfSlices,
 						 pic.height() - 20);
-		painter.drawText(pic.width() * i * def::freq / NumOfSlices - 8,
+		painter.drawText(pic.width() * i * DEFS.getFreq() / NumOfSlices - 8,
 						 pic.height() - 2,
 						 nm(i));
 

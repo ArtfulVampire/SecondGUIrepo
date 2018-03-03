@@ -280,7 +280,7 @@ void Cut::zero(int start, int end)
 	undoData.push_back(dataCutLocal.subCols(start, end));
 	auto undoAction = [start, this]()
 	{
-		for(int k = 0; k < dataCutLocal.rows() - 1; ++k) /// don't affect markers def::nsWOM()
+		for(int k = 0; k < dataCutLocal.rows() - 1; ++k) /// don't affect markers
 		{
 			std::copy(std::begin(undoData.back()[k]),
 					  std::end(undoData.back()[k]),
@@ -537,7 +537,7 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 	this->split(start, end);
 	logAction("split", start, end);
 
-	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
+	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / DEFS.getFreq())) + ")");
 
 	/// crutch with drawFlag
 	this->drawFlag = false;
@@ -565,7 +565,7 @@ void Cut::splitFromZeroSlot()
 void Cut::splitTillEndSlot()
 {
 	double pos = ui->paintStartDoubleSpinBox->value();
-	bool fl = pos < ui->leftLimitSpinBox->value() / def::freq;
+	bool fl = pos < ui->leftLimitSpinBox->value() / DEFS.getFreq();
 	this->splitSemiSlot(ui->leftLimitSpinBox->value(), dataCutLocal.cols(), true);
 	if(fl) { ui->paintStartDoubleSpinBox->setValue(pos); }
 }
@@ -584,7 +584,7 @@ void Cut::linearApprox(int lef, int rig, std::vector<int> chanList)
 		undoData.push_back(dataCutLocal.subCols(lef, rig));
 		auto undoAction = [lef, chanList, this]()
 		{
-			for(int k : chanList) /// don't affect markers def::nsWOM()
+			for(int k : chanList) /// don't affect markers
 			{
 				std::copy(std::begin(undoData.back()[k]),
 						  std::end(undoData.back()[k]),

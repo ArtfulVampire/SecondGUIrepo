@@ -70,9 +70,9 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 	myANN->setCritError(0.05);
 	myANN->setLrate(0.002);
 	myANN->learnAll(); /// get initial weights on train set
-	myANN->writeWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts");
-	myANN->drawWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts",
-					  def::helpPath + "/" + file1.getExpName() + "_init.jpg");
+	myANN->writeWeight(defs::helpPath + "/" + file1.getExpName() + "_init.wts");
+	myANN->drawWeight(defs::helpPath + "/" + file1.getExpName() + "_init.wts",
+					  defs::helpPath + "/" + file1.getExpName() + "_init.jpg");
 
 	/// consts - set postlearn
 	myANN->setCritError(0.01);
@@ -129,7 +129,7 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QString & ansPath1,
 											 const QString & edfPath2, const QString & ansPath2)
 {
-	def::fftLength = 1024;
+	DEFS.setFftLen(1024);
 	fb::FBedf file1(edfPath1, ansPath1);
 	fb::FBedf file2(edfPath2, ansPath2);
 
@@ -193,9 +193,9 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 	myANN->setCritError(0.05);
 	myANN->setLrate(0.002);
 	myANN->learnAll(); /// get initial weights on train set
-	myANN->writeWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts");
-	myANN->drawWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts",
-					  def::helpPath + "/" + file1.getExpName() + "_init.jpg");
+	myANN->writeWeight(defs::helpPath + "/" + file1.getExpName() + "_init.wts");
+	myANN->drawWeight(defs::helpPath + "/" + file1.getExpName() + "_init.wts",
+					  defs::helpPath + "/" + file1.getExpName() + "_init.jpg");
 
 	/// consts - set postlearn
 	myANN->setCritError(0.01);
@@ -204,7 +204,7 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 	this->passed.resize(this->myClassifierData.getNumOfCl());
 	this->passed = 0.;
 
-	QDir(def::helpPath).mkdir(def::ExpName);
+	QDir(defs::helpPath).mkdir(myLib::getExpNameLib(edfPath1, true));
 
 
 
@@ -254,9 +254,9 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 			relearn.push_back(spec.toVectorByRows());
 		}
 	}
-	myANN->writeWeight(def::helpPath + "/" + file1.getExpName() + "_last.wts");
-	myANN->drawWeight(def::helpPath + "/" + file1.getExpName() + "_last.wts",
-					  def::helpPath + "/" + file1.getExpName() + "_last.jpg");
+	myANN->writeWeight(defs::helpPath + "/" + file1.getExpName() + "_last.wts");
+	myANN->drawWeight(defs::helpPath + "/" + file1.getExpName() + "_last.wts",
+					  defs::helpPath + "/" + file1.getExpName() + "_last.jpg");
 	return myModel->averageClassification();
 }
 
@@ -266,9 +266,9 @@ void Net::successiveProcessing()
     const QString trainMarker = "_train";
 	const QString testMarker = "_test";
 
-	const QString helpString = def::windsSpectraDir();
+	const QString helpString = DEFS.windsSpectraDir();
 
-	this->loadData(helpString, {def::ExpName.left(3) + "*" + trainMarker + "*"});
+	this->loadData(helpString, {DEFS.getExpName().left(3) + "*" + trainMarker + "*"});
 
 	/// leave 800, z_transform, then reduceSize
 	myClassifierData.reduceSize(suc::learnSetStay);
@@ -291,7 +291,7 @@ void Net::successiveProcessing()
 
 
 	QStringList leest = QDir(helpString).entryList(
-    {def::ExpName.left(3) + "*" + testMarker + "*"}); /// special generality
+	{DEFS.getExpName().left(3) + "*" + testMarker + "*"}); /// special generality
 
 	this->passed.resize(this->myClassifierData.getNumOfCl());
 	this->passed = 0.;
@@ -300,8 +300,7 @@ void Net::successiveProcessing()
 	int type = -1;
     for(const QString & fileNam : leest)
     {
-		myLib::readFileInLine(helpString + "/" + fileNam,
-							  tempArr);
+		tempArr = myLib::readFileInLine(helpString + "/" + fileNam);
 		type = myLib::getTypeOfFileName(fileNam);
 		successiveLearning(tempArr, type, fileNam);
 	}
@@ -310,8 +309,7 @@ void Net::successiveProcessing()
 
 void Net::successivePreclean(const QString & spectraPath, const QStringList & filters)
 {
-//	QStringList leest;
-//	myLib::makeFullFileList(spectraPath, leest, filters);
+//	QStringList leest = myLib::makeFullFileList(spectraPath, filters);
 
 //	std::cout << "clean first 2 winds" << std::endl;
 //	for(const QString & str : leest)
@@ -323,8 +321,7 @@ void Net::successivePreclean(const QString & spectraPath, const QStringList & fi
 //	}
 
 //	std::cout << "clean by learnSetStay" << std::endl;
-//	std::vector<QStringList> leest2;
-//	myLib::makeFileLists(spectraPath, leest2);
+//	auto leest2 = myLib::makeFileLists(spectraPath);
 
 //	for(int j = 0; j < leest2.size(); ++j)
 //	{
@@ -416,7 +413,7 @@ void Net::successiveLearningFinal(const matrix & newSpectra,
 	static int wtsCounter = 0;
 
 	ANN * myANN = dynamic_cast<ANN *>(myModel);
-	myANN->writeWeight(def::helpPath
-					   + "/" + def::ExpName
-					   + "/" + def::ExpName + "_" + nm(wtsCounter++) + ".wts");
+	myANN->writeWeight(defs::helpPath
+					   + "/" + DEFS.getExpName()
+					   + "/" + DEFS.getExpName() + "_" + nm(wtsCounter++) + ".wts");
 }

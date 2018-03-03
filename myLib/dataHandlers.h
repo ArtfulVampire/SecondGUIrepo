@@ -9,28 +9,23 @@
 
 namespace myLib
 {
-void makeFullFileList(const QString & path,
-					  QStringList & lst,
-					  const QStringList & auxFilters = QStringList());
+QStringList makeFullFileList(const QString & path,
+							 const QStringList & auxFilters = QStringList());
 
-void makeFileLists(const QString & path,
-				   std::vector<QStringList> & lst,
-				   const QStringList & auxFilters = QStringList());
+std::vector<QStringList> makeFileLists(const QString & path,
+									   const QStringList & auxFilters = QStringList());
 
-void readPlainData(const QString & inPath,
-				   matrix & data,
-				   int start = 0);
+matrix readPlainData(const QString & inPath,
+					 int start = 0);
 
 void writePlainData(const QString outPath,
 					const matrix & data,
 					int sta = 0,
 					int fin = -1);
 
-void readMatrixFile(const QString & filePath,
-					matrix & outData);
+matrix readMatrixFile(const QString & filePath);
 
-void readMatrixFileRaw(const QString & filePath,
-					   matrix & outData);
+matrix readMatrixFileRaw(const QString & filePath);
 
 void writeMatrixFile(const QString & filePath,
 					 const matrix & outData,
@@ -44,6 +39,7 @@ void writeSubmatrixFile(const QString & filePath,
 						const QString & rowsString = "NumOfRows",
 						const QString & colsString = "NumOfCols");
 
+/// transpose?
 void invertMatrixFile(const QString & inPath,
 					  const QString & outPath);
 
@@ -56,14 +52,12 @@ void readIITPfile(const QString & filePath,
 
 void readUCIdataSet(const QString & setName,
 					matrix & outData,
-					std::vector<uint> &outTypes);
+					std::vector<uint> & outTypes);
 
 
-void readFileInLine(const QString & filePath,
-					std::valarray<double> & result);
+std::valarray<double> readFileInLine(const QString & filePath);
 
-void readFileInLineRaw(const QString & filePath,
-					   std::valarray<double> & result);
+std::valarray<double> readFileInLineRaw(const QString & filePath);
 
 template <typename ArrayType>
 void writeFileInLine(const QString & filePath,

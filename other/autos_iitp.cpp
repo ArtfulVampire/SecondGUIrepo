@@ -274,7 +274,7 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 
 void IITPrename(const QString & guyName)
 {
-	const QString pth = def::iitpFolder + "/" + guyName + "/";
+	const QString pth = defs::iitpFolder + "/" + guyName + "/";
 	if(!QFile::exists(pth + "rename.txt")) return;
 
 	const QString postfix = "_rn";
@@ -322,16 +322,16 @@ void IITPrename(const QString & guyName)
 /// *.dat headers to dats.txt
 void IITPdat(const QString & guyName)
 {
-	def::ntFlag = true;
-	QStringList files = QDir(def::iitpFolder + "/" + guyName).entryList({"*.dat"},
+	DEFS.setNtFlag(true);
+	QStringList files = QDir(defs::iitpFolder + "/" + guyName).entryList({"*.dat"},
 																		QDir::Files,
 																		QDir::Name);
 	std::ofstream outStr;
-	outStr.open((def::iitpFolder + "/" + guyName + "/" + guyName + "_dats.txt").toStdString());
+	outStr.open((defs::iitpFolder + "/" + guyName + "/" + guyName + "_dats.txt").toStdString());
 
 	for(const QString & fil : files)
 	{
-		const QString filePath = def::iitpFolder + "/" +
+		const QString filePath = defs::iitpFolder + "/" +
 								 guyName + "/" +
 								 fil;
 		int num = fil.mid(fil.indexOf('_') + 1, 2).toInt();
@@ -352,10 +352,10 @@ void IITPdat(const QString & guyName)
 void IITPfilterGonios(const QString & guyName,
 					  const std::vector<QString> & joints)
 {
-	QString postfix = iitp::getPostfix(QDir(def::iitpFolder + "/" + guyName).entryList({"*.edf"})[0]);
+	QString postfix = iitp::getPostfix(QDir(defs::iitpFolder + "/" + guyName).entryList({"*.edf"})[0]);
 	for(int fileNum : iitp::fileNums)
 	{
-		const QString ExpNamePre = def::iitpFolder + "/" +
+		const QString ExpNamePre = defs::iitpFolder + "/" +
 								   guyName + "/" +
 								   guyName + "_" + rn(fileNum, 2);
 		QString filePath;
@@ -390,8 +390,8 @@ void IITPtestCoh2(const QString & guyName)
 	/// test Cz-Tb_l/Ta_r coherency during static stress
 
 	iitp::iitpData dt;
-	const QString direct = def::iitpSyncFolder + "/" + guyName + "/";
-//	const QString direct = def::iitpFolder + "/" + guyName + "/";
+	const QString direct = defs::iitpSyncFolder + "/" + guyName + "/";
+//	const QString direct = defs::iitpFolder + "/" + guyName + "/";
 
 //	QString postfix = iitp::getPostfix(QDir(direct).entryList({"*.edf"})[0]);
 //	QString postfix = "_dsp_up";
@@ -451,8 +451,8 @@ void IITPtestCoh(const QString & guyName)
 {
 	/// test coherency in all files
 	iitp::iitpData dt;
-//	const QString direct = def::iitpFolder + "/" + guyName + "/";
-	const QString direct = def::iitpSyncFolder + "/" + guyName + "/";
+//	const QString direct = defs::iitpFolder + "/" + guyName + "/";
+	const QString direct = defs::iitpSyncFolder + "/" + guyName + "/";
 	QString postfix = iitp::getPostfix(QDir(direct).entryList({"*.edf"})[0]);
 
 	auto filePath = [=](int i) -> QString
@@ -631,11 +631,11 @@ void IITPconcat(const QString & guyName,
 
 
 
-	def::ntFlag = true;
+	DEFS.setNtFlag(true);
 
 	for(int fileNum : iitp::fileNums)
 	{
-		const QString ExpNamePre = def::iitpFolder + "/" +
+		const QString ExpNamePre = defs::iitpFolder + "/" +
 								   guyName + "/" +
 								   guyName + "_" + rn(fileNum, 2);
 		QString filePath;
@@ -702,12 +702,12 @@ void IITPcopyChannel(const QString & guy,
 					 const QString & whatChan,
 					 const QString & whereChan)
 {
-	def::ntFlag = true;
+	DEFS.setNtFlag(true);
 
 	for(int fileNum : iitp::fileNums)
 	{
 		edfFile fil;
-		const QString filePath = def::iitpFolder + "/" + guy
+		const QString filePath = defs::iitpFolder + "/" + guy
 								 + "/" + guy + "_" + rn(fileNum, 2)
 								 + "_emg.edf";
 		if(!QFile(filePath).exists()) { continue; }
@@ -720,7 +720,7 @@ void IITPcopyChannel(const QString & guy,
 
 void IITPdatToEdf(const QString & guyName)
 {
-	def::ntFlag = true;
+	DEFS.setNtFlag(true);
 
 	const QStringList fils = QDir(def::iitpFolder + "/" + guyName).entryList({"*.dat"});
 	for(const QString & fl : fils)
@@ -745,7 +745,7 @@ void IITPfilter(const QString & guyName,
 				bool gonios,
 				bool eeg)
 {
-	def::ntFlag = true;
+	DEFS.setNtFlag(true);
 
 	const auto fils = QDir(def::iitpFolder + "/" + guyName).entryList({"*" + postfix + ".edf"});
 	for(const QString & fl : fils)
@@ -806,11 +806,11 @@ void IITPfilter(const QString & guyName,
 /// dsp and fft, up adn down
 void IITPpre2(const QString & guyName)
 {
-	def::ntFlag = true;
+	DEFS.setNtFlag(true);
 
 	for(int fileNum : iitp::fileNums)
 	{
-		const QString ExpNamePre = def::iitpFolder + "/" +
+		const QString ExpNamePre = defs::iitpFolder + "/" +
 								   guyName + "/" +
 								   guyName + "_" + rn(fileNum, 2);
 		QString filePath;
@@ -1070,8 +1070,8 @@ void IITPemgToAbs(const QString & guyName,
 
 void IITPcopyToCar(const QString & guyName)
 {
-	const QString inPath = def::iitpSyncFolder + "/" + guyName;
-	const QString outPath = def::iitpSyncFolder + "/" + guyName + "_car";
+	const QString inPath = defs::iitpSyncFolder + "/" + guyName;
+	const QString outPath = defs::iitpSyncFolder + "/" + guyName + "_car";
 	QDir().mkpath(outPath);
 	for(const QString fileName : QDir(inPath).entryList({"*_stag*"}))
 	{
@@ -1093,7 +1093,7 @@ void IITPrerefCAR(const QString & guyName,
 							 ;
 
 
-	QStringList edfs = QDir(workPath).entryList(def::edfFilters);
+	QStringList edfs = QDir(workPath).entryList(defs::edfFilters);
 
 	for(QString fileName : edfs)
 	{
@@ -1244,7 +1244,7 @@ void IITPstaging(const QString & guyName,
 void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums)
 {
 	std::vector<QString> paths;
-	const QString workDir = def::iitpResFolder + "/" + guyName + "/sp";
+	const QString workDir = defs::iitpResFolder + "/" + guyName + "/sp";
 	for(QString fileName : QDir(workDir).entryList({"*_sp.txt"}))
 	{
 		int fileNum = iitp::iitpData::getFileNum(fileName);
@@ -1361,7 +1361,7 @@ void IITPwriteCohsToFile(std::ofstream & outStr,
 
 void IITPmakeResPath(const QString & guyDir)
 {
-	QDir a(def::iitpResFolder);
+	QDir a(defs::iitpResFolder);
 	a.mkdir(guyDir);
 	a.cd(guyDir);
 	a.mkdir("coh");
@@ -1382,7 +1382,7 @@ void IITPprocessStaged(const QString & guyName,
 	{
 		const QString guyDir = guyName + add;
 		const QString direct = dirPath + "/" + guyDir + "/";
-		const QString resultsPathPrefix = def::iitpResFolder + "/" + guyDir + "/";
+		const QString resultsPathPrefix = defs::iitpResFolder + "/" + guyDir + "/";
 		const QString postfix = iitp::getPostfix(QDir(direct).entryList({"*_stag.edf"})[0]);
 
 		if(!QDir(direct).exists()) { continue; }
@@ -1450,7 +1450,7 @@ void IITPprocessStaged(const QString & guyName,
 			if(iitp::interestGonios[fileNum].size() == 0)
 			{
 				dt.cutPiecesW(continiousOverlap);
-				dt.countContiniousTaskSpectraW(def::iitpResFolder + "/" + guyDir,
+				dt.countContiniousTaskSpectraW(defs::iitpResFolder + "/" + guyDir,
 											   continiousOverlap);
 				/// coherencies
 				std::ofstream outStr;
@@ -1476,7 +1476,7 @@ void IITPprocessStaged(const QString & guyName,
 				for(int gonio : iitp::interestGonios[fileNum]) /// for each joint
 				{
 					int minMarker = iitp::gonioMinMarker(gonio);
-					dt.countFlexExtSpectraW(def::iitpResFolder + "/" + guyDir,
+					dt.countFlexExtSpectraW(defs::iitpResFolder + "/" + guyDir,
 											minMarker, minMarker + 1, periodicOverlap);
 
 					for(int type : {0, 1}) /// 0 - flexion, 1 - extension
@@ -1661,9 +1661,9 @@ void IITPdrawSpectralMaps(const QString & guyName,
 	{
 		const QString guyDir = guyName + add;
 		const QString inPath = dirPath + "/" + guyDir + "/sp/";
-		const QString outPath = def::iitpResFolder + "/" + guyDir + "/specPics/";
+		const QString outPath = defs::iitpResFolder + "/" + guyDir + "/specPics/";
 
-		QDir a(def::iitpResFolder);
+		QDir a(defs::iitpResFolder);
 		a.mkdir(guyDir);
 		a.cd(guyDir);
 		a.mkdir("specPics");
@@ -1673,8 +1673,7 @@ void IITPdrawSpectralMaps(const QString & guyName,
 
 		for(QString fileName : QDir(inPath).entryList(markers))
 		{
-			std::valarray<double> spec;
-			myLib::readFileInLine(inPath + fileName, spec);
+			std::valarray<double> spec = myLib::readFileInLine(inPath + fileName);
 
 			matrix specMat(spec, uint(19));
 			std::valarray<double> drawSpec(19);

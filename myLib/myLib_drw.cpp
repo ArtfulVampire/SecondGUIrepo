@@ -397,7 +397,7 @@ QPixmap drawArrays(const QPixmap & templatePic, const std::vector<QString> & fil
 		{
 		   return {};
 		}
-		myLib::readFileInLine(filesPaths[i], dat[i]);
+		dat[i] = myLib::readFileInLine(filesPaths[i]);
 	}
 	return drawArrays(templatePic, dat);
 }
@@ -419,7 +419,7 @@ std::vector<QPixmap> drawArraysSameScale(const QPixmap & templatePic,
 			std::cout << "drawArraysSameScale: no such file - " <<  filesPaths[i] << std::endl;
 			return {}; /// this should never happen
 		}
-		myLib::readFileInLine(filesPaths[i], dat[i]);
+		dat[i] = myLib::readFileInLine(filesPaths[i]);
 	}
 
 	/// zero some channels - IITP
@@ -650,7 +650,7 @@ QPixmap drawMannWitney(const QPixmap & templatePic,
 				QColor color1 = QColor(inColors[h]);
 				QColor color2 = QColor(inColors[l]);
 
-				for(int j = offset; j < offset + def::spLength(); ++j)
+				for(int j = offset; j < offset + DEFS.spLength(); ++j)
 				{
 					if(inMW[h][l - h][j] == 0) continue;
 
@@ -727,8 +727,7 @@ QPixmap drawMannWitneyInLine(const QPixmap & templatePic,
 
 QPixmap drawRealisation(const QString & inPath, int srate)
 {
-	matrix inData;
-	myLib::readPlainData(inPath, inData);
+	matrix inData = myLib::readPlainData(inPath);
 
 	return drawEeg(inData, srate);
 }
@@ -1315,8 +1314,7 @@ void drawMapsICA(const QString & mapsFilePath,
 				 const QString & outName,
 				 const ColorScale colourTheme)
 {
-	matrix matrixA;
-	myLib::readMatrixFile(mapsFilePath, matrixA);
+	matrix matrixA = myLib::readMatrixFile(mapsFilePath);
 	double maxAbs = matrixA.maxAbsVal();
 
 	for(int i = 0; i < matrixA.cols(); ++i)

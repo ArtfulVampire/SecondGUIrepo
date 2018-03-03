@@ -312,8 +312,8 @@ protected:
 
     std::vector<edfChannel> channels;
 
-    bool matiFlag = def::matiFlag;
-    bool ntFlag = def::ntFlag;
+	bool matiFlag{DEFS.isUser(username::Mati)};
+	bool ntFlag{DEFS.getNtFlag()};
     bool edfPlusFlag = false; // to detect
 	bool filterIITPflag = true;
 
@@ -437,21 +437,21 @@ void holesDir(const QString & inDirPath,
 			  const QString & outDirPath);
 
 void physMinMaxCheck(const QString & dirPath);
-void physMinMaxDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void physMinMaxDir(const QString & dirPath, const QStringList & filters = defs::edfFilters);
 
 
 /// only renames files/dirs
 void deleteSpacesFileOrFolder(const QString & fileOrFolderPath);
 void deleteSpacesFolders(const QString & dirPath);
-void deleteSpacesDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void deleteSpacesDir(const QString & dirPath, const QStringList & filters = defs::edfFilters);
 
 void toLatinFileOrFolder(const QString & fileOrFolderPath);
-void toLatinDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void toLatinDir(const QString & dirPath, const QStringList & filters = defs::edfFilters);
 
 void toLowerFileOrFolder(const QString & filePath);
-void toLowerDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void toLowerDir(const QString & dirPath, const QStringList & filters = defs::edfFilters);
 
-void fullRepairDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void fullRepairDir(const QString & dirPath, const QStringList & filters = defs::edfFilters);
 }
 
 #endif // EDFFILE_H

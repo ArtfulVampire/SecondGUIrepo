@@ -124,7 +124,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		this->ns = numOfParams;
 		this->ddr = 1.;
 
-		this->nr = std::valarray<double> (def::freq, this->ns);
+		this->nr = std::valarray<double> (DEFS.getFreq(), this->ns);
 		// ndr definedlater
 		this->bytes = 256 * (this->ns + 1);
 
@@ -171,7 +171,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		this->edfData.resize(this->ns);
 		for(int i = 0; i < this->ns; ++i)
 		{
-			this->edfData[i].resize(6 * 60 * def::freq); // for 6 minutes generality
+			this->edfData[i].resize(6 * 60 * DEFS.getFreq()); // for 6 minutes generality
 		}
 
 		currTimeIndex = 0;
@@ -354,10 +354,11 @@ edfFile & edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 
     handleEdfFile(EDFpath, true, headerOnly);
 
-	/// experimental
-	def::ns = this->ns;
-	def::freq = srate;
-	def::ExpName = myLib::getExpNameLib(this->filePath, true);
+	/// experimental, to deprecate
+
+	DEFS.setNs(this->ns);
+	DEFS.setFreq(srate);
+	DEFS.setExpName(myLib::getExpNameLib(this->filePath, false));
 
 	return *this;
 }
@@ -2091,8 +2092,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
 		eyesPath = this->dirPath + "/eyes.txt";
     }
 
-    matrix coefs;
-	myLib::readMatrixFile(eyesPath, coefs);
+	matrix coefs = myLib::readMatrixFile(eyesPath);
 
     if(eegNums.empty())
     {
@@ -2130,7 +2130,7 @@ void edfFile::cleanFromEyes(QString eyesPath,
         this->removeChannels(eogNums);
 	}
 
-	std::cout << "cleanFromEyes: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
+	std::cout << "cleanFromEyes: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much memory
@@ -2621,7 +2621,7 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
     matrixProduct(matrixW,
                   fil.getData(),
                   newData,
-                  uint(def::nsWOM())); // w/o markers from globalEdf data
+				  uint(DEFS.nsWOM())); // w/o markers from globalEdf data
 
 	newData.push_back(fil.getData()[fil.getMarkChan()]); // copy markers
     fil.writeOtherData(newData, newEdfPath);

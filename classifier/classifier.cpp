@@ -6,8 +6,8 @@ using namespace myOut;
 Classifier::Classifier()
 {
 	myClassData = new ClassifierData();
-	resultsPath = def::dirPath() + "/results.txt";
-	workDir = def::dirPath() + "/Help/PA";
+	resultsPath = DEFS.dirPath() + "/results.txt";
+	workDir = DEFS.dirPath() + "/Help/PA";
 	/// by myClassData
 	confusionMatrix = matrix(myClassData->getNumOfCl(), myClassData->getNumOfCl(), 0.);
 	outputLayer = std::valarray<double>(0., myClassData->getNumOfCl());
@@ -93,7 +93,7 @@ void Classifier::classifyDatumLast1()
 		curType = myClassData->getTypes().back();
 	}
 //	fbVal *= inertiaCoef;
-	fbVal *= def::inertiaCoef;
+	fbVal *= suc::inertiaCoef;
 	fbVal += outputLayer;
 #else
 	classifyDatum1(myClassData->getData().rows() - 1);
@@ -164,7 +164,7 @@ Classifier::avType Classifier::averageClassification()
 #if 01
 	/// successive
 	resultsPath =
-			def::dirPath()
+			DEFS.dirPath()
 			+ "/results"
 			+ "_" + nm(suc::numGoodNewLimit)
 			+ "_" + nm(suc::learnSetStay)
@@ -211,7 +211,6 @@ Classifier::avType Classifier::averageClassification()
 
     res << smLib::doubleRound(averageAccuracy, 2) << '\t';
     res << smLib::doubleRound(kappa, 3) << '\t';
-	res << def::ExpName;
 	res << std::endl;
     res.close();
 
@@ -288,7 +287,7 @@ void Classifier::crossClassification(int numOfPairs, int fold)
 	const auto & types = this->myClassData->getTypes();
 
 	std::vector<std::vector<uint>> arr; // [class][index]
-	arr.resize(def::numOfClasses());
+	arr.resize(DEFS.numOfClasses());
 	for(uint i = 0; i < dataMatrix.rows(); ++i)
 	{
 		arr[ types[i] ].push_back(i);
@@ -299,7 +298,7 @@ void Classifier::crossClassification(int numOfPairs, int fold)
 	{
 		std::cout << i + 1 << ":  "; std::cout.flush();
 
-		for(int i = 0; i < def::numOfClasses(); ++i)
+		for(int i = 0; i < DEFS.numOfClasses(); ++i)
 		{
 			smLib::mix(arr[i]);
 		}

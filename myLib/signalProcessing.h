@@ -156,7 +156,7 @@ int findJump(const std::valarray<double> & inSignal, int startSearch, double num
 
 void calcSpectre(const std::valarray<double> & inSignal,
 				 std::valarray<double> & outSpectre,
-				 int fftLength = def::fftLength,
+				 int fftLength = DEFS.getFftLen(),
 				 int NumOfSmooth = 0,
 				 int Eyes = 0,
 				 double powArg = 1.);
@@ -222,8 +222,8 @@ double splineOutput(const std::valarray<double> & inX,
 
 /// UNUSED - MUST CHECK BEFORE USE
 // std::valarray<double> hilbert(const std::valarray<double> & arr,
-//							  double lowFreq = def::leftFreq,
-//							  double highFreq = def::rightFreq,
+//							  double lowFreq = DEFS.getLeftFreq(),
+//							  double highFreq = DEFS.getRightFreq(),
 //							  QString picPath  = QString());
 
 
@@ -268,9 +268,9 @@ void svd(const matrix & initialData,
 const std::vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
 void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
 						  const std::vector<int> eegChannels = leest19,
-						  const QString & windsDir = def::dirPath()
+						  const QString & windsDir = DEFS.dirPath()
 													   + "/winds",
-						  const QString & outFilePath = def::dirPath()
+						  const QString & outFilePath = DEFS.dirPath()
 														+ "/eyes.txt");
 
 

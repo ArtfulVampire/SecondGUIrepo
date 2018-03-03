@@ -143,8 +143,7 @@ void histogram(const std::valarray<double> & arr,
 
 void kernelEst(QString filePath, QString picPath)
 {
-	std::valarray<double> arr;
-	readFileInLine(filePath, arr);
+	std::valarray<double> arr = readFileInLine(filePath);
 	kernelEst(arr, picPath);
 }
 
@@ -334,8 +333,7 @@ bool gaussApproval(double * arr, int length) // kobzar page 239
 
 bool gaussApproval(QString filePath)
 {
-	std::vector<double> arr;
-	readFileInLine(filePath, arr);
+//	std::valarray<double> arr = readFileInLine(filePath);
 	return gaussApproval(arr.data(), arr.size());
 }
 
@@ -364,14 +362,9 @@ bool gaussApproval2(double * arr, int length) // kobzar page 238
 }
 */
 
-double quantile(double arg)
+double quantile(double arg) /// Kobzar page 27, approx 15
 {
-	double a, b;
-	//    a = exp(0.14*log(arg));
-	//    b = exp(0.14*log(1-arg));
-	a = pow(arg, 0.14);
-	b = pow(1. - arg, 0.14);
-	return (4.91*(a-b));
+	return (4.91 * (std::pow(arg, 0.14) - std::pow(1. - arg, 0.14)));
 }
 
 double rankit(int i, int length, double k)
@@ -383,8 +376,7 @@ double rankit(int i, int length, double k)
 
 void countRCP(QString filePath, QString picPath, double * outMean, double * outSigma)
 {
-	std::valarray<double> arr;
-	readFileInLine(filePath, arr);
+	std::valarray<double> arr = readFileInLine(filePath);
 
 	(*outMean) = smLib::mean(arr);
 	(*outSigma) = smLib::sigma(arr);
@@ -456,7 +448,7 @@ void drawRCP(const std::valarray<double> & values, const QString & picPath)
 }
 
 
-
+/// Kobzar page 454?
 int MannWhitney(const std::valarray<double> & arr1,
 				const std::valarray<double> & arr2,
 				const double p)
@@ -466,66 +458,56 @@ int MannWhitney(const std::valarray<double> & arr1,
 	/// 1 - arr1 > arr2
 	/// 2 - arr2 > arr1
 
-	std::vector<std::pair <double, int>> arr;
+	std::vector<std::pair <double, int>> arr; /// composed row
 
-	// fill first array
+	// add first array
 	std::for_each(std::begin(arr1),
 				  std::end(arr1),
 				  [&arr](double in)
-	{ arr.push_back(std::make_pair(in, 0)); });
+	{ arr.push_back(std::make_pair(in, 1)); });
 
-	// fill second array
+	// add second array
 	std::for_each(std::begin(arr2),
 				  std::end(arr2),
 				  [&arr](double in)
-	{ arr.push_back(std::make_pair(in, 1)); });
+	{ arr.push_back(std::make_pair(in, 2)); });
 
 	std::sort(std::begin(arr),
 			  std::end(arr),
 			  [](std::pair<double, int> i,
-			  std::pair<double, int> j) { return i.first > j.first; });
+			  std::pair<double, int> j) { return i.first < j.first; });
+
+//	std::for_each(std::begin(arr),
+//				  std::end(arr),
+//				  [](const auto i)
+//	{
+//		std::cout << i.first << std::endl;
+//	});
 
 	const int N1 = arr1.size();
 	const int N2 = arr2.size();
 
-	const double average = N1 * N2 / 2.;
-	const double dispersion = sqrt(N1 * N2 * ( N1 + N2 ) / 12.);
-
-	double U = 0.;
-
-
 	// count sums
-	int sum0 = 0;
-	for(unsigned int i = 0; i < arr.size(); ++i)
+	int sum1 = 0;
+	for(int i = 0; i < arr.size(); ++i)
 	{
-		if(arr[i].second == 0)
+		if(arr[i].second == 1)
 		{
-			sum0 += (i+1);
+			sum1 += (i+1);
 		}
 	}
+	double U = sum1 - N1 * (N1 + 1) / 2.;
 
-	int sumAll = (N1 + N2) * (N1 + N2 + 1) / 2;
+	const double average = N1 * N2 / 2.;
+	const double sigma = std::sqrt(N1 * N2 * ( N1 + N2 + 1 ) / 12.);
+	const double zValue = std::abs(U - average) / sigma;
 
-	if(sum0 > sumAll/2 )
+	/// alpha = 1 - p; threshold(p = 0.05) ~= 1.96313
+	const double threshold = myLib::quantile( (1.00 + (1. - p) ) / 2.);
+
+	if(zValue > threshold)
 	{
-		U = double(N1 * N2 + N1 * (N1 + 1) /2. - sum0);
-	}
-	else
-	{
-
-		U = double(N1 * N2 + N2 * (N2 + 1) /2. - (sumAll - sum0));
-	}
-
-	const double beliefLimit = quantile( (1.00 + (1. - p) ) / 2.);
-	const double ourValue = (U - average) / dispersion;
-
-//	std::cout << "beliefLimit = " << beliefLimit << std::endl;
-//	std::cout << "ourValue = " << ourValue << std::endl;
-
-	// old
-	if(std::abs(ourValue) > beliefLimit)
-	{
-		if(sum0 < sumAll / 2 )
+		if(U > average)
 		{
 			return 1;
 		}
@@ -540,11 +522,11 @@ int MannWhitney(const std::valarray<double> & arr1,
 	}
 
 	/// new try DONT WORK??? to test
-	if(ourValue > beliefLimit)
+	if(zValue > threshold)
 	{
 		return 1;
 	}
-	else if (ourValue < -beliefLimit)
+	else if (zValue < -threshold)
 	{
 		return 2;
 	}
@@ -554,24 +536,50 @@ int MannWhitney(const std::valarray<double> & arr1,
 	}
 }
 
+void writeMannWhitney(const trivector<int> & MW,
+					  const QString & outPath)
+{
+	const int numOfClasses = DEFS.numOfClasses();
+	std::ofstream fil;
+	fil.open(outPath.toStdString());
+
+	/// 0-1, 0-2, 0-3, ... 0-N, 1-2, 1-3, 1-4, ... 1-N, ... (N-1)-N
+	for(int i = 0; i < numOfClasses; ++i)
+	{
+		for(int j = i + 1; j < numOfClasses; ++j)
+		{
+			for(int ch = 0; ch < DEFS.nsWOM(); ++ch)
+			{
+				for(int sp = 0; sp < DEFS.spLength(); ++sp)
+				{
+					fil << MW[i][j - i][sp + ch * DEFS.spLength()];
+				}
+				fil << std::endl;
+			}
+			fil << std::endl;
+		}
+	}
+	fil.close();
+}
+
 void countMannWhitney(trivector<int> & outMW,
 					  const QString & spectraPath,
 					  matrix * averageSpectraOut,
 					  matrix * distancesOut)
 {
 
-	const int NetLength = def::nsWOM() * def::spLength();
-	const int numOfClasses = def::numOfClasses();
+	const int NetLength = DEFS.nsWOM() * DEFS.spLength();
+	const int numOfClasses = DEFS.numOfClasses();
 
 	QString helpString;
 	const QDir dir_(spectraPath);
-	std::vector<QStringList> lst; // 0 - Spatial, 1 - Verbal, 2 - Rest
 	std::vector<matrix> spectra(numOfClasses);
 
 	matrix averageSpectra(numOfClasses, NetLength, 0);
 	matrix distances(numOfClasses, numOfClasses, 0);
 
-	makeFileLists(spectraPath, lst);
+	// 0 - Spatial, 1 - Verbal, 2 - Rest
+	std::vector<QStringList> lst = makeFileLists(spectraPath);
 
 	for(int i = 0; i < numOfClasses; ++i)
 	{
@@ -579,7 +587,7 @@ void countMannWhitney(trivector<int> & outMW,
 		for(int j = 0; j < lst[i].length(); ++j) /// remake : lst[i]
 		{
 			helpString = dir_.absolutePath() + "/" + lst[i][j];
-			readFileInLine(helpString, spectra[i][j]);
+			spectra[i][j] = readFileInLine(helpString);
 		}
 		averageSpectra[i] = spectra[i].averageRow();
 
@@ -658,7 +666,7 @@ void MannWhitneyFromMakepa(const QString & spectraDir, const QString & outPicPat
 	drawMannWitney(outPicPath,
 				   MW);
 
-	QString helpString = def::dirPath() + "/results.txt";
+	QString helpString = DEFS.dirPath() + "/results.txt";
 	std::ofstream outStr;
 	outStr.open(helpString.toStdString(), std::ios_base::app);
 	if(!outStr.good())
@@ -667,9 +675,9 @@ void MannWhitneyFromMakepa(const QString & spectraDir, const QString & outPicPat
 	}
 	else
 	{
-		for(int i = 0; i < def::numOfClasses(); ++i)
+		for(int i = 0; i < DEFS.numOfClasses(); ++i)
 		{
-			for(int j = i + 1; j < def::numOfClasses(); ++j)
+			for(int j = i + 1; j < DEFS.numOfClasses(); ++j)
 			{
 				outStr << "dist " << i << " - " << j << '\t' << dists[i][j - i] << '\n';
 			}

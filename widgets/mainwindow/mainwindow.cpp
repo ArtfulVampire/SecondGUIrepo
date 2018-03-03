@@ -46,7 +46,7 @@ MainWindow::MainWindow() :
 
 	/// set fileMarks lineEdit
 	QString helpString;
-    for(const QString & fileMark : def::fileMarkers)
+	for(const QString & fileMark : DEFS.getFileMarks())
     {
         helpString += fileMark + "; ";
     }
@@ -75,7 +75,7 @@ MainWindow::MainWindow() :
     ui->windowLengthSpinBox->setValue(4);
     ui->realsButton->setChecked(true);
 
-    if(def::OssadtchiFlag)
+	if(DEFS.isUser(username::Ossadtchi))
     {
         ui->timeShiftSpinBox->setValue(10);
         ui->windowLengthSpinBox->setValue(10);
@@ -129,7 +129,7 @@ MainWindow::MainWindow() :
     ui->matiPieceLengthSpinBox->setMaximum(64);
     ui->matiPieceLengthSpinBox->setMinimum(4);
     ui->matiPieceLengthSpinBox->setValue(16);
-    ui->matiCheckBox->setChecked(def::matiFlag);
+	ui->matiCheckBox->setChecked(DEFS.isUser(username::Mati));
 	ui->markerBinTimeSpinBox->setMaximum(250 * 60 * 60 * 2);   // 2 hours
 	ui->markerSecTimeDoubleSpinBox->setMaximum(60 * 60 * 2); // 2 hours
 
@@ -328,18 +328,18 @@ void MainWindow::setEdfFileSlot()
 {
     QString helpString;
 
-	if(def::dir->isRoot())
+	if(DEFS.dirIsRoot())
     {
         helpString = QFileDialog::getOpenFileName((QWidget*)this,
                                                   tr("EDF to open"),
-                                                  def::dataFolder,
+												  DEFS.dirPath(),
                                                   tr("EDF files (*.EDF *.edf)"));
     }
     else
     {
         helpString = QFileDialog::getOpenFileName((QWidget*)this,
                                                   tr("EDF to open"),
-												  def::dirPath(),
+												  DEFS.dirPath(),
                                                   tr("EDF files (*.EDF *.edf)"));
     }
 
@@ -353,12 +353,10 @@ void MainWindow::setEdfFile(const QString & filePath)
 
 	ui->filePathLineEdit->setText(helpString);
 
-	def::ExpName = myLib::getExpNameLib(filePath);
-
 	helpString.resize(helpString.lastIndexOf("/"));
-    def::dir->cd(helpString);
+	DEFS.setDir(helpString);
 
-	if(def::redirectStdOutFlag)
+	if(defs::redirectStdOutFlag)
     {
 		// redirect std::cout to logfile
         if(generalLogStream.is_open())
@@ -378,26 +376,26 @@ void MainWindow::setEdfFile(const QString & filePath)
     }
 
 
-	def::dir->mkdir("Reals");
-	def::dir->mkdir("Reals/BC");
-	def::dir->mkdir("winds");
-	def::dir->mkdir("winds/fromreal");
-	def::dir->mkdir("SpectraSmooth");
-	def::dir->mkdir("SpectraSmooth/winds");
+	DEFS.dirMkdir("Reals");
+	DEFS.dirMkdir("Reals/BC");
+	DEFS.dirMkdir("winds");
+	DEFS.dirMkdir("winds/fromreal");
+	DEFS.dirMkdir("SpectraSmooth");
+	DEFS.dirMkdir("SpectraSmooth/winds");
 
-	def::dir->mkdir("Signals");
-	def::dir->mkdir("Signals/winds");
-	def::dir->mkdir("SpectraImg");
+	DEFS.dirMkdir("Signals");
+	DEFS.dirMkdir("Signals/winds");
+	DEFS.dirMkdir("SpectraImg");
 
-	def::dir->mkdir("Help");
-	def::dir->mkdir("Help/maps");
-	def::dir->mkdir("Help/psa");
-	def::dir->mkdir("Help/ica");
-	def::dir->mkdir("Help/wm");
-	def::dir->mkdir("Help/PA");
-	def::dir->mkdir("Help/wts");
-//	def::dir->mkdir("amod");
-//	def::dir->mkdir("auxEdfs");
+	DEFS.dirMkdir("Help");
+	DEFS.dirMkdir("Help/maps");
+	DEFS.dirMkdir("Help/psa");
+	DEFS.dirMkdir("Help/ica");
+	DEFS.dirMkdir("Help/wm");
+	DEFS.dirMkdir("Help/PA");
+	DEFS.dirMkdir("Help/wts");
+//	DEFS.dirMkdir("amod");
+//	DEFS.dirMkdir("auxEdfs");
 
 	readData();
 	ui->textEdit->append("EDF file read successfull\nns equals to " + nm(globalEdf.getNs()));
@@ -424,7 +422,7 @@ void MainWindow::readData()
 
 	ui->reduceChannelsComboBox->currentIndexChanged(ui->reduceChannelsComboBox->currentIndex());
 
-    ui->markerSecTimeDoubleSpinBox->setMaximum(globalEdf.getDataLen() / def::freq);
+	ui->markerSecTimeDoubleSpinBox->setMaximum(globalEdf.getDataLen() / DEFS.getFreq());
     ui->markerBinTimeSpinBox->setMaximum(globalEdf.getDataLen());
 }
 
@@ -444,8 +442,8 @@ void MainWindow::drawDirSlot()
 
 void MainWindow::drawSpectraSlot()
 {
-	const QString prePath = def::dirPath() + "/" + ui->drawDirBox->currentText();
-	const QString outPath = def::dirPath() + "/SpectraImg";
+	const QString prePath = DEFS.dirPath() + "/" + ui->drawDirBox->currentText();
+	const QString outPath = DEFS.dirPath() + "/SpectraImg";
     drawSpectra(prePath, outPath);
 }
 
@@ -456,16 +454,13 @@ void MainWindow::drawSpectra(const QString & prePath,
     QTime myTime;
     myTime.start();
 
-    QStringList lst;
-	myLib::makeFullFileList(prePath, lst);
-    std::valarray<double> dataS;
+	QStringList lst = myLib::makeFullFileList(prePath);
     int i = 0;
     QString helpString;
     for(const QString & str : lst)
     {
 		helpString = prePath + "/" + str;
-		myLib::readFileInLine(helpString,
-                       dataS);
+		auto dataS = myLib::readFileInLine(helpString);
 
 		helpString = outPath + "/" + str + ".jpg";
 		myLib::drawTemplate(helpString);
@@ -485,17 +480,15 @@ void MainWindow::drawSpectra(const QString & prePath,
 
 void MainWindow::drawReals()
 {
-    QString helpString;
-
     QTime myTime;
     myTime.start();
     ui->progressBar->setValue(0);
+
     matrix dataD;
 
-	QString prePath = def::dirPath() + "/" + ui->drawDirBox->currentText();
-//    makeFullFileList(prePath, lst);
+	QString prePath = DEFS.dirPath() + "/" + ui->drawDirBox->currentText();
 
-	auto a = def::edfFilters + QStringList("*." + def::plainDataExtension);
+	auto a = defs::edfFilters + QStringList("*." + defs::plainDataExtension);
 	QStringList lst = QDir(prePath).entryList(a);
 
     int redCh = -1;
@@ -533,9 +526,8 @@ void MainWindow::drawReals()
         {
             break;
         }
-		helpString = prePath + "/" + lst[i];
-		myLib::readPlainData(helpString,
-					  dataD);
+		QString helpString = prePath + "/" + lst[i];
+		dataD = myLib::readPlainData(helpString);
 
 		if(dataD.cols() > 15000)
         {
@@ -546,7 +538,7 @@ void MainWindow::drawReals()
 
 
 		myLib::drw::drawEeg(dataD * ui->drawCoeffSpinBox->value(),
-							def::freq,
+							DEFS.getFreq(),
 		{ std::make_pair(blueCh, "blue"), std::make_pair(redCh, "red") }).save(
 					helpString, 0, 100);
 
@@ -556,11 +548,10 @@ void MainWindow::drawReals()
     }
     ui->progressBar->setValue(0);
 
-	helpString = "signals are drawn\nns equals to " + nm(globalEdf.getNs());
-    ui->textEdit->append(helpString);
+	ui->textEdit->append("signals are drawn\nns equals to " + nm(globalEdf.getNs()));
 
     stopFlag = 0;
-	std::cout << "drawReals: time = " << myTime.elapsed()/1000. << " sec" << std::endl;
+	std::cout << "drawReals: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::cleanDirsCheckAllBoxes(bool fl)
@@ -575,9 +566,9 @@ void MainWindow::cleanDirs()
 {
     QString helpString;
 
-    if(def::dir->isRoot())
+	if(DEFS.dirIsRoot())
 	{
-		std::cout << "cleanDirs: def::dir is root, return" << std::endl;
+		std::cout << "cleanDirs: global dir is root, return" << std::endl;
         return;
     }
 
@@ -586,9 +577,9 @@ void MainWindow::cleanDirs()
 		if(item->isChecked())
 		{
 			if(item->text() == "markers")
-			{ myLib::cleanDir(def::dirPath(), "markers", 0); }
+			{ myLib::cleanDir(DEFS.dirPath(), "markers", 0); }
 			else
-			{ myLib::cleanDir(def::dirPath() + "/" + item->text()); }
+			{ myLib::cleanDir(DEFS.dirPath() + "/" + item->text()); }
 		}
 	}
 	helpString = "dirs cleaned\nns equals to " + nm(globalEdf.getNs());
@@ -602,13 +593,13 @@ void MainWindow::drawMapsSlot()
 {
     QString helpString = QFileDialog::getOpenFileName(this,
                                                       tr("Choose maps file"),
-													  def::dirPath(),
+													  DEFS.dirPath(),
                                                       tr("*.txt"));
     if(helpString.isEmpty())
     {
-		helpString = def::dirPath()
+		helpString = DEFS.dirPath()
 					 + "/Help"
-					 + "/" + def::ExpName
+					 + "/" + globalEdf.getExpName()
                      + "_maps.txt";
         helpString.remove("_ica");
     }
@@ -617,10 +608,10 @@ void MainWindow::drawMapsSlot()
         return;
     }
 	myLib::drawMapsICA(helpString,
-					   def::dirPath()
+					   DEFS.dirPath()
 					   + "/Help"
 					   + "/Maps",
-					   def::ExpName);
+					   globalEdf.getExpName());
 }
 
 void MainWindow::stop()
@@ -630,7 +621,7 @@ void MainWindow::stop()
 
 void MainWindow::setFileMarkers()
 {
-    def::fileMarkers = ui->fileMarkersLineEdit->text().split(QRegExp(R"([,;])"),
-                                                             QString::SkipEmptyParts);
+	DEFS.setFileMarks(ui->fileMarkersLineEdit->text().split(QRegExp(R"([,;])"),
+															QString::SkipEmptyParts));
     ui->textEdit->append(R"(fileMarkers renewed)");
 }

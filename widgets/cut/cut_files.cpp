@@ -83,7 +83,7 @@ void Cut::saveSlot()
 
 	if(myFileType == fileType::real)
 	{
-		QString helpString = def::dirPath()
+		QString helpString = DEFS.dirPath()
 							 + "/cut"
 							 + "/" + myLib::getFileName(currentFile);
 
@@ -112,7 +112,7 @@ void Cut::saveSubsecSlot()
 		{
 
 			QString helpString;
-			helpString = def::dirPath() +
+			helpString = DEFS.dirPath() +
 						 "/winds" +
 						 "/" + myLib::getFileName(currentFile) +
 						 "." + rn(addNum++, 3);
@@ -155,9 +155,9 @@ void Cut::saveSubsecSlot()
 void Cut::browseSlot()
 {
 	QString path;
-	if(def::dir->isRoot())
+	if(DEFS.dirIsRoot())
 	{
-		path = def::dataFolder;
+		path = DEFS.dirPath();
 	}
 	else
 	{
@@ -167,7 +167,7 @@ void Cut::browseSlot()
 		}
 		else if(this->myFileType == fileType::real)
 		{
-			path = def::dirPath() +
+			path = DEFS.dirPath() +
 				   "/" + ui->subdirComboBox->currentText();
 		}
 
@@ -176,11 +176,11 @@ void Cut::browseSlot()
 	/// filter bu suffix
 	const QString suffix = ui->suffixComboBox->currentText();
 	QString filter{};
-	for(const QString & in : def::edfFilters)
+	for(const QString & in : defs::edfFilters)
 	{
 		filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + in + " ";
 	}
-	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + def::plainDataExtension;
+	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + defs::plainDataExtension;
 	const QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
 															tr("Open file"),
 															path,
@@ -192,12 +192,12 @@ void Cut::browseSlot()
 	ui->lineEdit->setText(helpString);
 	setFileType(helpString);
 
-	if(def::dir->isRoot())
+	if(DEFS.dirIsRoot())
 	{
-		def::dir->cd(myLib::getDirPathLib(helpString));
+		DEFS.setDir(myLib::getDirPathLib(helpString));
 		if(this->myFileType == fileType::real)
 		{
-			def::dir->cdUp();
+			DEFS.dirCdUp();
 		}
 	}
 	filesList = QDir(myLib::getDirPathLib(helpString)).entryList(
@@ -221,7 +221,7 @@ void Cut::setFileType(const QString & dataFileName)
 	{
 		this->myFileType = fileType::edf;
 	}
-	else if(dataFileName.endsWith(def::plainDataExtension, Qt::CaseInsensitive))
+	else if(dataFileName.endsWith(defs::plainDataExtension, Qt::CaseInsensitive))
 	{
 		this->myFileType = fileType::real;
 	}
@@ -232,7 +232,6 @@ void Cut::setValuesByEdf()
 {
 	if( !fileOpened ) { return; }
 
-	currFreq = edfFil.getFreq();
 	dataCutLocal = edfFil.getData(); /// expensive
 
 	const bool iitpFlag = edfFil.getDirPath().contains("iitp", Qt::CaseInsensitive);
@@ -258,11 +257,11 @@ void Cut::setValuesByEdf()
 	ui->diffTimeSpinBox->setDecimals(1);
 
 
-	ui->paintStartDoubleSpinBox->setMaximum(floor(dataCutLocal.cols() / currFreq));
+	ui->paintStartDoubleSpinBox->setMaximum(floor(dataCutLocal.cols() / DEFS.getFreq()));
 	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed? -> paint
-	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / currFreq)) + ")");
-	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - scrollAreaGapX) / currFreq);
-	ui->paintLengthDoubleSpinBox->setValue((this->width() - scrollAreaGapX) / currFreq); /// -> paint
+	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / DEFS.getFreq())) + ")");
+	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - scrollAreaGapX) / DEFS.getFreq());
+	ui->paintLengthDoubleSpinBox->setValue((this->width() - scrollAreaGapX) / DEFS.getFreq()); /// -> paint
 
 	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
 	{
@@ -311,7 +310,7 @@ void Cut::openFile(const QString & dataFileName)
 	leftDrawLimit = 0;
 	if(this->myFileType == fileType::real)
 	{
-		myLib::readPlainData(dataFileName, dataCutLocal);
+		dataCutLocal = myLib::readPlainData(dataFileName);
 		fileOpened = true;
 	}
 	else if(this->myFileType == fileType::edf)

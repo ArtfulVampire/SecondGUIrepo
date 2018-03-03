@@ -497,7 +497,7 @@ void countStats(const QString & dear,
 				const std::vector<std::pair<QString, QString> > & guysList,
 				const QString & postfix)
 {
-	const QString guysPath = def::dataFolder + "/" + dear;
+	const QString guysPath = DEFS.dirPath() + "/" + dear;
 
 	for(const auto & in : guysList)
 	{

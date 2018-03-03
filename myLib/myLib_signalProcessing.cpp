@@ -1983,19 +1983,18 @@ void svd(const matrix & initialData,
 #if 0
     /// ICA test short
 
-    const QString pathForAuxFiles = def::dirPath()
+	const QString pathForAuxFiles = DEFS.dirPath()
 									+ "/Help"
 									+ "/ica";
     QString helpString = pathForAuxFiles
-						 + "/" + def::ExpName + "_eigenMatrix.txt";
-    readMatrixFile(helpString,
-                    eigenVectors);
+						 + "/EigenMatrix.txt";
+	eigenVectors = readMatrixFile(helpString);
 
 
     // write eigenValues
     helpString = pathForAuxFiles
-				 + "/" + def::ExpName + "_eigenValues.txt";
-    readFileInLine(helpString, eigenValues);
+				 + "/EigenValues.txt";
+	eigenValues = readFileInLine(helpString);
     return;
 #endif
 
@@ -2159,7 +2158,7 @@ void svd(const matrix & initialData,
 		std::cout << "disp = " << smLib::doubleRound(100. * eigenValues[k] / trace, 2) << "\t";
 		std::cout << "total = " << smLib::doubleRound(100. * sum1 / trace, 2) << "\t";
 		std::cout << "iters = " << counter << "\t";
-		std::cout << smLib::doubleRound(myTime.elapsed()/1000., 1) << " s" << std::endl;
+		std::cout << smLib::doubleRound(myTime.elapsed() / 1000., 1) << " s" << std::endl;
 
         for(int i = 0; i < dimension; ++i)
         {
@@ -2170,13 +2169,13 @@ void svd(const matrix & initialData,
 
 double morletCos(double const freq1, const double timeShift, const double pot, const double time)
 {
-    double freq = freq1 * 2. * pi / def::freq;
+	double freq = freq1 * 2. * pi / DEFS.getFreq();
 	return cos(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
 }
 
 double morletSin(double const freq1, const double timeShift, const double pot, const double time)
 {
-    double freq = freq1 * 2. * pi / def::freq;
+	double freq = freq1 * 2. * pi / DEFS.getFreq();
 	return sin(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
 }
 
@@ -2266,7 +2265,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 
     const int inLength = arr.size();
 	const int fftLen = smLib::fftL(inLength); // int(pow(2., ceil(log(inLength)/log(2.))));
-    const double spStep = def::freq / fftLen;
+	const double spStep = DEFS.getFreq() / fftLen;
     const double normCoef = sqrt(fftLen / double(inLength));
 
 	std::valarray<double> out; // result
@@ -2859,7 +2858,7 @@ matrix countSpectre(const matrix & inData,
 	}
 
 	if(
-	   ( (fftLen - eyes) < def::freq * 3. ) // real signal shorter than 3 sec
+	   ( (fftLen - eyes) < DEFS.getFreq() * 3. ) // real signal shorter than 3 sec
 //	   || (eyes > 0.3 * fftLen) /// too much eyes
 	   )
 	{
@@ -2893,7 +2892,7 @@ void calcSpectre(const std::valarray<double> & inSignal,
         return;
     }
 
-	const double nrm = 2. / (double(fftLength - Eyes) * def::freq);
+	const double nrm = 2. / (double(fftLength - Eyes) * DEFS.getFreq());
 	outSpectre = spectreRtoR(inSignal, fftLength) * nrm;
 //	outSpectre = pow(outSpectre, powArg);
 
@@ -2927,11 +2926,7 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 	myTime.start();
 
 
-	QStringList leest;
-	/// if cut from reals
-//    makeFullFileList(windsDir, leest);
-	/// if cut from edf
-	leest = QDir(windsDir).entryList({"*" + def::plainDataExtension});
+	QStringList leest = QDir(windsDir).entryList({"*" + defs::plainDataExtension});
 
 	for(QString & item : leest)
 	{
@@ -2946,7 +2941,7 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 	int NumOfSlices = 0;
 	for(auto filePath : leest)
 	{
-		readPlainData(filePath, dataE, NumOfSlices);
+		dataE = readPlainData(filePath, NumOfSlices);
 		NumOfSlices = dataE.cols();
 	}
 
