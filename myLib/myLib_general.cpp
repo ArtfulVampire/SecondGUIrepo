@@ -144,7 +144,7 @@ QString getFileMarker(const QString & fileName)
     return QString();
 }
 
-QString getExt(const QString & filePath)
+QString getExtension(const QString & filePath)
 {
     QString helpString = (filePath);
     if(helpString.contains('.'))

@@ -324,12 +324,12 @@ public:
 
 
 	/// legacy
-	int right() const		{ return fftLimit(this->leftFreq, this->freq, this->fftLength); }
-	int left() const		{ return fftLimit(this->rightFreq, this->freq, this->fftLength) + 1; }
+	int left() const		{ return fftLimit(this->leftFreq, this->freq, this->fftLength); }
+	int right() const		{ return fftLimit(this->rightFreq, this->freq, this->fftLength) + 1; }
 	int spLength() const	{ return this->right() - this->left(); }
 	double spStep() const	{ return this->freq / this->fftLength; }
 	/// to deprecate
-	int numOfClasses() const	{ return this->fileMarkers.length(); }
+	int numOfClasses() const{ return this->fileMarkers.length(); }
 	int nsWOM() const		{ return this->ns - 1; }
 
 private:
@@ -347,10 +347,10 @@ private:
 	bool opencl{false};		/// unused now
 	bool openmp{false};		/// unused now
 
-	QString ExpName;		/// to deprecate
-	int ns{20};				/// to deprecate
-	double freq{250.};		/// to deprecate
-	int fftLength{4096};	/// to deprecate
+	QString ExpName;		/// to deprecate, edfFile.getExpName()
+	int ns{20};				/// to deprecate, edfFile.getNs();
+	double freq{250.};		/// to deprecate, edfFile.getFreq()
+	int fftLength{4096};
 
 	double leftFreq{5.};
 	double rightFreq{20.};

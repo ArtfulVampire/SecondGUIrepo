@@ -484,6 +484,18 @@ bool matrix::operator != (const matrix & other)
 	return !(this->operator==(other));
 }
 
+
+matrix matrix::apply(std::function<std::valarray<double>(const std::valarray<double> &)> func) const
+{
+	matrix res{};
+	for(const auto & row : myData)
+	{
+		res.push_back(func(row));
+	}
+	return res;
+}
+
+
 bool matrix::isEmpty() const
 {
 	if(this->rows() == 0 || this->cols() == 0) return true;

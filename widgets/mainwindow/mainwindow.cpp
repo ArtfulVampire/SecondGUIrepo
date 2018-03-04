@@ -326,22 +326,10 @@ void MainWindow::showCut()
 
 void MainWindow::setEdfFileSlot()
 {
-    QString helpString;
-
-	if(DEFS.dirIsRoot())
-    {
-        helpString = QFileDialog::getOpenFileName((QWidget*)this,
-                                                  tr("EDF to open"),
-												  DEFS.dirPath(),
-                                                  tr("EDF files (*.EDF *.edf)"));
-    }
-    else
-    {
-        helpString = QFileDialog::getOpenFileName((QWidget*)this,
-                                                  tr("EDF to open"),
-												  DEFS.dirPath(),
-                                                  tr("EDF files (*.EDF *.edf)"));
-    }
+	QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
+													  tr("EDF to open"),
+													  DEFS.dirPath(),
+													  tr("EDF files (*.EDF *.edf)"));
 
 	if(!helpString.isEmpty()) { setEdfFile(helpString); }
 }

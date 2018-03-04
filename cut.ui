@@ -102,7 +102,7 @@
    </property>
    <layout class="QHBoxLayout" name="browseLayout">
     <item>
-     <widget class="QLineEdit" name="lineEdit"/>
+     <widget class="QLineEdit" name="filePathLineEdit"/>
     </item>
     <item>
      <widget class="QPushButton" name="browseButton">
@@ -892,8 +892,6 @@
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
-  <zorder>iitpInverseCheckBox</zorder>
-  <zorder>iitpByEegCheckBox</zorder>
  </widget>
  <resources/>
  <connections/>

@@ -88,8 +88,6 @@ Spectre::Spectre() :
     QObject::connect(ui->fftComboBox, SIGNAL(highlighted(int)), this, SLOT(setFftLengthSlot()));
     QObject::connect(ui->fftComboBox, SIGNAL(activated(int)), this, SLOT(setFftLengthSlot()));
 
-    QObject::connect(ui->leftSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLeft()));
-    QObject::connect(ui->rightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setRight()));
 
     QObject::connect(ui->avButton, SIGNAL(clicked()), this, SLOT(compare()));
 
@@ -100,6 +98,15 @@ Spectre::Spectre() :
     QObject::connect(ui->integrateButton, SIGNAL(clicked()), this, SLOT(integrate()));
 
     QObject::connect(ui->waveletsPushButton, SIGNAL(clicked()), this, SLOT(drawWavelets()));
+
+	QObject::connect(ui->leftSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLeft()));
+	QObject::connect(ui->rightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setRight()));
+
+	/// already inside this->setLeft() and this->setRight()
+//	QObject::connect(ui->leftSpinBox, &QSpinBox::editingFinished,
+//					 [this](){ DEFS.setLeftFreq(ui->leftSpinBox->value() * DEFS.spStep()); });
+//	QObject::connect(ui->RightSpinBox, &QSpinBox::editingFinished,
+//					 [this](){ DEFS.setRightFreq(ui->leftSpinBox->value() * DEFS.spStep()); });
 
     ui->specLabel->installEventFilter(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
@@ -114,14 +121,14 @@ Spectre::Spectre() :
 
 void Spectre::defaultState()
 {
-    ui->lineEdit_1->setText(defaultInPath);
-    ui->lineEdit_2->setText(defaultOutPath);
+	ui->inputDirLineEdit->setText(defaultInPath);
+	ui->outputDirLineEdit->setText(defaultOutPath);
 
     if(ui->fftComboBox->currentIndex() == 0) // 1024
     {
         /// shit with external spectra counting
-        ui->lineEdit_1->setText(defaultInPathW);
-        ui->lineEdit_2->setText(defaultOutPathW);
+		ui->inputDirLineEdit->setText(defaultInPathW);
+		ui->outputDirLineEdit->setText(defaultOutPathW);
         ui->smoothBox->setValue(5);
     }
     else if(ui->fftComboBox->currentIndex() == 1) // 2048
@@ -313,7 +320,7 @@ void Spectre::inputDirSlot()
                                                            backupDirPath);
     if(!helpString.isEmpty())
     {
-        ui->lineEdit_1->setText(helpString);
+		ui->inputDirLineEdit->setText(helpString);
     }
 }
 
@@ -324,60 +331,63 @@ void Spectre::outputDirSlot()
                                                            backupDirPath);
     if(!helpString.isEmpty())
     {
-        ui->lineEdit_2->setText(helpString);
+		ui->outputDirLineEdit->setText(helpString);
     }
 }
 
 void Spectre::integrate()
 {
-	QStringList ranges = ui->integrateLineEdit->text().split(QRegExp("[; ]"),
-                                                          QString::SkipEmptyParts);
-	const int numOfInt = ranges.length();
+	QStringList ranges = ui->integrateLineEdit->text().split(QRegExp("[,; ]"),
+															 QString::SkipEmptyParts);
+	const int numOfInt = ranges.size();
     std::vector<int> begins(numOfInt);
-    std::vector<int> ends(numOfInt);
-    QString helpString;
-    QStringList nameFilters;
+	std::vector<int> ends(numOfInt);
+
 	for(const QString & item : ranges)
-    {
-        nameFilters = item.split('-', QString::SkipEmptyParts);
+	{
+		QStringList limits = item.split('-', QString::SkipEmptyParts);
 
-		begins.push_back(std::max(fftLimit(nameFilters[0].toDouble(),
+		begins.push_back(std::max(fftLimit(limits[0].toDouble(),
 								  DEFS.getFreq(),
-								  ui->fftComboBox->currentText().toInt()) - DEFS.left() + 1,
+								  DEFS.getFftLen()) - DEFS.left(),
 						 0));
-		ends.push_back(std::min(fftLimit(nameFilters[1].toDouble(),
+		ends.push_back(std::min(fftLimit(limits[1].toDouble(),
 								DEFS.getFreq(),
-								ui->fftComboBox->currentText().toInt()) - DEFS.left() + 1,
+								DEFS.getFftLen()) - DEFS.left(),
 					   DEFS.spLength()));
-    }
+	}
 
-	matrix dataInt(DEFS.nsWOM(), DEFS.spLength());
 	matrix dataOut(DEFS.nsWOM(), numOfInt, 0.);
 
-	QStringList lst = myLib::makeFullFileList(ui->lineEdit_1->text());
+	QStringList lst = myLib::makeFullFileList(ui->inputDirLineEdit->text());
 
     for(const QString & fileName : lst)
     {
 
-        helpString = (ui->lineEdit_1->text()
-											  + "/" + fileName);
-		dataInt = myLib::readMatrixFile(helpString);
+		QString inString = ui->inputDirLineEdit->text()
+							 + "/" + fileName;
+
+		matrix dataInt = myLib::readMatrixFile(inString);
 
         for(uint h = 0; h < dataOut.rows(); ++h)
         {
             for(uint j = 0; j < dataOut.cols(); ++j)
             {
-                /// accumulate
-                for(int k = begins[j]; k < ends[j]; ++k) // < or <= not really important
-                {
-                    dataOut[h][k] += dataInt[h][k];
-                }
-//                dataOut /= 10.; // just for fun?
+				/// accumulate old
+//                for(int k = begins[j]; k < ends[j]; ++k)
+//                {
+//                    dataOut[h][j] += dataInt[h][k];
+//                }
+				/// accumulate new
+				dataOut[h][j] += std::accumulate(std::begin(dataInt[h]) + begins[j],
+												 std::begin(dataInt[h]) + ends[j],
+												 0.);
             }
         }
-        helpString = (ui->lineEdit_2->text()
-											  + "/" + fileName);
-		myLib::writeMatrixFile(helpString, dataOut);
+
+		QString outString = ui->outputDirLineEdit->text()
+							+ "/" + fileName;
+		myLib::writeMatrixFile(outString, dataOut);
     }
 }
 
@@ -407,21 +417,17 @@ void Spectre::psaSlot()
 
     trivector<int> MW;
 
-    if(ui->MWcheckBox->isChecked())
+	if(DEFS.isUser(username::ElenaC))
     {
 		myLib::countMannWhitney(MW,
-								ui->lineEdit_1->text());
+								ui->inputDirLineEdit->text());
 		helpString = DEFS.dirPath()
 					 + "/" + DEFS.getExpName() + "_MannWhitney.txt";
 		myLib::writeMannWhitney(MW, helpString);
     }
 
-	if(drawData.cols() == 19 * DEFS.spLength() ||
-	   drawData.cols() == 21 * DEFS.spLength())
-    {
-		helpString = DEFS.dirPath()
-					 + "/Help"
-					 + "/" + DEFS.getExpName() + "_all.jpg";
+	if(DEFS.nsWOM() == 19 || DEFS.nsWOM() == 21)
+	{
 		myLib::drawTemplate(helpString);
 
         std::vector<QColor> colors;
@@ -439,6 +445,11 @@ void Spectre::psaSlot()
             }
         }
 
+		helpString = DEFS.dirPath()
+					 + "/Help"
+					 + "/" + DEFS.getExpName() + "_all.jpg";
+
+		/// remake to myLib::drw::...
 		myLib::drawArrays(helpString,
 						  drawData,
 						  false,
@@ -449,8 +460,8 @@ void Spectre::psaSlot()
         if(ui->MWcheckBox->isChecked())
         {
 			myLib::drawMannWitney(helpString,
-                           MW,
-                           colors);
+								  MW,
+								  colors);
         }
     }
 	else if(DEFS.isUser(username::Ossadtchi))
@@ -479,7 +490,7 @@ void Spectre::compare()
 	std::valarray<double> tempVec(DEFS.spLength() * DEFS.nsWOM());
 	std::valarray<double> meanVec(0., DEFS.spLength() * DEFS.nsWOM());
 
-    const QString filesPath = ui->lineEdit_1->text();
+	const QString filesPath = ui->inputDirLineEdit->text();
 	const QString savePath = DEFS.dirPath()
 							 + "/Help"
 							 + "/psa";
@@ -523,7 +534,6 @@ void Spectre::compare()
         drawArray(helpString, meanVec);
 #endif
     }
-
 	std::cout << "compare: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
@@ -615,7 +625,7 @@ void Spectre::writeSpectra(const double leftFreq,
     QTime myTime;
     myTime.start();
 
-	const QString outDirPath = ui->lineEdit_2->text();
+	const QString outDirPath = ui->outputDirLineEdit->text();
 //	const QString outDirPath = "/media/Files/Data/FeedbackTest/GA/SpectraSmooth";
 
     if(!QDir(outDirPath).exists())
@@ -624,8 +634,8 @@ void Spectre::writeSpectra(const double leftFreq,
         return;
     }
 
-	const int left = DEFS.left();
-	const int right = DEFS.right();
+	const int left = fftLimit(leftFreq, DEFS.getFreq(), DEFS.getFftLen());
+	const int right = fftLimit(rightFreq, DEFS.getFreq(), DEFS.getFftLen()) + 1;
 
     QStringList lst = ui->dropChannelsLineEdit->text().split(
                           QRegExp("[,;\\s]"), QString::SkipEmptyParts);
@@ -636,17 +646,14 @@ void Spectre::writeSpectra(const double leftFreq,
         rangeLimits[str.toInt() - 1] = {0, 0}; // to fill with zeros
     }
 
-	std::ofstream outStream;
-	QString helpString;
-	for(uint i = 0; i < fileNames.size(); ++i)
+	int dataFFTcounter = 0;
+	for(const QString inFileName : fileNames)
     {
-		helpString = outDirPath + "/" + fileNames[i];
-//		std::cout << helpString << std::endl;
-		helpString.remove("." + defs::plainDataExtension);
-		helpString += "." + defs::spectraDataExtension;
-//		std::cout << helpString << std::endl;
+		QString outString = outDirPath + "/" + inFileName;
+		outString.replace("." + defs::plainDataExtension, "." + defs::spectraDataExtension);
 
-        outStream.open(helpString.toStdString());
+		std::ofstream outStream;
+		outStream.open(outString.toStdString());
         if(!outStream.good())
         {
 			std::cout << "bad outStream" << std::endl;
@@ -668,19 +675,22 @@ void Spectre::writeSpectra(const double leftFreq,
                     outStream << "0.000" << '\t';
                 }
                 for(int k = left + rangeLimits[j].first;
-                    k < left + rangeLimits[j].second; ++k)
+					k < left + rangeLimits[j].second;
+					++k)
                 {
-					outStream << dataFFT[i][j][k] << '\t';
+					outStream << dataFFT[dataFFTcounter][j][k] << '\t';
                 }
 				for(int k = std::max(left + rangeLimits[j].first,
-                                left + rangeLimits[j].second);
-                    k < right; ++k)
+									 left + rangeLimits[j].second);
+					k < right;
+					++k)
                 {
                     outStream << "0.000" << '\t';
                 }
                 outStream << "\r\n";
             }
         }
+		++dataFFTcounter;
         outStream.close();
     }
 
@@ -688,7 +698,7 @@ void Spectre::writeSpectra(const double leftFreq,
 }
 void Spectre::countSpectraSlot()
 {
-    defaultState();
+//    defaultState(); /// why was it here? 4-Mar-18
 	if(!ui->bypassCountCheckBox->isChecked())
 	{
 		countSpectra();
@@ -703,8 +713,8 @@ void Spectre::countSpectraSlot()
     cleanSpectra(); // using mann-whitney
 #endif
 
-    ui->lineEdit_1->setText(ui->lineEdit_2->text());
-	ui->lineEdit_2->setText(DEFS.dirPath() + "/Help");
+	ui->inputDirLineEdit->setText(ui->outputDirLineEdit->text());
+	ui->outputDirLineEdit->setText(DEFS.dirPath() + "/Help");
 }
 
 void Spectre::cleanSpectra()
@@ -713,10 +723,10 @@ void Spectre::cleanSpectra()
     myTime.start();
 
 
-	std::cout << ui->lineEdit_2->text() << std::endl;
+	std::cout << ui->outputDirLineEdit->text() << std::endl;
     trivector<int> MW;
 	myLib::countMannWhitney(MW,
-                     ui->lineEdit_2->text()); // SpectraSmooth
+					 ui->outputDirLineEdit->text()); // SpectraSmooth
     int num;
     int cnt = 0;
 	for(int k = 0; k < DEFS.spLength() * DEFS.nsWOM(); ++k)
@@ -744,7 +754,7 @@ void Spectre::cleanSpectra()
         num = 0;
     }
 	std::cout << "cleanSpectra: num of zeroed points = " << cnt << std::endl;
-	ui->lineEdit_2->setText(ui->lineEdit_2->text() + "/Clean");
+	ui->outputDirLineEdit->setText(ui->outputDirLineEdit->text() + "/Clean");
     writeSpectra();
 	std::cout << "cleanSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 
@@ -764,20 +774,13 @@ void Spectre::countSpectra()
 	QTime myTime;
 	myTime.start();
 
-	const QString inDirPath = ui->lineEdit_1->text();
+	const QString inDirPath = ui->inputDirLineEdit->text();
+
 	QStringList lst = myLib::makeFullFileList(inDirPath);
 	const int numFiles = lst.length();
 
-	matrix dataIn;
-	QString helpString;
-
 	dataFFT.resize(numFiles);
-	for(matrix & datum : dataFFT)
-	{
-		datum.resize(DEFS.getNs(), DEFS.getFftLen() / 2, 0.);
-	}
-
-	fileNames.resize(lst.length());
+	fileNames.resize(numFiles);
 	std::copy(std::begin(lst), std::end(lst), std::begin(fileNames));
 
 	int cnt = 0;
@@ -791,14 +794,14 @@ void Spectre::countSpectra()
 //		   fileName.contains("_300") ||
 		   fileName.contains("_sht")) continue;
 
-//		std::cout << fileName << std::endl;
 		// read data file
-		helpString = inDirPath + "/" + fileName;
-		dataIn = myLib::readPlainData(helpString);
+		QString helpString = inDirPath + "/" + fileName;
+		matrix dataIn = myLib::readPlainData(helpString);
 
 		if(ui->spectraRadioButton->isChecked())
 		{
-			if(countOneSpectre(dataIn, dataFFT[cnt]))
+			dataFFT[cnt] = myLib::countSpectre(dataIn, DEFS.getFftLen(), ui->smoothBox->value());
+			if(!dataFFT[cnt].isEmpty())
 			{
 				++cnt;
 			}
@@ -820,6 +823,7 @@ void Spectre::countSpectra()
 				exIndices.push_back(fileNumber);
 			}
 		}
+		/// here were other radioButtons like "brain rate" and so on
 
 		ui->progressBar->setValue(++fileNumber * 100. / numFiles);
 		qApp->processEvents();
@@ -834,7 +838,7 @@ void Spectre::countSpectra()
 		}
 	}
 
-	smLib::eraseItems(fileNames, exIndices);
+	smLib::eraseItems(fileNames, exIndices); /// effect on this->writeSpectra()
 	dataFFT.resize(cnt);
 
 	ui->progressBar->setValue(0);
@@ -843,7 +847,8 @@ void Spectre::countSpectra()
 	std::cout << "countSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
-bool Spectre::countOneSpectre(matrix & data2, matrix & outData)
+/// deprecated
+bool Spectre::countOneSpectre(const matrix & data2, matrix & outData)
 {	
 	outData = myLib::countSpectre(data2, DEFS.getFftLen(), ui->smoothBox->value());
 	if(outData.isEmpty()) return false;
@@ -877,7 +882,7 @@ void Spectre::drawWavelets()
         }
     }
 
-	QStringList lst = myLib::makeFullFileList(ui->lineEdit_1->text());
+	QStringList lst = myLib::makeFullFileList(ui->inputDirLineEdit->text());
 
     matrix signal;
     matrix coefs;
@@ -888,7 +893,7 @@ void Spectre::drawWavelets()
 	// count maxValue
     for(const QString & fileName : lst)
     {
-        filePath = (ui->lineEdit_1->text()
+		filePath = (ui->inputDirLineEdit->text()
 											+ "/" + fileName);
 		signal = myLib::readPlainData(filePath);
 

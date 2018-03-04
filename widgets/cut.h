@@ -141,7 +141,7 @@ private:
 	static const int scrollAreaGapX = 20;
 	static const int scrollAreaGapY = 15;
 	static const int picScaleGapY = 20;
-	bool drawFlag{false}; /// to prevent many slices in e.g. setValuesByEdf()
+	bool drawFlag{false}; /// to prevent many redraws in e.g. setValuesByEdf()
 
 	/// edf and related widget-globals
 	fileType myFileType{fileType::edf}; /// to deprecate, leave edf only

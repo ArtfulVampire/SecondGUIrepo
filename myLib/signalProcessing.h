@@ -154,12 +154,11 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 int findJump(const std::valarray<double> & inSignal, int startSearch, double numOfSigmas = 3.5);
 
 
-void calcSpectre(const std::valarray<double> & inSignal,
-				 std::valarray<double> & outSpectre,
+std::valarray<double> calcSpectre(const std::valarray<double> & inSignal,
 				 int fftLength = DEFS.getFftLen(),
 				 int NumOfSmooth = 0,
 				 int Eyes = 0,
-				 double powArg = 1.);
+				 double powArg = 1.); /// remake to return outSpectre
 
 
 ///some features, double(const std::valarray<double> & in)

@@ -24,7 +24,7 @@
    </property>
    <layout class="QGridLayout" name="browseGridLayout">
     <item row="0" column="0">
-     <widget class="QLineEdit" name="lineEdit_1"/>
+     <widget class="QLineEdit" name="inputDirLineEdit"/>
     </item>
     <item row="0" column="1">
      <widget class="QPushButton" name="inputBroswe">
@@ -34,7 +34,7 @@
      </widget>
     </item>
     <item row="1" column="0">
-     <widget class="QLineEdit" name="lineEdit_2"/>
+     <widget class="QLineEdit" name="outputDirLineEdit"/>
     </item>
     <item row="1" column="1">
      <widget class="QPushButton" name="outputBroswe">

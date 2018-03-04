@@ -154,54 +154,34 @@ void Cut::saveSubsecSlot()
 
 void Cut::browseSlot()
 {
-	QString path;
-	if(DEFS.dirIsRoot())
-	{
-		path = DEFS.dirPath();
-	}
-	else
-	{
-		if(this->myFileType == fileType::edf)
-		{
-			path = edfFil.getDirPath();
-		}
-		else if(this->myFileType == fileType::real)
-		{
-			path = DEFS.dirPath() +
-				   "/" + ui->subdirComboBox->currentText();
-		}
-
-	}
-
 	/// filter bu suffix
 	const QString suffix = ui->suffixComboBox->currentText();
+
 	QString filter{};
 	for(const QString & in : defs::edfFilters)
 	{
 		filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + in + " ";
 	}
 	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + defs::plainDataExtension;
+
 	const QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
 															tr("Open file"),
-															path,
+															DEFS.dirPath(),
 															filter);
 	if(helpString.isEmpty()) { return; }
 
 
+	ui->filePathLineEdit->setText(helpString);
+	this->setFileType(helpString);
 
-	ui->lineEdit->setText(helpString);
-	setFileType(helpString);
-
-	if(DEFS.dirIsRoot())
+	DEFS.setDir(myLib::getDirPathLib(helpString));
+	if(this->myFileType == fileType::real)
 	{
-		DEFS.setDir(myLib::getDirPathLib(helpString));
-		if(this->myFileType == fileType::real)
-		{
-			DEFS.dirCdUp();
-		}
+		DEFS.dirCdUp();
 	}
+
 	filesList = QDir(myLib::getDirPathLib(helpString)).entryList(
-	{"*" + ui->suffixComboBox->currentText() +  "*." + myLib::getExt(helpString)});
+	{"*" + ui->suffixComboBox->currentText() +  "*." + myLib::getExtension(helpString)});
 
 	fileListIter = std::find(std::begin(filesList),
 							 std::end(filesList),
@@ -302,10 +282,12 @@ void Cut::setValuesByEdf()
 void Cut::openFile(const QString & dataFileName)
 {
 	fileOpened = false; /// to prevent many paints
+	drawFlag = false;
 
 	addNum = 1;
 	currentFile = dataFileName;
-	ui->lineEdit->setText(dataFileName);
+	ui->filePathLineEdit->setText(dataFileName);
+	ui->iitpDisableEcgCheckBox->setChecked(false);
 
 	leftDrawLimit = 0;
 	if(this->myFileType == fileType::real)
@@ -322,7 +304,6 @@ void Cut::openFile(const QString & dataFileName)
 		drawFlag = false;
 		setValuesByEdf(); /// needs fileOpened
 	}
-	ui->iitpDisableEcgCheckBox->setChecked(false);
 	drawFlag = true;
 	paint();
 }

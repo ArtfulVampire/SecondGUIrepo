@@ -34,7 +34,7 @@ QString kyrToLatin(const QString & in);
 QString getFileName(const QString & filePath, bool withExtension = true);
 QString getExpNameLib(const QString & filePath, bool shortened = false);
 QString getDirPathLib(const QString & filePath);
-QString getExt(const QString & filePath);
+QString getExtension(const QString & filePath);
 QString getLabelName(const QString & label);
 QString getPicPath(const QString & dataPath,
 				   const QString & ExpNameDir = DEFS.dirPath());

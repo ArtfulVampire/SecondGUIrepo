@@ -31,7 +31,7 @@ void MainWindow::customFunc()
 //							  wrk + "/AKV_ans2.txt");
 //	exit(0);
 
-//	return;
+	return;
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackNewMark/");
@@ -195,6 +195,34 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
+	/// IITP substitute channels
+	{
+		const QString oldChan{"Elbow_r"};
+		const QString newChan{"Elbow_l"};
+		const QStringList guyList{"Michael"};
+		const std::vector<int> nums{17, 32, 34, 35};
+		for(QString guy : guyList)
+		{
+			const QString workDir = defs::iitpSyncFolder + "/" + guy;
+			for(const QString & fn : QDir(workDir).entryList(defs::edfFilters))
+			{
+				bool skip{true};
+				for(int each : nums) { if(fn.contains("_" + nm(each))) { skip = false; } }
+				if(skip) { continue; }
+
+				edfFile fil;
+				fil.readEdfFile(workDir + "/" + fn);
+
+				fil.setData(fil.findChannel(oldChan),
+							-fil.getData(newChan));
+				fil.writeEdfFile(workDir + "/" + fn);
+			}
+		}
+	}
+	exit(0);
+#endif
+
+#if 0
 	{
 		const QString guy = "Michael";
 		const QString guyPath = def::iitpFolder + "/" + guy;
@@ -205,7 +233,7 @@ void MainWindow::customFunc()
 	}
 #endif
 
-#if 01
+#if 0
 	/// IITP
 	QStringList guyList{
 		"Alex",		//
@@ -264,7 +292,7 @@ void MainWindow::customFunc()
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
 
-		if(01)
+		if(0)
 		{
 			if(01)
 			{

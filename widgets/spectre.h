@@ -38,8 +38,9 @@ public:
     void setInPath(const QString &);
     void setOutPath(const QString &);
     void countSpectra();
-    bool countOneSpectre(matrix & data2,
-                         matrix & dataFFT);
+	/// deprecated
+	bool countOneSpectre(const matrix & data2,
+						 matrix & dataFFT);
     void cleanSpectra();
 
 

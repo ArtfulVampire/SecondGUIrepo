@@ -11,6 +11,7 @@
 #include <valarray>
 #include <set>
 #include <random>
+#include <functional>
 
 #if _OPENMP
 #include <omp.h>
@@ -129,6 +130,7 @@ public:
 
 	bool operator == (const matrix & other);
 	bool operator != (const matrix & other);
+	matrix apply(std::function<std::valarray<double>(const std::valarray<double> &)>) const;
 
 
 	// "static"
@@ -157,6 +159,7 @@ public:
 	matrix subCols(int beginCol, int endCol) const; /// submatrix
 	matrix subRows(const std::vector<int> & inds) const; /// submatrix
 	matrix subRows(const std::vector<uint> & inds) const; /// submatrix
+
 
 	std::valarray<double> matrixSystemSolveGauss(const std::valarray<double> & inVec) const;
 public:

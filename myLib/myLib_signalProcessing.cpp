@@ -2841,7 +2841,7 @@ matrix countSpectre(const matrix & inData,
 	}
 	else
 	{
-		data2.pop_front(data2.cols() - fftLen);
+		data2.pop_front(data2.cols() - fftLen); /// why front?
 	}
 
 	const double threshold = 0.125;
@@ -2866,40 +2866,37 @@ matrix countSpectre(const matrix & inData,
 	}
 
 	matrix res(data2.rows(), 1);
-	/// calculate spectra for all channels, but write not all ???
 	for(uint i = 0; i < data2.rows(); ++i)
 	{
-		myLib::calcSpectre(data2[i],
-						   res[i],
-						   fftLen,
-						   numSmooth,
-						   eyes);
+		res[i] = myLib::calcSpectre(data2[i],
+									fftLen,
+									numSmooth,
+									eyes);
 	}
 	return res;
 }
 
 
-void calcSpectre(const std::valarray<double> & inSignal,
-				 std::valarray<double> & outSpectre,
-                 int fftLength,
-                 int NumOfSmooth,
-                 int Eyes,
-                 double powArg)
+std::valarray<double> calcSpectre(const std::valarray<double> & inSignal,
+								  int fftLength,
+								  int NumOfSmooth,
+								  int Eyes,
+								  double powArg)
 {
     if(inSignal.size() != fftLength)
     {
 		std::cout << "calcSpectre: inappropriate signal length" << std::endl;
-        return;
+		return {};
     }
 
 	const double nrm = 2. / (double(fftLength - Eyes) * DEFS.getFreq());
-	outSpectre = spectreRtoR(inSignal, fftLength) * nrm;
-//	outSpectre = pow(outSpectre, powArg);
+	std::valarray<double> outSpectre = spectreRtoR(inSignal, fftLength) * nrm;
+//	outSpectre = std::pow(outSpectre, powArg);
 
 
 	const double norm1 = sqrt(fftLength / double(fftLength - Eyes));
 	// smooth spectre
-    const int leftSmoothLimit = 1;
+	const int leftSmoothLimit = 2; /// doesn't effect on zero component
     const int rightSmoothLimit = fftLength / 2 - 1;
 	double help1, help2;
 	for(int a = 0; a < (int)(NumOfSmooth / norm1); ++a)
@@ -2908,10 +2905,11 @@ void calcSpectre(const std::valarray<double> & inSignal,
         for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
         {
             help2 = outSpectre[k];
-            outSpectre[k] = (help1 + help2 + outSpectre[k+1]) / 3.;
+			outSpectre[k] = (help1 + help2 + outSpectre[k + 1]) / 3.;
             help1 = help2;
         }
     }
+	return outSpectre;
 }
 
 
