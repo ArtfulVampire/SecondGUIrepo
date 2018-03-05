@@ -370,6 +370,8 @@ void edfFile::rewriteEdfFile()
 
 void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
 {
+	if(*this == edfFile{}) { return; }
+
     QTime myTime;
     myTime.start();
     if(!asPlain)
@@ -711,11 +713,9 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			std::cout << ExpName << ", ";
 			std::cout << "handleEdfFile(read): realNdr is not integral = "
 				 << realNdr << std::endl;
+			std::cout << "ndr from file = " << ndr << std::endl;
 			std::cout << "dataSize = " << fileSize - bytes << std::endl;
-			std::cout << "ns = " << ns << std::endl;
-			std::cout << "freq = " << this->srate << std::endl;
-			std::cout << "ddr = " << ddr << std::endl;
-			std::cout << "rest size = "
+			std::cout << "Excessive data size (according to written ndr) = "
 				 << (fileSize - bytes) - ndr * sumNr * 2.<< std::endl;
         }
 //        ndr = min(int(realNdr), ndr); /// sometimes the tails are shit

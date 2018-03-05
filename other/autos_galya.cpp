@@ -1258,7 +1258,7 @@ void ProcessByFolders(const QString & inPath,
 	QTime myTime;
 	myTime.start();
 	/// to arguments
-	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_fon"};
+//	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_fon"};
 
 //	const std::vector<QString> markers{"_rest"};
 //	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
@@ -1266,6 +1266,12 @@ void ProcessByFolders(const QString & inPath,
 //									   "_8sv", "_8zv", "_16sv", "_16zv", "_og", "_zg"};
 //	const std::vector<QString> markers{"_brush", "_cry", "_fire", "_flower",
 //									   "_isopropanol", "_needles", "_vanilla", "_wc"};
+
+	// 26-feb-18, tbi
+	const std::vector<QString> markers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+									   "_ph", "_rv", "_sc", "_sm", "_og", "_zg"};
+	const int numChan = 19;
+//	const int numChan = 31; /// MRI and other
 
 	if(outPath == QString())
 	{
@@ -1294,30 +1300,30 @@ void ProcessByFolders(const QString & inPath,
 		QStringList edfs = QDir(guyPath).entryList(defs::edfFilters);
 		if(edfs.isEmpty())
 		{
-			std::cout << "Galya_tactile: inPath is empty " << inPath << std::endl;
+			std::cout << "ProcessByFolders: guyPath is empty " << guy << std::endl;
 		}
 		QString ExpName = edfs[0];
 		ExpName = ExpName.left(ExpName.lastIndexOf('_'));
 
 
 		/// physMinMax & holes
-		if(0)
+		if(01)
 		{
-//			repair::physMinMaxDir(guyPath);
+			repair::physMinMaxDir(guyPath);
 			repair::holesDir(guyPath,
-							 31,
+							 numChan,
 							 guyPath);	/// rewrite after repair
 			continue;
 		}
 
 		/// rereference
-		if(0)
+		if(01)
 		{
-			//		autos::rereferenceFolder(guyPath, "Ar");
+			autos::rereferenceFolder(guyPath, "Ar");
 		}
 
 		/// filter?
-		if(0)
+		if(01)
 		{
 			/// already done ?
 			autos::refilterFolder(guyPath,
@@ -1330,20 +1336,19 @@ void ProcessByFolders(const QString & inPath,
 		if(0)
 		{
 			autos::cutFilesInFolder(guyPath,
-							8,
-							inPath + "_cut/");
+									8,
+									inPath + "_cut/");
 		}
 
 
 		outPath = guyPath + "/out";
 
 		/// process?
-		if(0)
+		if(01)
 		{
 			/// clear outFolder
 			myLib::cleanDir(guyPath + "/out", "txt", true);
-
-			autos::GalyaProcessing(guyPath, 19, outPath);
+			autos::GalyaProcessing(guyPath, numChan, outPath);
 		}
 
 		/// make one line file for each stimulus
@@ -1353,13 +1358,13 @@ void ProcessByFolders(const QString & inPath,
 			{
 				QStringList fileNamesToArrange;
 
+				/// remake with DEFS.autosMask
 					for(featuresMask func : {
 						featuresMask::alpha,
 						featuresMask::spectre,
 						featuresMask::Hilbert,
 						featuresMask::fracDim,
 						featuresMask::Hjorth,
-//						featuresMask::wavelet,
 						featuresMask::logFFT
 			})
 					{
@@ -1371,14 +1376,12 @@ void ProcessByFolders(const QString & inPath,
 						{
 							if(!QFile::exists(outPath + "/" + fileName))
 							{
-//								std::cout << "File doesn't exist: " << fileName << std::endl;
-
 								std::ofstream outStr;
 								outStr.open((outPath + "/" + fileName).toStdString());
 								for(int i = 0; i < autos::getFileLength(func); ++i)
 								{
 									outStr << " " << '\t';
-									outStr << 0 << '\t';
+//									outStr << 0 << '\t';
 								}
 								outStr.close();
 							}

@@ -14,7 +14,7 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-    ui->matiCheckBox->setChecked(false);
+	ui->matiCheckBox->setChecked(false);
 	ui->realsButton->setChecked(true);
 	if(DEFS.isUser(username::ElenaC))
 	{
@@ -31,7 +31,7 @@ void MainWindow::customFunc()
 //							  wrk + "/AKV_ans2.txt");
 //	exit(0);
 
-	return;
+//	return;
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackNewMark/");
@@ -1084,12 +1084,11 @@ void MainWindow::customFunc()
 #if 01
 	/// Galya processing things
 
-
 	const QString workPath = defs::GalyaFolder + "/count26feb";
 
 	if(0)
 	{
-		/// initial copying
+		/// initial repair and to folders
 //		for(QString add : {"young", "adults"})
 		{
 //			repair::toLatinDir(workPath);
@@ -1152,6 +1151,8 @@ void MainWindow::customFunc()
 //		}
 		exit(0);
 	}
+
+	return;
 
 	if(01)
 	{
