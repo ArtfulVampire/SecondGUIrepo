@@ -37,7 +37,8 @@ public:
 
     void setInPath(const QString &);
     void setOutPath(const QString &);
-	void countSpectra(const std::vector<int> & chanList = coords::leest19);
+	void countSpectra(std::vector<int> chanList = std::vector<int>{});
+
 	/// deprecated
 	bool countOneSpectre(const matrix & data2,
 						 matrix & dataFFT);

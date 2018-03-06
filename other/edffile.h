@@ -186,7 +186,7 @@ public:
 	edfFile & refilter(double lowFreq,
 					   double highFreq,
 					   bool isNotch = false,
-					   std::vector<uint> chanList = {});
+					   std::vector<int> chanList = {});
 
 	/// need check
 	edfFile rereferenceData(const QString & newRef) const;
@@ -198,6 +198,7 @@ public:
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
 	edfFile reduceChannels(const QString & chanString) const;
 
+	edfFile & removeChannels(const std::vector<int> & chanList);
 	edfFile & removeChannels(const std::vector<uint> & chanList);
 	edfFile & removeChannels(const QStringList & chanList);
 	edfFile & removeChannel(int num);
@@ -214,8 +215,9 @@ public:
 	edfFile & zeroChannels(const std::vector<uint> & chanNums);
 
 	uint findChannel(const QString & str) const;
-	std::vector<uint> findChannels(const QString & filter) const;
-	std::vector<uint> findChannels(const std::vector<QString> & strs) const;
+//	std::vector<uint> findChannels(const QString & filter) const;
+	std::vector<int> findChannels(const QString & filter) const;
+	std::vector<int> findChannels(const std::vector<QString> & strs) const;
 
 	uint countMarker(int mrk) const;
 	std::vector<uint> countMarkers(const std::vector<int> & mrks) const;
@@ -378,6 +380,7 @@ public:
 	const std::valarray<double> & getData(const QString & ch) const
 	{
 		static std::valarray<double> badRes{};
+		badRes = decltype(badRes){};
 		auto a = this->findChannel(ch);
 		if(a == -1)
 		{

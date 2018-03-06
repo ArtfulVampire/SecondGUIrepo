@@ -236,23 +236,65 @@ void MainWindow::sliceWinds()
 
 void MainWindow::sliceElena()
 {
-	QString helpString;
-	int marker = -1;
-	int number = -1;
-	int start = -1;
-	bool startFlag = false;
+	const edfFile & fil = globalEdf;
 	const int numOfTasks = 180;
-
 
 	const std::vector<std::vector<int>> eyesMarks{{210, 211}, {212, 213}};
 	const std::vector<int> eyesCodes{214, 215};
 
 	const double restWindow = 10.;	/// window length in seconds
+	const int windFft = smLib::fftL(restWindow * fil.getFreq());
 	const double restShift = 7.;	/// time shift between windows in seconds
+	const int numSmoothWind = 10;
 
-	const edfFile & fil = globalEdf;
 	const std::valarray<double> & markChanArr = fil.getMarkArr();
 	const auto & marks = fil.getMarkers();
+
+	const auto eegChannels = fil.findChannels("EEG ");
+	const QString RDstring{"RD"};
+	const QString PPGstring{"FPG"};
+	const QString EDAstring{"KGR"};
+
+
+	auto saveSpecPoly = [&](int startBin, int typ, int counter)
+	{
+		/// save spectre+polygraph
+		matrix subData = fil.getData()
+						 .subCols(startBin, startBin + restWindow * fil.getFreq())
+						 .subRows(eegChannels);
+
+		auto edaBase = smLib::contSubsec(fil.getData(EDAstring),
+										 std::max(0., startBin - 2 * fil.getFreq()), /// -2 sec
+										 startBin);
+
+		matrix spec = myLib::countSpectre(subData,
+										  windFft,
+										  numSmoothWind);
+
+		/// bad file
+		if(spec.isEmpty() || edaBase.size() < fil.getFreq()) { return; }
+
+
+		std::vector<double> res = spec.toVectorByRows();
+		res.push_back(myLib::RDfreq(subData[fil.findChannel(RDstring)], windFft));
+		res.push_back(myLib::PPGrange(subData[fil.findChannel(PPGstring)]));
+		auto EDAval = myLib::EDAmax(subData[fil.findChannel(EDAstring)], edaBase);
+		res.push_back(EDAval.first);						/// value of max EDA
+//		res.push_back(EDAval.second);						/// latency in bins
+		res.push_back(EDAval.second / fil.getFreq());		/// latency in seconds
+
+
+		/// write to file
+		QString savePath = fil.getDirPath()
+						   + "/SpectraSmooth"
+						   + "/" + fil.getExpName()
+						   + "_n_0_" + nm(counter)
+						   + "_m_" + nm(eyesMarks[typ][0])
+				+ "." + def::spectraDataExtension;
+
+		myLib::writeFileInLine(savePath, res);
+	};
+
 
 	/// slice rest backgrounds
 	for(int typ = 0; typ < 2; ++typ)	/// 0 - closed, 1 - open
@@ -272,16 +314,19 @@ void MainWindow::sliceElena()
 			i < (*openFin).first - restWindow * fil.getFreq();
 			i += restShift * fil.getFreq(), ++counter)
 		{
-			helpString = DEFS.dirPath()
-						 + "/Reals"
-						 + "/" + fil.getExpName()
-						 + "_n_0_" + nm(counter)
-						 + "_m_" + nm(eyesMarks[typ][0])
-						 + "_t_" + nm(eyesCodes[typ]);
+			QString helpString = DEFS.dirPath()
+								 + "/Reals"
+								 + "/" + fil.getExpName()
+								 + "_n_0_" + nm(counter)
+								 + "_m_" + nm(eyesMarks[typ][0])
+					+ "_t_" + nm(eyesCodes[typ]);
+			/// save window
 			fil.saveSubsection(i,
 							   i + restWindow * fil.getFreq(),
 							   helpString,
 							   true);
+
+			saveSpecPoly(i, typ, counter);
 		}
 	}
 
@@ -290,6 +335,11 @@ void MainWindow::sliceElena()
 	{
 		allNumbers.emplace(i);
 	}
+
+	int marker = -1;
+	int number = -1;
+	int start = -1;
+	bool startFlag = false;
 
 	// (241-244) - instruction, (1-240) - number(start), (255) - optional click,
 	// (245-254) - operational, 255 - ready for next task
@@ -322,12 +372,12 @@ void MainWindow::sliceElena()
 			}
 			else if(245 <= markChanArr[i] && markChanArr[i] <= 254) // task end
 			{
-				helpString = DEFS.dirPath()
-							 + "/Reals"
-							 + "/" + fil.getExpName()
-							 + "_n_" + nm(number)
-							 + "_m_" + nm(marker)
-							 + "_t_" + nm(markChanArr[i]);
+				QString helpString = DEFS.dirPath()
+									 + "/Reals"
+									 + "/" + fil.getExpName()
+									 + "_n_" + nm(number)
+									 + "_m_" + nm(marker)
+									 + "_t_" + nm(markChanArr[i]);
 
 				if(start != -1)
 				{

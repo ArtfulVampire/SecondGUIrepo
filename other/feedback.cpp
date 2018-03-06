@@ -288,8 +288,8 @@ QPixmap FBedf::verbShortLong(double thres)
 	}
 	shrt /= shrts.size();
 	matrix both(2, 1);
-	both[0] = shrt.toVectorByRows();
-	both[1] = lng.toVectorByRows();
+	both[0] = shrt.toValarByRows();
+	both[1] = lng.toValarByRows();
 
 	auto tmplt = myLib::drw::drawTemplate(true, this->leftFreq, this->rightFreq, 19);
 	return myLib::drw::drawArrays(tmplt, both);

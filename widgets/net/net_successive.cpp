@@ -52,7 +52,7 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 		if(spec.isEmpty()) continue;
 		spec = spec.subCols(fftLimit(5., freq1, 1024),
 							fftLimit(20., freq1, 1024) + 1);
-		myClassifierData.push_back(spec.toVectorByRows(), int(typ), "L " + nm(i));
+		myClassifierData.push_back(spec.toValarByRows(), int(typ), "L " + nm(i));
 	}
 	myClassifierData.reduceSize(suc::learnSetStay);
 	myClassifierData.setApriori(myClassifierData.getClassCount());
@@ -119,7 +119,7 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 		spec = spec.subCols(fftLimit(5., freq2, 1024),
 							fftLimit(20., freq2, 1024) + 1);
 
-		successiveLearning(spec.toVectorByRows(), int(typ), "T " + nm(i));
+		successiveLearning(spec.toValarByRows(), int(typ), "T " + nm(i));
 	}
 
 	return myModel->averageClassification();
@@ -171,7 +171,7 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 		if(spec.isEmpty()) continue;
 		spec = spec.subCols(fftLimit(5., file1.getFreq(), 1024),
 							fftLimit(20., file1.getFreq(), 1024) + 1);
-		myClassifierData.push_back(spec.toVectorByRows(), int(typ), "L " + nm(i));
+		myClassifierData.push_back(spec.toValarByRows(), int(typ), "L " + nm(i));
 	}
 
 
@@ -251,7 +251,7 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 
 		if(typ == fb::taskType::rest || file2.getAns(numTask) == 1)
 		{
-			relearn.push_back(spec.toVectorByRows());
+			relearn.push_back(spec.toValarByRows());
 		}
 	}
 	myANN->writeWeight(def::helpPath + "/" + file1.getExpName() + "_last.wts");

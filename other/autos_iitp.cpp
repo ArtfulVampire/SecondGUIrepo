@@ -366,7 +366,7 @@ void IITPfilterGonios(const QString & guyName,
 		if(!QFile::exists(filePath)) continue;
 		fil.readEdfFile(filePath);
 
-		std::vector<uint> chanList;
+		std::vector<int> chanList;
 		for(int i = 0; i < fil.getNs(); ++i)
 		{
 			for(auto joint : joints)
@@ -853,7 +853,7 @@ void IITPpre2(const QString & guyName)
 				}
 
 				/// filter goniogramms
-				std::vector<uint> chanList;
+				std::vector<int> chanList;
 				for(int i = 0; i < fil.getNs(); ++i)
 				{
 					for(auto joint : {"elbow", "wrist", "knee", "ankle"})
@@ -993,7 +993,7 @@ void IITPremoveZchans(const QString & guyName, const QString & dirPath)
 		fil.readEdfFile(dirPath + "/" + guyName + "/" + fl);
 		auto a = fil.findChannel("Fpz");
 		auto b = fil.findChannel("Oz");
-		fil.removeChannels({a, b});
+		fil.removeChannels(std::vector<uint>{a, b});
 		fil.writeEdfFile(fil.getFilePath());
 	}
 }
@@ -1012,7 +1012,7 @@ void IITPremoveZchans(const QString & hauptDir)
 			fil.readEdfFile(hauptDir + "/" + dr + "/" + fl);
 			auto a = fil.findChannel("Fpz");
 			auto b = fil.findChannel("Oz");
-			fil.removeChannels({a, b});
+			fil.removeChannels(std::vector<uint>{a, b});
 			fil.writeEdfFile(fil.getFilePath());
 		}
 	}

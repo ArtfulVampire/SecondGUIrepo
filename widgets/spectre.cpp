@@ -769,10 +769,16 @@ void Spectre::setOutPath(const QString & out)
     defaultOutPath = out;
 }
 
-void Spectre::countSpectra(const std::vector<int> & chanList)
+void Spectre::countSpectra(std::vector<int> chanList)
 {
 	QTime myTime;
 	myTime.start();
+
+	if(chanList.empty())
+	{
+		chanList = coords::leest19;
+		chanList = globalEdf.findChannels("EEG ");
+	}
 
 	const QString inDirPath = ui->inputDirLineEdit->text();
 

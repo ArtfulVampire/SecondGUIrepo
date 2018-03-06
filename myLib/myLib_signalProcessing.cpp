@@ -2803,12 +2803,79 @@ std::valarray<double> fftWindow(int N, windowName name)
 
 
 
+double RDfreq(const std::valarray<double> & inSignal, int fftWind)
+{
+	auto RDspec = myLib::smoothSpectre(myLib::spectreRtoR(inSignal, fftWind), -1);
+	auto RDargmax = myLib::indexOfMax(RDspec);
+	auto RDfreq_ = RDargmax * fftWind / globalEdf.getFreq();
+	return RDfreq_;
+}
+
+double PPGrange(const std::valarray<double> & inSignal)
+{
+	std::valarray<double> PPGdata = inSignal - smLib::mean(inSignal);
+
+	auto sign = [](double in) -> int
+	{
+		return (in > 0) ? 1 : -1;
+	};
+
+	int currSign = sign(PPGdata[0]);
+	int start{0};
+
+	/// maybe not needed
+	for(int i = 0; i < PPGdata.size() - 1; ++i)
+	{
+		if(sign(PPGdata[i]) == +1) { start = i; break; } /// +1 for max, -1 for min
+	}
+
+	std::vector<double> maxs{};
+	std::vector<double> mins{};
+
+	for(int i = start; i < PPGdata.size() - 1; ++i)
+	{
+		if(sign(PPGdata[i]) != currSign)
+		{
+			int end = i - 1;
+
+			std::valarray<double> val = smLib::contSubsec(PPGdata, start, end);
+
+			if(currSign == +1)		{ maxs.push_back(val.max()); }
+			else if(currSign == -1)	{ mins.push_back(val.min()); }
+
+			start = i;
+			currSign *= -1; /// currSign = sign(chan[start]);
+		}
+	}
+	int num = std::min(mins.size(), maxs.size());
+	mins.resize(num);
+	maxs.resize(num);
+
+	double PPGrange_{0.};
+	for(int i = 0; i < num; ++i)
+	{
+		PPGrange_ += (maxs[i] - mins[i]);
+	}
+	PPGrange_ /= num;
+	return PPGrange_;
+}
+
+std::pair<double, double> EDAmax(const std::valarray<double> & inSignal,
+								 const std::valarray<double> & baseSignal) /// max, latency
+{
+	double a = inSignal.max() - smLib::mean(baseSignal);
+	double b = myLib::indexOfMax(inSignal);
+	return std::make_pair(a, b);
+
+}
+
+
 std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 									int numOfSmooth)
 {
 	if(numOfSmooth < 0)
 	{
-		numOfSmooth = std::ceil(12 * sqrt(inSpectre.size() / 4096)); /// magic constant
+		numOfSmooth = std::ceil(15 * sqrt(inSpectre.size() / 4096)); /// magic constant
 	}
 	std::valarray<double> result = inSpectre;
     double help1, help2;

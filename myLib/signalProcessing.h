@@ -91,6 +91,11 @@ std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre)
 std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 									int numOfSmooth = 0);
 
+double RDfreq(const std::valarray<double> & inSignal, int fftWind);
+double PPGrange(const std::valarray<double> & inSignal);
+std::pair<double, double> EDAmax(const std::valarray<double> & inSignal,
+								 const std::valarray<double> & baseSignal); /// max, latency
+
 matrix countSpectre(const matrix & inData,
 					int fftLen,
 					int numSmooth);

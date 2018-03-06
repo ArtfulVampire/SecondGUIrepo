@@ -813,7 +813,21 @@ matrixType::const_iterator matrix::end() const
 	return std::end(myData);
 }
 
-std::valarray<double> matrix::toVectorByRows() const
+std::vector<double> matrix::toVectorByRows() const
+{
+	std::vector<double> res;
+	res.reserve(this->rows() * this->cols() + 100);
+	res.resize(this->rows() * this->cols());
+	for(uint i = 0; i < this->rows(); ++i)
+	{
+		std::copy(std::begin(myData[i]),
+				  std::end(myData[i]),
+				  std::begin(res) + this->cols() * i);
+	}
+	return res;
+}
+
+std::valarray<double> matrix::toValarByRows() const
 {
     std::valarray<double> res(this->rows() * this->cols());
     for(uint i = 0; i < this->rows(); ++i)
@@ -825,7 +839,7 @@ std::valarray<double> matrix::toVectorByRows() const
     return res;
 }
 
-std::valarray<double> matrix::toVectorByCols() const
+std::valarray<double> matrix::toValarByCols() const
 {
     std::valarray<double> res(this->rows() * this->cols());
     int count = 0;

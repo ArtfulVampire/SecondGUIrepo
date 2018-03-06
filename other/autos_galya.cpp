@@ -960,7 +960,7 @@ void cutOneFile(const QString & filePath,
 	/// generality experimental
 	if(initEdf.getEdfPlusFlag()) // if annotations
 	{
-		initEdf.removeChannels({initEdf.getMarkChan()}); // remove Annotations
+		initEdf.removeChannels(std::vector<uint>{initEdf.getMarkChan()}); // remove Annotations
 	}
 
 	int fr = initEdf.getFreq();

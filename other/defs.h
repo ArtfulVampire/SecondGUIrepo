@@ -226,7 +226,7 @@ public:
 };
 
 #define DEFS defs::inst()
-#define globalEdf defs::inst().getEdfRef();
+#define globalEdf defs::inst().getEdfRef()
 
 
 #endif /// COORD_H

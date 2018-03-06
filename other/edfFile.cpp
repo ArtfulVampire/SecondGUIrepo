@@ -781,7 +781,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 	/// experimental annotations - just delete
     if(this->edfPlusFlag)
     {
-		this->removeChannels({this->markerChannel});
+		this->removeChannels(std::vector<int>{this->markerChannel});
         this->edfPlusFlag = false;
         this->markerChannel = -1;
     }
@@ -1528,9 +1528,19 @@ uint edfFile::findChannel(const QString & str) const
 	return -1;
 }
 
-std::vector<uint> edfFile::findChannels(const QString & filter) const
+//std::vector<uint> edfFile::findChannels(const QString & filter) const
+//{
+//	std::vector<uint> res{};
+//	for(int i = 0; i < this->ns; ++i)
+//	{
+//		if(labels[i].contains(filter, Qt::CaseInsensitive)) { res.push_back(i); }
+//	}
+//	return res;
+//}
+
+std::vector<int> edfFile::findChannels(const QString & filter) const
 {
-	std::vector<uint> res{};
+	std::vector<int> res{};
 	for(int i = 0; i < this->ns; ++i)
 	{
 		if(labels[i].contains(filter, Qt::CaseInsensitive)) { res.push_back(i); }
@@ -1538,9 +1548,9 @@ std::vector<uint> edfFile::findChannels(const QString & filter) const
 	return res;
 }
 
-std::vector<uint> edfFile::findChannels(const std::vector<QString> & strs) const
+std::vector<int> edfFile::findChannels(const std::vector<QString> & strs) const
 {
-	std::vector<uint> res{};
+	std::vector<int> res{};
 	for(int i = 0; i < this->ns; ++i)
 	{
 		for(QString str : strs)
@@ -1801,7 +1811,7 @@ void edfFile::countFft()
 edfFile & edfFile::refilter(double lowFreq,
 							double highFreq,
 							bool isNotch,
-							std::vector<uint> chanList)
+							std::vector<int> chanList)
 {
 	if(chanList.empty())
 	{
@@ -2158,7 +2168,7 @@ edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much
 	return temp;
 }
 
-edfFile & edfFile::removeChannels(const std::vector<uint> & chanList)
+edfFile & edfFile::removeChannels(const std::vector<int> & chanList)
 {
     std::set<int, std::greater<int>> excludeSet;
     for(int val : chanList)
@@ -2174,6 +2184,25 @@ edfFile & edfFile::removeChannels(const std::vector<uint> & chanList)
         this->channels.erase(std::begin(this->channels) + k);
     }
     this->adjustArraysByChannels();
+	return *this;
+}
+
+edfFile & edfFile::removeChannels(const std::vector<uint> & chanList)
+{
+	std::set<uint, std::greater<uint>> excludeSet;
+	for(uint val : chanList)
+	{
+		if(val == -1) { excludeSet.emplace(val); }
+	}
+
+	for(uint k : excludeSet)
+	{
+//		 continue; /// good for -1 in findChannel
+
+		this->edfData.eraseRow(k);
+		this->channels.erase(std::begin(this->channels) + k);
+	}
+	this->adjustArraysByChannels();
 	return *this;
 }
 

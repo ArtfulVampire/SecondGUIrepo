@@ -81,8 +81,9 @@ public:
 	std::valarray<double> & front() { return myData.front(); }
 	std::valarray<double> & first() { return myData.front(); }
 
-	std::valarray<double> toVectorByRows() const;
-	std::valarray<double> toVectorByCols() const;
+	std::valarray<double> toValarByRows() const;
+	std::valarray<double> toValarByCols() const;
+	std::vector<double> toVectorByRows() const;
 	std::valarray<double> getCol(uint i, uint numCols = 0) const;
 	std::valarray<double> averageRow() const;
 	std::valarray<double> averageCol() const;
