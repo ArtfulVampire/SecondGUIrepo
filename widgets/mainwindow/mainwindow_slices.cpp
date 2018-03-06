@@ -251,12 +251,16 @@ void MainWindow::sliceElena()
 	const auto & marks = fil.getMarkers();
 
 	const auto eegChannels = fil.findChannels("EEG ");
+
+
+	/// new 6-Mar-18
 	const QString RDstring{"RD"};
 	const QString PPGstring{"FPG"};
 	const QString EDAstring{"KGR"};
-
-
-	auto saveSpecPoly = [&](int startBin, int typ, int counter)
+	auto saveSpecPoly = [&](int startBin,
+						const QString & number,
+						const QString & taskMark,
+						const QString & operMark)
 	{
 		/// save spectre+polygraph
 		matrix subData = fil.getData()
@@ -288,8 +292,9 @@ void MainWindow::sliceElena()
 		QString savePath = fil.getDirPath()
 						   + "/SpectraSmooth"
 						   + "/" + fil.getExpName()
-						   + "_n_0_" + nm(counter)
-						   + "_m_" + nm(eyesMarks[typ][0])
+						   + "_n_" + number
+						   + "_m_" + taskMark
+						   + "_t_" + operMark
 				+ "." + def::spectraDataExtension;
 
 		myLib::writeFileInLine(savePath, res);
@@ -326,7 +331,11 @@ void MainWindow::sliceElena()
 							   helpString,
 							   true);
 
-			saveSpecPoly(i, typ, counter);
+			saveSpecPoly(i,
+						 QString("0_" + nm(counter)),	/// restNumber
+						 nm(eyesMarks[typ][0]),			/// taskMark
+					nm(eyesCodes[typ])					/// operMark
+					);
 		}
 	}
 
@@ -375,9 +384,9 @@ void MainWindow::sliceElena()
 				QString helpString = DEFS.dirPath()
 									 + "/Reals"
 									 + "/" + fil.getExpName()
-									 + "_n_" + nm(number)
-									 + "_m_" + nm(marker)
-									 + "_t_" + nm(markChanArr[i]);
+									 + "_n_" + nm(number)				/// task number
+									 + "_m_" + nm(marker)				/// task marker
+									 + "_t_" + nm(markChanArr[i]);		/// operational marker
 
 				if(start != -1)
 				{
@@ -387,6 +396,13 @@ void MainWindow::sliceElena()
 										   i,
 										   helpString,
 										   true);
+
+						/// new 6-Mar-18
+						saveSpecPoly(start,
+									 nm(number),
+									 nm(marker),
+									 nm(markChanArr[i]));
+
 						allNumbers.erase(number);
 					}
 					else
