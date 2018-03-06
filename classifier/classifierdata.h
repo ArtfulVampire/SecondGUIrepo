@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <other/matrix.h>
+#include <other/defs.h>
 #include <myLib/small.h>
 #include <myLib/output.h>
 

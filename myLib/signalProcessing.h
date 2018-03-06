@@ -6,7 +6,8 @@
 #include <fstream>
 
 #include <other/matrix.h>
-#include <other/defaults.h>
+#include <other/consts.h>
+#include <other/defs.h>
 
 #include <QPixmap>
 #include <QPainter>
@@ -264,9 +265,9 @@ void svd(const matrix & initialData,
 		 int eigenVecNum = -1);
 
 
-const std::vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+
 void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
-						  const std::vector<int> eegChannels = leest19,
+						  const std::vector<int> eegChannels = coords::leest19,
 						  const QString & windsDir = DEFS.dirPath()
 													   + "/winds",
 						  const QString & outFilePath = DEFS.dirPath()

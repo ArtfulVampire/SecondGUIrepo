@@ -54,7 +54,7 @@ void GalyaProcessing(const QString & procDirPath,
 		dir.mkpath(outPath);
 	}
 
-	const QStringList filesList = dir.entryList(defs::edfFilters,
+	const QStringList filesList = dir.entryList(def::edfFilters,
 												QDir::NoFilter,
 												QDir::Size
 												| QDir::Reversed
@@ -394,16 +394,16 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 	{
 		if(cutOnlyFlag)
 		{
-			autos::cutFilesInFolder(defs::mriFolder + "/" + guy, 2);
+			autos::cutFilesInFolder(def::mriFolder + "/" + guy, 2);
 			continue;
 		}
 
 		/// PEWPEWPWEPWEPPEWWPEWPEEPPWPEPWEPWEPWPEPWEPWPEWPEWPEPWEPWEPWEPWPEWP
-//		autos::GalyaFull(defs::mriFolder +
+//		autos::GalyaFull(def::mriFolder +
 //						 "/" + guy +
 //						 "/" + guy + "_winds_cleaned");
 
-		QString outPath = defs::mriFolder + "/OUT/" + guy;
+		QString outPath = def::mriFolder + "/OUT/" + guy;
 		QString dropPath = "/media/Files/Dropbox/DifferentData/EEG-MRI/Results";
 		QStringList files = QDir(outPath).entryList({"*.txt"});
 
@@ -565,7 +565,7 @@ void Xenia_TBI(const QString & tbi_path)
 
 
 
-			QStringList t = QDir(workPath + "/" + guy).entryList(defs::edfFilters);
+			QStringList t = QDir(workPath + "/" + guy).entryList(def::edfFilters);
 			if(t.isEmpty()) continue;
 
 			QString ExpName = t[0];
@@ -730,7 +730,7 @@ void Xenia_TBI_final(const QString & finalPath,
 				repair::toLowerDir(guyPath);
 			}
 
-			QStringList edfs = QDir(guyPath).entryList(defs::edfFilters);
+			QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
 			if(edfs.isEmpty())
 			{
 				std::cout << "Xenia_TBI_final: guyPath is empty " << guyPath << std::endl;
@@ -1007,10 +1007,10 @@ void cutFilesInFolder(const QString & path,
 	}
 
 	/// to change
-	const QString logPath = defs::GalyaFolder + "/log.txt";
+	const QString logPath = def::GalyaFolder + "/log.txt";
 	std::ofstream logStream(logPath.toStdString(), std::ios_base::app);
 
-	const QStringList leest1 = tmpDir.entryList(defs::edfFilters);
+	const QStringList leest1 = tmpDir.entryList(def::edfFilters);
 	const auto filesVec = leest1.toVector();
 
 	/// ??????????????????????
@@ -1052,7 +1052,7 @@ void cutFilesInFolder(const QString & path,
 void rereferenceFolder(const QString & procDirPath,
 					   const QString & newRef)
 {
-	const QStringList filesList = QDir(procDirPath).entryList(defs::edfFilters,
+	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
 															  QDir::NoFilter,
 															  QDir::Size | QDir::Reversed);
 
@@ -1071,7 +1071,7 @@ void refilterFolder(const QString & procDirPath,
 					  bool isNotch)
 {
 
-	const QStringList filesList = QDir(procDirPath).entryList(defs::edfFilters,
+	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
 															  QDir::NoFilter,
 															  QDir::Size | QDir::Reversed);
 
@@ -1086,7 +1086,7 @@ void refilterFolder(const QString & procDirPath,
 
 void EdfsToFolders(const QString & inPath)
 {
-	auto lst = QDir(inPath).entryList(defs::edfFilters);
+	auto lst = QDir(inPath).entryList(def::edfFilters);
 	for(QString in : lst)
 	{
 		QString ExpName = in.left(in.lastIndexOf("_"));
@@ -1118,7 +1118,7 @@ void ProcessAllInOneFolder(const QString & inPath,
 	}
 
 
-	QStringList edfs = QDir(inPath).entryList(defs::edfFilters);
+	QStringList edfs = QDir(inPath).entryList(def::edfFilters);
 	if(edfs.isEmpty())
 	{
 		std::cout << "Galya_tactile: inPath is empty " << inPath << std::endl;
@@ -1297,7 +1297,7 @@ void ProcessByFolders(const QString & inPath,
 			repair::toLowerDir(guyPath);
 		}
 
-		QStringList edfs = QDir(guyPath).entryList(defs::edfFilters);
+		QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
 		if(edfs.isEmpty())
 		{
 			std::cout << "ProcessByFolders: guyPath is empty " << guy << std::endl;

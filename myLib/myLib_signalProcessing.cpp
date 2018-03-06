@@ -2167,12 +2167,14 @@ void svd(const matrix & initialData,
     }
 }
 
+/// replace DEFS.getFreq()
 double morletCos(double const freq1, const double timeShift, const double pot, const double time)
 {
 	double freq = freq1 * 2. * pi / DEFS.getFreq();
 	return cos(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
 }
 
+/// replace DEFS.getFreq()
 double morletSin(double const freq1, const double timeShift, const double pot, const double time)
 {
 	double freq = freq1 * 2. * pi / DEFS.getFreq();
@@ -2924,7 +2926,7 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 	myTime.start();
 
 
-	QStringList leest = QDir(windsDir).entryList({"*" + defs::plainDataExtension});
+	QStringList leest = QDir(windsDir).entryList({"*" + def::plainDataExtension});
 
 	for(QString & item : leest)
 	{

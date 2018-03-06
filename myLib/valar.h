@@ -10,7 +10,7 @@
 #include <iostream>
 #include <chrono>
 #include <random>
-#include <other/defaults.h> // for uint typedef
+#include <other/consts.h> // for uint typedef
 
 namespace smLib
 {

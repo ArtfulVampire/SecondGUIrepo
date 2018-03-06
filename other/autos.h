@@ -7,6 +7,7 @@
 #include <functional>
 
 #include <other/edffile.h>
+#include <other/defs.h>
 #include <myLib/iitp.h>
 
 #include <QTime>
@@ -149,26 +150,26 @@ void IITPfilterGonios(const QString & guyName,
 															"knee",
 															"ankle"});
 
-void IITPremoveZchans(const QString & hauptDir = defs::iitpSyncFolder);
-void IITPremoveZchans(const QString & guyName, const QString & dirPath = defs::iitpSyncFolder);
+void IITPremoveZchans(const QString & hauptDir = def::iitpSyncFolder);
+void IITPremoveZchans(const QString & guyName, const QString & dirPath = def::iitpSyncFolder);
 
 
 void IITPcopyToCar(const QString & guyName);
 
 void IITPrerefCAR(const QString & guyName,
-				  const QString & dirPath = defs::iitpSyncFolder,
+				  const QString & dirPath = def::iitpSyncFolder,
 				  const QString & addFilter = QString());
 
 void IITPemgToAbs(const QString & guyName,
 				  QString postfix = "_sum_new",
-				  const QString & dirPath = defs::iitpSyncFolder);
+				  const QString & dirPath = def::iitpSyncFolder);
 void IITPstagedToEnveloped(const QString & guyName,
 						   QString postfix = "_sum_new_f",
-						   const QString & dirPath = defs::iitpSyncFolder);
+						   const QString & dirPath = def::iitpSyncFolder);
 void IITPstaging(const QString & guyName,
-				 const QString & dirPath = defs::iitpSyncFolder);
+				 const QString & dirPath = def::iitpSyncFolder);
 void IITPprocessStaged(const QString & guyName,
-					   const QString & dirPath = defs::iitpSyncFolder);
+					   const QString & dirPath = def::iitpSyncFolder);
 
 void IITPwriteCohsToFile(std::ofstream & outStr,
 						 iitp::iitpData & dt,
@@ -181,7 +182,7 @@ void IITPdrawCohMaps(const std::vector<iitp::forMap> & forMapsVector,
 
 
 void IITPdrawSpectralMaps(const QString & guyName,
-						  const QString & dirPath = defs::iitpResFolder);
+						  const QString & dirPath = def::iitpResFolder);
 
 void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums);
 

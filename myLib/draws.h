@@ -6,7 +6,8 @@
 #include <vector>
 
 #include <other/matrix.h>
-#include <other/coord.h>
+#include <other/consts.h>
+#include <other/defs.h>
 
 #include <QPixmap>
 #include <QPainter>
@@ -110,7 +111,7 @@ double drawArrays(const QString & templPath,
 				const bool weightsFlag = false,
 				const spectraNorming normType = spectraNorming::all,
 				double norm = 0.,
-				const std::vector<QColor> & colors = defs::colours,
+				const std::vector<QColor> & colors = def::colours,
 				const double scaling = 1.,
 				const int lineWidth = 3);
 
@@ -119,13 +120,13 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 				const bool weightsFlag = false,
 				const spectraNorming normType = spectraNorming::all,
 				double norm = 0.,
-				const std::vector<QColor> & colors = defs::colours,
+				const std::vector<QColor> & colors = def::colours,
 				const double scaling = 1.,
 				const int lineWidth = 3);
 
 void drawArraysInLine(const QString & picPath,
 					  const matrix & inMatrix,
-					  const std::vector<QColor> & colors = defs::colours,
+					  const std::vector<QColor> & colors = def::colours,
 					  const double scaling = 1.,
 					  const int lineWidth = 3);
 
@@ -143,11 +144,11 @@ QPixmap drawOneSpectrum(const std::valarray<double> & signal,
 
 void drawMannWitney(const QString & templPath,
 					const trivector<int> & inMW,
-					const std::vector<QColor> & inColors = defs::colours);
+					const std::vector<QColor> & inColors = def::colours);
 
 void drawMannWitneyInLine(const QString & picPath,
 						  const trivector<int> & inMW,
-						  const std::vector<QColor> & inColors = defs::colours);
+						  const std::vector<QColor> & inColors = def::colours);
 
 
 

@@ -20,7 +20,7 @@ void physMinMaxDir(const QString & dirPath, const QStringList & filters)
 void physMinMaxCheck(const QString & dirPath)
 {
     QDir(dirPath).mkdir("bad");
-    for(QString str : QDir(dirPath).entryList(defs::edfFilters))
+    for(QString str : QDir(dirPath).entryList(def::edfFilters))
     {
         edfFile feel;
 		feel.readEdfFile(dirPath + "/" + str);
@@ -127,7 +127,7 @@ bool testChannelsOrderConsistency(const QString & dirPath)
     std::vector<QString> labelsBC;
     std::vector<QString> labels;
     edfFile fil;
-	QStringList leest = QDir(dirPath).entryList(defs::edfFilters);
+	QStringList leest = QDir(dirPath).entryList(def::edfFilters);
 
 	fil.readEdfFile(dirPath + "/" + leest[0], true);
 	for(QString lbl : fil.getLabels())
@@ -229,7 +229,7 @@ void channelsOrderDir(const QString & inDirPath,
                     const QString & outDirPath,
                     const std::vector<QString> & standard)
 {
-    const auto leest = QDir(inDirPath).entryList(defs::edfFilters, QDir::Files);
+    const auto leest = QDir(inDirPath).entryList(def::edfFilters, QDir::Files);
     const auto vec = leest.toVector();
 
 // #pragma omp parallel
@@ -306,7 +306,7 @@ void holesDir(const QString & inDirPath,
 			  int numChan,
 			  const QString & outDirPath)
 {
-    const auto leest = QDir(inDirPath).entryList(defs::edfFilters, QDir::Files);
+    const auto leest = QDir(inDirPath).entryList(def::edfFilters, QDir::Files);
     const auto vec = leest.toVector();
 
     for(int i = 0; i < vec.size(); ++i)

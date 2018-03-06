@@ -10,6 +10,7 @@
 #include <classifier/classifier.h>
 #include <classifier/classifierdata.h>
 #include <other/feedback.h>
+#include <other/defs.h>
 
 #include <QFileDialog>
 #include <QButtonGroup>

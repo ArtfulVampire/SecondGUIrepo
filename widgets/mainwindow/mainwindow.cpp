@@ -150,7 +150,7 @@ MainWindow::MainWindow() :
 	globalEdf.setMatiFlag(ui->matiCheckBox->isChecked());
 	QObject::connect(ui->markerSaveEdfPushButton, SIGNAL(clicked()), this, SLOT(markerSaveEdf()));
 	QObject::connect(ui->matiCheckBox, &QCheckBox::stateChanged,
-					 [this](int a) { this->globalEdf.setMatiFlag(a); });
+					 [this](int a) { globalEdf.setMatiFlag(a); });
 #else
 	qtLib::hideLayout(ui->matiGridLayout);
 	ui->matiPieceLengthSpinBox->hide();
@@ -183,7 +183,7 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(processEyes()));
 	QObject::connect(ui->succPrecleanPushButton, &QPushButton::clicked,
 					 [this](){ fb::successiveNetPrecleanWinds(
-					this->globalEdf.getDirPath() + "/SpectraSmooth/winds"); });
+					globalEdf.getDirPath() + "/SpectraSmooth/winds"); });
 
 	/// slice
 	QObject::connect(ui->cutEDF, SIGNAL(clicked()), this, SLOT(sliceAll()));
@@ -344,7 +344,7 @@ void MainWindow::setEdfFile(const QString & filePath)
 	helpString.resize(helpString.lastIndexOf("/"));
 	DEFS.setDir(helpString);
 
-	if(defs::redirectStdOutFlag)
+	if(def::redirectStdOutFlag)
     {
 		// redirect std::cout to logfile
         if(generalLogStream.is_open())
@@ -476,7 +476,7 @@ void MainWindow::drawReals()
 
 	QString prePath = DEFS.dirPath() + "/" + ui->drawDirBox->currentText();
 
-	auto a = defs::edfFilters + QStringList("*." + defs::plainDataExtension);
+	auto a = def::edfFilters + QStringList("*." + def::plainDataExtension);
 	QStringList lst = QDir(prePath).entryList(a);
 
     int redCh = -1;
@@ -522,7 +522,7 @@ void MainWindow::drawReals()
             continue;
         }
 
-		helpString = myLib::getPicPath(helpString);
+		helpString = myLib::getPicPath(helpString, globalEdf.getDirPath());
 
 
 		myLib::drw::drawEeg(dataD * ui->drawCoeffSpinBox->value(),

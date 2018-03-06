@@ -15,9 +15,9 @@
 #include <myLib/drw.h>
 #include <myLib/general.h>
 
-#include <other/coord.h>
+#include <other/consts.h>
+#include <other/defs.h>
 #include <other/matrix.h>
-#include <other/defaults.h>
 #include <classifier/classifierdata.h>
 
 #include <QString>

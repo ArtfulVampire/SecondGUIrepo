@@ -8,7 +8,7 @@
 
 #include <other/matrix.h>
 #include <other/edffile.h>
-#include <other/defaults.h>
+#include <other/consts.h>
 #include <myLib/signalProcessing.h>
 
 

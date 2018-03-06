@@ -70,9 +70,9 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 	myANN->setCritError(0.05);
 	myANN->setLrate(0.002);
 	myANN->learnAll(); /// get initial weights on train set
-	myANN->writeWeight(defs::helpPath + "/" + file1.getExpName() + "_init.wts");
-	myANN->drawWeight(defs::helpPath + "/" + file1.getExpName() + "_init.wts",
-					  defs::helpPath + "/" + file1.getExpName() + "_init.jpg");
+	myANN->writeWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts");
+	myANN->drawWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts",
+					  def::helpPath + "/" + file1.getExpName() + "_init.jpg");
 
 	/// consts - set postlearn
 	myANN->setCritError(0.01);
@@ -193,9 +193,9 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 	myANN->setCritError(0.05);
 	myANN->setLrate(0.002);
 	myANN->learnAll(); /// get initial weights on train set
-	myANN->writeWeight(defs::helpPath + "/" + file1.getExpName() + "_init.wts");
-	myANN->drawWeight(defs::helpPath + "/" + file1.getExpName() + "_init.wts",
-					  defs::helpPath + "/" + file1.getExpName() + "_init.jpg");
+	myANN->writeWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts");
+	myANN->drawWeight(def::helpPath + "/" + file1.getExpName() + "_init.wts",
+					  def::helpPath + "/" + file1.getExpName() + "_init.jpg");
 
 	/// consts - set postlearn
 	myANN->setCritError(0.01);
@@ -204,7 +204,7 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 	this->passed.resize(this->myClassifierData.getNumOfCl());
 	this->passed = 0.;
 
-	QDir(defs::helpPath).mkdir(myLib::getExpNameLib(edfPath1, true));
+	QDir(def::helpPath).mkdir(myLib::getExpNameLib(edfPath1, true));
 
 
 
@@ -254,9 +254,9 @@ Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QSt
 			relearn.push_back(spec.toVectorByRows());
 		}
 	}
-	myANN->writeWeight(defs::helpPath + "/" + file1.getExpName() + "_last.wts");
-	myANN->drawWeight(defs::helpPath + "/" + file1.getExpName() + "_last.wts",
-					  defs::helpPath + "/" + file1.getExpName() + "_last.jpg");
+	myANN->writeWeight(def::helpPath + "/" + file1.getExpName() + "_last.wts");
+	myANN->drawWeight(def::helpPath + "/" + file1.getExpName() + "_last.wts",
+					  def::helpPath + "/" + file1.getExpName() + "_last.jpg");
 	return myModel->averageClassification();
 }
 
@@ -301,7 +301,7 @@ void Net::successiveProcessing()
     for(const QString & fileNam : leest)
     {
 		tempArr = myLib::readFileInLine(helpString + "/" + fileNam);
-		type = myLib::getTypeOfFileName(fileNam);
+		type = myLib::getTypeOfFileName(fileNam, DEFS.getFileMarks());
 		successiveLearning(tempArr, type, fileNam);
 	}
     myModel->averageClassification();
@@ -413,7 +413,7 @@ void Net::successiveLearningFinal(const matrix & newSpectra,
 	static int wtsCounter = 0;
 
 	ANN * myANN = dynamic_cast<ANN *>(myModel);
-	myANN->writeWeight(defs::helpPath
+	myANN->writeWeight(def::helpPath
 					   + "/" + DEFS.getExpName()
 					   + "/" + DEFS.getExpName() + "_" + nm(wtsCounter++) + ".wts");
 }

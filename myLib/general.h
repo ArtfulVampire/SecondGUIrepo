@@ -37,9 +37,11 @@ QString getDirPathLib(const QString & filePath);
 QString getExtension(const QString & filePath);
 QString getLabelName(const QString & label);
 QString getPicPath(const QString & dataPath,
-				   const QString & ExpNameDir = DEFS.dirPath());
-QString getFileMarker(const QString & fileName);
-int getTypeOfFileName(const QString & fileName);
+				   const QString & ExpNameDir);
+//QString getFileMarker(const QString & fileName,
+//					  const QStringList & markers);
+int getTypeOfFileName(const QString & fileName,
+					  const QStringList & markers);
 
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 

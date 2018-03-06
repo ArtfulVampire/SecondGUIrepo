@@ -69,7 +69,6 @@ classifier/classifier_knn.cpp \
 classifier/classifier_rda.cpp \
 classifier/classifier_ward.cpp \
 other/edfFile_repair.cpp \
-other/coord.cpp \
 other/matrix.cpp \
 other/autos_iitp.cpp \
 other/autos_galya.cpp \
@@ -88,7 +87,8 @@ widgets/cut/cut_modify.cpp \
 widgets/cut/cut_navi.cpp \
 widgets/cut/cut_iitp.cpp \
 widgets/cut/cut_files.cpp \
-widgets/mainwindow/mainwindow_mati.cpp
+widgets/mainwindow/mainwindow_mati.cpp \
+    other/defs.cpp
 
 HEADERS  += \
 widgets/cut.h \
@@ -116,13 +116,13 @@ widgets/net.h \
 widgets/spectre.h \
 classifier/classifier.h \
 classifier/classifierdata.h \
-other/defaults.h \
 other/autos.h \
-other/coord.h \
 other/matrix.h \
 other/edffile.h \
 other/subjects.h \
-other/feedback.h
+other/feedback.h \
+    other/defs.h \
+    other/consts.h
 
 FORMS+= mainwindow.ui \
 cut.ui \

@@ -10,7 +10,9 @@
 #include <numeric>
 #include <complex>
 
-#include <other/coord.h>
+
+
+#include <other/consts.h>
 
 
 template <typename Typ>

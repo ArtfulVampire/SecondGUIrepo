@@ -425,7 +425,7 @@ std::vector<QPixmap> drawArraysSameScale(const QPixmap & templatePic,
 	/// zero some channels - IITP
 	for(std::valarray<double> & row : dat)
 	{
-		zeroChans = myLib::leest19;
+		zeroChans = coords::leest19;
 		for(int trueNum : trueChans)
 		{
 			zeroChans.erase(std::find(std::begin(zeroChans),
@@ -650,7 +650,8 @@ QPixmap drawMannWitney(const QPixmap & templatePic,
 				QColor color1 = QColor(inColors[h]);
 				QColor color2 = QColor(inColors[l]);
 
-				for(int j = offset; j < offset + DEFS.spLength(); ++j)
+				/// check it is goog with spLength w/o DEFS
+				for(int j = offset; j < offset + spLength; ++j)
 				{
 					if(inMW[h][l - h][j] == 0) continue;
 

@@ -45,7 +45,7 @@ QStringList makeFullFileList(const QString & path,
 	QStringList res{};
 	if(DEFS.getFileMarks().isEmpty())
 	{
-		res = QDir(path).entryList({"*.edf", "*.EDF", QString("*." + defs::plainDataExtension)},
+		res = QDir(path).entryList({"*.edf", "*.EDF", QString("*." + def::plainDataExtension)},
 								   QDir::Files,
 								   QDir::Name); /// Name ~ order
 	}
@@ -184,15 +184,15 @@ void writePlainData(const QString outPath,
 	if(fin == -1) { fin = data.cols(); }
 
 	std::ofstream outStr;
-	if(outPath.endsWith(defs::plainDataExtension))
+	if(outPath.endsWith(def::plainDataExtension))
     {
         outStr.open(outPath.toStdString());
     }
     else
     {
         QString outPathNew = outPath;
-		outPathNew.remove("." + defs::plainDataExtension); /// what is this for?
-		outStr.open((outPathNew + '.' + defs::plainDataExtension).toStdString());
+		outPathNew.remove("." + def::plainDataExtension); /// what is this for?
+		outStr.open((outPathNew + '.' + def::plainDataExtension).toStdString());
     }
 	outStr << "NumOfSlices " << fin - sta << '\t';
     outStr << "NumOfChannels " << data.rows() << "\r\n";
@@ -409,11 +409,11 @@ void readUCIdataSet(const QString & setName,
                     std::vector<uint> & outTypes)
 {
     QString newName = setName.toUpper();
-	outData = myLib::readMatrixFile(defs::uciFolder + "/" + newName + "_data.txt");
+	outData = myLib::readMatrixFile(def::uciFolder + "/" + newName + "_data.txt");
 
 
 	std::ifstream inStr;
-	inStr.open((defs::uciFolder + "/" + newName + "_types.txt").toStdString());
+	inStr.open((def::uciFolder + "/" + newName + "_types.txt").toStdString());
 
     int num = 0;
     inStr >> num;

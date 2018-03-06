@@ -61,7 +61,7 @@ void Cut::rewrite()
 	if(myFileType == fileType::real)
 	{
 		myLib::writePlainData(currentFile, dataCutLocal);
-		currentPic.save(myLib::getPicPath(currentFile), 0, 100);
+		currentPic.save(myLib::getPicPath(currentFile, this->edfFil.getDirPath()), 0, 100);
 	}
 	else if(myFileType == fileType::edf)
 	{
@@ -158,11 +158,11 @@ void Cut::browseSlot()
 	const QString suffix = ui->suffixComboBox->currentText();
 
 	QString filter{};
-	for(const QString & in : defs::edfFilters)
+	for(const QString & in : def::edfFilters)
 	{
 		filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + in + " ";
 	}
-	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + defs::plainDataExtension;
+	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + def::plainDataExtension;
 
 	const QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
 															tr("Open file"),
@@ -201,7 +201,7 @@ void Cut::setFileType(const QString & dataFileName)
 	{
 		this->myFileType = fileType::edf;
 	}
-	else if(dataFileName.endsWith(defs::plainDataExtension, Qt::CaseInsensitive))
+	else if(dataFileName.endsWith(def::plainDataExtension, Qt::CaseInsensitive))
 	{
 		this->myFileType = fileType::real;
 	}

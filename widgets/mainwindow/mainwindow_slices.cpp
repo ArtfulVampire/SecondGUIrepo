@@ -496,7 +496,7 @@ void MainWindow::sliceOneByOne()
                 }
                 else /// pause rest
                 {
-					if(defs::writeLongStartEnd)
+					if(def::writeLongStartEnd)
                     {
                         helpString += "_000";
                         fil.saveSubsection(start,
@@ -550,7 +550,7 @@ void MainWindow::sliceOneByOne()
         }
         else /// just last big rest with eyes closed/open
         {
-			if(defs::writeLongStartEnd)
+			if(def::writeLongStartEnd)
             {
                 helpString += "_000";
                 fil.saveSubsection(start,
@@ -624,7 +624,7 @@ void MainWindow::sliceOneByOneNew()
                 }
                 else /// pause rest
                 {
-					if(defs::writeLongStartEnd)
+					if(def::writeLongStartEnd)
                     {
                         helpString += "_000";
                         fil.saveSubsection(j, i, helpString, true);
@@ -668,7 +668,7 @@ void MainWindow::sliceOneByOneNew()
         }
         else /// just last big rest with eyes closed/open
         {
-			if(defs::writeLongStartEnd)
+			if(def::writeLongStartEnd)
             {
                 helpString += "_000";
                 fil.saveSubsection(j, fil.getDataLen(), helpString, true);

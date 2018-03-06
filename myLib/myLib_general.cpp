@@ -128,21 +128,21 @@ QString getDirPathLib(const QString & filePath)
 }
 
 
-QString getFileMarker(const QString & fileName)
-{
-    for(const QString & fileMark : DEFS.getFileMarks())
-    {
-        QStringList lst = fileMark.split(' ', QString::SkipEmptyParts);
-        for(const QString & filter : lst)
-        {
-            if(fileName.contains(filter))
-            {
-                return filter.right(3); // generality markers appearance
-            }
-        }
-    }
-    return QString();
-}
+//QString getFileMarker(const QString & fileName, const QStringList & markers)
+//{
+//	for(const QString & fileMark : markers)
+//    {
+//        QStringList lst = fileMark.split(' ', QString::SkipEmptyParts);
+//        for(const QString & filter : lst)
+//        {
+//            if(fileName.contains(filter))
+//            {
+//                return filter.right(3); // generality markers appearance
+//            }
+//        }
+//    }
+//    return QString();
+//}
 
 QString getExtension(const QString & filePath)
 {
@@ -212,11 +212,11 @@ QString getPicPath(const QString & dataPath,
     return helpString;
 }
 
-int getTypeOfFileName(const QString & fileName)
+int getTypeOfFileName(const QString & fileName, const QStringList & markers)
 {
     QStringList leest;
     int res = 0;
-    for(const QString & marker : DEFS.getFileMarks())
+	for(const QString & marker : markers)
     {
         leest.clear();
         leest = marker.split(QRegExp("[,; ]"), QString::SkipEmptyParts);

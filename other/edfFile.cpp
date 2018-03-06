@@ -124,7 +124,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		this->ns = numOfParams;
 		this->ddr = 1.;
 
-		this->nr = std::valarray<double> (DEFS.getFreq(), this->ns);
+		/// 250 freq generality DEFS
+		this->nr = std::valarray<double> (250., this->ns);
 		// ndr definedlater
 		this->bytes = 256 * (this->ns + 1);
 
@@ -171,7 +172,8 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		this->edfData.resize(this->ns);
 		for(int i = 0; i < this->ns; ++i)
 		{
-			this->edfData[i].resize(6 * 60 * DEFS.getFreq()); // for 6 minutes generality
+			/// 250 freq generality DEFS
+			this->edfData[i].resize(6 * 60 * 25); // for 6 minutes generality
 		}
 
 		currTimeIndex = 0;

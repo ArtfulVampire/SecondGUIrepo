@@ -1,7 +1,7 @@
 #ifndef SPECTRE_H
 #define SPECTRE_H
 
-#include <other/coord.h>
+#include <other/defs.h>
 #include <other/matrix.h>
 
 #include <QWidget>
@@ -37,7 +37,7 @@ public:
 
     void setInPath(const QString &);
     void setOutPath(const QString &);
-    void countSpectra();
+	void countSpectra(const std::vector<int> & chanList = coords::leest19);
 	/// deprecated
 	bool countOneSpectre(const matrix & data2,
 						 matrix & dataFFT);

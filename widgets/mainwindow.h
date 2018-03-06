@@ -12,6 +12,8 @@
 #include <other/matrix.h>
 #include <other/edffile.h>
 #include <other/autos.h>
+#include <other/consts.h>
+#include <other/defs.h>
 
 #include <QMainWindow>
 #include <QWidget>
@@ -126,7 +128,7 @@ private:
     std::ofstream generalLogStream;
 	std::streambuf * stdOutBuf;
 
-	edfFile globalEdf;
+//	edfFile globalEdf;
 
     matrix spocMixMatrix;
 	std::valarray<double> spocWVector;

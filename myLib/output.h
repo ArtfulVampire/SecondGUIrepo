@@ -1,7 +1,7 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#include <other/defaults.h>
+#include <other/consts.h>
 
 #include <ios>
 #include <iostream>

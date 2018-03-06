@@ -61,7 +61,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 	{
 		auto tempArr = myLib::readFileInLine(inPath + "/" + fileName);
 		this->push_back(tempArr,
-						myLib::getTypeOfFileName(fileName),
+						myLib::getTypeOfFileName(fileName, DEFS.getFileMarks()),
 						fileName);
 	}
 	this->apriori = classCount;

@@ -433,7 +433,7 @@ void Spectre::psaSlot()
         std::vector<QColor> colors;
         if(ui->colourRadioButton->isChecked())
         {
-            colors = defs::colours;
+			colors = def::colours;
         }
         else if(ui->grayRadioButton->isChecked())
         {
@@ -650,7 +650,7 @@ void Spectre::writeSpectra(const double leftFreq,
 	for(const QString inFileName : fileNames)
     {
 		QString outString = outDirPath + "/" + inFileName;
-		outString.replace("." + defs::plainDataExtension, "." + defs::spectraDataExtension);
+		outString.replace("." + def::plainDataExtension, "." + def::spectraDataExtension);
 
 		std::ofstream outStream;
 		outStream.open(outString.toStdString());
@@ -769,7 +769,7 @@ void Spectre::setOutPath(const QString & out)
     defaultOutPath = out;
 }
 
-void Spectre::countSpectra()
+void Spectre::countSpectra(const std::vector<int> & chanList)
 {
 	QTime myTime;
 	myTime.start();
@@ -796,7 +796,7 @@ void Spectre::countSpectra()
 
 		// read data file
 		QString helpString = inDirPath + "/" + fileName;
-		matrix dataIn = myLib::readPlainData(helpString);
+		matrix dataIn = myLib::readPlainData(helpString).subRows(chanList);
 
 		if(ui->spectraRadioButton->isChecked())
 		{
