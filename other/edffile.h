@@ -140,6 +140,7 @@ public:
 
 	/// read/write
 	edfFile & readEdfFile(QString EDFpath, bool headerOnly = false);
+	edfFile & reOpen();
     void writeEdfFile(QString EDFpath, bool asPlain = false);
 	void rewriteEdfFile();
 	void writeOtherData(const matrix & newData,

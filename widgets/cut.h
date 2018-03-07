@@ -52,6 +52,9 @@ private:
 	void setMarker(int offset, int newVal);
 	bool checkBadRange(int start, int end, QString func); // return true if too long
 
+	void paintData(matrix & drawDataLoc);
+	matrix makeDrawData();
+
 	void colorSpinSlot(QSpinBox * spin, QLineEdit * lin);
 	void paintLimits();
 	void setValuesByEdf();
@@ -75,7 +78,6 @@ public slots:
 	void openFile(const QString & dataFileName);
 	void next();
 	void prev();
-
 	void saveSlot();
 	void saveSubsecSlot();
 	void rewrite();
@@ -87,27 +89,31 @@ public slots:
 	void zeroTillEndSlot();
 	void splitTillEndSlot();
 	void cutPausesSlot();
+	void linearApproxSlot();
 	void subtractMeansSlot();
+	void subtractMeanFrameSlot();
+	void setMarkerSlot(bool);
+
 	void mousePressSlot(Qt::MouseButton btn, int coord);
 	void timesAndDiffSlot();
-
-	void setMarkerSlot(bool);
 
 	void undoSlot();
 	void copySlot();
 	void cutSlot();
 	void pasteSlot();
-	void linearApproxSlot();
 	void smartFindLearnSlot();
 	void smartFindNextSlot();
 	void smartFindPrevSlot();
 
 	void paint();
-
 	void forwardStepSlot();
     void backwardStepSlot();
     void forwardFrameSlot();
 	void backwardFrameSlot();
+
+	void refilterFrameSlot();
+	void refilterAllSlot();
+	void refilterResetSlot();
 
 	/// iitp
 	void iitpAutoCorrSlot();
@@ -136,7 +142,7 @@ private:
 	/// draw
 	QPixmap currentPic{};
 	int leftDrawLimit; /// in slices	
-	std::vector<int> zeroedChannels;
+	std::vector<int> zeroedChannels{};
 	std::vector<std::tuple<QSpinBox*, QLineEdit*, QLineEdit*>> colouredWidgets;
 	static const int scrollAreaGapX = 20;
 	static const int scrollAreaGapY = 15;
@@ -148,6 +154,7 @@ private:
 	edfFile edfFil{};
 	bool fileOpened{false};
 	matrix dataCutLocal{};
+	matrix drawData{};
 
 	/// next/prev
 	QStringList filesList;

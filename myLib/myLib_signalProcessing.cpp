@@ -100,12 +100,12 @@ std::valarray<double> butterworthBandPass(const std::valarray<double> & in,
 		return {};
 	}
 
-	double a = std::cos(M_PI * (fHigh + fLow) / srate) /
+	const double a = std::cos(M_PI * (fHigh + fLow) / srate) /
 			   std::cos(M_PI * (fHigh - fLow) / srate);
-	double a2 = std::pow(a, 2);
+	const double a2 = std::pow(a, 2);
 
-	double b = std::tan(M_PI * (fHigh - fLow) / srate);
-	double b2 = std::pow(b, 2);
+	const double b = std::tan(M_PI * (fHigh - fLow) / srate);
+	const double b2 = std::pow(b, 2);
 
 
 	n /= 4;
@@ -119,25 +119,26 @@ std::valarray<double> butterworthBandPass(const std::valarray<double> & in,
 	std::valarray<double> w2(n);
 	std::valarray<double> w3(n);
 	std::valarray<double> w4(n);
-//	std::valarray<double> r(n);
+
 	double r;
 
 	for(int i = 0; i < n; ++i)
 	{
 		r = std::sin(M_PI * (2.0 * i + 1.0) / (4.0 * n));
-		srate = b2 + 2.0 * b * r + 1.0;
+		double val = b2 + 2.0 * b * r + 1.0;
 
-		A[i] = b2 / srate;
-		d1[i] = 4.0 * a * (1.0 + b * r) / srate;
-		d2[i] = 2.0 * (b2 - 2.0 * a2 - 1.0) / srate;
-		d3[i] = 4.0 * a * (1.0 - b * r) / srate;
-		d4[i] = -(b2 - 2.0 * b * r + 1.0) / srate;
+		A[i] = b2 / val;
+		d1[i] = 4.0 * a * (1.0 + b * r) / val;
+		d2[i] = 2.0 * (b2 - 2.0 * a2 - 1.0) / val;
+		d3[i] = 4.0 * a * (1.0 - b * r) / val;
+		d4[i] = -(b2 - 2.0 * b * r + 1.0) / val;
 	}
 
 	std::valarray<double> res(in.size());
-	int count = 0;
-	for(double x : in)
+	for(int num = 0; num < in.size(); ++num)
 	{
+		double x = in[num];
+
 		for(int i = 0; i < n; ++i)
 		{
 			w0[i] = d1[i] * w1[i] + d2[i] * w2[i]+ d3[i] * w3[i]+ d4[i] * w4[i] + x;
@@ -148,7 +149,7 @@ std::valarray<double> butterworthBandPass(const std::valarray<double> & in,
 			w2[i] = w1[i];
 			w1[i] = w0[i];
 		}
-		res[count++] = x;
+		res[num] = x;
 	}
 	return res;
 }
@@ -3063,5 +3064,6 @@ std::valarray<double> (* refilter)(const std::valarray<double> & inputSignal,
 								  double srate) =
 //		&myDsp::refilter;
 		&butter::refilter;
+//		&myLib::refilterFFT;
 
 }// namespace myLib

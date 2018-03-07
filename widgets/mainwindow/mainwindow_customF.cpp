@@ -31,7 +31,17 @@ void MainWindow::customFunc()
 //							  wrk + "/AKV_ans2.txt");
 //	exit(0);
 
-//	return;
+//	edfFile fil;
+//	fil.readEdfFile("/media/Files/Data/Geodesics/Polina/Mal.edf");
+//	double maxDif = 0;
+//	for(int i = 0; i < fil.getNs() - 1; ++i)
+//	{
+//		maxDif = std::max(maxDif, fil.getPhysMax()[i] - fil.getPhysMin()[i]);
+//	}
+//	std::cout << maxDif << std::endl;
+//	exit(0);
+
+	return;
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackNewMark/");

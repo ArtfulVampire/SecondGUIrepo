@@ -346,11 +346,17 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 	}
 }
 
+
+edfFile & edfFile::reOpen()
+{
+	return this->readEdfFile(this->filePath, false);
+}
+
 edfFile & edfFile::readEdfFile(QString EDFpath, bool headerOnly)
 {
     QTime myTime;
     myTime.start();
-//    this->fftData.clear(); /// crucial
+//	this->fftData.clear(); /// crucial
 //	this->markers.clear();
 	*this = edfFile{}; /// pewpewpewpewpepw
 
@@ -596,6 +602,12 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 						labels[i].prepend("EEG ");
 						continue;
 					}
+					else if(labels[i].startsWith("Chan "))
+					{
+//						labels[i].replace("Chan ", "Chan");
+						labels[i].prepend("EEG ");
+						continue;
+					}
 				}
 			}
 		}
@@ -646,8 +658,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			if(labels[i].contains(QRegExp("E[EOC]G")))
             {
                 /// encephalan only !!!!!1111
-//				physMax[i] = 4096;
-//				physMin[i] = -4096;
+				physMax[i] = 4096;
+				physMin[i] = -4096;
 //				digMax[i] = 32767;
 //				digMin[i] = -32768;
             }
@@ -781,7 +793,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 	/// experimental annotations - just delete
     if(this->edfPlusFlag)
     {
-		this->removeChannels(std::vector<int>{this->markerChannel});
+		this->removeChannels(std::vector<uint>{this->markerChannel});
         this->edfPlusFlag = false;
         this->markerChannel = -1;
     }

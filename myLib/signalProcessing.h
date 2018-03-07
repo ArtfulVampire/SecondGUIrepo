@@ -333,7 +333,7 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 
 namespace butter
 {
-constexpr int ORDER_band = 40;
+constexpr int ORDER_band = 48;
 constexpr int ORDER_cut = 16;
 
 
@@ -398,8 +398,6 @@ extern std::valarray<double> (* refilter)(const std::valarray<double> & inputSig
 								  double highFreq,
 								  bool isNotch,
 								  double srate);
-//		&butter::refilter;
-//		&myDsp::refilter;
 
 std::valarray<double> (* const lowPass)(const std::valarray<double> & inputSignal,
 								  double cutoffFreq,

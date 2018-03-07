@@ -187,6 +187,14 @@ Cut::Cut() :
 					 [this](){ zeroedChannels = myLib::splitStringIntoVec(
 													ui->zeroChannelsLineEdit->text());
 		paint(); this->setFocus(); });
+	QObject::connect(ui->refilterFramePushButton, SIGNAL(clicked(bool)),
+					 this, SLOT(refilterFrameSlot()));
+	QObject::connect(ui->refilterAllPushButton, SIGNAL(clicked(bool)),
+					 this, SLOT(refilterAllSlot()));
+	QObject::connect(ui->refilterResetPushButton, SIGNAL(clicked(bool)),
+					 this, SLOT(refilterResetSlot()));
+	QObject::connect(ui->subtractMeanFramePushButton, SIGNAL(clicked(bool)),
+					 this, SLOT(subtractMeanFrameSlot()));
 
 	/// smartFind
 	QObject::connect(ui->smartFindShowPushButton, &QPushButton::clicked,
@@ -548,42 +556,56 @@ std::vector<std::pair<int, QColor>> Cut::makeColouredChans()
 
 void Cut::paint()
 {
-	if(dataCutLocal.isEmpty() || !drawFlag || !fileOpened) return;
+	drawData = this->makeDrawData();
+	if(drawData.rows() >= 128)
+	{
+		std::valarray<int> chansV{9, 11, 24, 33, 36, 45, 52, 58, 62, 70, 83, 92, 96, 104, 108, 122, 124, 8, 128, 129};
+		chansV -= 1;
+		std::vector<int> chans(chansV.size());
+		std::copy(std::begin(chansV), std::end(chansV), std::begin(chans));
+		drawData = drawData.subRows(chans);
+	}
+	if(!drawData.isEmpty()) { this->paintData(drawData); }
+}
+
+matrix Cut::makeDrawData()
+{
+	if(dataCutLocal.isEmpty() || !drawFlag || !fileOpened) return {};
 
 	int rightDrawLimit = 0.;
-    if(myFileType == fileType::edf)
-    {
+	if(myFileType == fileType::edf)
+	{
 		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * DEFS.getFreq();
 		rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), int(dataCutLocal.cols()));
-    }
-    else if(myFileType == fileType::real)
-    {
-        leftDrawLimit = 0;
+	}
+	else if(myFileType == fileType::real)
+	{
+		leftDrawLimit = 0;
 		rightDrawLimit = dataCutLocal.cols();
-    }
-	matrix subData = dataCutLocal.subCols(leftDrawLimit, rightDrawLimit);
+	}
+	return dataCutLocal.subCols(leftDrawLimit, rightDrawLimit);
+}
 
+void Cut::paintData(matrix & drawDataLoc)
+{
 	/// zero some channels
 	auto ecg = edfFil.findChannel("ECG");
 	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg != -1)
 	{
-		subData[ecg] = 0; /// for iitp ecg
+		drawDataLoc[ecg] = 0; /// for iitp ecg
 	}
 	for(int ch : this->zeroedChannels)
 	{
-		subData[ch] = 0; /// for iitp ecg
+		drawDataLoc[ch] = 0; /// for iitp ecg
 	}
-
 
 	double coeff = ui->yNormDoubleSpinBox->value()
 				   * ((ui->yNormInvertCheckBox->isChecked())? -1 : 1);
 	auto colouredChans = this->makeColouredChans();
 
-	currentPic = myLib::drw::drawEeg(subData * coeff,
-									 DEFS.getFreq(),
+	currentPic = myLib::drw::drawEeg(drawDataLoc * coeff,
+									 edfFil.getFreq(),
 									 colouredChans);
-
-
 	/// draw markers numbers
 	if(1)
 	{
@@ -594,14 +616,14 @@ void Cut::paint()
 			pnt.begin(&currentPic);
 			pnt.setFont(QFont("", 18)); /// magic const
 
-			for(int i = 0; i < subData.cols(); ++i)
+			for(int i = 0; i < drawDataLoc.cols(); ++i)
 			{
-				if(subData[mrk][i] != 0.)
+				if(drawDataLoc[mrk][i] != 0.)
 				{
 					/// magic consts
 					pnt.drawText(i,
-								 pnt.device()->height() * (mrk + 1) / (subData.rows() + 2) - 3,
-								 nm(int(subData[mrk][i])));
+								 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
+								 nm(int(drawDataLoc[mrk][i])));
 				}
 			}
 			pnt.end();

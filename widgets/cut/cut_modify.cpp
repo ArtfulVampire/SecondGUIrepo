@@ -7,10 +7,47 @@
 
 using namespace myOut;
 
+void Cut::refilterFrameSlot()
+{
+//	matrix drawData = this->makeDrawData();
+
+//	if(drawData.rows() >= 128)
+//	{
+//		std::valarray<int> chansV{9, 11, 24, 33, 36, 45, 52, 58, 62, 70, 83, 92, 96, 104, 108, 122, 124, 8, 128, 129};
+//		chansV -= 1;
+//		std::vector<int> chans(chansV.size());
+//		std::copy(std::begin(chansV), std::end(chansV), std::begin(chans));
+//		drawData = drawData.subRows(chans);
+//	}
+
+	drawData = myLib::refilterMat(drawData,
+								  ui->refilterLowFreqSpinBox->value(),
+								  ui->refilterHighFreqSpinBox->value(),
+								  false,
+								  edfFil.getFreq());
+	paintData(drawData);
+
+}
+
+void Cut::refilterAllSlot()
+{
+	this->dataCutLocal = myLib::refilterMat(this->dataCutLocal,
+											ui->refilterLowFreqSpinBox->value(),
+											ui->refilterHighFreqSpinBox->value(),
+											false,
+											edfFil.getFreq());
+	paint();
+}
+
+void Cut::refilterResetSlot()
+{
+	edfFil.reOpen();
+	paint();
+}
 
 void zeroData(matrix & inData, int leftLim, int rightLim)
 {
-	for(int k = 0; k < inData.rows() - 1; ++k) /// don't affect markers
+	for(int k = 0; k < inData.rows() - 1; ++k) /// don't affect markers DEFS generality nsWOM
 	{
 		std::fill(std::begin(inData[k]) + leftLim,
 				  std::begin(inData[k]) + rightLim,
@@ -26,6 +63,15 @@ void Cut::subtractMeansSlot()
 		dataCutLocal[i] -= smLib::mean(dataCutLocal[i]);
 	}
 	paint();
+}
+
+void Cut::subtractMeanFrameSlot()
+{
+	for(int i = 0; i < drawData.rows() - 1; ++i)
+	{
+		drawData[i] -= smLib::mean(drawData[i]);
+	}
+	paintData(drawData);
 }
 
 /// FULL REMAKE with fileType::edf
