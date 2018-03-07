@@ -18,7 +18,7 @@ long long combination(int k, int n)
 		ans *= (n - i);
 		ans /= (i + 1);
 	}
-	return int(ans);
+	return (long long)(ans);
 }
 
 double binomialOneTailed(int num1, int num2, int numAll1, int numAll2)

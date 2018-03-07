@@ -216,7 +216,7 @@ void MainWindow::testNewClassifiers()
 
 
 //			std::cout << guy + suff << std::endl;
-//			net->autoClassification();
+			net->autoClassification();
 
 
 

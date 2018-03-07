@@ -38,7 +38,6 @@ void MainWindow::customFunc()
 //	{
 //		maxDif = std::max(maxDif, fil.getPhysMax()[i] - fil.getPhysMin()[i]);
 //	}
-//	std::cout << maxDif << std::endl;
 //	exit(0);
 
 	return;

@@ -83,7 +83,7 @@ void Cut::saveSlot()
 
 	if(myFileType == fileType::real)
 	{
-		QString helpString = DEFS.dirPath()
+		QString helpString = edfFil.getDirPath()
 							 + "/cut"
 							 + "/" + myLib::getFileName(currentFile);
 
@@ -112,7 +112,7 @@ void Cut::saveSubsecSlot()
 		{
 
 			QString helpString;
-			helpString = DEFS.dirPath() +
+			helpString = edfFil.getDirPath() +
 						 "/winds" +
 						 "/" + myLib::getFileName(currentFile) +
 						 "." + rn(addNum++, 3);
@@ -237,17 +237,20 @@ void Cut::setValuesByEdf()
 	ui->diffTimeSpinBox->setDecimals(1);
 
 
-	ui->paintStartDoubleSpinBox->setMaximum(floor(dataCutLocal.cols() / DEFS.getFreq()));
+	ui->paintStartDoubleSpinBox->setMaximum(floor(dataCutLocal.cols() / edfFil.getFreq()));
 	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed? -> paint
-	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / DEFS.getFreq())) + ")");
-	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - scrollAreaGapX) / DEFS.getFreq());
-	ui->paintLengthDoubleSpinBox->setValue((this->width() - scrollAreaGapX) / DEFS.getFreq()); /// -> paint
+	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / edfFil.getFreq())) + ")");
+	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - scrollAreaGapX) / edfFil.getFreq());
+	ui->paintLengthDoubleSpinBox->setValue((this->width() - scrollAreaGapX) / edfFil.getFreq()); /// -> paint
 
+	const int localLimit = (edfFil.getNs() >= 128) ?
+						  (coords::chans128to20.size() - 1) : (edfFil.getNs() - 1);
 	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
 	{
-		a->setMaximum(edfFil.getNs() - 1);
-		a->setValue(edfFil.getNs() - 1); // markers
+		a->setMaximum(localLimit);
+		a->setValue(localLimit); // markers
 	}
+
 
 	/// set coloured channels
 	QString redStr = "EOG1";	// ~horizontal
@@ -272,7 +275,7 @@ void Cut::setValuesByEdf()
 
 	for(auto p : colouredWidgets)
 	{
-		std::get<0>(p)->setMaximum(edfFil.getNs() - 1);
+		std::get<0>(p)->setMaximum(localLimit);
 	}
 	ui->color1SpinBox->setValue(eog1);	/// -> paint
 	ui->color2SpinBox->setValue(eog2);	/// -> paint

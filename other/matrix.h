@@ -78,8 +78,12 @@ public:
 	bool isEmpty() const;
 	std::valarray<double> & last() { return myData.back(); }
 	std::valarray<double> & back() { return myData.back(); }
+	const std::valarray<double> & last() const { return myData.back(); }
+	const std::valarray<double> & back() const { return myData.back(); }
 	std::valarray<double> & front() { return myData.front(); }
 	std::valarray<double> & first() { return myData.front(); }
+	const std::valarray<double> & front() const { return myData.front(); }
+	const std::valarray<double> & first() const { return myData.front(); }
 
 	std::valarray<double> toValarByRows() const;
 	std::valarray<double> toValarByCols() const;

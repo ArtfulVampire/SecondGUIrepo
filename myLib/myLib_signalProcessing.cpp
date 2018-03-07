@@ -992,10 +992,11 @@ matrix refilterMat(const matrix & inputMatrix,
 				   double lowFreq,
 				   double highFreq,
 				   bool isNotch,
-				   double srate)
+				   double srate,
+				   bool notTheLast)
 {
 	matrix res = matrix();
-	for(int i = 0; i < inputMatrix.rows(); ++i)
+	for(int i = 0; i < inputMatrix.rows() - int(notTheLast); ++i)
 	{
 		res.push_back(myLib::refilter(inputMatrix[i],
 									  lowFreq,
@@ -1003,6 +1004,7 @@ matrix refilterMat(const matrix & inputMatrix,
 									  isNotch,
 									  srate));
 	}
+	if(notTheLast) { res.push_back(inputMatrix.back()); }
 	return res;
 }
 

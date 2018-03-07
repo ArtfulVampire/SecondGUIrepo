@@ -154,6 +154,7 @@ private:
 	edfFile edfFil{};
 	bool fileOpened{false};
 	matrix dataCutLocal{};
+	matrix dataCutLocalBackup{}; /// for reset filtering
 	matrix drawData{};
 
 	/// next/prev

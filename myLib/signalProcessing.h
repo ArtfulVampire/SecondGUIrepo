@@ -144,7 +144,8 @@ matrix refilterMat(const matrix & inputMatrix,
 				   double lowFreq,
 				   double highFreq,
 				   bool isNotch,
-				   double srate);
+				   double srate,
+				   bool notTheLast = false);
 
 
 

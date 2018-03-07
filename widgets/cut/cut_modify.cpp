@@ -9,39 +9,34 @@ using namespace myOut;
 
 void Cut::refilterFrameSlot()
 {
-//	matrix drawData = this->makeDrawData();
-
-//	if(drawData.rows() >= 128)
-//	{
-//		std::valarray<int> chansV{9, 11, 24, 33, 36, 45, 52, 58, 62, 70, 83, 92, 96, 104, 108, 122, 124, 8, 128, 129};
-//		chansV -= 1;
-//		std::vector<int> chans(chansV.size());
-//		std::copy(std::begin(chansV), std::end(chansV), std::begin(chans));
-//		drawData = drawData.subRows(chans);
-//	}
-
+	/// only to have a look
 	drawData = myLib::refilterMat(drawData,
 								  ui->refilterLowFreqSpinBox->value(),
 								  ui->refilterHighFreqSpinBox->value(),
 								  false,
-								  edfFil.getFreq());
+								  edfFil.getFreq(),
+								  true);
+
 	paintData(drawData);
 
 }
 
 void Cut::refilterAllSlot()
 {
+	if(this->dataCutLocalBackup.isEmpty()) { this->dataCutLocalBackup = this->dataCutLocal; }
+
 	this->dataCutLocal = myLib::refilterMat(this->dataCutLocal,
 											ui->refilterLowFreqSpinBox->value(),
 											ui->refilterHighFreqSpinBox->value(),
 											false,
-											edfFil.getFreq());
+											edfFil.getFreq(),
+											true);
 	paint();
 }
 
 void Cut::refilterResetSlot()
 {
-	edfFil.reOpen();
+	this->dataCutLocal = std::move(this->dataCutLocalBackup);
 	paint();
 }
 
@@ -583,7 +578,7 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 	this->split(start, end);
 	logAction("split", start, end);
 
-	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / DEFS.getFreq())) + ")");
+	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / edfFil.getFreq())) + ")");
 
 	/// crutch with drawFlag
 	this->drawFlag = false;
@@ -611,7 +606,7 @@ void Cut::splitFromZeroSlot()
 void Cut::splitTillEndSlot()
 {
 	double pos = ui->paintStartDoubleSpinBox->value();
-	bool fl = pos < ui->leftLimitSpinBox->value() / DEFS.getFreq();
+	bool fl = pos < ui->leftLimitSpinBox->value() / edfFil.getFreq();
 	this->splitSemiSlot(ui->leftLimitSpinBox->value(), dataCutLocal.cols(), true);
 	if(fl) { ui->paintStartDoubleSpinBox->setValue(pos); }
 }

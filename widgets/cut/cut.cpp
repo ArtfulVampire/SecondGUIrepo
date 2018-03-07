@@ -67,10 +67,10 @@ Cut::Cut() :
 	}
 
 	/// derivativesGridLayout
-	ui->derivVal1SpinBox->setMaximum(1000);		ui->derivVal1SpinBox->setMinimum(-1000);
-	ui->derivVal2SpinBox->setMaximum(1000);		ui->derivVal2SpinBox->setMinimum(-1000);
-	ui->derivFirst1SpinBox->setMaximum(500);	ui->derivFirst1SpinBox->setMinimum(-500);
-	ui->derivFirst2SpinBox->setMaximum(500);	ui->derivFirst2SpinBox->setMinimum(-500);
+	ui->derivVal1SpinBox->setMaximum(33000);		ui->derivVal1SpinBox->setMinimum(-33000);
+	ui->derivVal2SpinBox->setMaximum(33000);		ui->derivVal2SpinBox->setMinimum(-33000);
+	ui->derivFirst1SpinBox->setMaximum(1000);	ui->derivFirst1SpinBox->setMinimum(-1000);
+	ui->derivFirst2SpinBox->setMaximum(1000);	ui->derivFirst2SpinBox->setMinimum(-1000);
 	ui->derivSecond1SpinBox->setMaximum(500);	ui->derivSecond1SpinBox->setMinimum(-500);
 	ui->derivSecond2SpinBox->setMaximum(500);	ui->derivSecond2SpinBox->setMinimum(-500);
 
@@ -170,23 +170,23 @@ Cut::Cut() :
 					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 					 [this](double a)
 	{
-		if(this->size().width() == a * DEFS.getFreq() + scrollAreaGapX) return;
-		this->resize(a * DEFS.getFreq() + scrollAreaGapX, this->height());
+		if(this->size().width() == a * edfFil.getFreq() + scrollAreaGapX) return;
+		this->resize(a * edfFil.getFreq() + scrollAreaGapX, this->height());
 	});
 	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
 					 this, SLOT(timesAndDiffSlot()));
 	QObject::connect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
 					 this, SLOT(timesAndDiffSlot()));
+	QObject::connect(ui->zeroChannelsLineEdit, &QLineEdit::editingFinished,
+					 [this](){ zeroedChannels = myLib::splitStringIntoVec(
+													ui->zeroChannelsLineEdit->text());
+		paint(); this->setFocus(); });
 	for(auto p : colouredWidgets)
 	{
 		QObject::connect(std::get<0>(p), static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 						 [this, p](){ this->colorSpinSlot(std::get<0>(p), std::get<1>(p)); } );
 		QObject::connect(std::get<2>(p), SIGNAL(returnPressed()), this, SLOT(paint()));
 	}
-	QObject::connect(ui->zeroChannelsLineEdit, &QLineEdit::editingFinished,
-					 [this](){ zeroedChannels = myLib::splitStringIntoVec(
-													ui->zeroChannelsLineEdit->text());
-		paint(); this->setFocus(); });
 	QObject::connect(ui->refilterFramePushButton, SIGNAL(clicked(bool)),
 					 this, SLOT(refilterFrameSlot()));
 	QObject::connect(ui->refilterAllPushButton, SIGNAL(clicked(bool)),
@@ -246,11 +246,11 @@ Cut::~Cut()
 
 void Cut::timesAndDiffSlot()
 {
-	ui->rightTimeSpinBox->setValue(ui->rightLimitSpinBox->value() / DEFS.getFreq());
-	ui->leftTimeSpinBox->setValue(ui->leftLimitSpinBox->value() / DEFS.getFreq());
+	ui->rightTimeSpinBox->setValue(ui->rightLimitSpinBox->value() / edfFil.getFreq());
+	ui->leftTimeSpinBox->setValue(ui->leftLimitSpinBox->value() / edfFil.getFreq());
 	ui->diffLimitSpinBox->setValue(ui->rightLimitSpinBox->value() -
 								   ui->leftLimitSpinBox->value());
-	ui->diffTimeSpinBox->setValue(ui->diffLimitSpinBox->value() / DEFS.getFreq());
+	ui->diffTimeSpinBox->setValue(ui->diffLimitSpinBox->value() / edfFil.getFreq());
 	showDerivatives();
 	paintLimits();
 }
@@ -287,7 +287,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 	if(event->size() == event->oldSize()) { return; }
 
     // adjust scrollArea size
-	double newLen = smLib::doubleRound((event->size().width() - scrollAreaGapX) / DEFS.getFreq(),
+	double newLen = smLib::doubleRound((event->size().width() - scrollAreaGapX) / edfFil.getFreq(),
 									   ui->paintLengthDoubleSpinBox->decimals());
 	double newHei = std::max(int(smLib::doubleRound(event->size().height(), -1)),
 							 this->minimumHeight())
@@ -295,7 +295,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 
     ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
                                 ui->scrollArea->geometry().y(),
-								newLen * DEFS.getFreq(),
+								newLen * edfFil.getFreq(),
 								newHei);
 	ui->paintLengthDoubleSpinBox->setValue(newLen);
 
@@ -352,7 +352,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			{
 				ui->scrollArea->horizontalScrollBar()->setSliderPosition(
 							ui->scrollArea->horizontalScrollBar()->sliderPosition()
-							+ offset * DEFS.getFreq());
+							+ offset * edfFil.getFreq());
 				return true;
 			}
 			else if(myFileType == fileType::edf)
@@ -390,7 +390,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				{ this->forwardFrameSlot(); }
 				else
 				{ ui->paintStartDoubleSpinBox->setValue(
-								this->dataCutLocal.cols() / DEFS.getFreq() -
+								this->dataCutLocal.cols() / edfFil.getFreq() -
 								ui->paintLengthDoubleSpinBox->value()); }
 				break;
 			}
@@ -470,7 +470,10 @@ void Cut::showDerivatives()
 
 	const int st = 5;
 
-	const std::valarray<double> & sig1 = dataCutLocal[ui->derivChan1SpinBox->value()];
+	int numSig1 = ui->derivChan1SpinBox->value();
+	if(edfFil.getNs() >= 128) { numSig1 = coords::chans128to20[ui->derivChan1SpinBox->value()]; }
+	const std::valarray<double> & sig1 = dataCutLocal[numSig1];
+
 	const int ind1 = ui->leftLimitSpinBox->value();
 	ui->derivVal1SpinBox->setValue(sig1[ind1]);
 	if(ind1 + st < sig1.size() && ind1 - st >=0)
@@ -482,7 +485,9 @@ void Cut::showDerivatives()
 		ui->derivSecond1SpinBox->setValue(sig1[ind1 + 2 * st] + sig1[ind1 - 2 * st] - 2 * sig1[ind1]);
 	}
 
-	const std::valarray<double> & sig2 = dataCutLocal[ui->derivChan2SpinBox->value()];
+	int numSig2 = ui->derivChan2SpinBox->value();
+	if(edfFil.getNs() >= 128) { numSig2 = coords::chans128to20[ui->derivChan2SpinBox->value()]; }
+	const std::valarray<double> & sig2 = dataCutLocal[numSig2];
 	const int ind2 = ui->rightLimitSpinBox->value();
 	ui->derivVal2SpinBox->setValue(sig2[ind2]);
 	if(ind2 + st < sig2.size() && ind2 - st >=0)
@@ -521,7 +526,15 @@ void Cut::colorSpinSlot(QSpinBox * spin, QLineEdit * lin)
 	{
 		if(myFileType == fileType::edf && !edfFil.isEmpty())
 		{
-			QString ch = QString(edfFil.getLabels()[n]);
+			QString ch{};
+			if(edfFil.getNs() >= 128)
+			{
+				ch = edfFil.getLabels(coords::chans128to20[n]);
+			}
+			else
+			{
+				ch = edfFil.getLabels(n);
+			}
 			lin->setText(ch
 						 .remove("EEG ")
 						 .remove("IT ")
@@ -542,10 +555,7 @@ std::vector<std::pair<int, QColor>> Cut::makeColouredChans()
 	std::vector<std::pair<int, QColor>> res;
 	for(auto p : this->colouredWidgets)
 	{
-		if(
-		   std::get<0>(p)->value() >= 0 &&
-		   std::get<0>(p)->value() < edfFil.getNs()
-		   )
+		if(std::get<0>(p)->value() >= 0)
 		{
 			res.push_back(std::make_pair(std::get<0>(p)->value(),
 										 QColor(std::get<2>(p)->text())));
@@ -559,11 +569,7 @@ void Cut::paint()
 	drawData = this->makeDrawData();
 	if(drawData.rows() >= 128)
 	{
-		std::valarray<int> chansV{9, 11, 24, 33, 36, 45, 52, 58, 62, 70, 83, 92, 96, 104, 108, 122, 124, 8, 128, 129};
-		chansV -= 1;
-		std::vector<int> chans(chansV.size());
-		std::copy(std::begin(chansV), std::end(chansV), std::begin(chans));
-		drawData = drawData.subRows(chans);
+		drawData = drawData.subRows(coords::chans128to20);
 	}
 	if(!drawData.isEmpty()) { this->paintData(drawData); }
 }
@@ -575,7 +581,7 @@ matrix Cut::makeDrawData()
 	int rightDrawLimit = 0.;
 	if(myFileType == fileType::edf)
 	{
-		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * DEFS.getFreq();
+		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * edfFil.getFreq();
 		rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), int(dataCutLocal.cols()));
 	}
 	else if(myFileType == fileType::real)
@@ -596,7 +602,7 @@ void Cut::paintData(matrix & drawDataLoc)
 	}
 	for(int ch : this->zeroedChannels)
 	{
-		drawDataLoc[ch] = 0; /// for iitp ecg
+		if(ch < drawDataLoc.rows()) { drawDataLoc[ch] = 0; }
 	}
 
 	double coeff = ui->yNormDoubleSpinBox->value()
@@ -607,7 +613,28 @@ void Cut::paintData(matrix & drawDataLoc)
 									 edfFil.getFreq(),
 									 colouredChans);
 	/// draw markers numbers
-	if(1)
+	if(edfFil.getNs() >= 128)
+	{
+		/// suppose we have taken markers channel as last
+		const int mrk = drawDataLoc.rows() - 1;
+
+		QPainter pnt;
+		pnt.begin(&currentPic);
+		pnt.setFont(QFont("", 18)); /// magic const
+
+		for(int i = 0; i < drawDataLoc.cols(); ++i)
+		{
+			if(drawDataLoc[mrk][i] != 0.)
+			{
+				/// magic consts
+				pnt.drawText(i,
+							 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
+							 nm(int(drawDataLoc[mrk][i])));
+			}
+		}
+		pnt.end();
+	}
+	else
 	{
 		const int mrk = edfFil.getMarkChan();
 		if(mrk > 0)
@@ -642,14 +669,14 @@ void Cut::paintLimits()
 	paint.begin(&tempPic);
 
 	int leftX = ui->leftLimitSpinBox->value() - leftDrawLimit;
-	if(leftX >= 0 && leftX < ui->paintLengthDoubleSpinBox->value() * DEFS.getFreq())
+	if(leftX >= 0 && leftX < ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq())
 	{
 		paint.setPen(QPen(QBrush("blue"), 2));
 		paint.drawLine(leftX, 0, leftX, tempPic.height());
 	}
 
 	int rightX = ui->rightLimitSpinBox->value() - leftDrawLimit;
-	if(rightX >= 0 && rightX < ui->paintLengthDoubleSpinBox->value() * DEFS.getFreq())
+	if(rightX >= 0 && rightX < ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq())
 	{
 		paint.setPen(QPen(QBrush("red"), 2));
 		paint.drawLine(rightX, 0, rightX, tempPic.height());

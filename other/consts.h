@@ -159,6 +159,21 @@ const std::vector<QString> lbl_all {"Fp1", "Fp2",
 								  "A1", "A2"
 								 };
 const std::vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+const std::vector<int> chans128to20{
+			8,				10,
+	23,		32,		36,		44,		51,
+	57,		61,		69,		82,		91,
+	95,		103,	107,	121,	123,
+			7,				127,
+	128};
+const std::vector<int> chans128to20{
+			21,				8,
+	32,		23,		10,		123,	121,
+	44,		35,		54,		103,	107,	/// 54 is not Cz but Cpz
+	57,		51,		61,		91,		95,
+			69,				82,
+	7, 13, 20, 24, 125, 126, 124, 127, /// EOGs
+	128}; /// markers
 }
 
 namespace def
