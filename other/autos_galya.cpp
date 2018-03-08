@@ -834,7 +834,149 @@ void Xenia_TBI_final(const QString & finalPath,
 }
 
 
+/// 8-Mar-2018
+void Xenia_TBI_finalest(const QString & finalPath,
+						QString outPath)
+{
+	/// TBI Xenia cut, process, tables
+	DEFS.setNtFlag(false);
+	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
 
+	const QStringList subdirs{"Healthy", "Moderate", "Severe"};
+
+	if(outPath == QString())
+	{
+		outPath = finalPath + "_out";
+	}
+
+	if(!QDir(outPath).exists())
+	{
+		QDir().mkpath(outPath);
+	}
+
+
+	/// count
+	for(QString subdir : subdirs)
+	{
+		const QString groupPath = finalPath + "/" + subdir;
+
+//		repair::toLatinDir(groupPath, {});
+//		repair::toLowerDir(groupPath, {});
+//		repair::deleteSpacesDir(groupPath, {});
+
+		/// list of guys
+		QStringList guys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		for(QString guy : guys)
+		{
+			const QString guyPath = groupPath + "/" + guy;
+
+			if(0) /// repair fileNames
+			{
+				repair::deleteSpacesFolders(guyPath);
+				repair::toLatinDir(guyPath);
+				repair::toLowerDir(guyPath);
+			}
+
+			QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
+			if(edfs.isEmpty())
+			{
+				std::cout << "Xenia_TBI_final: guyPath is empty " << guyPath << std::endl;
+				continue;
+			}
+			QString ExpName = edfs[0];
+			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
+
+
+			/// physMinMax & holes
+			if(0)
+			{
+				repair::physMinMaxDir(guyPath);
+				repair::holesDir(guyPath,
+								 19,
+								 guyPath);	/// rewrite after repair
+			}
+
+			/// rereference
+			if(0)
+			{
+//				autos::rereferenceFolder(guyPath, "Ar");
+			}
+
+			/// filter?
+			if(0)
+			{
+				/// already done ?
+				autos::refilterFolder(guyPath,
+									  1.6,
+									  30.);
+			}
+
+//			continue;
+
+			/// cut?
+			if(0)
+			{
+				autos::cutFilesInFolder(guyPath,
+								8,
+								groupPath + "_cut/" + guy);
+			}
+
+
+			outPath = guyPath + "/out";
+			myLib::cleanDir(outPath);
+
+			/// process?
+			if(1)
+			{
+				autos::GalyaProcessing(guyPath, 19, outPath);
+			}
+
+			/// make one line file for each stimulus
+			if(1)
+			{
+				for(QString mark : tbiMarkers)
+				{
+					QStringList fileNamesToArrange;
+					for(featuresMask func : {
+						featuresMask::spectre,
+						featuresMask::fracDim,
+						featuresMask::Hilbert,
+						featuresMask::wavelet,
+						featuresMask::alpha})
+					{
+						fileNamesToArrange.push_back(ExpName + mark
+													 + "_" + autos::getFeatureString(func) + ".txt");
+					}
+					std::cout << fileNamesToArrange << std::endl << std::endl;
+					autos::ArrangeFilesToLine(outPath,
+											  fileNamesToArrange,
+											  outPath + "/" + ExpName + mark + ".txt");
+				}
+			}
+
+			/// make whole line from all stimuli
+			if(1)
+			{
+				QStringList fileNamesToArrange;
+				for(QString mark : tbiMarkers)
+				{
+					fileNamesToArrange.push_back(ExpName + mark + ".txt");
+				}
+				autos::ArrangeFilesToLine(outPath,
+										  fileNamesToArrange,
+										  outPath + "/" + ExpName + ".txt");
+
+				QFile::copy(outPath + "/" + ExpName + ".txt",
+							finalPath + "_out/" + ExpName + ".txt");
+			}
+//			return; /// only first guy from first subdir
+		}
+	}
+	/// make tables whole and people list
+	autos::ArrangeFilesToTable(finalPath + "_out",
+							 finalPath + "_out/all.txt",
+							 true);
+}
 
 
 

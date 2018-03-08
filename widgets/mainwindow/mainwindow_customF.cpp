@@ -40,7 +40,96 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-	return;
+//	return;
+
+#if 01
+	/// Xenia finalest preparation
+	const QString workPath = "/media/Files/Data/Xenia/FINAL";
+	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};
+	if(0) /// initial rename guyDirs as edfs
+	{
+		for(QString subdir : subdirs)
+		{
+			const QString groupPath = workPath + "/" + subdir;
+			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(QString guy : groupGuys)
+			{
+				const QString guyPath = groupPath + "/" + guy;
+				repair::deleteSpacesDir(guyPath);
+				QString firstFile = QDir(guyPath).entryList(def::edfFilters)[0];
+				firstFile.resize(firstFile.lastIndexOf('_'));
+				QDir().rename(guyPath,
+							  groupPath + "/" + firstFile);
+				continue;
+			}
+		}
+		exit(0);
+	}
+	if(0) /// check each has all stimuli files - OK
+	{
+		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+		for(QString subdir : subdirs)
+		{
+			const QString groupPath = workPath + "/" + subdir;
+			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(QString guy : groupGuys)
+			{
+				const QString guyPath = groupPath + "/" + guy;
+				const QStringList guyFiles = QDir(guyPath).entryList(def::edfFilters);
+				for(const QString & mark : tbiMarkers)
+				{
+					bool ok = false;
+					for(const QString guyFile : guyFiles)
+					{
+						if(guyFile.contains(mark)) { ok = true; break; }
+					}
+					if(!ok) { std::cout << guy << mark << " not found!!!" << std::endl; }
+				}
+
+			}
+		}
+		exit(0);
+	}
+	if(0) /// find absent guyNames in guys_finalest.txt
+	{
+		/// read guys_finalest.txt
+		QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
+		fil.open(QIODevice::ReadOnly);
+		std::vector<QString> guys{};
+		while(1)
+		{
+			QString guy = fil.readLine();
+			guy.chop(1); /// chop \n
+			if(guy.isEmpty()) { break; }
+			guys.push_back(guy);
+		}
+		fil.close();
+
+
+		std::vector<QString> guysReal{};
+		for(QString subdir : subdirs)
+		{
+			const QString groupPath = workPath + "/" + subdir;
+			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(QString guy : groupGuys)
+			{
+				guysReal.push_back(guy);
+			}
+		}
+		for(const auto & guy : guys)
+		{
+			if(!myLib::contains(guysReal, guy))
+			{
+				std::cout << guy << std::endl;
+			}
+		}
+		exit(0);
+	}
+	autos::Xenia_TBI_finalest(workPath);
+
+	exit(0);
+#endif
+
 #if 0
 	/// check marks
 	const QString path = QString("/media/Files/Data/FeedbackNewMark/");
@@ -1090,7 +1179,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// Galya processing things
 
 	const QString workPath = def::GalyaFolder + "/count26feb";

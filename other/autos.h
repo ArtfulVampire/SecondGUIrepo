@@ -100,6 +100,8 @@ void ArrangeFilesToLine(const QString & dirPath,
 void Xenia_TBI(const QString & tbi_path);
 void Xenia_TBI_final(const QString & finalPath,
 					 QString outPath = QString());
+void Xenia_TBI_finalest(const QString & finalPath,
+						QString outPath = QString());
 void EEG_MRI_FD();
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 
