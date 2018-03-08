@@ -20,9 +20,9 @@ namespace autos
 void countFFT(const matrix & inData,
 			  double srate,
 			  std::ostream & outStr);
-void countAlpha(const matrix & inData,
-				double srate,
-				std::ostream & outStr);
+void countAlphaPeak(const matrix & inData,
+					double srate,
+					std::ostream & outStr);
 void countFracDim(const matrix & inData,
 				  double srate,
 				  std::ostream & outStr);
@@ -39,11 +39,12 @@ void countLogFFT(const matrix & inData,
 				 double srate,
 				 std::ostream & outStr);
 
+
 using featureFuncType = std::function<void(const matrix &, double, std::ostream &)>;
 
 const std::vector<std::tuple<int, QString, featureFuncType, int>> FEATURES {
 	std::make_tuple(featuresMask::spectre,	"spectre",	autos::countFFT,		18 * 19),
-			std::make_tuple(featuresMask::alpha,	"alpha",	autos::countAlpha,		1 * 19),
+			std::make_tuple(featuresMask::alpha,	"alpha",	autos::countAlphaPeak,	1 * 19),
 			std::make_tuple(featuresMask::fracDim,	"fracDim",	autos::countFracDim,	1 * 19),
 			std::make_tuple(featuresMask::Hilbert,	"Hilbert",	autos::countHilbert,	2 * 2 * 19),	/// 2 * 3 * 19 Xenia
 			std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet,	3 * 19 * 19),
@@ -57,7 +58,7 @@ int getFileLength(int in);
 
 /// what to do with files
 void countFeatures(const matrix & inData,
-				   double srate,
+				   const double srate,
 				   const int Mask,
 				   const QString & preOutPath);
 void cutOneFile(const QString & filePath,
@@ -76,16 +77,21 @@ void rereferenceFolder(const QString & procDirPath,
 
 
 /// main function
-void GalyaProcessing(const QString & procDirPath,
-					 const int numChan = 31,
-					 QString outPath = QString());
+void calculateFeatures(const QString & pathWithEdfs,
+					 const int numChan,
+					 const QString & outPath);
 
 /// quite useful general functions
 void EdfsToFolders(const QString & inPath);
 void ProcessByFolders(const QString & inPath,
-				   QString outPath = QString());
+					  const QString & outPath,
+					  const std::vector<QString> & markers);
 void ProcessAllInOneFolder(const QString & inPath,
 						   QString outPath = QString());
+
+void ArrangeFilesVertCat(const std::vector<QString> pathes,
+						 const QString & outPath);
+
 void ArrangeFilesToTable(const QString & inPath,
 					   QString outTablePath = QString(),
 					   bool writePeople = false,
@@ -101,7 +107,8 @@ void Xenia_TBI(const QString & tbi_path);
 void Xenia_TBI_final(const QString & finalPath,
 					 QString outPath = QString());
 void Xenia_TBI_finalest(const QString & finalPath,
-						QString outPath = QString());
+						const QString & outPath,
+						const std::vector<QString> markers);
 void EEG_MRI_FD();
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag);
 

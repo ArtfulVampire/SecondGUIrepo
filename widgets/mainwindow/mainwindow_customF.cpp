@@ -125,7 +125,12 @@ void MainWindow::customFunc()
 		}
 		exit(0);
 	}
-	autos::Xenia_TBI_finalest(workPath);
+	if(01)
+	{
+		DEFS.setAutosUser(autosUser::XeniaFinalest);
+		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+		autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
+	}
 
 	exit(0);
 #endif

@@ -14,6 +14,7 @@
 #include <ios>
 #include <iostream>
 #include <bits/ios_base.h>
+#include <functional>
 
 using namespace myOut;
 
@@ -36,32 +37,21 @@ int getFileLength(int in)
 }
 
 
-void GalyaProcessing(const QString & procDirPath,
-					 const int numChan,
-					 QString outPath)
+void calculateFeatures(const QString & pathWithEdfs,
+					   const int numChan,
+					   const QString & outPath)
 {
 
-	QDir dir;
-	dir.cd(procDirPath);
-	if(outPath.isEmpty())
+	if(!QDir(outPath).exists())
 	{
-		const QString outDir = myLib::getFileName(procDirPath) + "_out";
-		dir.mkdir(outDir);
-		outPath = dir.absolutePath() + "/" + outDir;
-	}
-	else
-	{
-		dir.mkpath(outPath);
+		QDir().mkpath(outPath);
 	}
 
-	const QStringList filesList = dir.entryList(def::edfFilters,
-												QDir::NoFilter,
-												QDir::Size
-												| QDir::Reversed
-												);
-	const auto filesVec = filesList.toVector();
-
-
+	const auto edfs = QDir(pathWithEdfs).entryList(def::edfFilters,
+												   QDir::NoFilter,
+												   QDir::Size | QDir::Reversed
+												   );
+	const auto filesVec = edfs.toVector();
 	const int Mask = DEFS.getAutosMask();
 
 	if(Mask & featuresMask::wavelet)
@@ -81,12 +71,12 @@ void GalyaProcessing(const QString & procDirPath,
 //#endif
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
-		QString helpString = dir.absolutePath() + "/" + filesVec[i];
+		QString filePath = pathWithEdfs + "/" + filesVec[i];
 
 		edfFile initEdf;
-		initEdf.readEdfFile(helpString);
+		initEdf.readEdfFile(filePath);
 
-		/// different checks
+		/// different checks crutches
 		if(initEdf.getNdr() == 0)
 		{
 			std::cout << "ndr = 0\t" << filesVec[i] << std::endl;
@@ -95,39 +85,46 @@ void GalyaProcessing(const QString & procDirPath,
 
 		if(initEdf.getNs() < numChan)
 		{
-			std::cout << "GalyaProcessing: too few channels - " << procDirPath << std::endl;
+			std::cout << "calculateFeatures: too few channels - " << filePath << std::endl;
 			continue;
 		}
 
-		std::cout << filesList[i] << '\t'
-				  << smLib::doubleRound(QFile(helpString).size() / pow(2, 10), 1) << " kB" << std::endl;
+		/// cout fileSize
+		std::cout << edfs[i] << '\t'
+				  << smLib::doubleRound(QFile(filePath).size() / std::pow(2, 10), 1)
+				  << " kB" << std::endl;
 
-		const QString preOutPath = outPath + "/" + myLib::getFileName(helpString, false);
+
+		const QString preOutPath = outPath + "/" + initEdf.getExpName();
 
 		matrix tmpData = initEdf.getData();
 		tmpData.resizeRows(numChan); /// saves the data stored in first numChan rows
+
 		switch(DEFS.getAutosUser())
 		{
-			case autosUser::Galya:
-			{
-				break;
-			}
-			case autosUser::Xenia:
-			{
-				tmpData = tmpData.subCols(0, 30 * 250); /// not resizeCols
-				break;
-			}
-			default:
-			{ /* do nothing */ }
+		case autosUser::Galya:
+		{
+			break;
 		}
-		const matrix countData = std::move(tmpData);
-
-		countFeatures(countData, initEdf.getFreq(), Mask, preOutPath);
+		case autosUser::Xenia:
+		{
+			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq()); /// not resizeCols
+			break;
+		}
+		case autosUser::XeniaFinalest:
+		{
+			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq()); /// not resizeCols
+			break;
+		}
+		default:
+		{ /* do nothing */ }
+		}
+		countFeatures(tmpData, initEdf.getFreq(), Mask, preOutPath);
 	}
 }
 
 void countFeatures(const matrix & inData,
-				   double srate,
+				   const double srate,
 				   const int Mask,
 				   const QString & preOutPath)
 {
@@ -136,7 +133,7 @@ void countFeatures(const matrix & inData,
 	{
 		if(Mask & std::get<0>(FEATURES[num]))
 		{
-			QString outPath = preOutPath + "_" + std::get<1>(FEATURES[num]) + ".txt";
+			const QString outPath = preOutPath + "_" + std::get<1>(FEATURES[num]) + ".txt";
 
 			QFile::remove(outPath);
 			std::ofstream outStr;
@@ -175,18 +172,38 @@ void countFFT(const matrix & inData,
 											 srate);
 	}
 
-	for(int j = 0; j < spectra[0].size(); ++j)
+	switch(DEFS.getAutosUser())
 	{
-		for(int i = 0; i < inData.rows(); ++i)
+	case autosUser::XeniaFinalest:
+	{
+		for(int i = 0; i < spectra.size(); ++i)
 		{
-			outStr << spectra[i][j] << "\t";
+			for(int j = 0; j < spectra[i].size(); ++j)
+			{
+				outStr << spectra[i][j] << "\t";
+			}
+			outStr << "\r\n";
 		}
+		break;
+	}
+	default:
+	{
+		for(int j = 0; j < spectra[0].size(); ++j)
+		{
+			for(int i = 0; i < inData.rows(); ++i)
+			{
+				outStr << spectra[i][j] << "\t";
+			}
+		}
+		break;
+	}
 	}
 }
-void countAlpha(const matrix & inData,
-				double srate,
-				std::ostream & outStr)
+void countAlphaPeak(const matrix & inData,
+					double srate,
+					std::ostream & outStr)
 {
+	std::vector<double> res{};
 	for(int i = 0; i < inData.rows(); ++i)
 	{
 		/// norming is necessary
@@ -196,9 +213,28 @@ void countAlpha(const matrix & inData,
 												  inData.cols(),
 												  srate),
 							   -1);
-		outStr << myLib::alphaPeakFreq(helpSpectre,
-									   inData.cols(),
-									   srate) << "\t";
+		res.push_back(myLib::alphaPeakFreq(helpSpectre,
+										   inData.cols(),
+										   srate));
+	}
+	switch(DEFS.getAutosUser())
+	{
+	case autosUser::XeniaFinalest:
+	{
+		for(auto val : res)
+		{
+			outStr << val << "\r\n";
+		}
+		break;
+	}
+	default:
+	{
+		for(auto val : res)
+		{
+			outStr << val << "\t";
+		}
+		break;
+	}
 	}
 }
 
@@ -206,10 +242,26 @@ void countFracDim(const matrix & inData,
 				  double srate,
 				  std::ostream & outStr)
 {
-	for(int i = 0; i < inData.rows(); ++i)
+	switch(DEFS.getAutosUser())
 	{
-		outStr << myLib::fractalDimension(inData[i]) << "\t";
+	case autosUser::XeniaFinalest:
+	{
+		for(int i = 0; i < inData.rows(); ++i)
+		{
+			outStr << myLib::fractalDimension(inData[i]) << "\r\n";
+		}
+		break;
 	}
+	default:
+	{
+		for(int i = 0; i < inData.rows(); ++i)
+		{
+			outStr << myLib::fractalDimension(inData[i]) << "\t";
+		}
+		break;
+	}
+	}
+
 }
 
 void countHilbert(const matrix & inData,
@@ -269,36 +321,51 @@ void countHilbert(const matrix & inData,
 
 	switch(DEFS.getAutosUser())
 	{
-		case autosUser::Galya:
+	case autosUser::Galya:
+	{
+		for(int func : {0, 1}) /// carr or SD
 		{
-			for(int func : {0, 1}) /// carr or SD
+			for(int filt : {0, 2}) /// whole and alpha
 			{
-				for(int filt : {0, 2}) /// whole and alpha
+				for(int ch = 0; ch < inData.rows(); ++ch)
 				{
-					for(int ch = 0; ch < inData.rows(); ++ch)
-					{
-						outStr << hilb[filt][ch][func] << "\t";
-					}
+					outStr << hilb[filt][ch][func] << "\t";
 				}
 			}
-			break;
 		}
-		case autosUser::Xenia:
+		break;
+	}
+	case autosUser::Xenia:
+	{
+		for(int filt : {0, 1, 2}) /// whole, theta, alpha
+		{
+			for(int func : {0, 1})  /// carr or SD
+			{
+				for(int ch = 0; ch < inData.rows(); ++ch)
+				{
+					outStr << hilb[filt][ch][func] << "\t";
+				}
+			}
+		}
+		break;
+	}
+	case autosUser::XeniaFinalest:
+	{
+		for(int ch = 0; ch < inData.rows(); ++ch)
 		{
 			for(int filt : {0, 1, 2}) /// whole, theta, alpha
 			{
 				for(int func : {0, 1})  /// carr or SD
 				{
-					for(int ch = 0; ch < inData.rows(); ++ch)
-					{
-						outStr << hilb[filt][ch][func] << "\t";
-					}
+					outStr << hilb[filt][ch][func] << "\t";
 				}
 			}
-			break;
+			outStr << "\r\n";
 		}
-		default:
-		{ /* do nothing */ }
+		break;
+	}
+	default:
+	{ /* do nothing */ }
 	}
 
 }
@@ -311,16 +378,18 @@ void countWavelet(const matrix & inData,
 #if WAVELET_MATLAB
 	const int numOfFreqs = wvlt::cwt(inData[0], srate).rows(); /// pewpew
 
-	for(auto func : {
-//		smLib::max,
-//		smLib::min,
-//		smLib::mean,
-//		smLib::median,
-//		smLib::sigma,
-		smLib::sigmaToMean
-})
+	using funcPtr = double(*)(const std::valarray<double> &);
+
+
+	std::vector< funcPtr > funcs;
+	funcs.push_back(static_cast<funcPtr>(&smLib::mean<double>));
+	funcs.push_back(static_cast<funcPtr>(&smLib::sigma<std::valarray<double>>));
+	funcs.push_back(static_cast<funcPtr>(&smLib::median<std::valarray<double>>));
+
+	std::vector<matrix> outData{};
+	for(std::function<double(const std::valarray<double> &)> func : funcs)
 	{
-		matrix dataToWrite(numOfFreqs, inData.rows());
+		matrix dataToWrite(numOfFreqs, inData.rows()); /// [freq][chan]
 
 		for(int j = 0; j < inData.rows(); ++j)
 		{
@@ -330,17 +399,48 @@ void countWavelet(const matrix & inData,
 				dataToWrite[i][j] = func(m[i]);
 			}
 		}
+		outData.push_back(dataToWrite);
 
-		for(int i = 0; i < numOfFreqs; ++i)
+
+	}
+
+	switch(DEFS.getAutosUser())
+	{
+	case autosUser::XeniaFinalest:
+	{
+		for(int j = 0; j < inData.rows(); ++j) /// channels
 		{
-			for(int j = 0; j < inData.rows(); ++j)
+			for(int a = 0; a < outData.size(); ++a)
 			{
-				outStr << dataToWrite[i][j] << "\t";
+				for(int i = 0; i < numOfFreqs; ++i)
+				{
+					outStr << outData[a][i][j] << "\t";
+				}
+			}
+			outStr << "\r\n";
+		}
+		break;
+	}
+	default:
+	{
+		for(int a = 0; a < outData.size(); ++a)
+		{
+			for(int i = 0; i < numOfFreqs; ++i)
+			{
+				for(int j = 0; j < inData.rows(); ++j) /// channels
+				{
+					outStr << outData[a][i][j] << "\t";
+				}
 			}
 		}
+		break;
 	}
+	}
+
+
+
 #else
-	std::cout << "waveletOneFile doesn't work" << std::endl;
+//	std::cout << "waveletOneFile doesn't work" << std::endl;
 #endif
 }
 
@@ -449,7 +549,7 @@ void EEG_MRI_FD()
 		const QString outPath = workDir + "/" + guy + "/out";
 
 		myLib::cleanDir(outPath);
-		autos::GalyaProcessing(workDir + "/" + guy,
+		autos::calculateFeatures(workDir + "/" + guy,
 							   32,
 							   outPath);
 		/// list in order
@@ -590,7 +690,7 @@ void Xenia_TBI(const QString & tbi_path)
 			/// process?
 			if(1)
 			{
-				autos::GalyaProcessing(workPath + "/" + guy,
+				autos::calculateFeatures(workPath + "/" + guy,
 									   19,
 									   workPath + "_tmp");
 			}
@@ -780,7 +880,7 @@ void Xenia_TBI_final(const QString & finalPath,
 			/// process?
 			if(1)
 			{
-				autos::GalyaProcessing(guyPath, 19, outPath);
+				autos::calculateFeatures(guyPath, 19, outPath);
 			}
 
 			/// make one line file for each stimulus
@@ -836,33 +936,15 @@ void Xenia_TBI_final(const QString & finalPath,
 
 /// 8-Mar-2018
 void Xenia_TBI_finalest(const QString & finalPath,
-						QString outPath)
+						const QString & outPath,
+						const std::vector<QString> markers)
 {
-	/// TBI Xenia cut, process, tables
 	DEFS.setNtFlag(false);
-	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+	if(!QDir(outPath).exists()) { QDir().mkpath(outPath); }
 
-	const QStringList subdirs{"Healthy", "Moderate", "Severe"};
-
-	if(outPath == QString())
-	{
-		outPath = finalPath + "_out";
-	}
-
-	if(!QDir(outPath).exists())
-	{
-		QDir().mkpath(outPath);
-	}
-
-
-	/// count
-	for(QString subdir : subdirs)
+	for(QString subdir : {"Healthy", "Moderate", "Severe"})
 	{
 		const QString groupPath = finalPath + "/" + subdir;
-
-//		repair::toLatinDir(groupPath, {});
-//		repair::toLowerDir(groupPath, {});
-//		repair::deleteSpacesDir(groupPath, {});
 
 		/// list of guys
 		QStringList guys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
@@ -922,66 +1004,77 @@ void Xenia_TBI_finalest(const QString & finalPath,
 			}
 
 
-			outPath = guyPath + "/out";
-			myLib::cleanDir(outPath);
+//			myLib::cleanDir(outPath);
 
 			/// process?
-			if(1)
+			if(0)
 			{
-				autos::GalyaProcessing(guyPath, 19, outPath);
+				autos::calculateFeatures(guyPath, 19, outPath);
 			}
-
-			/// make one line file for each stimulus
-			if(1)
-			{
-				for(QString mark : tbiMarkers)
-				{
-					QStringList fileNamesToArrange;
-					for(featuresMask func : {
-						featuresMask::spectre,
-						featuresMask::fracDim,
-						featuresMask::Hilbert,
-						featuresMask::wavelet,
-						featuresMask::alpha})
-					{
-						fileNamesToArrange.push_back(ExpName + mark
-													 + "_" + autos::getFeatureString(func) + ".txt");
-					}
-					std::cout << fileNamesToArrange << std::endl << std::endl;
-					autos::ArrangeFilesToLine(outPath,
-											  fileNamesToArrange,
-											  outPath + "/" + ExpName + mark + ".txt");
-				}
-			}
-
-			/// make whole line from all stimuli
-			if(1)
-			{
-				QStringList fileNamesToArrange;
-				for(QString mark : tbiMarkers)
-				{
-					fileNamesToArrange.push_back(ExpName + mark + ".txt");
-				}
-				autos::ArrangeFilesToLine(outPath,
-										  fileNamesToArrange,
-										  outPath + "/" + ExpName + ".txt");
-
-				QFile::copy(outPath + "/" + ExpName + ".txt",
-							finalPath + "_out/" + ExpName + ".txt");
-			}
-//			return; /// only first guy from first subdir
 		}
 	}
-	/// make tables whole and people list
-	autos::ArrangeFilesToTable(finalPath + "_out",
-							 finalPath + "_out/all.txt",
-							 true);
+
+	if(01)
+	{
+		/// make full matrices for each type of feature
+
+		/// read guys_finalest.txt
+		QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
+		fil.open(QIODevice::ReadOnly);
+		std::vector<QString> guys{};
+		while(1)
+		{
+			QString guy = fil.readLine();
+			guy.chop(1); /// chop \n
+			if(guy.isEmpty()) { break; }
+			guys.push_back(guy);
+		}
+		fil.close();
+
+		for(featuresMask feature : DEFS.getAutosMaskArray())
+		{
+			std::vector<QString> filesToVertCat{};
+			for(const QString & mark : markers)
+			{
+				for(const QString & guy : guys)
+				{
+					filesToVertCat.push_back(
+								outPath + "/" +				/// path or name
+								guy
+								+ mark
+								+ "_" + autos::getFeatureString(feature)
+								+ ".txt");
+				}
+			}
+			autos::ArrangeFilesVertCat(filesToVertCat,
+									   outPath + "/table_"
+									   + autos::getFeatureString(feature) + ".txt");
+
+		}
+	}
+
 }
 
 
 
 
+void ArrangeFilesVertCat(const std::vector<QString> pathes,
+						 const QString & outPath)
+{
+	QFile outStr(outPath);
+	outStr.open(QIODevice::WriteOnly);
+	for(const QString & filePath : pathes)
+	{
+		QFile fil(filePath);
+		fil.open(QIODevice::ReadOnly);
+		auto contents = fil.readAll();
+		fil.close();
 
+		outStr.write(contents);
+		if(!contents.endsWith("\r\n")) { outStr.write("\r\n"); }
+	}
+	outStr.close();
+}
 
 void ArrangeFilesToTable(const QString & inPath,
 						 QString outTablePath,
@@ -1311,7 +1404,7 @@ void ProcessAllInOneFolder(const QString & inPath,
 	{
 		/// clear outFolder
 		myLib::cleanDir(inPath + "/out", "txt", true);
-		autos::GalyaProcessing(inPath, 19, outPath);
+		autos::calculateFeatures(inPath, 19, outPath);
 	}
 
 
@@ -1490,7 +1583,7 @@ void ProcessByFolders(const QString & inPath,
 		{
 			/// clear outFolder
 			myLib::cleanDir(guyPath + "/out", "txt", true);
-			autos::GalyaProcessing(guyPath, numChan, outPath);
+			autos::calculateFeatures(guyPath, numChan, outPath);
 		}
 
 		/// make one line file for each stimulus

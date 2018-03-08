@@ -189,8 +189,8 @@ double alphaPeakFreq(const std::valarray<double> & spectreR,
 std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
 									 int initSigLen,
 									 double srate,
-									 double leftFreqLim = 2.,
-									 double rightFreqLim = 19.,
+									 double leftFreqLowLim = 2.,
+									 double leftFreqHighLim = 19.,
 									 double spectreStepFreq = 1.);
 
 double hilbertCarr(const std::valarray<double> & arr);

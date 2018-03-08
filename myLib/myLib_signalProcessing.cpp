@@ -1523,13 +1523,13 @@ double alphaPeakFreq(const std::valarray<double> & spectreR,
 std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
 									 int initSigLen,
 									 double srate,
-									 double leftFreqLim,
-									 double rightFreqLim,
+									 double leftFreqLowLim,
+									 double leftFreqHighLim,
 									 double spectreStepFreq)
 {
 	std::vector<double> fullSpectre{};
-	for(double j = leftFreqLim;
-		j <= rightFreqLim;
+	for(double j = leftFreqLowLim;
+		j <= leftFreqHighLim;
 		j += spectreStepFreq)
 	{
 		double helpDouble = 0.;

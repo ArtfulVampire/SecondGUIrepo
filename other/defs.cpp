@@ -48,6 +48,16 @@ void defs::setAutosUser(autosUser in)
 					;
 		break;
 	}
+	case autosUser::XeniaFinalest:
+	{
+		autosMask = featuresMask::alpha |
+					featuresMask::spectre |
+					featuresMask::Hilbert |
+//					featuresMask::wavelet |
+					featuresMask::fracDim
+					;
+		break;
+	}
 	default: { break; }
 	}
 }
@@ -124,6 +134,17 @@ void defs::setUser(username in)
 	}
 	default: { break; } /// never get here
 	}
+}
+
+std::vector<featuresMask> defs::getAutosMaskArray() const
+{
+	std::vector<featuresMask> res{};
+	for(int i = 0; i < 10; ++i)
+	{
+		int a = std::pow(2, i);
+		if(a & this->autosMask) { res.push_back(featuresMask(a)); }
+	}
+	return res;
 }
 /// end defs Singleton
 

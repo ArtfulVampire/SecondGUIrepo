@@ -41,8 +41,11 @@ Container contPopFront(const Container & in, uint numOfPop);
 template <class Typ>
 Typ mean(const std::valarray<Typ> & in1);
 
-template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont = std::vector>
-Typ mean(const Cont<Typ> & in1);
+//template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont>
+//Typ mean(const Cont<Typ> & in1);
+
+template <typename Typ>
+Typ mean(const std::vector<Typ> & in1);
 
 
 
