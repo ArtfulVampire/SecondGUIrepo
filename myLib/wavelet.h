@@ -8,7 +8,8 @@
 #include <other/defs.h>
 
 #if WAVELET_MATLAB
-#include <matlab/for_testing/libcwt_r.h>
+//#include <matlab/for_testing/libcwt_r.h>
+#include <libcwt_r.h>
 #endif
 
 #include <QString>

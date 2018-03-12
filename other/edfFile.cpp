@@ -823,7 +823,7 @@ void edfFile::handleData(bool readFlag,
 	QString helpString;
 	if(readFlag)
 	{
-		/// fails when different frequencies. nr.max() could heal it
+		/// will fail when different frequencies. nr.max() could heal it
 		this->edfData = matrix(ns, ndr * ddr * srate, 0.);
 
 		this->channels.clear();

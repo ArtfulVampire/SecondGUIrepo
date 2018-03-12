@@ -216,6 +216,15 @@ void Cut::setValuesByEdf()
 
 	const bool iitpFlag = edfFil.getDirPath().contains("iitp", Qt::CaseInsensitive);
 
+	const int localLimit = (edfFil.getNs() >= 128) ?
+						  (coords::chans128to20.size() - 1) : (edfFil.getNs() - 1);
+	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
+	{
+		a->setMaximum(localLimit);
+		a->setValue(localLimit); // markers
+	}
+
+
 	ui->leftLimitSpinBox->setMinimum(0);
 	ui->leftLimitSpinBox->setMaximum(dataCutLocal.cols());
 	ui->leftTimeSpinBox->setMinimum(0);
@@ -243,13 +252,6 @@ void Cut::setValuesByEdf()
 	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - scrollAreaGapX) / edfFil.getFreq());
 	ui->paintLengthDoubleSpinBox->setValue((this->width() - scrollAreaGapX) / edfFil.getFreq()); /// -> paint
 
-	const int localLimit = (edfFil.getNs() >= 128) ?
-						  (coords::chans128to20.size() - 1) : (edfFil.getNs() - 1);
-	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
-	{
-		a->setMaximum(localLimit);
-		a->setValue(localLimit); // markers
-	}
 
 
 	/// set coloured channels

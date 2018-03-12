@@ -40,9 +40,9 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-//	return;
+	return;
 
-#if 01
+#if 0
 	/// Xenia finalest preparation
 	const QString workPath = "/media/Files/Data/Xenia/FINAL";
 	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};

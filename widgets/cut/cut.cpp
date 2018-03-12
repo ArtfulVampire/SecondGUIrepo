@@ -34,7 +34,7 @@ Cut::Cut() :
 
 	/// draws
 	ui->yNormDoubleSpinBox->setDecimals(2);
-	ui->yNormDoubleSpinBox->setMaximum(5.);
+	ui->yNormDoubleSpinBox->setMaximum(50.);
 	ui->yNormDoubleSpinBox->setMinimum(0.01);
 	ui->yNormDoubleSpinBox->setValue(1.);
 	ui->yNormDoubleSpinBox->setSingleStep(0.05);
