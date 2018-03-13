@@ -87,9 +87,24 @@ std::valarray<double> spectreCtoRrev(const std::valarray<std::complex<double>> &
 
 std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre);
 
-
 std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 									int numOfSmooth = 0);
+
+/// plus/minus stepFreq
+std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
+									 int initSigLen,
+									 double srate,
+									 double leftFreqLowLim = 2.,
+									 double leftFreqHighLim = 19.,
+									 double spectreStepFreq = 1.);
+
+std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
+									   double srate,
+									   std::vector<std::pair<double, double>> limits);
+
+
+
+
 
 double RDfreq(const std::valarray<double> & inSignal, int fftWind);
 double PPGrange(const std::valarray<double> & inSignal);
@@ -186,12 +201,7 @@ double alphaPeakFreq(const std::valarray<double> & spectreR,
 					 double srate,
 					 double leftLimFreq = 8.,
 					 double rightLimFreq = 13.);
-std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
-									 int initSigLen,
-									 double srate,
-									 double leftFreqLowLim = 2.,
-									 double leftFreqHighLim = 19.,
-									 double spectreStepFreq = 1.);
+
 
 double hilbertCarr(const std::valarray<double> & arr);
 double hilbertSD(const std::valarray<double> & arr);

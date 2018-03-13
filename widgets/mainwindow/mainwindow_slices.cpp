@@ -289,10 +289,10 @@ void MainWindow::sliceElena()
 			res.push_back(myLib::PPGrange(subData[fil.findChannel(PPGstring)]));
 			auto EDAval = myLib::EDAmax(subData[fil.findChannel(EDAstring)], edaBase);
 			res.push_back(EDAval.first);						/// value of max EDA
+//			res.push_back(EDAval.second);						/// latency in bins
+//			res.push_back(EDAval.second / fil.getFreq());		/// latency in seconds
 		}
 
-//		res.push_back(EDAval.second);						/// latency in bins
-//		res.push_back(EDAval.second / fil.getFreq());		/// latency in seconds
 
 
 		/// write to file

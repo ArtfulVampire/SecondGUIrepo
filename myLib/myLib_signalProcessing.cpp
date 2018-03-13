@@ -1520,6 +1520,52 @@ double alphaPeakFreq(const std::valarray<double> & spectreR,
 	return helpInt * srate / hlp;
 }
 
+std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
+									   double srate,
+									   std::vector<std::pair<double, double>> limits)
+{
+	const int & initSigLen = spectreR.size(); /// really?
+
+	std::valarray<double> res(limits.size());
+	int counter = 0;
+
+	for(const auto & limit : limits)
+	{
+		double leftFreq = limit.first;
+		double rightFreq = limit.second;
+
+		double helpDouble = 0.;
+		int helpInt = 0;
+		for(int k = fftLimit(leftFreq,
+							 srate,
+							 smLib::fftL(initSigLen));
+			k < fftLimit(rightFreq,
+						 srate,
+						 smLib::fftL(initSigLen));
+			++k)
+		{
+			helpDouble += spectreR[k];
+			++helpInt;
+		}
+
+		/// normalize spectre to unit sum ?
+		res[counter++] = helpDouble / helpInt;	/// mean in band
+	}
+
+#if 0
+	/// normalize spectre for unit sum
+	/// 20. for not too small values
+	double helpDouble = 20. / std::accumulate(std::begin(res),
+											  std::end(res),
+											  0.) ;
+	for(auto & in : fullSpectre)
+	{
+		in *= helpDouble;
+	}
+#endif
+	return res;
+}
+
 std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
 									 int initSigLen,
 									 double srate,
@@ -1527,7 +1573,7 @@ std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
 									 double leftFreqHighLim,
 									 double spectreStepFreq)
 {
-	std::vector<double> fullSpectre{};
+	std::vector<double> res{};
 	for(double j = leftFreqLowLim;
 		j <= leftFreqHighLim;
 		j += spectreStepFreq)
@@ -1546,21 +1592,21 @@ std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
 			++helpInt;
 		}
 		/// normalize spectre to unit sum ?
-		fullSpectre.push_back(helpDouble / helpInt);
+		res.push_back(helpDouble / helpInt);
 	}
 
 #if 0
 	/// normalize spectre for unit sum
 	/// 20. for not too small values
-	double helpDouble = 20. / std::accumulate(std::begin(fullSpectre),
-											  std::end(fullSpectre),
+	double helpDouble = 20. / std::accumulate(std::begin(res),
+											  std::end(res),
 											  0.) ;
 	for(auto & in : fullSpectre)
 	{
 		in *= helpDouble;
 	}
 #endif
-	return fullSpectre;
+	return res;
 }
 
 
