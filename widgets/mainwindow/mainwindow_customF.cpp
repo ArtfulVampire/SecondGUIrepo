@@ -7,6 +7,7 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/temp.h>
 #include <myLib/statistics.h>
+#include <myLib/wavelet.h>
 #include <other/subjects.h>
 #include <thread>
 
