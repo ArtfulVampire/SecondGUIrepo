@@ -1007,7 +1007,7 @@ void Xenia_TBI_finalest(const QString & finalPath,
 //			myLib::cleanDir(outPath);
 
 			/// process?
-			if(0)
+			if(01)
 			{
 				autos::calculateFeatures(guyPath, 19, outPath);
 			}

@@ -1566,6 +1566,19 @@ std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
 	return res;
 }
 
+matrix integrateSpectra(const matrix & spectraR,
+						double srate,
+						std::vector<std::pair<double, double>> limits)
+{
+	matrix res(spectraR);
+	/// kinda res.apply(myLib::integrateSpectre(_1, srate, limits));
+	for(int i = 0; i < spectraR.rows(); ++i)
+	{
+		res[i] = myLib::integrateSpectre(spectraR[i], srate, limits);
+	}
+	return res;
+}
+
 std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
 									 int initSigLen,
 									 double srate,

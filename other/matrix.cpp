@@ -1196,10 +1196,12 @@ std::valarray<double> matrix::matrixSystemSolveGauss(const std::valarray<double>
 
 std::ostream & operator<<(std::ostream & os, const matrix & toOut)
 {
-	for(auto it = std::begin(toOut.myData); it != std::end(toOut.myData); ++it)
+//	for(auto it = std::begin(toOut.myData); it != std::end(toOut.myData); ++it)
+	for(auto row : toOut)
 	{
 		/// uses myOut::operator<<(const std::valarray<double> &);
-		os << *it << std::endl;
+//		os << *it << std::endl;
+		os << row << "\r\n";
 	}
 	return os;
 }

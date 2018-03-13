@@ -102,6 +102,10 @@ std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
 									   double srate,
 									   std::vector<std::pair<double, double>> limits);
 
+matrix integrateSpectra(const matrix & spectraR,
+						double srate,
+						std::vector<std::pair<double, double>> limits);
+
 
 
 

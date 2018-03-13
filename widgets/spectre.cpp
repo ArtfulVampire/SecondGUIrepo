@@ -634,8 +634,8 @@ void Spectre::writeSpectra(const double leftFreq,
         return;
     }
 
-	const int left = fftLimit(leftFreq, DEFS.getFreq(), DEFS.getFftLen());
-	const int right = fftLimit(rightFreq, DEFS.getFreq(), DEFS.getFftLen()) + 1;
+	const int left = fftLimit(leftFreq, globalEdf.getFreq(), DEFS.getFftLen());
+	const int right = fftLimit(rightFreq, globalEdf.getFreq(), DEFS.getFftLen()) + 1;
 
     QStringList lst = ui->dropChannelsLineEdit->text().split(
                           QRegExp("[,;\\s]"), QString::SkipEmptyParts);

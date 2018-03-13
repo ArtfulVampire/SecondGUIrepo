@@ -44,10 +44,11 @@ void MainWindow::customFunc()
 	return;
 
 #if 0
-	/// Xenia finalest preparation
+	/// Xenia finalest
 	const QString workPath = "/media/Files/Data/Xenia/FINAL";
 	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};
-	if(0) /// initial rename guyDirs as edfs
+
+	if(0) /// initial rename guyDirs as edfs inside
 	{
 		for(QString subdir : subdirs)
 		{
@@ -66,7 +67,7 @@ void MainWindow::customFunc()
 		}
 		exit(0);
 	}
-	if(0) /// check each has all stimuli files - OK
+	if(0) /// check each guy has all stimuli files - OK
 	{
 		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
 		for(QString subdir : subdirs)
@@ -91,7 +92,7 @@ void MainWindow::customFunc()
 		}
 		exit(0);
 	}
-	if(0) /// find absent guyNames in guys_finalest.txt
+	if(0) /// find absent guyNames in guys_finalest.txt and rename properly (manually)
 	{
 		/// read guys_finalest.txt
 		QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
@@ -126,10 +127,12 @@ void MainWindow::customFunc()
 		}
 		exit(0);
 	}
-	if(01)
+
+	if(01) /// processing itself
 	{
 		DEFS.setAutosUser(autosUser::XeniaFinalest);
 		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+		DEFS.setAutosMask(featuresMask::wavelet);
 		autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
 	}
 

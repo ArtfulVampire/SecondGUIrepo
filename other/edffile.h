@@ -162,15 +162,18 @@ public:
 					 std::fstream & edfForDatum);
 
     void handleData(bool readFlag,
-                    FILE * edfForData);
+					FILE * edfForData); /// deprecated
     void handleDatum(int currNs,
                      int currTimeIndex,
                      bool readFlag,
                      QString & ntAnnot,
                      FILE * edfForDatum);
 
+
     void writeMarker(double currDatum,
-                     int currTimeIndex) const;
+					 int currTimeIndex) const; /// deprecated
+
+	void writeMarkers() const;
     void handleAnnotations(int currNs,
                            int currentTimeIndex,
                            QString helpString,

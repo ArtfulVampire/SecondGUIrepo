@@ -2,6 +2,7 @@
 #define OUTPUT_H
 
 #include <other/consts.h>
+//#include <other/matrix.h>
 
 #include <ios>
 #include <iostream>
@@ -39,10 +40,11 @@ inline QString rn(double in, int num) { return myLib::rightNumber(in, num); }
 FILE * fopen(QString filePath, const char *__modes);
 
 std::istream & operator>> (std::istream &is, QString & in);
-std::ostream & operator<< (std::ostream &os, QChar toOut);
-std::ostream & operator<< (std::ostream &os, const QString & toOut);
-std::ostream & operator<< (std::ostream &os, const std::complex<double> & toOut);
-std::ostream & operator<< (std::ostream &os, const QStringList & toOut);
+std::ostream & operator<< (std::ostream & os, QChar toOut);
+std::ostream & operator<< (std::ostream & os, const QString & toOut);
+std::ostream & operator<< (std::ostream & os, const std::complex<double> & toOut);
+std::ostream & operator<< (std::ostream & os, const QStringList & toOut);
+//std::ostream & operator<< (std::ostream & os, const matrix & toOut);
 
 
 #if CPP17
@@ -84,7 +86,7 @@ template <typename Typ,
 		  template <typename> class Cont
 		  ,	typename = typename std::enable_if<!std::is_same<Cont<Typ>, std::string>::value>::type
 		  >
-inline std::ostream & operator<< (std::ostream &os, const Cont<Typ> & toOut)
+inline std::ostream & operator<< (std::ostream & os, const Cont<Typ> & toOut)
 {
 	std::string separ = "\t";
 //	std::string separ = "\n";
@@ -100,7 +102,7 @@ inline std::ostream & operator<< (std::ostream &os, const Cont<Typ> & toOut)
 template <typename Typ,
 		  template <typename, typename = std::allocator<Typ>> class Cont
 		  >
-inline std::ostream & operator<< (std::ostream &os, const Cont<Typ> & toOut)
+inline std::ostream & operator<< (std::ostream & os, const Cont<Typ> & toOut)
 {
 	std::string separ = "\t";
 //	std::string separ = "\n";

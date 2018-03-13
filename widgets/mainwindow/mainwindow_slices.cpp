@@ -252,14 +252,65 @@ void MainWindow::sliceElena()
 
 	const auto eegChannels = fil.findChannels("EEG ");
 
+	const int leftFreqLim = fftLimit(DEFS.getLeftFreq(),
+							  fil.getFreq(),
+							  DEFS.getFftLen());
+	const int rightFreqLim = fftLimit(DEFS.getRightFreq(),
+							   fil.getFreq(),
+							   DEFS.getFftLen()) + 1;
+
+	/// for table 13-Mar-18
+	const std::vector<std::pair<double, double>> integrLimits
+	{{4, 8}, {8, 12}, {12, 16}, {16, 20}, {20, 24}};
+	const std::vector<std::vector<QString>> integrChans
+	{{"F3", "F7"}, {"F4", "F8"}, {"T3", "T5"}, {"C3"}, {"C4"}, {"T4", "T6"},
+		{"P3"}, {"P4"}, {"O1"}, {"O2"}};
+
+	matrix table(numOfTasks, 1);
+	std::vector<QString> tableCols
+	{
+		"taskNum",
+		"taskMark",
+		"operMark",
+		"SGRval",
+		"SGRlat",
+		"PPGampl"
+//		"PPGfreq",
+	};
+	/// add average spectra
+	for(const auto & chs : integrChans)
+	{
+		/// F3_F7_12-16
+		QString chanStr{};
+		for(const auto & ch : chs)
+		{
+			chanStr += ch + "_";
+		}
+//		chanStr.chop(1); /// chop last '_'
+
+		for(const auto & lim : integrLimits)
+		{
+			chanStr += nm(lim.first) + "-" + nm(lim.second);
+		}
+		tableCols.push_back(chanStr);
+	}
 
 	/// new 6-Mar-18
 	const QString RDstring{"RD"};
 	const QString PPGstring{"FPG"};
 	const QString EDAstring{"KGR"};
 
+	const int RDnum = fil.findChannel(RDstring);
+	const int PPGnum = fil.findChannel(PPGstring);
+	const int EDAnum = fil.findChannel(EDAstring);
+
+	if(RDnum == -1 || PPGnum == -1 || EDAnum == -1)
+	{
+		std::cout << "sliceElena: some of vegetative channels is absent" << std::endl;
+	}
+
 	auto saveSpecPoly = [&](int startBin,
-						const QString & number,
+						const QString & pieceNumber,
 						const QString & taskMark,
 						const QString & operMark)
 	{
@@ -268,43 +319,98 @@ void MainWindow::sliceElena()
 						 .subCols(startBin, startBin + restWindow * fil.getFreq())
 						 .subRows(eegChannels);
 
-		auto edaBase = smLib::contSubsec(fil.getData(EDAstring),
-										 std::max(0., startBin - 2 * fil.getFreq()), /// -2 sec
-										 startBin);
+		std::valarray<double> edaBase{};
+		if(EDAnum != -1)
+		{
+			edaBase = smLib::contSubsec(fil.getData(EDAnum),
+										std::max(0., startBin - 2 * fil.getFreq()), /// -2 sec
+										startBin);
+		}
 
 		matrix spec = myLib::countSpectre(subData,
 										  windFft,
 										  numSmoothWind);
 
-		/// bad file
+		/// check bad file
 		if(spec.isEmpty() || edaBase.size() < fil.getFreq()) { return; }
 
 
-		std::vector<double> res = spec.toVectorByRows();
+
+
+		std::vector<double> outVector = spec.subCols(leftFreqLim, rightFreqLim).toVectorByRows();
+		double RDfr{};
+		if(RDnum != -1) { RDfr = myLib::RDfreq(subData[RDnum], windFft); }
+		double PPGampl{};
+		if(PPGnum != -1) { PPGampl = myLib::PPGrange(subData[fil.findChannel(PPGstring)]); }
+		std::pair<double, double> EDAval{};
+		if(EDAnum != -1) { EDAval = myLib::EDAmax(subData[fil.findChannel(EDAstring)], edaBase); }
 
 		if(0)
 		{
 			/// temporarily turn off poly
-			res.push_back(myLib::RDfreq(subData[fil.findChannel(RDstring)], windFft));
-			res.push_back(myLib::PPGrange(subData[fil.findChannel(PPGstring)]));
-			auto EDAval = myLib::EDAmax(subData[fil.findChannel(EDAstring)], edaBase);
-			res.push_back(EDAval.first);						/// value of max EDA
-//			res.push_back(EDAval.second);						/// latency in bins
-//			res.push_back(EDAval.second / fil.getFreq());		/// latency in seconds
+			outVector.push_back(RDfr);
+			outVector.push_back(PPGampl);
+			outVector.push_back(EDAval.first);						/// value of max EDA
+//			outVector.push_back(EDAval.second);						/// latency in bins
+//			outVector.push_back(EDAval.second / fil.getFreq());		/// latency in seconds
 		}
-
-
-
 		/// write to file
 		QString savePath = fil.getDirPath()
 						   + "/SpectraSmooth"
 						   + "/" + fil.getExpName()
-						   + "_n_" + number
+						   + "_n_" + pieceNumber
 						   + "_m_" + taskMark
 						   + "_t_" + operMark
 				+ "." + def::spectraDataExtension;
 
-		myLib::writeFileInLine(savePath, res);
+		myLib::writeFileInLine(savePath, outVector);
+
+
+
+		/// for tables
+		/// check rest or task
+		bool ok = false;
+		pieceNumber.toInt(&ok);
+		if(!ok) { return; }
+
+		/// calculate integrated spectra
+
+		matrix integratedSpectra = myLib::integrateSpectra(spec, fil.getFreq(), integrLimits);
+
+		/// integrate over channels
+		matrix integratedSpectraOut(integrChans.size(), integratedSpectra.cols());
+		int counter = 0;
+		for(const auto & chs : integrChans) /// each subset
+		{
+			std::valarray<double> res(0., integratedSpectra.cols());
+			for(const auto & ch : chs) /// each chan from subset
+			{
+				res += integratedSpectra[fil.findChannel(ch)];
+			}
+			res /= chs.size();
+			integratedSpectraOut[counter++] = res;
+		}
+
+		std::vector<double> forTable{}; forTable.reserve(20 + integrChans.size() * integrLimits.size());
+		forTable.push_back(pieceNumber.toInt());
+		forTable.push_back(taskMark.toInt());
+		forTable.push_back(operMark.toInt());
+		if(1) /// for table
+		{
+			forTable.push_back(EDAval.first);						/// value of max EDA
+//			outVector.push_back(EDAval.second);						/// latency in bins
+			forTable.push_back(EDAval.second / fil.getFreq());		/// latency in seconds
+			forTable.push_back(RDfr);
+			forTable.push_back(PPGampl);
+		}
+
+		/// push_back spectra
+		const int prevSize = forTable.size();
+		forTable.resize(prevSize + integrChans.size() * integrLimits.size());
+		const std::vector<double> specRow = integratedSpectraOut.toVectorByRows();
+		std::copy(std::begin(specRow), std::end(specRow),
+				  std::begin(forTable) + prevSize);
+		table[pieceNumber.toInt()] = smLib::vecToValar(forTable);
 	};
 
 
@@ -321,17 +427,18 @@ void MainWindow::sliceElena()
 									[eyesMarks, typ](const auto & in)
 		{ return in.second == eyesMarks[typ][1]; }); /// [1] - finish
 
-		int counter = 0;
+		int windCounter = 0;
 		for(int i = (*openSta).first;
 			i < (*openFin).first - restWindow * fil.getFreq();
-			i += restShift * fil.getFreq(), ++counter)
+			i += restShift * fil.getFreq(), ++windCounter)
 		{
 			QString helpString = DEFS.dirPath()
 								 + "/Reals"
 								 + "/" + fil.getExpName()
-								 + "_n_0_" + nm(counter)
+								 + "_n_0_" + nm(windCounter)
+//								 + "_n_" + nm(windCounter)
 								 + "_m_" + nm(eyesMarks[typ][0])
-					+ "_t_" + nm(eyesCodes[typ]);
+								 + "_t_" + nm(eyesCodes[typ]);
 			/// save window
 			fil.saveSubsection(i,
 							   i + restWindow * fil.getFreq(),
@@ -339,10 +446,11 @@ void MainWindow::sliceElena()
 							   true);
 
 			saveSpecPoly(i,
-						 QString("0_" + nm(counter)),	/// restNumber
+						 QString("0_" + nm(windCounter)),	/// restNumber
+//						 nm(windCounter),				/// restNumber
 						 nm(eyesMarks[typ][0]),			/// taskMark
-					nm(eyesCodes[typ])					/// operMark
-					);
+						 nm(eyesCodes[typ])				/// operMark
+						 );
 		}
 	}
 
@@ -357,6 +465,7 @@ void MainWindow::sliceElena()
 	int start = -1;
 	bool startFlag = false;
 
+	/// slice all tasks
 	// (241-244) - instruction, (1-240) - number(start), (255) - optional click,
 	// (245-254) - operational, 255 - ready for next task
 	for(int i = 0; i < fil.getDataLen(); ++i)
@@ -443,6 +552,13 @@ void MainWindow::sliceElena()
 			}
 		}
 	}
+
+	/// table into file
+	std::ofstream tableStream((fil.getDirPath() + "_table.txt").toStdString());
+	tableStream << tableCols << std::endl;
+	tableStream << table;
+//	myOut::operator <<(tableStream, table);
+	tableStream.close();
 
 	if(!allNumbers.empty())
 	{

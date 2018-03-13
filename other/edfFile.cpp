@@ -5,6 +5,8 @@
 #include <myLib/drw.h>
 #include <myLib/dataHandlers.h>
 
+#include <bitset>
+
 using namespace myOut;
 
 
@@ -843,6 +845,7 @@ void edfFile::handleData(bool readFlag,
 									 );
 		}
 	}
+
 	for(int i = 0; i < ndr; ++i)
 	{
 		for(int currNs = 0; currNs < ns; ++currNs)
@@ -860,6 +863,10 @@ void edfFile::handleData(bool readFlag,
 				annotations.push_back(helpString);
 			}
 		}
+	}
+	if(writeMarkersFlag && !edfPlusFlag)
+	{
+		writeMarkers();
 	}
 }
 void edfFile::handleDatum(int currNs,
@@ -934,11 +941,6 @@ void edfFile::handleDatum(int currNs,
 			if(currDatum != 0.)
 			{
 				markers.push_back(std::make_pair(currTimeIndex, currDatum));
-
-				if(writeMarkersFlag && !edfPlusFlag)
-				{
-					writeMarker(currDatum, currTimeIndex);
-				}
 			}
 		}
 	}
@@ -1181,6 +1183,35 @@ void edfFile::handleDatum(int currNs,
     }
 }
 
+
+void edfFile::writeMarkers() const
+{
+	std::ofstream markersStream((dirPath + "/" + "markers.txt").toStdString());
+	for(const auto & mrk : markers)
+	{
+		markersStream << mrk.first << "\t"
+					  << mrk.first / double(this->srate) << "\t"
+					  << mrk.second;
+
+		if(this->matiFlag)
+		{
+			std::bitset<16> byteMarker(mrk.second);
+
+			markersStream << "\t";
+			for(int s = byteMarker.size() - 1; s >= 0; --s)
+			{
+				markersStream << int(byteMarker[s]);
+				if(s == 8) { markersStream << " "; } /// divide two bytes
+			}
+			if(byteMarker[9] || byteMarker[8])	{ markersStream << " - session start"; }
+			if(byteMarker[10])					{ markersStream << " - session end"; }
+			if(byteMarker[11])					{ markersStream << " - 11 bit error"; }
+			if(byteMarker[12])					{ markersStream << " - 12 bit error"; }
+		}
+		markersStream << "\r\n";
+	}
+	markersStream.close();
+}
 
 void edfFile::writeMarker(double currDatum,
 						  int currTimeIndex) const

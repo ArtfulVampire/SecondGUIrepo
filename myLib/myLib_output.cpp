@@ -54,25 +54,25 @@ std::istream & operator>> (std::istream &is, QString & in)
 	return is;
 }
 
-std::ostream & operator<< (std::ostream &os, const QString & toOut)
+std::ostream & operator<< (std::ostream & os, const QString & toOut)
 {
 	os << toOut.toStdString();
 	return os;
 }
 
-std::ostream & operator << (std::ostream &os, QChar toOut)
+std::ostream & operator << (std::ostream & os, QChar toOut)
 {
 	os << QString(toOut);
 	return os;
 }
 
-std::ostream & operator<< (std::ostream &os, const std::complex<double> & toOut)
+std::ostream & operator<< (std::ostream & os, const std::complex<double> & toOut)
 {
 	os << toOut.real() << ((toOut.imag() >= 0.)?" + ":" - ") << std::abs(toOut.imag()) << "i";
 	return os;
 }
 
-std::ostream & operator<< (std::ostream &os, const QStringList & toOut)
+std::ostream & operator<< (std::ostream & os, const QStringList & toOut)
 {
 //	std::string separ = "\t";
 	std::string separ = "\r\n";
@@ -82,6 +82,16 @@ std::ostream & operator<< (std::ostream &os, const QStringList & toOut)
 	}
 	return os;
 }
+
+
+//std::ostream & operator<< (std::ostream & os, const matrix & toOut)
+//{
+//	for(const auto & row : toOut)
+//	{
+//		os << row << "\r\n";
+//	}
+//	return os;
+//}
 
 
 //// with allocators
