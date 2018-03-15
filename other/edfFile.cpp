@@ -660,8 +660,8 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 			if(labels[i].contains(QRegExp("E[EOC]G")))
             {
                 /// encephalan only !!!!!1111
-				physMax[i] = 4096;
-				physMin[i] = -4096;
+//				physMax[i] = 4096;
+//				physMin[i] = -4096;
 //				digMax[i] = 32767;
 //				digMin[i] = -32768;
             }

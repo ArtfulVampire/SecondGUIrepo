@@ -186,11 +186,11 @@ void countFFT(const matrix & inData,
 		}
 		break;
 	}
-	default:
+	default: /// Xenia and Galya
 	{
-		for(int j = 0; j < spectra[0].size(); ++j)
+		for(int j = 0; j < spectra[0].size(); ++j) /// 18 freqs
 		{
-			for(int i = 0; i < inData.rows(); ++i)
+			for(int i = 0; i < inData.rows(); ++i) /// 19 channels
 			{
 				outStr << spectra[i][j] << "\t";
 			}
@@ -199,6 +199,35 @@ void countFFT(const matrix & inData,
 	}
 	}
 }
+
+void countLogFFT(const matrix & inData,
+				 double srate,
+				 std::ostream & outStr)
+{
+	std::vector<std::vector<double>> spectra(inData.rows()); /// [chan][freq]
+	for(int i = 0; i < inData.rows(); ++i)
+	{
+		/// norming is necessary
+		auto helpSpectre = myLib::smoothSpectre(
+							   myLib::spectreRtoR(inData[i]) *
+							   myLib::spectreNorm(smLib::fftL(inData.cols()),
+												  inData.cols(),
+												  srate),
+							   -1);
+		spectra[i] = myLib::integrateSpectre(helpSpectre,
+											 inData.cols(),
+											 srate);
+	}
+
+	for(int j = 0; j < spectra[0].size(); ++j)
+	{
+		for(int i = 0; i < inData.rows(); ++i)
+		{
+			outStr << std::log(spectra[i][j]) << "\t";
+		}
+	}
+}
+
 void countAlphaPeak(const matrix & inData,
 					double srate,
 					std::ostream & outStr)
@@ -423,11 +452,11 @@ void countWavelet(const matrix & inData,
 	}
 	default:
 	{
-		for(int a = 0; a < outData.size(); ++a)
+		for(int a = 0; a < outData.size(); ++a) /// num of functions
 		{
-			for(int i = 0; i < numOfFreqs; ++i)
+			for(int i = 0; i < numOfFreqs; ++i) /// 19 freqs
 			{
-				for(int j = 0; j < inData.rows(); ++j) /// channels
+				for(int j = 0; j < inData.rows(); ++j) /// 19 channels
 				{
 					outStr << outData[a][i][j] << "\t";
 				}
@@ -457,33 +486,6 @@ void countHjorth(const matrix & inData,
 	}
 }
 
-void countLogFFT(const matrix & inData,
-				 double srate,
-				 std::ostream & outStr)
-{
-	std::vector<std::vector<double>> spectra(inData.rows()); /// [chan][freq]
-	for(int i = 0; i < inData.rows(); ++i)
-	{
-		/// norming is necessary
-		auto helpSpectre = myLib::smoothSpectre(
-							   myLib::spectreRtoR(inData[i]) *
-							   myLib::spectreNorm(smLib::fftL(inData.cols()),
-												  inData.cols(),
-												  srate),
-							   -1);
-		spectra[i] = myLib::integrateSpectre(helpSpectre,
-											 inData.cols(),
-											 srate);
-	}
-
-	for(int j = 0; j < spectra[0].size(); ++j)
-	{
-		for(int i = 0; i < inData.rows(); ++i)
-		{
-			outStr << std::log(spectra[i][j]) << "\t";
-		}
-	}
-}
 
 /// further generalizations
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
@@ -1488,7 +1490,8 @@ void ProcessAllInOneFolder(const QString & inPath,
 }
 
 void ProcessByFolders(const QString & inPath,
-					  QString outPath)
+//					  const QString & outPath,
+					  const std::vector<QString> & markers)
 {
 	QTime myTime;
 	myTime.start();
@@ -1503,23 +1506,18 @@ void ProcessByFolders(const QString & inPath,
 //									   "_isopropanol", "_needles", "_vanilla", "_wc"};
 
 	// 26-feb-18, tbi
-	const std::vector<QString> markers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
-									   "_ph", "_rv", "_sc", "_sm", "_og", "_zg"};
+//	const std::vector<QString> markers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+//									   "_ph", "_rv", "_sc", "_sm", "_og", "_zg"};
+
 	const int numChan = 19;
 //	const int numChan = 31; /// MRI and other
 
-	if(outPath == QString())
+	if(!QDir(inPath + "_out").exists())
 	{
-		outPath = inPath + "_out";
+		QDir().mkdir(inPath + "_out");
 	}
 
-	if(!QDir(outPath).exists())
-	{
-		QDir().mkpath(outPath);
-	}
-
-
-	/// count
+	/// calculation
 	auto guyList = QDir(inPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 	for(QString guy : guyList)
 	{
@@ -1542,7 +1540,7 @@ void ProcessByFolders(const QString & inPath,
 
 
 		/// physMinMax & holes
-		if(01)
+		if(0)
 		{
 			repair::physMinMaxDir(guyPath);
 			repair::holesDir(guyPath,
@@ -1552,13 +1550,13 @@ void ProcessByFolders(const QString & inPath,
 		}
 
 		/// rereference
-		if(01)
+		if(0)
 		{
 			autos::rereferenceFolder(guyPath, "Ar");
 		}
 
 		/// filter?
-		if(01)
+		if(0)
 		{
 			/// already done ?
 			autos::refilterFolder(guyPath,
@@ -1576,14 +1574,14 @@ void ProcessByFolders(const QString & inPath,
 		}
 
 
-		outPath = guyPath + "/out";
+		const QString guyOutPath = guyPath + "/out";
 
 		/// process?
 		if(01)
 		{
 			/// clear outFolder
 			myLib::cleanDir(guyPath + "/out", "txt", true);
-			autos::calculateFeatures(guyPath, numChan, outPath);
+			autos::calculateFeatures(guyPath, numChan, guyOutPath);
 		}
 
 		/// make one line file for each stimulus
@@ -1593,38 +1591,30 @@ void ProcessByFolders(const QString & inPath,
 			{
 				QStringList fileNamesToArrange;
 
-				/// remake with DEFS.autosMask
-					for(featuresMask func : {
-						featuresMask::alpha,
-						featuresMask::spectre,
-						featuresMask::Hilbert,
-						featuresMask::fracDim,
-						featuresMask::Hjorth,
-						featuresMask::logFFT
-			})
-					{
-						const QString fileName = ExpName + mark
-												 + "_" + autos::getFeatureString(func) + ".txt";
-						fileNamesToArrange.push_back(fileName);
+				for(featuresMask func : DEFS.getAutosMaskArray())
+				{
+					const QString fileName = ExpName + mark
+											 + "_" + autos::getFeatureString(func) + ".txt";
+					fileNamesToArrange.push_back(fileName);
 
-						if(01) /// create files if they are absent
+					if(01) /// create files if they are absent
+					{
+						if(!QFile::exists(guyOutPath + "/" + fileName))
 						{
-							if(!QFile::exists(outPath + "/" + fileName))
+							std::ofstream outStr;
+							outStr.open((guyOutPath + "/" + fileName).toStdString());
+							for(int i = 0; i < autos::getFileLength(func); ++i)
 							{
-								std::ofstream outStr;
-								outStr.open((outPath + "/" + fileName).toStdString());
-								for(int i = 0; i < autos::getFileLength(func); ++i)
-								{
-									outStr << " " << '\t';
-//									outStr << 0 << '\t';
-								}
-								outStr.close();
+								outStr << " " << '\t';
+								//									outStr << 0 << '\t';
 							}
+							outStr.close();
 						}
 					}
-					autos::ArrangeFilesToLine(outPath,
-											  fileNamesToArrange,
-											  outPath + "/" + ExpName + mark + ".txt");
+				}
+				autos::ArrangeFilesToLine(guyOutPath,
+										  fileNamesToArrange,
+										  guyOutPath + "/" + ExpName + mark + ".txt");
 			}
 		}
 
@@ -1636,23 +1626,23 @@ void ProcessByFolders(const QString & inPath,
 			{
 				fileNamesToArrange.push_back(ExpName + mark + ".txt");
 			}
-			autos::ArrangeFilesToLine(outPath,
+			autos::ArrangeFilesToLine(guyOutPath,
 									  fileNamesToArrange,
-									  outPath + "/" + ExpName + ".txt");
+									  guyOutPath + "/" + ExpName + ".txt");
 		}
 
 		/// copy files into _out
 		if(1)
 		{
-			QFile::copy(outPath + "/" + ExpName + ".txt",
+			QFile::copy(guyOutPath + "/" + ExpName + ".txt",
 						inPath + "_out/" + ExpName + ".txt");
 		}
 	}
 
 	/// make tables whole and people list
 	autos::ArrangeFilesToTable(inPath + "_out",
-							 inPath + "_out/all.txt",
-							 true);
+							   inPath + "_out/all.txt",
+							   true);
 
 	std::cout << "ProcessByFolders: time elapsed = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;

@@ -47,8 +47,8 @@ const std::vector<std::tuple<int, QString, featureFuncType, int>> FEATURES {
 			std::make_tuple(featuresMask::alpha,	"alpha",	autos::countAlphaPeak,	1 * 19),
 			std::make_tuple(featuresMask::fracDim,	"fracDim",	autos::countFracDim,	1 * 19),
 			std::make_tuple(featuresMask::Hilbert,	"Hilbert",	autos::countHilbert,	2 * 2 * 19),	/// 2 * 3 * 19 Xenia
-			std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet,	3 * 19 * 19),
-			std::make_tuple(featuresMask::Hjorth,	"Hjorth",	autos::countHjorth,		2 * 19),
+			std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet,	3 * 19 * 19),	/// 3 is a number of wavelet funcs
+			std::make_tuple(featuresMask::Hjorth,	"Hjorth",	autos::countHjorth,		2 * 19),		/// mobility and complexity
 			std::make_tuple(featuresMask::logFFT,	"logFFT",	autos::countLogFFT,		18 * 19)
 
 };
@@ -84,7 +84,7 @@ void calculateFeatures(const QString & pathWithEdfs,
 /// quite useful general functions
 void EdfsToFolders(const QString & inPath);
 void ProcessByFolders(const QString & inPath,
-					  const QString & outPath,
+//					  const QString & outPath,
 					  const std::vector<QString> & markers);
 void ProcessAllInOneFolder(const QString & inPath,
 						   QString outPath = QString());

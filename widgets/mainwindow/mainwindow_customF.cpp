@@ -41,8 +41,12 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-	return;
 
+
+
+
+
+//	return;
 #if 0
 	/// Xenia finalest
 	const QString workPath = "/media/Files/Data/Xenia/FINAL";
@@ -1190,8 +1194,26 @@ void MainWindow::customFunc()
 
 #if 0
 	/// Galya processing things
+	/// 15Mar18
 
-	const QString workPath = def::GalyaFolder + "/count26feb";
+	const QString workPath = def::GalyaFolder + "/15Mar18";
+	const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+										   "_og", "_rv", "_sm", "_zg"};
+
+	if(0)
+	{
+		/// delete old versions, rename _new files
+		QStringList lst = QDir(workPath).entryList({"*_new.edf"}, QDir::Files);
+		for(const QString & newName : lst)
+		{
+			QString oldName = newName;
+			oldName.replace("_new.edf", ".edf");
+			QFile::remove(workPath + "/" + oldName);
+			QFile::rename(workPath + "/" + newName,
+						  workPath + "/" + oldName);
+		}
+		exit(0);
+	}
 
 	if(0)
 	{
@@ -1204,7 +1226,7 @@ void MainWindow::customFunc()
 			/// some special names cleaning
 			for(QString fileName : QDir(workPath).entryList(def::edfFilters))
 			{
-				QString newName = fileName;
+//				QString newName = fileName;
 //				newName.replace(".edf", "_rest.edf", Qt::CaseInsensitive);
 //				newName.replace("_DL_", "_", Qt::CaseInsensitive);
 //				newName.replace("_dl.", ".", Qt::CaseInsensitive);
@@ -1212,11 +1234,12 @@ void MainWindow::customFunc()
 //				newName.replace("_rest_", "_", Qt::CaseInsensitive);
 //				newName.replace("_rest.", ".", Qt::CaseInsensitive);
 //				newName.replace("FON_", "", Qt::CaseInsensitive);
-				QFile::rename(workPath + "/" + fileName,
-							  workPath + "/" + newName);
+
+//				QFile::rename(workPath + "/" + fileName,
+//							  workPath + "/" + newName);
 			}
 
-//			autos::EdfsToFolders(workPath);
+			autos::EdfsToFolders(workPath);
 
 		}
 		exit(0);
@@ -1259,144 +1282,173 @@ void MainWindow::customFunc()
 		exit(0);
 	}
 
-	return;
+	if(0)
+	{
+		/// compose a list of markers
+		std::set<QString> markers{};
+		for(const QString & fn : QDir(workPath).entryList(def::edfFilters))
+		{
+			int a = fn.lastIndexOf('_');
+			int b = fn.lastIndexOf('.');
+			QString mrk = fn.mid(a + 1, b - a - 1);
+			markers.emplace(mrk);
+		}
+		for(const auto & mrk : markers)
+		{
+//			std::cout << R"(")" << mrk << R"(", )";
+			std::cout << mrk << " ";
+		}
+		std::cout << std::endl;
+		exit(0);
+	}
+	if(0)
+	{
+		/// calculation itself
+		DEFS.setAutosUser(autosUser::Galya);
+//		autos::ProcessAllInOneFolder(workPath);
+
+		autos::ProcessByFolders(workPath, usedMarkers);
+		exit(0);
+	}
+	if(0)
+	{
+		/// test table rows lengths
+		QFile feel(workPath + "_out/all.txt");
+		feel.open(QIODevice::ReadOnly);
+		while(!feel.atEnd())
+		{
+			std::cout << QString(feel.readLine()).count('\t') << std::endl;
+		}
+		feel.close();
+		exit(0);
+	}
+
+	/// labels part
 
 	if(01)
 	{
-		/// counting
-		DEFS.setAutosUser(autosUser::Galya);
-//		autos::ProcessAllInOneFolder(workPath);
-		autos::ProcessByFolders(workPath);
+		if(01)
+		{
+			/// cout lengths of all txts
+			for(QString fn : QDir(workPath + "_out").entryList({"*.txt"}))
+			{
+				std::cout << fn << "\t"
+						  << myLib::countSymbolsInFile(workPath + "_out" + "/" + fn, '\t') << std::endl;
+			}
+		}
+
+		std::cout << "labels.txt" << "\t"
+				  << myLib::countSymbolsInFile(workPath + "_out" + "/" + "labels.txt", '\t') << std::endl;
 		exit(0);
 	}
-	exit(0);
-#endif
 
-#if 0
-	/// Galya tactile labels
-
-	const QString workPath = def::GalyaFolder + "/AllTactile_out";
-
-#if 0
-	/// cout results
-	for(QString fn : QDir(workPath).entryList({"*.txt"}))
+	if(0)
 	{
-//		continue;
-		std::cout << fn << "\t"
-				  << myLib::countSymbolsInFile(workPath + "/" + fn, '\t') << std::endl;
-	}
-	std::cout << "labels.txt" << "\t"
-			  << myLib::countSymbolsInFile(workPath + "/" + "labels.txt", '\t') << std::endl;
-	exit(0);
-#endif
+		///make labels file
 
+		const QString sep{"\t"};
+//		const QString sep{"\r\n"};
 
-	const QString sep{"\t"};
-//	const QString sep{"\r\n"};
+		std::ofstream lab;
+		lab.open((workPath + "_out" + "/labels.txt").toStdString());
 
-	std::ofstream lab;
-	lab.open((workPath + "/labels.txt").toStdString());
+		std::vector<QString> labels1 = coords::lbl19;
+		for(QString & in : labels1) { in = in.toLower(); }
 
-	std::vector<QString> labels1 = coords::lbl19;
-	for(QString & in : labels1)
-	{
-		in = in.toLower();
-	}
+		const QString initFreq = "_1.6_30";
 
-	const QString initFreq = "_1_30";
-
-//	QString mark = "rest";
-//	for(QString mark : {"buk", "kis", "rol", "sch", "og", "zg"})
-	for(QString mark : {"buk", "kis", "rol", "sch", "fon"})
-	{
-		/// ALPHA
-		for(QString lbl : labels1) /// 19 values
+		for(QString mark : usedMarkers)
 		{
-			lab << mark
-				<< "_" << "alpha"
-				<< initFreq
-				<< "_" << lbl << sep;
-		}
+			mark.remove('_');
 
-		/// FFT
-		/// 18 ranges 1-Hz-wide, 19 channels = 342 values
-		for(int i = 2; i < 20; ++i)
-		{
-			for(QString lbl : labels1)
+			/// FFT
+			/// 18 ranges 1-Hz-wide, 19 channels = 342 values
+			for(int i = 2; i < 20; ++i)
 			{
-				lab << mark
-					<< "_" << "fft"
-					<< "_" << nm(i)
-					<< "_" << nm(i+1)
-					<< "_"  << lbl << sep;
+				for(QString lbl : labels1)
+				{
+					lab << mark
+						<< "_" << "fft"
+						<< "_" << nm(i)
+						<< "_" << nm(i+1)
+						<< "_"  << lbl << sep;
+				}
 			}
-		}
 
-		/// Hilbert and Fractal Dimension 5*19 = 95 values
-		for(QString fir : {
-			QString("hilbcarr")	+ initFreq,
-			QString("hilbcarr")	+ "_8_13",
-			QString("hilbsd")	+ initFreq,
-			QString("hilbsd")	+ "_8_13",
-			QString("fd")		+ initFreq
-	}
-			)
-		{
-			for(QString lbl : labels1)
+			/// ALPHA
+			for(QString lbl : labels1) /// 19 values
 			{
 				lab << mark
-					<< "_" << fir
-					<< "_"
-					<< lbl << sep;
-			}
-		}
-
-
-
-		/// HJORTH
-		/// 38 values
-		for(QString fir : {"hjorthcom", "hjorthmob"})
-		{
-			for(QString lbl : labels1)
-			{
-				lab << mark
-					<< "_" << fir
+					<< "_" << "alpha"
 					<< initFreq
 					<< "_" << lbl << sep;
 			}
 
+			/// Hilbert and Fractal Dimension 5*19 = 95 values
+			for(QString fir : {
+				QString("fd")		+ initFreq,
+				QString("hilbcarr")	+ initFreq,
+				QString("hilbcarr")	+ "_8_13",
+				QString("hilbsd")	+ initFreq,
+				QString("hilbsd")	+ "_8_13"
 		}
+				)
+			{
+				for(QString lbl : labels1)
+				{
+					lab << mark
+						<< "_" << fir
+						<< "_"
+						<< lbl << sep;
+				}
+			}
+
+			/// HJORTH
+			/// 38 values
+			for(QString fir : {"hjmob", "hjcom"})
+			{
+				for(QString lbl : labels1)
+				{
+					lab << mark
+						<< "_" << fir
+						<< initFreq
+						<< "_" << lbl << sep;
+				}
+
+			}
 
 #if 0
-		/// WAVELET
-		/// 19*19 = 361 values
-		for(int i = 0; i < 19; ++i)
-		{
-			for(QString lbl : labels1)
+			/// WAVELET
+			/// 19*19 = 361 values
+			for(int i = 0; i < 19; ++i)
 			{
-				lab << mark
-					<< "_" << nm(i + 2)
-					<< "_" << lbl << sep;
+				for(QString lbl : labels1)
+				{
+					lab << mark
+						<< "_" << nm(i + 2)
+						<< "_" << lbl << sep;
+				}
 			}
-		}
 #endif
 
 
-		/// logFFT
-		/// 18*19 = 342 values
-		for(int i = 2; i < 20; ++i)
-		{
-			for(QString lbl : labels1)
+			/// logFFT
+			/// 18*19 = 342 values
+			for(int i = 2; i < 20; ++i)
 			{
-				lab << mark
-					<< "_" << "logfft"
-					<< "_" << nm(i)
-					<< "_" << nm(i+1)
-					<< "_"  << lbl << sep;
+				for(QString lbl : labels1)
+				{
+					lab << mark
+						<< "_" << "logfft"
+						<< "_" << nm(i)
+						<< "_" << nm(i+1)
+						<< "_"  << lbl << sep;
+				}
 			}
 		}
+		lab.close();
+		exit(0);
 	}
-	lab.close();
 	exit(0);
 #endif
 
