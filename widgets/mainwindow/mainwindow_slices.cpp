@@ -274,8 +274,9 @@ void MainWindow::sliceElena()
 		"operMark",
 		"SGRval",
 		"SGRlat",
-		"PPGampl"
-//		"PPGfreq",
+		"PPGampl",
+		"PPGfreq",
+		"reacTime"
 	};
 	/// add average spectra
 	for(const auto & chs : integrChans)
@@ -315,9 +316,9 @@ void MainWindow::sliceElena()
 						const QString & operMark)
 	{
 		/// save spectre+polygraph
-		matrix subData = fil.getData()
-						 .subCols(startBin, startBin + restWindow * fil.getFreq())
-						 .subRows(eegChannels);
+		const matrix subData = fil.getData()
+							   .subCols(startBin, startBin + restWindow * fil.getFreq())
+							   .subRows(eegChannels);
 
 		std::valarray<double> edaBase{};
 		if(EDAnum != -1)
@@ -341,7 +342,12 @@ void MainWindow::sliceElena()
 		double RDfr{};
 		if(RDnum != -1) { RDfr = myLib::RDfreq(subData[RDnum], windFft); }
 		double PPGampl{};
-		if(PPGnum != -1) { PPGampl = myLib::PPGrange(subData[fil.findChannel(PPGstring)]); }
+		double PPGfreq{};
+		if(PPGnum != -1)
+		{
+			PPGampl = myLib::PPGrange(subData[fil.findChannel(PPGstring)]);
+			PPGfreq = myLib::RDfreq(subData[PPGnum], windFft);
+		}
 		std::pair<double, double> EDAval{};
 		if(EDAnum != -1) { EDAval = myLib::EDAmax(subData[fil.findChannel(EDAstring)], edaBase); }
 
@@ -350,6 +356,7 @@ void MainWindow::sliceElena()
 			/// temporarily turn off poly
 			outVector.push_back(RDfr);
 			outVector.push_back(PPGampl);
+			outVector.push_back(PPGfreq);
 			outVector.push_back(EDAval.first);						/// value of max EDA
 //			outVector.push_back(EDAval.second);						/// latency in bins
 //			outVector.push_back(EDAval.second / fil.getFreq());		/// latency in seconds
@@ -391,6 +398,7 @@ void MainWindow::sliceElena()
 			integratedSpectraOut[counter++] = res;
 		}
 
+		/// magic constant
 		std::vector<double> forTable{}; forTable.reserve(20 + integrChans.size() * integrLimits.size());
 		forTable.push_back(pieceNumber.toInt());
 		forTable.push_back(taskMark.toInt());
@@ -398,10 +406,12 @@ void MainWindow::sliceElena()
 		if(1) /// for table
 		{
 			forTable.push_back(EDAval.first);						/// value of max EDA
-//			outVector.push_back(EDAval.second);						/// latency in bins
+//			forTable.push_back(EDAval.second);						/// latency in bins
 			forTable.push_back(EDAval.second / fil.getFreq());		/// latency in seconds
 			forTable.push_back(RDfr);
 			forTable.push_back(PPGampl);
+			forTable.push_back(PPGfreq);
+			forTable.push_back(subData.cols() / fil.getFreq());
 		}
 
 		/// push_back spectra
@@ -554,7 +564,7 @@ void MainWindow::sliceElena()
 	}
 
 	/// table into file
-	std::ofstream tableStream((fil.getDirPath() + "_table.txt").toStdString());
+	std::ofstream tableStream((fil.getDirPath() + "/" + "table.txt").toStdString());
 	tableStream << tableCols << std::endl;
 	tableStream << table;
 //	myOut::operator <<(tableStream, table);

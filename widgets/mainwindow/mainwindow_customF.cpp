@@ -41,12 +41,8 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
+	return;
 
-
-
-
-
-//	return;
 #if 0
 	/// Xenia finalest
 	const QString workPath = "/media/Files/Data/Xenia/FINAL";
