@@ -250,7 +250,7 @@ void MainWindow::sliceElena()
 	const std::valarray<double> & markChanArr = fil.getMarkArr();
 	const auto & marks = fil.getMarkers();
 
-	const auto eegChannels = fil.findChannels("EEG ");
+	const auto eegChannels = fil.findChannels(coords::lbl19);
 
 	const int leftFreqLim = fftLimit(DEFS.getLeftFreq(),
 							  fil.getFreq(),
@@ -266,7 +266,8 @@ void MainWindow::sliceElena()
 	{{"F3", "F7"}, {"F4", "F8"}, {"T3", "T5"}, {"C3"}, {"C4"}, {"T4", "T6"},
 		{"P3"}, {"P4"}, {"O1"}, {"O2"}};
 
-	matrix table(numOfTasks, 1);
+//	matrix table(numOfTasks, 1);
+	matrix table{};
 	std::vector<QString> tableCols
 	{
 		"taskNum",
@@ -274,6 +275,7 @@ void MainWindow::sliceElena()
 		"operMark",
 		"SGRval",
 		"SGRlat",
+		"RDfreq",
 		"PPGampl",
 		"PPGfreq",
 		"reacTime"
@@ -287,13 +289,11 @@ void MainWindow::sliceElena()
 		{
 			chanStr += ch + "_";
 		}
-//		chanStr.chop(1); /// chop last '_'
 
 		for(const auto & lim : integrLimits)
 		{
-			chanStr += nm(lim.first) + "-" + nm(lim.second);
+			tableCols.push_back(chanStr + nm(lim.first) + "-" + nm(lim.second));
 		}
-		tableCols.push_back(chanStr);
 	}
 
 	/// new 6-Mar-18
@@ -311,14 +311,13 @@ void MainWindow::sliceElena()
 	}
 
 	auto saveSpecPoly = [&](int startBin,
+						int finBin,
 						const QString & pieceNumber,
 						const QString & taskMark,
 						const QString & operMark)
 	{
 		/// save spectre+polygraph
-		const matrix subData = fil.getData()
-							   .subCols(startBin, startBin + restWindow * fil.getFreq())
-							   .subRows(eegChannels);
+		const matrix subData = fil.getData().subCols(startBin, finBin);
 
 		std::valarray<double> edaBase{};
 		if(EDAnum != -1)
@@ -328,28 +327,34 @@ void MainWindow::sliceElena()
 										startBin);
 		}
 
-		matrix spec = myLib::countSpectre(subData,
+		matrix spec = myLib::countSpectre(subData.subRows(eegChannels),
 										  windFft,
 										  numSmoothWind);
 
 		/// check bad file
-		if(spec.isEmpty() || edaBase.size() < fil.getFreq()) { return; }
-
-
+		if(spec.isEmpty() || edaBase.size() < fil.getFreq())
+		{
+//			std::cout << "sliceElena: too short file " << pieceNumber << std::endl;
+			return;
+		}
 
 
 		std::vector<double> outVector = spec.subCols(leftFreqLim, rightFreqLim).toVectorByRows();
+
 		double RDfr{};
 		if(RDnum != -1) { RDfr = myLib::RDfreq(subData[RDnum], windFft); }
+
 		double PPGampl{};
 		double PPGfreq{};
 		if(PPGnum != -1)
 		{
-			PPGampl = myLib::PPGrange(subData[fil.findChannel(PPGstring)]);
+			PPGampl = myLib::PPGrange(subData[PPGnum]);
 			PPGfreq = myLib::RDfreq(subData[PPGnum], windFft);
 		}
 		std::pair<double, double> EDAval{};
-		if(EDAnum != -1) { EDAval = myLib::EDAmax(subData[fil.findChannel(EDAstring)], edaBase); }
+		if(EDAnum != -1) { EDAval = myLib::EDAmax(subData[EDAnum], edaBase); }
+
+
 
 		if(0)
 		{
@@ -374,15 +379,18 @@ void MainWindow::sliceElena()
 
 
 
+
+
 		/// for tables
 		/// check rest or task
 		bool ok = false;
 		pieceNumber.toInt(&ok);
 		if(!ok) { return; }
 
-		/// calculate integrated spectra
 
+		/// calculate integrated spectra
 		matrix integratedSpectra = myLib::integrateSpectra(spec, fil.getFreq(), integrLimits);
+
 
 		/// integrate over channels
 		matrix integratedSpectraOut(integrChans.size(), integratedSpectra.cols());
@@ -397,6 +405,7 @@ void MainWindow::sliceElena()
 			res /= chs.size();
 			integratedSpectraOut[counter++] = res;
 		}
+
 
 		/// magic constant
 		std::vector<double> forTable{}; forTable.reserve(20 + integrChans.size() * integrLimits.size());
@@ -414,13 +423,15 @@ void MainWindow::sliceElena()
 			forTable.push_back(subData.cols() / fil.getFreq());
 		}
 
+
 		/// push_back spectra
 		const int prevSize = forTable.size();
 		forTable.resize(prevSize + integrChans.size() * integrLimits.size());
 		const std::vector<double> specRow = integratedSpectraOut.toVectorByRows();
 		std::copy(std::begin(specRow), std::end(specRow),
 				  std::begin(forTable) + prevSize);
-		table[pieceNumber.toInt()] = smLib::vecToValar(forTable);
+//		table[pieceNumber.toInt() - 1] = smLib::vecToValar(forTable);
+		table.push_back(smLib::vecToValar(forTable));
 	};
 
 
@@ -456,6 +467,7 @@ void MainWindow::sliceElena()
 							   true);
 
 			saveSpecPoly(i,
+						 i + restWindow * fil.getFreq(),
 						 QString("0_" + nm(windCounter)),	/// restNumber
 //						 nm(windCounter),				/// restNumber
 						 nm(eyesMarks[typ][0]),			/// taskMark
@@ -525,6 +537,7 @@ void MainWindow::sliceElena()
 
 						/// new 6-Mar-18
 						saveSpecPoly(start,
+									 i,
 									 nm(number),
 									 nm(marker),
 									 nm(markChanArr[i]));
@@ -565,10 +578,14 @@ void MainWindow::sliceElena()
 
 	/// table into file
 	std::ofstream tableStream((fil.getDirPath() + "/" + "table.txt").toStdString());
-	tableStream << tableCols << std::endl;
-	tableStream << table;
-//	myOut::operator <<(tableStream, table);
-	tableStream.close();
+	tableStream << tableCols << "\r\n";
+	tableStream << std::fixed;
+	tableStream.precision(4);
+	for(const auto & row : table)
+	{
+		tableStream << row << "\r\n";
+	}
+	tableStream.flush(); tableStream.close();
 
 	if(!allNumbers.empty())
 	{

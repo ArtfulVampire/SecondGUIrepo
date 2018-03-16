@@ -2881,8 +2881,6 @@ double PPGrange(const std::valarray<double> & inSignal)
 	{
 		return (in > 0) ? 1 : -1;
 	};
-
-	int currSign = sign(PPGdata[0]);
 	int start{0};
 
 	/// maybe not needed
@@ -2890,23 +2888,33 @@ double PPGrange(const std::valarray<double> & inSignal)
 	{
 		if(sign(PPGdata[i]) == +1) { start = i; break; } /// +1 for max, -1 for min
 	}
+	int currSign = sign(PPGdata[start]);
 
-	std::vector<double> maxs{};
-	std::vector<double> mins{};
+	std::vector<double> maxs{};	maxs.reserve(200);
+	std::vector<double> mins{};	mins.reserve(200);
 
+//	int counter = 0;
 	for(int i = start; i < PPGdata.size() - 1; ++i)
 	{
 		if(sign(PPGdata[i]) != currSign)
 		{
 			int end = i - 1;
 
+//			std::cout << counter
+//					  << "\t" << PPGdata.size()
+//					  << "\t" << start
+//					  << "\t" << end
+//					  << std::endl;
 			std::valarray<double> val = smLib::contSubsec(PPGdata, start, end);
+//			std::cout << counter << std::endl;
+
 
 			if(currSign == +1)		{ maxs.push_back(val.max()); }
 			else if(currSign == -1)	{ mins.push_back(val.min()); }
 
 			start = i;
 			currSign *= -1; /// currSign = sign(chan[start]);
+//			std::cout << counter++ << std::endl;
 		}
 	}
 	int num = std::min(mins.size(), maxs.size());
