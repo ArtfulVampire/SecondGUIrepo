@@ -3065,21 +3065,11 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 
 	QStringList leest = QDir(windsDir).entryList({"*" + def::plainDataExtension});
 
-	for(QString & item : leest)
+	matrix dataE(readPlainData(windsDir + "/" + leest[0]).rows(), 0);
+	for(const auto & filePath : leest)
 	{
-		item.prepend(windsDir + "/");
-	}
-
-	const uint Size = eogChannels.size() + 1; // usually 3
-
-	matrix dataE{};
-
-	// make dataE array to count covariation matrix
-	int NumOfSlices = 0;
-	for(auto filePath : leest)
-	{
-		dataE = readPlainData(filePath, NumOfSlices);
-		NumOfSlices = dataE.cols();
+		matrix tmp = readPlainData(windsDir + "/" + filePath);
+		dataE.horzCat(tmp);
 	}
 
 	std::vector<int> signalNums;
@@ -3088,6 +3078,7 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 		signalNums.push_back(eogNum);
 	}
 
+	const uint Size = eogChannels.size() + 1; // usually 3
 	matrix matrixInit(Size, Size);
 	matrix coefficients(eegChannels.size(), eogChannels.size());
 
@@ -3098,10 +3089,11 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 		{
 			for(uint z = j; z < Size; ++z)
 			{
-				matrixInit[j][z] = smLib::prod(dataE[signalNums[j]],
-						dataE[ signalNums[z]])
-						/ NumOfSlices;
-				// maybe (NumOfSlices-1), but it's not important here
+				matrixInit[j][z] = smLib::prod(
+										dataE[ signalNums[j] ],
+										dataE[ signalNums[z] ])
+								   / dataE.cols();
+				// maybe (dataE.cols() - 1), but it's not important here
 				if(j != z)
 				{
 					matrixInit[z][j] = matrixInit[j][z];
@@ -3121,7 +3113,6 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 					coefficients,
 					"NumOfEegChannels",
 					"NumOfEogChannels");
-
 	std::cout << "eyesProcessing: time elapsed = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 

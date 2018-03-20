@@ -415,7 +415,7 @@ void Spectre::psaSlot()
     }
 
 
-    trivector<int> MW;
+	trivector<int> MW{};
 
 	if(DEFS.isUser(username::ElenaC))
     {
@@ -432,17 +432,14 @@ void Spectre::psaSlot()
 		myLib::writeMannWhitney(MWD, helpString);
     }
 
-	if(DEFS.nsWOM() == 19 || DEFS.nsWOM() == 21)
+	if(DEFS.nsWOM() == 19 || DEFS.nsWOM() == 21) /// add 128 channels
 	{
+		/// remake to myLib::drw::...
 		myLib::drawTemplate(helpString);
-
         std::vector<QColor> colors;
-        if(ui->colourRadioButton->isChecked())
-        {
-			colors = def::colours;
-        }
+		if(ui->colourRadioButton->isChecked()) { colors = def::colours; }
         else if(ui->grayRadioButton->isChecked())
-        {
+		{
 			for(int i = 0; i < DEFS.numOfClasses(); ++i)
             {
 				colors.push_back(QColor(255. * (DEFS.numOfClasses() - i) / DEFS.numOfClasses(),
@@ -463,8 +460,14 @@ void Spectre::psaSlot()
 						  ui->scalingDoubleSpinBox->value(),
 						  colors);
 
-        if(ui->MWcheckBox->isChecked())
+		if(ui->MWcheckBox->isChecked())
         {
+			if(MW.empty())
+			{
+				MW = myLib::countMannWhitney(ui->inputDirLineEdit->text(),
+											 nullptr,
+											 nullptr);
+			}
 			myLib::drawMannWitney(helpString,
 								  MW,
 								  colors);
@@ -734,12 +737,11 @@ void Spectre::cleanSpectra()
 	MW = myLib::countMannWhitney(ui->outputDirLineEdit->text(),  // SpectraSmooth
 								 nullptr,
 								 nullptr);
-    int num;
     int cnt = 0;
 	for(int k = 0; k < DEFS.spLength() * DEFS.nsWOM(); ++k)
     {
 //        std::cout << "spPoint = " << k << std::endl;
-        num = 0;
+		int num = 0;
 		for(int i = 0; i < DEFS.numOfClasses(); ++i)
         {
 			for(int j = i + 1; j < DEFS.numOfClasses(); ++j)
@@ -764,7 +766,6 @@ void Spectre::cleanSpectra()
 	ui->outputDirLineEdit->setText(ui->outputDirLineEdit->text() + "/Clean");
     writeSpectra();
 	std::cout << "cleanSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
-
 }
 
 void Spectre::setInPath(const QString & in)
@@ -873,9 +874,7 @@ void Spectre::drawWavelets()
     QString helpString;
     QString filePath;
 	QDir localDir(DEFS.dirPath());
-	helpString = (DEFS.dirPath()
-										  + "/visualisation"
-										  + "/wavelets");
+	helpString = DEFS.dirPath() + "/visualisation/wavelets";
     localDir.cd(helpString);
 
 	// make dirs
@@ -906,8 +905,8 @@ void Spectre::drawWavelets()
 	// count maxValue
     for(const QString & fileName : lst)
     {
-		filePath = (ui->inputDirLineEdit->text()
-											+ "/" + fileName);
+		filePath = ui->inputDirLineEdit->text()
+				   + "/" + fileName;
 		signal = myLib::readPlainData(filePath);
 
 		for(int chanNum = 0; chanNum < DEFS.nsWOM(); ++chanNum)
@@ -916,10 +915,10 @@ void Spectre::drawWavelets()
             tempVec.emplace(coefs.maxVal());
             continue;
 
-			helpString = (DEFS.dirPath()
-												  + "/visualisation"
-												  + "/wavelets"
-												  + "/" + nm(chanNum) + ".txt");
+			helpString = DEFS.dirPath()
+						 + "/visualisation"
+						 + "/wavelets"
+						 + "/" + nm(chanNum) + ".txt";
 
 			outStr.open(helpString.toStdString(), std::ios_base::app);
 			outStr << coefs.maxVal() << std::endl;

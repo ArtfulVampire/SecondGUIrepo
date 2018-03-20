@@ -230,8 +230,7 @@ void writePlainData(const QString outPath,
     outStr.close();
 }
 
-matrix readPlainData(const QString & inPath,
-					 int start)
+matrix readPlainData(const QString & inPath)
 {
 	matrix res{};
 	std::ifstream inStr;
@@ -248,13 +247,13 @@ matrix readPlainData(const QString & inPath,
     inStr.ignore(64, ' '); // "NumOfChannels "
     inStr >> localNs;
 
-	res.resize(localNs, start + numOfSlices);
+	res.resize(localNs, numOfSlices);
 
     for (int i = 0; i < numOfSlices; ++i)
     {
         for(int j = 0; j < localNs; ++j)
         {
-			inStr >> res[j][i + start];
+			inStr >> res[j][i];
             /// Ossadtchi
 //            if(j == ns - 1 && DEFS.isUser(username::Ossadtchi))
 //            {
