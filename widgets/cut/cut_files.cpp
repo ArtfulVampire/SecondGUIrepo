@@ -117,9 +117,9 @@ void Cut::saveSubsecSlot()
 						 "/" + myLib::getFileName(currentFile) +
 						 "." + rn(addNum++, 3);
 			myLib::writePlainData(helpString,
-								  dataCutLocal,
-								  ui->leftLimitSpinBox->value(),
-								  ui->rightLimitSpinBox->value());
+								  dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
+													   ui->rightLimitSpinBox->value())
+								  );
 		}
 		else if(myFileType == fileType::edf)
 		{

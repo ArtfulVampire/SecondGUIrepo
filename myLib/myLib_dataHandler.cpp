@@ -193,12 +193,8 @@ void writeFileInLine(const QString & filePath,
 
 /// in file and in matrix - transposed
 void writePlainData(const QString outPath,
-					const matrix & data,
-					int sta,
-					int fin)
+					const matrix & data)
 {
-	if(fin == -1) { fin = data.cols(); }
-
 	std::ofstream outStr;
 	if(outPath.endsWith(def::plainDataExtension))
     {
@@ -210,15 +206,13 @@ void writePlainData(const QString outPath,
 		outPathNew.remove("." + def::plainDataExtension); /// what is this for?
 		outStr.open((outPathNew + '.' + def::plainDataExtension).toStdString());
     }
-	outStr << "NumOfSlices " << fin - sta << '\t';
-    outStr << "NumOfChannels " << data.rows() << "\r\n";
+	outStr << "NumOfSlices "	<< data.cols() << "\t";
+	outStr << "NumOfChannels "	<< data.rows() << "\r\n";
 
 	outStr << std::fixed;
 	outStr.precision(4);
 
-
-
-	for (int i = sta; i < fin; ++i)
+	for(int i = 0; i < data.cols(); ++i)
     {
         for(uint j = 0; j < data.rows(); ++j)
         {
@@ -450,63 +444,6 @@ void readUCIdataSet(const QString & setName,
     }
 }
 
-/// transpose?
-void invertMatrixFile(const QString & inPath,
-					  const QString & outPath)
-{
-	std::vector<std::vector<QString>> mtrx;
-	QFile inFil(inPath);
-	inFil.open(QIODevice::ReadOnly);
-//	auto line1 = inFil.readLine();
-//	int cols = line1.count('\t') + 1;
-//	inFil.reset(); /// set to the beginning
-
-	while(1)
-	{
-		auto bytArr = inFil.readLine();
-		int cols = bytArr.count('\t') + 1;
-		if(!bytArr.isEmpty())
-		{
-			mtrx.push_back(std::vector<QString>(cols));
-			QTextStream inStr(bytArr);
-			for(int i = 0; i < cols; ++i)
-			{
-				inStr >> mtrx.back()[i];
-			}
-		}
-		else { break; }
-
-	}
-	inFil.close();
-
-	// make equal length
-//	std::vector<QString>::size_type maxLen = 0;
-//	for(auto in : mtrx)
-//	{
-//		maxLen = std::max(maxLen, in.size());
-//	}
-//	for(std::vector<QString> & in : mtrx)
-//	{
-//		in.resize(maxLen, "");
-//	}
-
-
-
-	std::ofstream outStr;
-	outStr.open(outPath.toStdString());
-
-	for(int j = 0; j < mtrx[0].size(); ++j)
-	{
-		for(int i = 0; i < mtrx.size(); ++i)
-		{
-			outStr << mtrx[i][j] << "\t";
-		}
-		outStr << "\n";
-	}
-	outStr.close();
-}
-
-
 void writeMatrixFile(const QString & filePath,
 					 const matrix & outData,
 					 const QString & rowsString,
@@ -531,40 +468,6 @@ void writeMatrixFile(const QString & filePath,
     }
 	file.flush();
     file.close();
-}
-
-void writeSubmatrixFile(const QString & filePath,
-						const matrix & outData,
-						int sta,
-						int fin,
-						const QString & rowsString,
-						const QString & colsString)
-{
-	std::ofstream file(filePath.toStdString());
-	if(!file.good())
-	{
-		std::cout << "writeMatrixFile: bad output file\n" << filePath << std::endl;
-		return;
-	}
-
-	if(fin == -1) { fin = outData.cols(); }
-
-	file << rowsString << " " << outData.rows() << '\t';
-	file << colsString << " " << fin - sta << "\r\n";
-
-	file << std::fixed;
-	file.precision(4);
-
-	for(uint i = 0; i < outData.rows(); ++i)
-	{
-		for(uint j = sta; j < fin; ++j)
-		{
-			file << outData[i][j] << '\t';
-		}
-		file << "\r\n";
-	}
-	file.flush();
-	file.close();
 }
 
 template void writeFileInLine(const QString & filePath, const std::vector<double> & outData);

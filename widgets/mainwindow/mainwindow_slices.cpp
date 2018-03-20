@@ -1042,7 +1042,8 @@ void MainWindow::sliceMatiSimple()
 
 					int NumOfSlices = std::min(end - start - j * piece, piece);
 					/// PEWPEWPEWPEWPEWPEWPEW
-//					myLib::writePlainData(helpString, fil.getData(), NumOfSlices, start + j * piece);
+//					myLib::writePlainData(helpString,
+					fil.getData().subCols(NumOfSlices, start + j * piece));
                 }
                 fileMark.clear();
                 ++session[type];

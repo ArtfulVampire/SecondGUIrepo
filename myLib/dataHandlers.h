@@ -15,19 +15,18 @@ QStringList makeFullFileList(const QString & path,
 
 std::vector<QStringList> makeFileLists(const QString & path,
 									   const QStringList & auxFilters = QStringList());
+
 std::vector<matrix> readSpectraDir(const QString & spectraPath);
 
 
 matrix readPlainData(const QString & inPath);
 
 void writePlainData(const QString outPath,
-					const matrix & data,
-					int sta = 0,
-					int fin = -1);
+					const matrix & data);
 
 matrix readMatrixFile(const QString & filePath);
 
-matrix readMatrixFileRaw(const QString & filePath);
+matrix readMatrixFileRaw(const QString & filePath); // without head line "rows, cols"
 
 
 void writeMatrixFile(const QString & filePath,
@@ -35,23 +34,12 @@ void writeMatrixFile(const QString & filePath,
 					 const QString & rowsString = "NumOfRows",
 					 const QString & colsString = "NumOfCols");
 
-void writeSubmatrixFile(const QString & filePath,
-						const matrix & outData,
-						int sta = 0,
-						int fin = -1,
-						const QString & rowsString = "NumOfRows",
-						const QString & colsString = "NumOfCols");
 
-/// transpose?
-void invertMatrixFile(const QString & inPath,
-					  const QString & outPath);
-
-
-matrix readIITPfile(const QString & filePath);
+matrix readIITPfile(const QString & filePath); /// dat file emg - unused
 
 void readIITPfile(const QString & filePath,
 				  matrix & outData,
-				  std::vector<QString> & outLabels);
+				  std::vector<QString> & outLabels);/// dat file emg
 
 void readUCIdataSet(const QString & setName,
 					matrix & outData,
@@ -60,7 +48,7 @@ void readUCIdataSet(const QString & setName,
 
 std::valarray<double> readFileInLine(const QString & filePath);
 
-std::valarray<double> readFileInLineRaw(const QString & filePath);
+std::valarray<double> readFileInLineRaw(const QString & filePath); /// w/o headers
 
 template <typename ArrayType>
 void writeFileInLine(const QString & filePath,
