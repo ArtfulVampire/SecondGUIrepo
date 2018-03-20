@@ -207,6 +207,16 @@ matrix matrix::operator = (const matrixType & other)
 
 
 
+
+std::ostream & operator<< (std::ostream & os, const matrix & toOut)
+{
+	for(const auto & row : toOut)
+	{
+		os << row << "\r\n";
+	}
+	return os;
+}
+
 matrix operator + (const matrix & lhs, const matrix & rhs)
 {
     if(lhs.rows() != rhs.rows()
@@ -792,27 +802,6 @@ double matrix::sum() const
     return res;
 }
 
-
-matrixType::iterator matrix::begin()
-{
-	return std::begin(myData);
-}
-
-matrixType::iterator matrix::end()
-{
-	return std::end(myData);
-}
-
-matrixType::const_iterator matrix::begin() const
-{
-	return std::begin(myData);
-}
-
-matrixType::const_iterator matrix::end() const
-{
-	return std::end(myData);
-}
-
 std::vector<double> matrix::toVectorByRows() const
 {
 	std::vector<double> res;
@@ -1194,14 +1183,3 @@ std::valarray<double> matrix::matrixSystemSolveGauss(const std::valarray<double>
     return res;
 }
 
-std::ostream & operator<<(std::ostream & os, const matrix & toOut)
-{
-//	for(auto it = std::begin(toOut.myData); it != std::end(toOut.myData); ++it)
-	for(auto row : toOut)
-	{
-		/// uses myOut::operator<<(const std::valarray<double> &);
-//		os << *it << std::endl;
-		os << row << "\r\n";
-	}
-	return os;
-}

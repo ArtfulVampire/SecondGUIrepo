@@ -156,7 +156,8 @@ double FBedf::distSpec(taskType type1, taskType type2)
 		for(double freq : this->freqs)
 		{
 			auto a = myLib::MannWhitney(this->spectralRow(type1, chan, freq),
-										this->spectralRow(type2, chan, freq));
+										this->spectralRow(type2, chan, freq),
+										0.05);
 			++all;
 			if(a != 0) { ++diff; }
 		}

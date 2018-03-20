@@ -235,7 +235,7 @@ void countAlphaPeak(const matrix & inData,
 	std::vector<double> res{};
 	for(int i = 0; i < inData.rows(); ++i)
 	{
-		/// norming is necessary
+		/// norming is necessary, but why?
 		auto helpSpectre = myLib::smoothSpectre(
 							   myLib::spectreRtoR(inData[i]) *
 							   myLib::spectreNorm(smLib::fftL(inData.cols()),

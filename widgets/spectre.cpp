@@ -419,11 +419,17 @@ void Spectre::psaSlot()
 
 	if(DEFS.isUser(username::ElenaC))
     {
-		myLib::countMannWhitney(MW,
-								ui->inputDirLineEdit->text());
-		helpString = DEFS.dirPath()
-					 + "/" + DEFS.getExpName() + "_MannWhitney.txt";
+		/// ints
+		MW = myLib::countMannWhitney(ui->inputDirLineEdit->text(),
+									 nullptr,
+									 nullptr);
+		helpString = DEFS.dirPath() + "/" + DEFS.getExpName() + "_MannWhitney.txt";
 		myLib::writeMannWhitney(MW, helpString);
+
+		/// pValues
+		trivector<double> MWD = myLib::countMannWhitneyD(ui->inputDirLineEdit->text());
+		helpString = DEFS.dirPath() + "/" + DEFS.getExpName() + "_MannWhitneyD.txt";
+		myLib::writeMannWhitney(MWD, helpString);
     }
 
 	if(DEFS.nsWOM() == 19 || DEFS.nsWOM() == 21)
@@ -725,8 +731,9 @@ void Spectre::cleanSpectra()
 
 	std::cout << ui->outputDirLineEdit->text() << std::endl;
     trivector<int> MW;
-	myLib::countMannWhitney(MW,
-					 ui->outputDirLineEdit->text()); // SpectraSmooth
+	MW = myLib::countMannWhitney(ui->outputDirLineEdit->text(),  // SpectraSmooth
+								 nullptr,
+								 nullptr);
     int num;
     int cnt = 0;
 	for(int k = 0; k < DEFS.spLength() * DEFS.nsWOM(); ++k)

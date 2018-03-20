@@ -362,9 +362,20 @@ bool gaussApproval2(double * arr, int length) // kobzar page 238
 }
 */
 
-double quantile(double arg) /// Kobzar page 27, approx 15
+double quantile(double alpha) /// zValue(1 - pValue)
 {
-	return (4.91 * (std::pow(arg, 0.14) - std::pow(1. - arg, 0.14)));
+	/// Kobzar page 27, approx 15
+	return (4.91 * (std::pow(alpha, 0.14) - std::pow(1. - alpha, 0.14)));
+}
+
+double normalCumulative(double zVal) /// (1 - pValue)(zValue)
+{
+	/// Kobzar page 27, approx 8
+	return 1. - 0.852 * std::exp(-std::pow((zVal + 1.5774) / 2.0637, 2.34));
+
+	/// Kobzar page 28, approx 18
+//	return 1 - 0.5 * std::exp(-0.717 * zVal - 0.416 * zVal * zVal);
+
 }
 
 double rankit(int i, int length, double k)
@@ -449,24 +460,18 @@ void drawRCP(const std::valarray<double> & values, const QString & picPath)
 
 
 /// Kobzar page 454?
-int MannWhitney(const std::valarray<double> & arr1,
-				const std::valarray<double> & arr2,
-				const double p)
+std::pair<double, whichGreater> MannWhitney(const std::valarray<double> & arr1,
+											const std::valarray<double> & arr2)
 {
-	/// check output!
-	/// 0 - not different
-	/// 1 - arr1 > arr2
-	/// 2 - arr2 > arr1
-
 	std::vector<std::pair <double, int>> arr; /// composed row
 
-	// add first array
+	/// add first array
 	std::for_each(std::begin(arr1),
 				  std::end(arr1),
 				  [&arr](double in)
 	{ arr.push_back(std::make_pair(in, 1)); });
 
-	// add second array
+	/// add second array
 	std::for_each(std::begin(arr2),
 				  std::end(arr2),
 				  [&arr](double in)
@@ -477,23 +482,16 @@ int MannWhitney(const std::valarray<double> & arr1,
 			  [](std::pair<double, int> i,
 			  std::pair<double, int> j) { return i.first < j.first; });
 
-//	std::for_each(std::begin(arr),
-//				  std::end(arr),
-//				  [](const auto i)
-//	{
-//		std::cout << i.first << std::endl;
-//	});
-
 	const int N1 = arr1.size();
 	const int N2 = arr2.size();
 
-	// count sums
+	/// count sums
 	int sum1 = 0;
 	for(int i = 0; i < arr.size(); ++i)
 	{
 		if(arr[i].second == 1)
 		{
-			sum1 += (i+1);
+			sum1 += i + 1;
 		}
 	}
 	double U = sum1 - N1 * (N1 + 1) / 2.;
@@ -502,114 +500,105 @@ int MannWhitney(const std::valarray<double> & arr1,
 	const double sigma = std::sqrt(N1 * N2 * ( N1 + N2 + 1 ) / 12.);
 	const double zValue = std::abs(U - average) / sigma;
 
-	/// alpha = 1 - p; threshold(p = 0.05) ~= 1.96313
-	const double threshold = myLib::quantile( (1.00 + (1. - p) ) / 2.);
 
-	if(zValue > threshold)
+	whichGreater res2{};
+	if(U > average)
 	{
-		if(U > average)
-		{
-			return 1;
-		}
-		else
-		{
-			return 2;
-		}
+		res2 = whichGreater::first;
 	}
 	else
 	{
-		return 0;
+		res2 = whichGreater::second;
 	}
 
-	/// new try DONT WORK??? to test
-	if(zValue > threshold)
-	{
-		return 1;
-	}
-	else if (zValue < -threshold)
-	{
-		return 2;
-	}
-	else
-	{
-		return 0;
-	}
+	/// zValue -> pValue
+	return std::make_pair(1. - myLib::normalCumulative(zValue), res2);
 }
 
-void writeMannWhitney(const trivector<int> & MW,
+int MannWhitney(const std::valarray<double> & arr1,
+				const std::valarray<double> & arr2,
+				const double p)
+{
+	/// check output!
+	/// 0 - not different
+	/// 1 - arr1 > arr2
+	/// 2 - arr2 > arr1
+
+	const std::pair<double, whichGreater> res = MannWhitney(arr1, arr2);
+
+	if(res.first > p)							{ return 0; }	/// not different
+	else if(res.second == whichGreater::first)	{ return 1; }	/// arr1 > arr2
+	else if(res.second == whichGreater::second)	{ return 2; }	/// arr2 > arr1
+	else return 0;												/// never get here
+}
+
+template <typename Typ>
+void writeMannWhitney(const trivector<Typ> & MW,
 					  const QString & outPath)
 {
-	const int numOfClasses = DEFS.numOfClasses();
 	std::ofstream fil;
 	fil.open(outPath.toStdString());
+	fil.precision(4);
 
 	/// 0-1, 0-2, 0-3, ... 0-N, 1-2, 1-3, 1-4, ... 1-N, ... (N-1)-N
-	for(int i = 0; i < numOfClasses; ++i)
+	for(int i = 0; i < MW.size(); ++i)
 	{
-		for(int j = i + 1; j < numOfClasses; ++j)
+		for(int j = i + 1; j < MW.size(); ++j)
 		{
+#if 1
+			/// each channel in a row
 			for(int ch = 0; ch < DEFS.nsWOM(); ++ch)
 			{
 				for(int sp = 0; sp < DEFS.spLength(); ++sp)
 				{
-					fil << MW[i][j - i][sp + ch * DEFS.spLength()];
+					fil << MW[i][j - i][sp + ch * DEFS.spLength()] << '\t';
 				}
 				fil << std::endl;
 			}
+#else
+			/// all channels in a row
+			fil << MW[i][j - i];
+#endif
 			fil << std::endl;
 		}
 	}
+	fil.flush();
 	fil.close();
 }
+template void writeMannWhitney(const trivector<int> & MW, const QString & outPath);
+template void writeMannWhitney(const trivector<double> & MW, const QString & outPath);
 
-void countMannWhitney(trivector<int> & outMW,
-					  const QString & spectraPath,
-					  matrix * averageSpectraOut,
-					  matrix * distancesOut)
+trivector<int> countMannWhitney(const QString & spectraPath,
+								matrix * averageSpectraOut,
+								matrix * distancesOut)
 {
 
-	const int NetLength = DEFS.nsWOM() * DEFS.spLength();
-	const int numOfClasses = DEFS.numOfClasses();
+	trivector<int> res;
 
-	QString helpString;
-	const QDir dir_(spectraPath);
-	std::vector<matrix> spectra(numOfClasses);
-
-	matrix averageSpectra(numOfClasses, NetLength, 0);
-	matrix distances(numOfClasses, numOfClasses, 0);
 
 	// 0 - Spatial, 1 - Verbal, 2 - Rest
-	std::vector<QStringList> lst = makeFileLists(spectraPath);
+	std::vector<matrix> spectra = myLib::readSpectraDir(spectraPath);
+	const int NetLength = spectra[0][0].size();
 
-	for(int i = 0; i < numOfClasses; ++i)
+	for(matrix & in : spectra) { in.transpose(); }
+
+	matrix averageSpectra(spectra.size(), NetLength, 0);
+	matrix distances(spectra.size(), spectra.size(), 0);
+
+	res.resize(spectra.size());
+	for(int i = 0; i < spectra.size(); ++i) /// first class
 	{
-		spectra[i].resize(lst[i].length());
-		for(int j = 0; j < lst[i].length(); ++j) /// remake : lst[i]
+		res[i].resize(spectra.size());
+		for(int j = i + 1; j < spectra.size(); ++j) /// second class
 		{
-			helpString = dir_.absolutePath() + "/" + lst[i][j];
-			spectra[i][j] = readFileInLine(helpString);
-		}
-		averageSpectra[i] = spectra[i].averageRow();
-
-		spectra[i].transpose();
-	}
-
-
-#if 1
-	// trivector
-	outMW.resize(numOfClasses);
-	for(int i = 0; i < numOfClasses; ++i)
-	{
-		outMW[i].resize(numOfClasses);
-		for(int j = i + 1; j < numOfClasses; ++j)
-		{
-			outMW[i][j - i].resize(NetLength);
+			res[i][j - i].resize(NetLength);
 			int dist1 = 0;
 			for(int k = 0; k < NetLength; ++k)
 			{
-				outMW[i][j - i][k] = MannWhitney(spectra[i][k],
-												 spectra[j][k]);
-				if(outMW[i][j - i][k] != 0)
+				res[i][j - i][k] = MannWhitney(spectra[i][k],
+											   spectra[j][k],
+											   0.05);
+				if(res[i][j - i][k] != 0)
 				{
 					++dist1;
 				}
@@ -617,26 +606,6 @@ void countMannWhitney(trivector<int> & outMW,
 			distances[i][j - i] = dist1 / double(NetLength);
 		}
 	}
-#else
-	/// twovector not ready
-	outMW.resize((numOfClasses * (numOfClasses - 1)) / 2 );
-	for(int i = 0; i < outMW.size(); ++i)
-	{
-		outMW[i].resize(NetLength);
-		int dist1 = 0;
-		for(int k = 0; k < NetLength; ++k)
-		{
-			outMW[i][k] = MannWhitney(spectra[i][k],
-									  spectra[j][k]);
-			if(outMW[i][j - i][k] != 0)
-			{
-				++dist1;
-			}
-		}
-		distances[i][j - i] = dist1 / double(NetLength);
-
-	}
-#endif
 
 	if(averageSpectraOut != nullptr)
 	{
@@ -646,6 +615,35 @@ void countMannWhitney(trivector<int> & outMW,
 	{
 		(*distancesOut) = std::move(distances);
 	}
+	return res;
+}
+
+trivector<double> countMannWhitneyD(const QString & spectraPath)
+{
+	trivector<double> res;
+
+	// 0 - Spatial, 1 - Verbal, 2 - Rest
+	std::vector<matrix> spectra = myLib::readSpectraDir(spectraPath);
+	const int NetLength = spectra[0][0].size();
+
+	for(matrix & in : spectra) { in.transpose(); }
+
+	res.resize(spectra.size());
+	for(int i = 0; i < spectra.size(); ++i) /// first class
+	{
+		res[i].resize(spectra.size());
+		for(int j = i + 1; j < spectra.size(); ++j) /// second class
+		{
+			res[i][j - i].resize(NetLength);
+			for(int k = 0; k < NetLength; ++k)
+			{
+				res[i][j - i][k] = MannWhitney(spectra[i][k],
+											   spectra[j][k]).first;
+			}
+		}
+	}
+
+	return res;
 }
 
 void MannWhitneyFromMakepa(const QString & spectraDir, const QString & outPicPath)
@@ -654,10 +652,9 @@ void MannWhitneyFromMakepa(const QString & spectraDir, const QString & outPicPat
 	matrix dists;
 	trivector<int> MW;
 
-	countMannWhitney(MW,
-					 spectraDir,
-					 &inSpectraAv,
-					 &dists);
+	MW = countMannWhitney(spectraDir,
+						  &inSpectraAv,
+						  &dists);
 
 	/// make drw
 	drawTemplate(outPicPath);

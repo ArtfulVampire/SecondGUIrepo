@@ -280,7 +280,12 @@ void MainWindow::sliceElena()
 		"PPGfreq",
 		"reacTime"
 	};
-	/// add average spectra
+	/// alpha peak
+	for(int i : eegChannels)
+	{
+		tableCols.push_back("alpha_" + fil.getLabels(i));
+	}
+	/// add average spectra names
 	for(const auto & chs : integrChans)
 	{
 		/// F3_F7_12-16
@@ -358,7 +363,7 @@ void MainWindow::sliceElena()
 
 		if(0)
 		{
-			/// temporarily turn off poly
+			/// temporarily turn off poly to file
 			outVector.push_back(RDfr);
 			outVector.push_back(PPGampl);
 			outVector.push_back(PPGfreq);
@@ -382,10 +387,13 @@ void MainWindow::sliceElena()
 
 
 		/// for tables
-		/// check rest or task
-		bool ok = false;
-		pieceNumber.toInt(&ok);
-		if(!ok) { return; }
+		if(0)
+		{
+			/// skip rests
+			bool ok = false;
+			pieceNumber.toInt(&ok);
+			if(!ok) { return; }
+		}
 
 
 		/// calculate integrated spectra
@@ -409,7 +417,23 @@ void MainWindow::sliceElena()
 
 		/// magic constant
 		std::vector<double> forTable{}; forTable.reserve(20 + integrChans.size() * integrLimits.size());
-		forTable.push_back(pieceNumber.toInt());
+
+		if(1)
+		{
+			/// process rests numbers
+			bool ok = false;
+			pieceNumber.toInt(&ok);
+			if(!ok)
+			{
+				/// pieceNumbers end with a number
+				int a = pieceNumber.lastIndexOf(QRegExp(R"(\D)"));
+				forTable.push_back(pieceNumber.mid(a + 1).toInt() + 1000);
+			}
+			else
+			{
+				forTable.push_back(pieceNumber.toInt());
+			}
+		}
 		forTable.push_back(taskMark.toInt());
 		forTable.push_back(operMark.toInt());
 		if(1) /// for table
@@ -421,6 +445,15 @@ void MainWindow::sliceElena()
 			forTable.push_back(PPGampl);
 			forTable.push_back(PPGfreq);
 			forTable.push_back(subData.cols() / fil.getFreq());
+			for(int i : eegChannels)
+			{
+				forTable.push_back(myLib::alphaPeakFreq(
+									   myLib::smoothSpectre(myLib::spectreRtoR(subData[i])),
+									   subData.cols(),
+									   fil.getFreq(),
+									   8,
+									   12));
+			}
 		}
 
 
@@ -430,7 +463,7 @@ void MainWindow::sliceElena()
 		const std::vector<double> specRow = integratedSpectraOut.toVectorByRows();
 		std::copy(std::begin(specRow), std::end(specRow),
 				  std::begin(forTable) + prevSize);
-//		table[pieceNumber.toInt() - 1] = smLib::vecToValar(forTable);
+//		table[pieceNumber.toInt() - 1] = smLib::vecToValar(forTable); /// careful with rests
 		table.push_back(smLib::vecToValar(forTable));
 	};
 
@@ -438,41 +471,54 @@ void MainWindow::sliceElena()
 	/// slice rest backgrounds
 	for(int typ = 0; typ < 2; ++typ)	/// 0 - closed, 1 - open
 	{
-		auto openSta = std::find_if(std::begin(marks),
+		auto eyesSta = std::find_if(std::begin(marks),
 									std::end(marks),
 									[eyesMarks, typ](const auto & in)
 		{ return in.second == eyesMarks[typ][0]; }); /// [0] - start
 
-		auto openFin = std::find_if(std::begin(marks),
+		auto eyesFin = std::find_if(std::begin(marks),
 									std::end(marks),
 									[eyesMarks, typ](const auto & in)
 		{ return in.second == eyesMarks[typ][1]; }); /// [1] - finish
 
-		int windCounter = 0;
-		for(int i = (*openSta).first;
-			i < (*openFin).first - restWindow * fil.getFreq();
-			i += restShift * fil.getFreq(), ++windCounter)
-		{
-			QString helpString = DEFS.dirPath()
-								 + "/Reals"
-								 + "/" + fil.getExpName()
-								 + "_n_0_" + nm(windCounter)
-//								 + "_n_" + nm(windCounter)
-								 + "_m_" + nm(eyesMarks[typ][0])
-								 + "_t_" + nm(eyesCodes[typ]);
-			/// save window
-			fil.saveSubsection(i,
-							   i + restWindow * fil.getFreq(),
-							   helpString,
-							   true);
 
-			saveSpecPoly(i,
-						 i + restWindow * fil.getFreq(),
-						 QString("0_" + nm(windCounter)),	/// restNumber
-//						 nm(windCounter),				/// restNumber
+		/// if found such markers
+		if(eyesSta != std::end(marks) && eyesFin != std::end(marks))
+		{
+			/// save values for whole rest
+			saveSpecPoly((*eyesSta).first,
+						 (*eyesFin).first,
+						 nm(1500 + typ * 100),			/// restNumber (1500 - closed, 1600 - open)
 						 nm(eyesMarks[typ][0]),			/// taskMark
-						 nm(eyesCodes[typ])				/// operMark
-						 );
+					nm(eyesCodes[typ])				/// operMark
+					);
+
+
+			/// save values for windows in rest
+			int windCounter = 0;
+			for(int i = (*eyesSta).first;
+				i < (*eyesFin).first - restWindow * fil.getFreq();
+				i += restShift * fil.getFreq(), ++windCounter)
+			{
+				QString helpString = DEFS.dirPath()
+									 + "/Reals"
+									 + "/" + fil.getExpName()
+									 + "_n_0_" + nm(windCounter)
+									 + "_m_" + nm(eyesMarks[typ][0])
+						+ "_t_" + nm(eyesCodes[typ]);
+				/// save window
+				fil.saveSubsection(i,
+								   i + restWindow * fil.getFreq(),
+								   helpString,
+								   true);
+
+				saveSpecPoly(i,
+							 i + restWindow * fil.getFreq(),
+							 QString("0_" + nm(windCounter)),	/// restNumber
+							 nm(eyesMarks[typ][0]),			/// taskMark
+						nm(eyesCodes[typ])				/// operMark
+						);
+			}
 		}
 	}
 
@@ -579,8 +625,15 @@ void MainWindow::sliceElena()
 	/// table into file
 	std::ofstream tableStream((fil.getDirPath() + "/" + "table.txt").toStdString());
 	tableStream << tableCols << "\r\n";
-	tableStream << std::fixed;
+//	tableStream << std::fixed;
 	tableStream.precision(4);
+
+	/// sort by pieceNumber?
+	std::sort(std::begin(table), std::end(table),
+			  [](const auto & a1, const auto a2)
+	{
+		return a1[0] < a2[0];
+	});
 	for(const auto & row : table)
 	{
 		tableStream << row << "\r\n";

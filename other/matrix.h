@@ -71,10 +71,10 @@ public:
 	double minAbsVal() const;
 
 	double sum() const;
-	matrixType::iterator begin();
-	matrixType::iterator end();
-	matrixType::const_iterator begin() const;
-	matrixType::const_iterator end() const;
+	matrixType::iterator begin()					{ return std::begin(myData); }
+	matrixType::iterator end()						{ return std::end(myData); }
+	matrixType::const_iterator begin() const		{ return std::begin(myData); }
+	matrixType::const_iterator end() const			{ return std::end(myData); }
 	bool isEmpty() const;
 	std::valarray<double> & last() { return myData.back(); }
 	std::valarray<double> & back() { return myData.back(); }
@@ -169,12 +169,10 @@ public:
 	std::valarray<double> matrixSystemSolveGauss(const std::valarray<double> & inVec) const;
 public:
 	matrixType myData {matrixType()};
-
-public:
-	friend std::ostream & operator<<(std::ostream & os, const matrix & in);
 };
 
 
+std::ostream & operator<< (std::ostream & os, const matrix & toOut);
 matrix operator + (const matrix & lhs, const matrix & rhs);
 matrix operator + (const matrix & lhs, double val);
 matrix operator / (const matrix & lhs, double val);

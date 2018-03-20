@@ -84,16 +84,6 @@ std::ostream & operator<< (std::ostream & os, const QStringList & toOut)
 }
 
 
-//std::ostream & operator<< (std::ostream & os, const matrix & toOut)
-//{
-//	for(const auto & row : toOut)
-//	{
-//		os << row << "\r\n";
-//	}
-//	return os;
-//}
-
-
 //// with allocators
 //template std::ostream & operator << (std::ostream & os, const std::vector<std::vector<double>> & toOut);
 //template std::ostream & operator << (std::ostream & os, const std::vector<int> & toOut);

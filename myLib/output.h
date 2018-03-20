@@ -44,7 +44,6 @@ std::ostream & operator<< (std::ostream & os, QChar toOut);
 std::ostream & operator<< (std::ostream & os, const QString & toOut);
 std::ostream & operator<< (std::ostream & os, const std::complex<double> & toOut);
 std::ostream & operator<< (std::ostream & os, const QStringList & toOut);
-//std::ostream & operator<< (std::ostream & os, const matrix & toOut);
 
 
 #if CPP17

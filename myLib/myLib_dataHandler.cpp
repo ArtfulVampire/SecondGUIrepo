@@ -13,7 +13,7 @@ std::vector<QStringList> makeFileLists(const QString & path,
 	std::vector<QStringList> res;
 
 	QDir localDir(path);
-	for(const QString & fileMark : DEFS.getFileMarks())
+	for(const QString & fileMark : DEFS.getFileMarks()) /// numOfClasses
 	{
 		QStringList nameFilters;
 		QStringList leest = fileMark.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
@@ -83,6 +83,22 @@ QStringList makeFullFileList(const QString & path,
 	return res;
 }
 
+
+std::vector<matrix> readSpectraDir(const QString & spectraPath)
+{
+	std::vector<QStringList> lst = makeFileLists(spectraPath);
+	std::vector<matrix> spectra;
+
+	for(const QStringList & sublist : lst) /// for each class
+	{
+		spectra.push_back(matrix()); /// allocate matrix for the class
+		for(const QString & item : sublist) /// for each file
+		{
+			spectra.back().push_back(myLib::readFileInLine(spectraPath + "/" + item));
+		}
+	}
+	return spectra;
+}
 
 std::valarray<double> readFileInLineRaw(const QString & filePath)
 {
@@ -494,13 +510,9 @@ void invertMatrixFile(const QString & inPath,
 
 void writeMatrixFile(const QString & filePath,
 					 const matrix & outData,
-					 int sta,
-					 int fin,
 					 const QString & rowsString,
 					 const QString & colsString)
 {
-	if(fin == -1) { fin = outData.cols(); }
-
 	std::ofstream file(filePath.toStdString());
     if(!file.good())
     {
@@ -509,18 +521,14 @@ void writeMatrixFile(const QString & filePath,
     }
 
     file << rowsString << " " << outData.rows() << '\t';
-	file << colsString << " " << fin - sta << "\r\n";
+	file << colsString << " " << outData.cols() << "\r\n";
 
 	file << std::fixed;
 	file.precision(4);
 
-    for(uint i = 0; i < outData.rows(); ++i)
-    {
-		for(uint j = sta; j < fin; ++j)
-        {
-			file << outData[i][j] << '\t';
-        }
-        file << "\r\n";
+	for(const auto row : outData)
+	{
+		file << row << "\r\n";
     }
 	file.flush();
     file.close();
@@ -540,8 +548,10 @@ void writeSubmatrixFile(const QString & filePath,
 		return;
 	}
 
+	if(fin == -1) { fin = outData.cols(); }
+
 	file << rowsString << " " << outData.rows() << '\t';
-	file << colsString << " " << outData.cols() << "\r\n";
+	file << colsString << " " << fin - sta << "\r\n";
 
 	file << std::fixed;
 	file.precision(4);
@@ -557,7 +567,6 @@ void writeSubmatrixFile(const QString & filePath,
 	file.flush();
 	file.close();
 }
-
 
 template void writeFileInLine(const QString & filePath, const std::vector<double> & outData);
 template void writeFileInLine(const QString & filePath, const std::valarray<double> & outData);
