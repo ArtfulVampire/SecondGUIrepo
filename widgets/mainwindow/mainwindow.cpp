@@ -171,7 +171,8 @@ MainWindow::MainWindow() :
 
 	/// small things, ~constant edf
 	QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
-	QObject::connect(ui->fileMarkersLineEdit, SIGNAL(editingFinished()), this, SLOT(setFileMarkers()));
+	QObject::connect(ui->fileMarkersLineEdit, SIGNAL(editingFinished()),
+					 this, SLOT(setFileMarkers()));
 
 	QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
 	QObject::connect(ui->cleanDirsCheckAllButton, &QPushButton::clicked,

@@ -899,6 +899,7 @@ void Spectre::drawWavelets()
     matrix signal;
     matrix coefs;
 	std::ofstream outStr;
+	outStr.open(helpString.toStdString(), std::ios_base::app);
 
 	std::set<double, std::greater<double>> tempVec;
 
@@ -920,11 +921,10 @@ void Spectre::drawWavelets()
 						 + "/wavelets"
 						 + "/" + nm(chanNum) + ".txt";
 
-			outStr.open(helpString.toStdString(), std::ios_base::app);
 			outStr << coefs.maxVal() << std::endl;
-            outStr.close();
         }
     }
+	outStr.close();
 
 //    for(int chanNum = 0; chanNum < DEFS.nsWOM(); ++chanNum)
 //    {
