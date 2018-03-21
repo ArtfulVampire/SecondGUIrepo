@@ -39,7 +39,7 @@ inline QString rn(double in, int num) { return myLib::rightNumber(in, num); }
 
 FILE * fopen(QString filePath, const char *__modes);
 
-std::istream & operator>> (std::istream &is, QString & in);
+std::istream & operator>> (std::istream & is, QString & in);
 std::ostream & operator<< (std::ostream & os, QChar toOut);
 std::ostream & operator<< (std::ostream & os, const QString & toOut);
 std::ostream & operator<< (std::ostream & os, const std::complex<double> & toOut);

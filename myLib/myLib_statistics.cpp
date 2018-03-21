@@ -538,7 +538,8 @@ void writeMannWhitney(const trivector<Typ> & MW,
 {
 	std::ofstream fil;
 	fil.open(outPath.toStdString());
-	fil.precision(4);
+
+	fil.precision(5);
 
 	/// 0-1, 0-2, 0-3, ... 0-N, 1-2, 1-3, 1-4, ... 1-N, ... (N-1)-N
 	for(int i = 0; i < MW.size(); ++i)

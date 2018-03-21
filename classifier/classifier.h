@@ -39,7 +39,7 @@ std::valarray<double> oneHot(uint siz, uint hotIndex);
 class Classifier
 {
 public:
-	typedef std::pair<double, double> avType; /// average accuracy, kappa
+	typedef std::pair<double, double> avType; /// average accuracy, Cohen's kappa
 
 protected:
 	ModelType myType;
