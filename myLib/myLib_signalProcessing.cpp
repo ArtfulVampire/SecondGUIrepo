@@ -532,16 +532,8 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 } // end namespace myDsp
 #endif
 
-
-
-
-
-
-
 namespace myLib
 {
-
-
 
 void four1(double * dataF, int nn, int isign)
 {
