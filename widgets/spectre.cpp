@@ -396,23 +396,14 @@ void Spectre::psaSlot()
     QTime myTime;
     myTime.start();
 
-    matrix drawData;
-	std::valarray<double> tempVec(DEFS.spLength() * DEFS.nsWOM());
-    QString helpString;
 	const QString psaPath = DEFS.dirPath()
 							+ "/Help"
 							+ "/psa";
 
-	for(int i = 0; i < DEFS.numOfClasses(); ++i)
-    {
-		helpString = psaPath
-					 + "/" + DEFS.getExpName()
-					 + "_class_" + nm(i + 1)
-					 + ".psa";
-		tempVec = myLib::readFileInLine(helpString);
+	const QString avPicPath = DEFS.dirPath()
+							  + "/Help"
+							  + "/" + DEFS.getExpName() + "_all.jpg";
 
-        drawData.push_back(tempVec);
-    }
 
 
 	trivector<int> MW{};
@@ -423,19 +414,34 @@ void Spectre::psaSlot()
 		MW = myLib::countMannWhitney(ui->inputDirLineEdit->text(),
 									 nullptr,
 									 nullptr);
+		QString helpString;
 		helpString = DEFS.dirPath() + "/" + DEFS.getExpName() + "_MannWhitney.txt";
-		myLib::writeMannWhitney(MW, helpString);
+		myLib::writeMannWhitney(MW, helpString, " ");
 
 		/// pValues
 		trivector<double> MWD = myLib::countMannWhitneyD(ui->inputDirLineEdit->text());
 		helpString = DEFS.dirPath() + "/" + DEFS.getExpName() + "_MannWhitneyD.txt";
-		myLib::writeMannWhitney(MWD, helpString);
+		myLib::writeMannWhitney(MWD, helpString, "\t");
     }
 
-	if(DEFS.nsWOM() == 19 || DEFS.nsWOM() == 21) /// add 128 channels
+
+	/// read data to draw
+	matrix drawData;
+	for(int i = 0; i < DEFS.numOfClasses(); ++i)
 	{
-		/// remake to myLib::drw::...
-		myLib::drawTemplate(helpString);
+		QString str = psaPath
+					  + "/" + DEFS.getExpName()
+					  + "_class_" + nm(i + 1)
+					  + ".psa";
+		std::valarray<double> tempVec = myLib::readFileInLine(str);
+		drawData.push_back(tempVec);
+	}
+
+
+	/// add conditions, particularly 128 channels
+	if(!DEFS.isUser(username::Ossadtchi))
+	{
+		/// set colors
         std::vector<QColor> colors;
 		if(ui->colourRadioButton->isChecked()) { colors = def::colours; }
         else if(ui->grayRadioButton->isChecked())
@@ -447,19 +453,15 @@ void Spectre::psaSlot()
 										255. * (DEFS.numOfClasses() - i) / DEFS.numOfClasses()));
             }
         }
-
-		helpString = DEFS.dirPath()
-					 + "/Help"
-					 + "/" + DEFS.getExpName() + "_all.jpg";
-
+		/// draw
 		/// remake to myLib::drw::...
-		myLib::drawArrays(helpString,
+		myLib::drawTemplate(avPicPath);
+		myLib::drawArrays(avPicPath,
 						  drawData,
 						  false,
 						  DEFS.getSpecNorm(),
 						  ui->scalingDoubleSpinBox->value(),
 						  colors);
-
 		if(ui->MWcheckBox->isChecked())
         {
 			if(MW.empty())
@@ -468,23 +470,23 @@ void Spectre::psaSlot()
 											 nullptr,
 											 nullptr);
 			}
-			myLib::drawMannWitney(helpString,
+			myLib::drawMannWitney(avPicPath,
 								  MW,
 								  colors);
         }
     }
 	else if(DEFS.isUser(username::Ossadtchi))
     {
-		myLib::drawArraysInLine(helpString,
-                         drawData);
+		myLib::drawArraysInLine(avPicPath,
+								drawData);
         if(ui->MWcheckBox->isChecked())
         {
-			myLib::drawMannWitneyInLine(helpString,
-                                 MW);
+			myLib::drawMannWitneyInLine(avPicPath,
+										MW);
         }
     }
     defaultState();
-    ui->specLabel->setPixmap(QPixmap(helpString).scaled(ui->specLabel->size()));
+	ui->specLabel->setPixmap(QPixmap(avPicPath).scaled(ui->specLabel->size()));
 	std::cout << "psaSlot: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
@@ -493,12 +495,6 @@ void Spectre::compare()
     QTime myTime;
     myTime.start();
 
-    QString helpString;
-
-
-	std::valarray<double> tempVec(DEFS.spLength() * DEFS.nsWOM());
-	std::valarray<double> meanVec(0., DEFS.spLength() * DEFS.nsWOM());
-
 	const QString filesPath = ui->inputDirLineEdit->text();
 	const QString savePath = DEFS.dirPath()
 							 + "/Help"
@@ -506,32 +502,27 @@ void Spectre::compare()
 
 	auto leest = myLib:: makeFileLists(filesPath);
 
-
 	for(int i = 0; i < DEFS.numOfClasses(); ++i)
     {
-        const QStringList & lst = leest[i];
-        const int NumOfPatterns = lst.length();
-		meanVec = std::valarray<double>(0., DEFS.spLength() * DEFS.nsWOM());
+		const QStringList & lst = leest[i];
 
+		/// set meanVec size
+		std::valarray<double> meanVec = myLib::readFileInLine(filesPath + "/" + lst[0]);
 
-        for(int j = 0; j < NumOfPatterns; ++j)
-        {
-			helpString = (filesPath
-						  + "/"
-						  + lst[j]);
-			tempVec = myLib::readFileInLine(helpString);
-
+		std::valarray<double> tempVec{};
+		for(const QString & fileName : lst)
+		{
+			tempVec = myLib::readFileInLine(filesPath + "/" + fileName);
             meanVec += tempVec;
         }
-        meanVec /= NumOfPatterns;
+		meanVec /= lst.size();
 
-        // psa name
-		helpString = savePath
-					 + "/" + DEFS.getExpName()
-					 + "_class_" + nm(i + 1)
-					 + ".psa";
-        /// maybe make as spectraFile?
-		myLib::writeFileInLine(helpString, meanVec);
+		// maybe make as spectraFile?
+		myLib::writeFileInLine(savePath
+							   + "/" + DEFS.getExpName()
+							   + "_class_" + nm(i + 1)
+							   + ".psa",
+							   meanVec);
 #if 0
 		/// draw average for one type
 		helpString = DEFS.dirPath()
@@ -605,30 +596,28 @@ void Spectre::setSmooth(int a)
 
 void Spectre::setRight()
 {
-    /// changed
-	/// -1 to compensate +1 in DEFS.right()
-	DEFS.setRightFreq((ui->rightSpinBox->value() - 1) * DEFS.spStep());
-	ui->rightHzEdit->setText(nm(DEFS.getRightFreq()));
-	for(int i = 0; i < DEFS.nsWOM(); ++i)
-    {
+	ui->rightHzEdit->setText(nm(ui->rightSpinBox->value() * DEFS.spStep()));
+	for(int i = 0; i < rangeLimits.size(); ++i)
+	{
+		rangeLimits[i].first = 0;
 		rangeLimits[i].second = DEFS.spLength();
     }
 }
 
 void Spectre::setLeft()
 {
-    /// changed
-	DEFS.setLeftFreq(ui->leftSpinBox->value() * DEFS.spStep());
-	ui->leftHzEdit->setText(nm(DEFS.getLeftFreq()));
-	for(int i = 0; i < DEFS.nsWOM(); ++i)
+	ui->leftHzEdit->setText(nm(ui->leftSpinBox->value() * DEFS.spStep()));
+	for(int i = 0; i < rangeLimits.size(); ++i)
     {
+		rangeLimits[i].first = 0;
 		rangeLimits[i].second = DEFS.spLength();
     }
 }
 
 
-void Spectre::writeSpectra(const double leftFreq,
-                           const double rightFreq)
+void Spectre::writeSpectra(const std::vector<int> & chanList,
+						   const double leftFreq,
+						   const double rightFreq)
 {
 
     QTime myTime;
@@ -656,7 +645,7 @@ void Spectre::writeSpectra(const double leftFreq,
     }
 
 	int dataFFTcounter = 0;
-	for(const QString inFileName : fileNames)
+	for(const QString & inFileName : fileNames)
     {
 		QString outString = outDirPath + "/" + inFileName;
 		outString.replace("." + def::plainDataExtension, "." + def::spectraDataExtension);
@@ -668,7 +657,7 @@ void Spectre::writeSpectra(const double leftFreq,
 			std::cout << "bad outStream" << std::endl;
             continue;
         }
-		outStream << "NumOfChannels " << DEFS.nsWOM() << '\t';
+		outStream << "NumOfChannels " << chanList.size() << '\t';
 		outStream << "spLength " << right - left << "\r\n";
 
 		outStream << std::fixed;
@@ -677,7 +666,7 @@ void Spectre::writeSpectra(const double leftFreq,
         if(ui->spectraRadioButton->isChecked())
         {
             /// which channels to write ???
-			for(int j = 0; j < DEFS.nsWOM(); ++j) //
+			for(int j = 0; j < chanList.size(); ++j) //
 			{
                 for(int k = left; k < left + rangeLimits[j].first; ++k)
                 {
@@ -708,13 +697,16 @@ void Spectre::writeSpectra(const double leftFreq,
 void Spectre::countSpectraSlot()
 {
 //    defaultState(); /// why was it here? 4-Mar-18
+
+	std::vector<int> chanList = coords::leest19;
+
 	if(!ui->bypassCountCheckBox->isChecked())
 	{
-		countSpectra();
+		chanList = countSpectra(chanList);
 	}
 	if(!ui->bypassWriteCheckBox->isChecked())
 	{
-		writeSpectra();
+		writeSpectra(chanList);
 	}
 
 #if 0
@@ -738,7 +730,7 @@ void Spectre::cleanSpectra()
 								 nullptr,
 								 nullptr);
     int cnt = 0;
-	for(int k = 0; k < DEFS.spLength() * DEFS.nsWOM(); ++k)
+	for(int k = 0; k < DEFS.spLength() * DEFS.nsWOM(); ++k) /// delete DEFS.nsWOM()
     {
 //        std::cout << "spPoint = " << k << std::endl;
 		int num = 0;
@@ -777,7 +769,7 @@ void Spectre::setOutPath(const QString & out)
     defaultOutPath = out;
 }
 
-void Spectre::countSpectra(std::vector<int> chanList)
+std::vector<int> Spectre::countSpectra(std::vector<int> chanList)
 {
 	QTime myTime;
 	myTime.start();
@@ -859,6 +851,7 @@ void Spectre::countSpectra(std::vector<int> chanList)
 
 	// generality
 	std::cout << "countSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	return chanList;
 }
 
 /// deprecated

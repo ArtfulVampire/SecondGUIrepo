@@ -55,7 +55,8 @@ trivector<double> countMannWhitneyD(const QString & spectraPath);
 
 template <typename Typ>
 void writeMannWhitney(const trivector<Typ> & MW,
-					  const QString & outPath);
+					  const QString & outPath,
+					  const QString & separator);
 
 /// to deprecate
 void MannWhitneyFromMakepa(const QString & spectraDir,

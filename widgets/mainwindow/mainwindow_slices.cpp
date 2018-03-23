@@ -244,24 +244,28 @@ void MainWindow::sliceElena()
 
 	const double restWindow = 10.;	/// window length in seconds
 	const int windFft = smLib::fftL(restWindow * fil.getFreq());
+	DEFS.setFftLen(windFft);
 	const double restShift = 7.;	/// time shift between windows in seconds
-	const int numSmoothWind = 10;
+	const int numSmoothWind = 15;
 
 	const std::valarray<double> & markChanArr = fil.getMarkArr();
 	const auto & marks = fil.getMarkers();
 
 	const auto eegChannels = fil.findChannels(coords::lbl19);
 
-	const int leftFreqLim = fftLimit(DEFS.getLeftFreq(),
-							  fil.getFreq(),
-							  DEFS.getFftLen());
-	const int rightFreqLim = fftLimit(DEFS.getRightFreq(),
-							   fil.getFreq(),
-							   DEFS.getFftLen()) + 1;
-
 	/// for table 13-Mar-18
 	const std::vector<std::pair<double, double>> integrLimits
-	{{4, 8}, {8, 12}, {12, 16}, {16, 20}, {20, 24}};
+	{
+//		{4, 8},
+		{4, 6}, {6, 8},
+
+//		{8, 12},
+		{8, 10}, {10, 12},
+
+		{12, 16},
+		{16, 20},
+		{20, 24}
+	};
 	const std::vector<std::vector<QString>> integrChans
 	{{"F3", "F7"}, {"F4", "F8"}, {"T3", "T5"}, {"C3"}, {"C4"}, {"T4", "T6"},
 		{"P3"}, {"P4"}, {"O1"}, {"O2"}};
@@ -332,10 +336,10 @@ void MainWindow::sliceElena()
 										startBin);
 		}
 
+		/// count spectra
 		matrix spec = myLib::countSpectre(subData.subRows(eegChannels),
 										  windFft,
 										  numSmoothWind);
-
 		/// check bad file
 		if(spec.isEmpty() || edaBase.size() < fil.getFreq())
 		{
@@ -344,7 +348,7 @@ void MainWindow::sliceElena()
 		}
 
 
-		std::vector<double> outVector = spec.subCols(leftFreqLim, rightFreqLim).toVectorByRows();
+		std::vector<double> outVector = spec.subCols(DEFS.left(), DEFS.right()).toVectorByRows();
 
 		double RDfr{};
 		if(RDnum != -1) { RDfr = myLib::RDfreq(subData[RDnum], windFft); }
@@ -380,7 +384,8 @@ void MainWindow::sliceElena()
 						   + "_t_" + operMark
 				+ "." + def::spectraDataExtension;
 
-		myLib::writeFileInLine(savePath, outVector);
+//		myLib::writeFileInLine(savePath, outVector);
+		myLib::writeMatrixFile(savePath, spec.subCols(DEFS.left(), DEFS.right()));
 
 
 

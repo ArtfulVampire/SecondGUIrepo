@@ -32,12 +32,13 @@ public:
     void setPow(double);
     void setFftLength(int);
 
-	void writeSpectra(const double leftFreq = DEFS.getLeftFreq(),
+	void writeSpectra(const std::vector<int> & chanList = std::vector<int>{},
+					  const double leftFreq = DEFS.getLeftFreq(),
 					  const double rightFreq = DEFS.getRightFreq());
 
     void setInPath(const QString &);
     void setOutPath(const QString &);
-	void countSpectra(std::vector<int> chanList = std::vector<int>{});
+	std::vector<int> countSpectra(std::vector<int> chanList = std::vector<int>{});
 
 	/// deprecated
 	bool countOneSpectre(const matrix & data2,

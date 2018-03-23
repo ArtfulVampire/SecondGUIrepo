@@ -534,12 +534,19 @@ int MannWhitney(const std::valarray<double> & arr1,
 
 template <typename Typ>
 void writeMannWhitney(const trivector<Typ> & MW,
-					  const QString & outPath)
+					  const QString & outPath,
+					  const QString & separator)
 {
 	std::ofstream fil;
 	fil.open(outPath.toStdString());
 
-	fil.precision(5);
+	if(typeid(Typ) == typeid(double))
+	{
+		fil << std::fixed;
+		fil.precision(5);
+	}
+
+	const int numChans = MW[0][1].size() / DEFS.spLength();
 
 	/// 0-1, 0-2, 0-3, ... 0-N, 1-2, 1-3, 1-4, ... 1-N, ... (N-1)-N
 	for(int i = 0; i < MW.size(); ++i)
@@ -548,11 +555,11 @@ void writeMannWhitney(const trivector<Typ> & MW,
 		{
 #if 1
 			/// each channel in a row
-			for(int ch = 0; ch < DEFS.nsWOM(); ++ch)
+			for(int ch = 0; ch < numChans; ++ch)
 			{
 				for(int sp = 0; sp < DEFS.spLength(); ++sp)
 				{
-					fil << MW[i][j - i][sp + ch * DEFS.spLength()] << '\t';
+					fil << MW[i][j - i][sp + ch * DEFS.spLength()] << separator;
 				}
 				fil << std::endl;
 			}
@@ -566,15 +573,15 @@ void writeMannWhitney(const trivector<Typ> & MW,
 	fil.flush();
 	fil.close();
 }
-template void writeMannWhitney(const trivector<int> & MW, const QString & outPath);
-template void writeMannWhitney(const trivector<double> & MW, const QString & outPath);
+template void writeMannWhitney(const trivector<int> & MW, const QString & outPath, const QString & separator);
+template void writeMannWhitney(const trivector<double> & MW, const QString & outPath, const QString & separator);
 
 trivector<int> countMannWhitney(const QString & spectraPath,
 								matrix * averageSpectraOut,
 								matrix * distancesOut)
 {
 
-	trivector<int> res;
+	trivector<int> res; /// [class1][class2][NetLength]
 
 
 	// 0 - Spatial, 1 - Verbal, 2 - Rest

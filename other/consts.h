@@ -15,7 +15,7 @@ typedef unsigned int uint;
 #endif
 
 #ifndef WAVELET_MATLAB
-#define WAVELET_MATLAB 01
+#define WAVELET_MATLAB 0
 #endif
 
 /// iitp
@@ -173,10 +173,9 @@ const std::vector<int> chans128to20{
 namespace def
 {
 	/// consts
-	const bool withMarkersFlag{true};	/// remove everywhere as true
-
-	const bool writeLongStartEnd{true};	/// don't know, do I need it?
-	const bool redirectStdOutFlag{false};/// check how to operator<< to NotificationArea
+	const bool withMarkersFlag{true};			/// remove everywhere as true
+	const bool writeLongStartEnd{true};			/// don't know, do I need it?
+	const bool redirectStdOutFlag{false};		/// check how to operator<< to NotificationArea
 
 	const QString plainDataExtension			{"scg"};
 	const QStringList plainFilters				{"*.scg"};
