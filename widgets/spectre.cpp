@@ -159,151 +159,130 @@ void Spectre::setPow(double a)
 
 int findChannel(int x, int y, QSize siz)
 {
-    int a = floor( x * 16. / siz.width() / 3. );
-    int b = floor( y * 16. / siz.height() / 3.);
-    int num = 0;
+	const int a = std::floor(16. / 3. * x / siz.width());	/// look coords::x
+	const int b = std::floor(16. / 3. * y / siz.height());	/// look coords::y
 
     switch(b)
     {
+	/// Fp1, Fp2
     case 0:
     {
         if(a == 1) return 0;
 		else if(a == 3) return 1;
 		break;
     }
-	case 1: { num += 2; break; }
-	case 2: { num += 7; break; }
-	case 3: { num += 12; break; }
+//	case 1: { num += 2; break; }
+//	case 2: { num += 7; break; }
+//	case 3: { num += 12; break; }
+	/// O1, O2
     case 4:
     {
         if(a == 1) return 17;
-        if(a == 3) return 18;
+		else if(a == 3) return 18;
 		break;
 	}
-    }
-    num += a;
-    return num;
+	/// (Fp1, Fp2) + some lines of 5 + number in a line
+	default:
+	{
+		return 2 + 5 * (b - 1) + a;
+	}
+	}
+	/// never should get here
+	return -1;
 }
 
 bool Spectre::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == ui->specLabel) // this is magic
     {
-        if (event->type() == QEvent::MouseButtonPress)
-        {
-            int chanNum;
+		if(event->type() == QEvent::MouseButtonPress)
+		{
             QMouseEvent * mouseEvent = static_cast<QMouseEvent*>(event);
-            if(fmod(16. * mouseEvent->y() / ui->specLabel->height(), 3.) < 0.5)
+			/// fmod is float resting
+
+			/// between channels graphs by y-axis
+			if(std::fmod(16. * mouseEvent->y() / ui->specLabel->height(), 3.) < 0.5)
             {
                 return false;
             }
 
-            if(fmod(16. * mouseEvent->x() / ui->specLabel->width(), 3.) < 0.5)
+			/// between channels graphs by x-axis
+			else if(std::fmod(16. * mouseEvent->x() / ui->specLabel->width(), 3.) < 0.5)
             {
                 if(mouseEvent->button() == Qt::LeftButton)
                 {
-                    chanNum = findChannel(mouseEvent->x(),
-                                          mouseEvent->y(),
-                                          ui->specLabel->size());
+					int chanNum = findChannel(mouseEvent->x(),
+											  mouseEvent->y(),
+											  ui->specLabel->size());
                     rangeLimits[chanNum].first = 0;
                 }
                 else if(mouseEvent->button() == Qt::RightButton)
                 {
 
-                    chanNum = findChannel(mouseEvent->x(),
-                                          mouseEvent->y(),
-                                          ui->specLabel->size()) - 1;
+					int chanNum = findChannel(mouseEvent->x(),
+											  mouseEvent->y(),
+											  ui->specLabel->size()) - 1;
 					rangeLimits[chanNum].second = DEFS.spLength();
                 }
                 return true;
             }
+			else
+			{
+				QString helpString = DEFS.dirPath()
+									 + "/Help"
+									 + "/" + DEFS.getExpName() + "_all.jpg";
+				QPixmap pic;
+				pic.load(helpString);
+				QPainter paint;
+				paint.begin(&pic);
 
+				int chanNum = findChannel(mouseEvent->x(),
+										  mouseEvent->y(),
+										  ui->specLabel->size());
 
-			QString helpString = DEFS.dirPath()
-								 + "/Help"
-								 + "/" + DEFS.getExpName() + "_all.jpg";
-            QPixmap pic;
-            pic.load(helpString);
-            QPainter paint;
-            paint.begin(&pic);
+				double val = (mouseEvent->x() / ui->specLabel->width()	/// part of click x
+							  - coords::x[chanNum])						/// part of origin x
+							 / coords::scale							/// part of graph width
+							 * DEFS.spLength();
+				if(mouseEvent->button() == Qt::LeftButton)
+				{
+					rangeLimits[chanNum].first = std::floor(val);
 
-            chanNum = findChannel(mouseEvent->x(),
-                                  mouseEvent->y(),
-                                  ui->specLabel->size());
+				}
+				else if(mouseEvent->button() == Qt::RightButton)
+				{
+					rangeLimits[chanNum].second = std::ceil(val);
+				}
 
-            if(mouseEvent->button() == Qt::LeftButton)
-            {
+				/// draw limits
+				for(int i = 0; i < rangeLimits.size(); ++i)
+				{
+					paint.setPen(QPen(QBrush("blue"), 2));
 
-                rangeLimits[chanNum].first = floor((mouseEvent->x()
-                                                    * paint.device()->width()
-                                                    / ui->specLabel->width()
-                                                    - coords::x[chanNum]
-                                                    * paint.device()->width())
-                                                   / (coords::scale * paint.device()->width() )
-												   * DEFS.spLength());
+					double blueXpart = coords::x[i]
+									   + rangeLimits[i].first / DEFS.spLength() * coords::scale;
 
-            }
-            else if(mouseEvent->button() == Qt::RightButton)
-            {
-                rangeLimits[chanNum].second = ceil((mouseEvent->x()
-                                                    * paint.device()->width()
-                                                    / ui->specLabel->width()
-                                                    - coords::x[chanNum]
-                                                    * paint.device()->width())
-                                                   / (coords::scale * paint.device()->width())
-												   * DEFS.spLength());
-            }
-			for(int i = 0; i < DEFS.nsWOM(); ++i)
-            {
-                paint.setPen(QPen(QBrush("blue"), 2));
-                paint.drawLine(QPointF(coords::x[i]
-                                       * paint.device()->width()
-                                       + rangeLimits[i].first
-                                       * coords::scale
-                                       * paint.device()->width()
-									   / DEFS.spLength(),
+					double redXpart = coords::x[i]
+									  + rangeLimits[i].second / DEFS.spLength() * coords::scale;
 
-                                       coords::y[i]
-                                       * paint.device()->height()),
+					paint.drawLine(
+								QPointF(blueXpart * paint.device()->width(),
+										coords::y[i] * paint.device()->height()),
+								QPointF(blueXpart * paint.device()->width(),
+										(coords::y[i] - coords::scale ) * paint.device()->height())
+								);
 
-                               QPointF(coords::x[i]
-                                       * paint.device()->width()
-                                       + rangeLimits[i].first
-                                       * coords::scale
-                                       * paint.device()->width()
-									   / DEFS.spLength(),
+					paint.setPen(QPen(QBrush("red"), 2));
+					paint.drawLine(QPointF(redXpart * paint.device()->width(),
+										   coords::y[i] * paint.device()->height()),
+								   QPointF(redXpart * paint.device()->width(),
+										   (coords::y[i] - coords::scale) * paint.device()->height())
+								   );
+				}
+				ui->specLabel->setPixmap(pic.scaled(ui->specLabel->size()));
 
-                                       coords::y[i]
-                                       * paint.device()->height()
-                                       - coords::scale
-                                       * paint.device()->height()));
-
-                paint.setPen(QPen(QBrush("red"), 2));
-                paint.drawLine(QPointF(coords::x[i]
-                                       * paint.device()->width()
-                                       + rangeLimits[i].second
-                                       * coords::scale
-                                       * paint.device()->width()
-									   / DEFS.spLength(),
-
-                                       coords::y[i]
-                                       * paint.device()->height()),
-
-                               QPointF(coords::x[i]
-                                       * paint.device()->width()
-                                       + rangeLimits[i].second
-                                       * coords::scale
-                                       * paint.device()->width()
-									   / DEFS.spLength(),
-
-                                       coords::y[i]
-                                       * paint.device()->height()
-                                       - coords::scale
-                                       * paint.device()->height()));
-            }
-            ui->specLabel->setPixmap(pic.scaled(ui->specLabel->size()));
-
-            return true;
+				return true;
+			}
         }
         else
         {
@@ -335,7 +314,7 @@ void Spectre::outputDirSlot()
     }
 }
 
-void Spectre::integrate()
+void Spectre::integrate() /// to deprecate
 {
 	QStringList ranges = ui->integrateLineEdit->text().split(QRegExp("[,; ]"),
 															 QString::SkipEmptyParts);
@@ -543,14 +522,14 @@ void Spectre::setFftLengthSlot()
 
     defaultState();
 
-	for(int i = 0; i < DEFS.nsWOM(); ++i)
+	for(auto & in : rangeLimits)
     {
-        rangeLimits[i].first = 0;
-		rangeLimits[i].second = DEFS.spLength();
+		in.first = 0;
+		in.second = DEFS.spLength();
     }
 }
 
-void Spectre::center()
+void Spectre::center() /// to deprecate
 {
 	const QString pathToCenter = QFileDialog::getExistingDirectory(this,
 																   tr("Choose dir"),
@@ -597,21 +576,21 @@ void Spectre::setSmooth(int a)
 void Spectre::setRight()
 {
 	ui->rightHzEdit->setText(nm(ui->rightSpinBox->value() * DEFS.spStep()));
-	for(int i = 0; i < rangeLimits.size(); ++i)
+	for(auto & in : rangeLimits)
 	{
-		rangeLimits[i].first = 0;
-		rangeLimits[i].second = DEFS.spLength();
-    }
+//        in.first = 0;
+		in.second = DEFS.spLength();
+	}
 }
 
 void Spectre::setLeft()
 {
 	ui->leftHzEdit->setText(nm(ui->leftSpinBox->value() * DEFS.spStep()));
-	for(int i = 0; i < rangeLimits.size(); ++i)
-    {
-		rangeLimits[i].first = 0;
-		rangeLimits[i].second = DEFS.spLength();
-    }
+	for(auto & in : rangeLimits)
+	{
+		in.first = 0;
+//		in.second = DEFS.spLength();
+	}
 }
 
 
@@ -637,9 +616,9 @@ void Spectre::writeSpectra(const std::vector<int> & chanList,
 
     QStringList lst = ui->dropChannelsLineEdit->text().split(
                           QRegExp("[,;\\s]"), QString::SkipEmptyParts);
-	std::cout << "writeSpectra: num of dropped channels = " << lst.length() << std::endl;
+	std::cout << "writeSpectra: num of dropped channels = " << lst.size() << std::endl;
 
-    for(QString str : lst)
+	for(const QString & str : lst)
     {
         rangeLimits[str.toInt() - 1] = {0, 0}; // to fill with zeros
     }
@@ -721,18 +700,15 @@ void Spectre::countSpectraSlot()
 void Spectre::cleanSpectra()
 {
     QTime myTime;
-    myTime.start();
+	myTime.start();
 
-
-	std::cout << ui->outputDirLineEdit->text() << std::endl;
     trivector<int> MW;
 	MW = myLib::countMannWhitney(ui->outputDirLineEdit->text(),  // SpectraSmooth
 								 nullptr,
 								 nullptr);
     int cnt = 0;
-	for(int k = 0; k < DEFS.spLength() * DEFS.nsWOM(); ++k) /// delete DEFS.nsWOM()
-    {
-//        std::cout << "spPoint = " << k << std::endl;
+	for(int k = 0; k < MW[0][1].size(); ++k)
+	{
 		int num = 0;
 		for(int i = 0; i < DEFS.numOfClasses(); ++i)
         {
@@ -862,7 +838,7 @@ bool Spectre::countOneSpectre(const matrix & data2, matrix & outData)
 	return true;
 }
 
-void Spectre::drawWavelets()
+void Spectre::drawWavelets() /// unused
 {
     QString helpString;
     QString filePath;

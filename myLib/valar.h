@@ -100,6 +100,10 @@ template <typename Typ>
 std::valarray<Typ> vecToValar(const std::vector<Typ> & in);
 
 
+template <typename Typ>
+std::vector<Typ> valarToVec(const std::vector<Typ> & in);
+
+
 
 
 /// pure valarray

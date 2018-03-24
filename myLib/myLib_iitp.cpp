@@ -345,6 +345,7 @@ void iitpData::cutPiecesW(double overlap)
 {
 	this->piecesData.clear();
 
+	/// myLib::sliceWinds
 	const int windStep = fftLenW * (1. - overlap);
 	for(int windStart = 0; windStart < this->getDataLen() - fftLenW; windStart += windStep)
 	{

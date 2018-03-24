@@ -1,6 +1,7 @@
 #ifndef EDFFILE_FB_H
 #define EDFFILE_FB_H
 #include <other/edffile.h>
+#include <classifier/classifier.h>
 
 namespace fb
 {
@@ -16,7 +17,7 @@ class FBedf : public edfFile
 private:
 
 	/// [type][numReal] = realMatrix
-	std::vector<std::vector<matrix>> realsSignals;
+	std::vector<std::vector<matrix>> realsSignals; /// w/o markers
 
 	/// [type][numReal] = length in seconds
 	std::vector<std::valarray<double>> solvTime;
@@ -50,6 +51,8 @@ public:
 	double insightPartOfSolved(double thres);
 	QPixmap kdeForSolvTime(taskType typ);
 	QPixmap verbShortLong(double thres);		/// spectra of short and long anagramms
+	Classifier::avType classifyReals();
+	Classifier::avType classifyWinds(int windLen);
 
 	/// get interface
 	operator bool() const { return isGood; }
@@ -85,6 +88,13 @@ public:
 
 	void checkStat();
 	void writeFile();
+
+	/// to make
+	void writeDists(); /// 1st: 0-1, 0-2, 1-2, 2nd: 0-1, 0-2, 1-2
+	void writeDispersions(); /// 1st: 0, 1, 2, 2nd: 0, 1, 2
+	void writeKDEs(const QString & picDir);
+	void writeShortLongs(const QString & picDir);
+	void writeClass();
 
 	operator bool() { return isGood; }
 

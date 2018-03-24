@@ -41,106 +41,12 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
+
 	return;
 
-#if 0
-	/// Xenia finalest
-	const QString workPath = "/media/Files/Data/Xenia/FINAL";
-	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};
-
-	if(0) /// initial rename guyDirs as edfs inside
-	{
-		for(QString subdir : subdirs)
-		{
-			const QString groupPath = workPath + "/" + subdir;
-			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-			for(QString guy : groupGuys)
-			{
-				const QString guyPath = groupPath + "/" + guy;
-				repair::deleteSpacesDir(guyPath);
-				QString firstFile = QDir(guyPath).entryList(def::edfFilters)[0];
-				firstFile.resize(firstFile.lastIndexOf('_'));
-				QDir().rename(guyPath,
-							  groupPath + "/" + firstFile);
-				continue;
-			}
-		}
-		exit(0);
-	}
-	if(0) /// check each guy has all stimuli files - OK
-	{
-		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-		for(QString subdir : subdirs)
-		{
-			const QString groupPath = workPath + "/" + subdir;
-			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-			for(QString guy : groupGuys)
-			{
-				const QString guyPath = groupPath + "/" + guy;
-				const QStringList guyFiles = QDir(guyPath).entryList(def::edfFilters);
-				for(const QString & mark : tbiMarkers)
-				{
-					bool ok = false;
-					for(const QString guyFile : guyFiles)
-					{
-						if(guyFile.contains(mark)) { ok = true; break; }
-					}
-					if(!ok) { std::cout << guy << mark << " not found!!!" << std::endl; }
-				}
-
-			}
-		}
-		exit(0);
-	}
-	if(0) /// find absent guyNames in guys_finalest.txt and rename properly (manually)
-	{
-		/// read guys_finalest.txt
-		QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
-		fil.open(QIODevice::ReadOnly);
-		std::vector<QString> guys{};
-		while(1)
-		{
-			QString guy = fil.readLine();
-			guy.chop(1); /// chop \n
-			if(guy.isEmpty()) { break; }
-			guys.push_back(guy);
-		}
-		fil.close();
-
-
-		std::vector<QString> guysReal{};
-		for(QString subdir : subdirs)
-		{
-			const QString groupPath = workPath + "/" + subdir;
-			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-			for(QString guy : groupGuys)
-			{
-				guysReal.push_back(guy);
-			}
-		}
-		for(const auto & guy : guys)
-		{
-			if(!myLib::contains(guysReal, guy))
-			{
-				std::cout << guy << std::endl;
-			}
-		}
-		exit(0);
-	}
-
-	if(01) /// processing itself
-	{
-		DEFS.setAutosUser(autosUser::XeniaFinalest);
-		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-		DEFS.setAutosMask(featuresMask::wavelet);
-		autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
-	}
-
-	exit(0);
-#endif
 
 #if 0
-	/// check marks
+	/// check markers
 	const QString path = QString("/media/Files/Data/FeedbackNewMark/");
 	for(const QString & subdir : QDir(path).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
@@ -150,8 +56,21 @@ void MainWindow::customFunc()
 		}
 	}
 	exit(0);
-#endif
 
+	/// check all fin files presence
+	for(const auto & sub : subj::guysFBfinal)
+	{
+		const QString path = "/media/Files/Data/FeedbackFinalMark/" + sub.first;
+		for(int i = 1; i <= 3; ++i)
+		{
+			if(!QFile::exists(path + "/" + sub.second + "_" + nm(i) + "_fin.edf"))
+			{
+				std::cout << sub.second << "\t" << i << std::endl;
+			}
+		}
+	}
+	exit(0);
+#endif
 
 #if 0
 	/// count correctness and average times
@@ -166,43 +85,6 @@ void MainWindow::customFunc()
 	/// make all data_fin
 #endif
 	fb::countStats(dear, guysList, postfix);
-	exit(0);
-#endif
-
-#if 0
-	/// cut central 9 channels
-	QPixmap pic;
-	QDir tmp("/media/michael/Files/IHNA/Pew");
-	QStringList lii = tmp.entryList(QDir::Files);
-	for(QString picPath : lii)
-	{
-		pic = QPixmap(tmp.absolutePath() + "/" + picPath);
-		QPixmap cut = pic.copy(QRect(330, 350, 900, 900));
-		QString out = tmp.absolutePath() + "/" + picPath;
-		out.replace(".jpg", "_cut.jpg");
-		cut.save(out, 0, 100);
-	}
-	exit(0);
-#endif
-
-#if 0
-	/// draw Wts from a folder
-	const QString inDir = "/media/Files/Data/FeedbackTest/GA_FB/GA_FB_weights";
-	ANN * net = new ANN();
-	ClassifierData cl = ClassifierData("/media/Files/Data/FeedbackTest/GA_FB/winds/fromreal");
-	net->setClassifierData(cl);
-
-//	std::cout << net->getClassifierData()->getData().cols() << std::endl;
-	DEFS.setFftLen(1024);
-
-	for(QString fileName : QDir(inDir).entryList({"*.wts"}))
-	{
-		QString drawName = fileName;
-		drawName.replace(".wts", ".jpg");
-		net->drawWeight(inDir + "/" + fileName,
-					   inDir + "/" + drawName);
-//		break;
-	}
 	exit(0);
 #endif
 
@@ -450,17 +332,101 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+
 #if 0
-	/// defs Singleton test
+	/// Xenia finalest
+	const QString workPath = "/media/Files/Data/Xenia/FINAL";
+	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};
+
+	if(0) /// initial rename guyDirs as edfs inside
 	{
-		auto & S = def::inst();
-
-		std::cout << S.getDirPath() << std::endl;
-		S.setDir("/media/Files");
-		std::cout << S.getDirPath() << std::endl;
-
+		for(QString subdir : subdirs)
+		{
+			const QString groupPath = workPath + "/" + subdir;
+			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(QString guy : groupGuys)
+			{
+				const QString guyPath = groupPath + "/" + guy;
+				repair::deleteSpacesDir(guyPath);
+				QString firstFile = QDir(guyPath).entryList(def::edfFilters)[0];
+				firstFile.resize(firstFile.lastIndexOf('_'));
+				QDir().rename(guyPath,
+							  groupPath + "/" + firstFile);
+				continue;
+			}
+		}
 		exit(0);
 	}
+	if(0) /// check each guy has all stimuli files - OK
+	{
+		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+		for(QString subdir : subdirs)
+		{
+			const QString groupPath = workPath + "/" + subdir;
+			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(QString guy : groupGuys)
+			{
+				const QString guyPath = groupPath + "/" + guy;
+				const QStringList guyFiles = QDir(guyPath).entryList(def::edfFilters);
+				for(const QString & mark : tbiMarkers)
+				{
+					bool ok = false;
+					for(const QString guyFile : guyFiles)
+					{
+						if(guyFile.contains(mark)) { ok = true; break; }
+					}
+					if(!ok) { std::cout << guy << mark << " not found!!!" << std::endl; }
+				}
+
+			}
+		}
+		exit(0);
+	}
+	if(0) /// find absent guyNames in guys_finalest.txt and rename properly (manually)
+	{
+		/// read guys_finalest.txt
+		QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
+		fil.open(QIODevice::ReadOnly);
+		std::vector<QString> guys{};
+		while(1)
+		{
+			QString guy = fil.readLine();
+			guy.chop(1); /// chop \n
+			if(guy.isEmpty()) { break; }
+			guys.push_back(guy);
+		}
+		fil.close();
+
+
+		std::vector<QString> guysReal{};
+		for(QString subdir : subdirs)
+		{
+			const QString groupPath = workPath + "/" + subdir;
+			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(QString guy : groupGuys)
+			{
+				guysReal.push_back(guy);
+			}
+		}
+		for(const auto & guy : guys)
+		{
+			if(!myLib::contains(guysReal, guy))
+			{
+				std::cout << guy << std::endl;
+			}
+		}
+		exit(0);
+	}
+
+	if(01) /// processing itself
+	{
+		DEFS.setAutosUser(autosUser::XeniaFinalest);
+		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+		DEFS.setAutosMask(featuresMask::wavelet);
+		autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
+	}
+
+	exit(0);
 #endif
 
 #if 0
@@ -870,29 +836,6 @@ void MainWindow::customFunc()
 	}
 
 	exit(0);
-#endif
-
-#if 0
-	/// check new butter:: filters
-//	const QString prePath = "/media/Files/Data/FeedbackFinal/Burtcev/BAV_1_car";
-//	double lF = 3.5;
-//	double rF = 12.;
-//	for(QString postPath : {"", "_but", "_dsp"})
-//	{
-//		edfFile fil;
-//		fil.readEdfFile(prePath + postPath + ".edf");
-//		if(0)
-//		{
-//			myLib::refilter = &butter::refilter;
-//			fil.refilter(lF, rF, true).writeEdfFile(prePath + "_but" + ".edf");
-//			myLib::refilter = &myDsp::refilter;
-//			fil.refilter(lF, rF, true).writeEdfFile(prePath + "_dsp" + ".edf");
-//			break;
-//		}
-//		myLib::drw::drawOneSpectrum(smLib::valarSubsec(fil.getData(9), 10000, 10000 + 8192),
-//									lF-0.5, rF + 0.5, 250., 5).save(prePath + postPath + ".jpg");
-//	}
-//	exit(0);
 #endif
 
 #if 0
@@ -1585,101 +1528,6 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-	/// compose names for Xenia_TBI tables
-
-	QString dirPath = def::XeniaFolder + "/15Nov";
-	QStringList markers{"no", "kh", "sm", "cr", "bw", "bd", "fon"};
-	std::vector<QString> waveletFuncs {"max", "min", "mean", "median", "sigma"};
-	const std::vector<QString> & chans = coords::lbl19;
-	std::vector<QString> filts;// = {"2-4", "4-6", "6-8", "8-10", "10-12", "12-14", "14-16", "16-18", "18-20", "all"};
-	for(int i = 2; i <= 18; i += 2)
-	{
-		filts.push_back("_" + nm(i) + "-" + nm(i + 2));
-	}
-	filts.push_back("_all");
-
-	std::vector<QString> freqs;
-	for(int i = 2; i <= 20; i += 1)
-	{
-		freqs.push_back("_" + nm(i));
-	}
-
-
-	std::ofstream allFil;
-	allFil.open((dirPath + "/str_all.txt").toStdString());
-//	std::vector<int> count(5, 0);
-	for(QString marker : markers)
-	{
-		std::ofstream outFil;
-		outFil.open((dirPath + "/str_" + marker + ".txt").toStdString());
-		/// alpha
-		for(QString ch : chans)
-		{
-			outFil << marker + "_ampl_" + ch << '\t';
-			outFil << marker + "_freq_" + ch << '\t';
-
-			allFil << marker + "_ampl_" + ch << '\t';
-			allFil << marker + "_freq_" + ch << '\t';
-//			count[0] += 2;
-		}
-		/// d2
-		for(QString filt : filts)
-		{
-			for(QString ch : chans)
-			{
-				outFil << marker + "_dd" + filt + "_" + ch << '\t';
-
-				allFil << marker + "_dd" + filt + "_" + ch << '\t';
-//				count[1] += 1;
-			}
-		}
-		/// med_freq
-		for(QString filt : filts)
-		{
-			for(QString ch : chans)
-			{
-				outFil << marker + "_carr" + filt + "_" + ch << '\t';
-				outFil << marker + "_SD" + filt + "_" + ch << '\t';
-
-				allFil << marker + "_carr" + filt + "_" + ch << '\t';
-				allFil << marker + "_SD" + filt + "_" + ch << '\t';
-//				count[2] += 2;
-			}
-		}
-		/// spectre
-		for(QString ch : chans)
-		{
-			for(QString fr : freqs)
-			{
-				outFil << marker + "_FFT" + fr + "_" + ch << '\t';
-
-				allFil << marker + "_FFT" + fr + "_" + ch << '\t';
-//				count[3] += 1;
-			}
-		}
-		/// wavelet
-		for(QString ch : chans)
-		{
-			for(QString foo : waveletFuncs)
-			{
-				for(QString fr : freqs)
-				{
-					outFil << marker + "_wav_" + foo + fr + "_" + ch << '\t';
-//					count[4] += 1;
-
-					allFil << marker + "_wav_" + foo + fr + "_" + ch << '\t';
-				}
-			}
-		}
-//		std::cout << count << std::endl;
-		outFil.close();
-	}
-	allFil.close();
-
-	exit(0);
-#endif
-
-#if 0
 	/// successive auxiliary
 	const QString path = "/media/Files/Data/Feedback/SuccessClass/";
 
@@ -2007,10 +1855,8 @@ exit(0);
     return;
 #endif
 
-
-
 #if 0
-    /// uncode matlab color scale
+	/// decrypt matlab color scale
     QImage img;
     img.load("/media/Files/Data/matlab.png");
     QRgb color1 = img.pixel(img.width()/2, img.height() - 1);

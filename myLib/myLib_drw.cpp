@@ -402,6 +402,7 @@ QPixmap drawArrays(const QPixmap & templatePic, const std::vector<QString> & fil
 	return drawArrays(templatePic, dat);
 }
 
+
 std::vector<int> zeroChans;
 std::vector<int> trueChans;
 
@@ -523,6 +524,21 @@ void cutToChannels(const QString & inSpectraPath,
 							  outDir,
 							  fileName);
 
+}
+
+
+void cutCentralChannels(const QString & inPath)
+{
+	const QStringList files = QDir(inPath).entryList({"*.jpg", "*.png"});
+	for(const QString & picPath : files)
+	{
+		QPixmap pic(inPath + "/" + picPath);
+		QPixmap cut = pic.copy(QRect(330, 350, 900, 900));
+		QString out = inPath + "/" + picPath;
+		out.replace(".jpg", "_cut.jpg");
+		out.replace(".png", "_cut.png");
+		cut.save(out, 0, 100);
+	}
 }
 
 

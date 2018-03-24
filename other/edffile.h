@@ -395,7 +395,7 @@ public:
 		return edfData[a];
 	}
 
-	/// make edfFile&
+	/// make edfFile &
 	// sets
 	void setData(int chanNum, int timeBin, double val) { edfData[chanNum][timeBin] = val; }
 	void setData(int chanNum, const std::valarray<double> & newChan) { edfData[chanNum] = newChan; }

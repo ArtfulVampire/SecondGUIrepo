@@ -57,8 +57,8 @@ public slots:
     void drawWavelets();
     void compare();
     void psaSlot();
-    void integrate();
-    void center();
+	void integrate();	/// to deprecate
+	void center();		/// to deprecate - already in ClassifierData::z_transform()
 
 private:
     Ui::Spectre * ui;

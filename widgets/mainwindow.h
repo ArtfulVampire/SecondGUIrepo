@@ -104,6 +104,10 @@ public:
 	void drawReals();
 	void drawSpectra(const QString & inPath,
 					 const QString & outPath);
+	void drawWeights(const QString & wtsPath,
+					 const QString & spectraPath,
+					 const QString & outPath,
+					 int fftLen);
 
 	void rereferenceData(const QString & newRef);
 
@@ -121,6 +125,8 @@ public:
 	void testNewClassifiers();
 	void testSuccessive(const std::vector<double> & vals = std::vector<double>{});
 	void testSuccessive2();
+
+//	static Classifier::avType classifyOneFile(const QString & filePath);
 
 private:
     Ui::MainWindow *ui;

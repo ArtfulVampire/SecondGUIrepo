@@ -57,8 +57,8 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 		else if(mrk.second == 247)  { this->ans[1].push_back(this->ansInRow[c++]); }
 	}
 
-	/// divide to reals
-	this->realsSignals = myLib::sliceData(this->getData(),
+	/// divide to reals w/o markers
+	this->realsSignals = myLib::sliceData(this->getData().subRows(-1), /// drop markers
 										  this->getMarkers());
 	if(this->realsSignals[0].size() != numTasks)
 	{ std::cout << "spatTasks num = " << this->realsSignals[0].size() << std::endl; }
@@ -262,17 +262,26 @@ int FBedf::getInsight(double thres)
 
 QPixmap FBedf::kdeForSolvTime(taskType typ)
 {
-	return myLib::kernelEst(solvTime[int(typ)]);
+	std::vector<double> res{};
+	std::for_each(std::begin(solvTime[int(typ)]),
+			std::end(solvTime[int(typ)]),
+			[&res](double in)
+	{
+		if(in < FBedf::solveThres - 0.5) { res.push_back(in); }
+	});
+	return myLib::kernelEst(smLib::vecToValar(res));
 }
 
 QPixmap FBedf::verbShortLong(double thres)
 {
+	const int taskTyp = int(taskType::verb);
+
 	std::vector<matrix> shrts;
 	std::vector<matrix> lngs;
-	for(int i = 0; i < solvTime[1].size(); ++i)
+	for(int i = 0; i < solvTime[taskTyp].size(); ++i)
 	{
-		if(solvTime[1][i] > thres)	{ lngs.push_back(realsSpectra[1][i]);	}
-		else						{ shrts.push_back(realsSpectra[1][i]);	}
+		if(solvTime[1][i] > thres)	{ lngs.push_back(realsSpectra[taskTyp][i]);	}
+		else						{ shrts.push_back(realsSpectra[taskTyp][i]);	}
 	}
 
 	matrix shrt	= shrts[0];	shrt.fill(0.);
@@ -288,6 +297,7 @@ QPixmap FBedf::verbShortLong(double thres)
 		shrt += sp;
 	}
 	shrt /= shrts.size();
+
 	matrix both(2, 1);
 	both[0] = shrt.toValarByRows();
 	both[1] = lng.toValarByRows();
@@ -295,6 +305,97 @@ QPixmap FBedf::verbShortLong(double thres)
 	auto tmplt = myLib::drw::drawTemplate(true, this->leftFreq, this->rightFreq, 19);
 	return myLib::drw::drawArrays(tmplt, both);
 }
+
+Classifier::avType FBedf::classifyReals()
+{
+	ANN * net = new ANN();
+
+	std::vector<uint> types{};	types.reserve(160);
+	matrix clData{};			clData.reserve(160);
+
+	for(int i = 0; i < realsSpectra.size(); ++i)
+	{
+		for(int j = 0; j < realsSpectra[i].size(); ++j)
+		{
+			/// fill types
+			types.push_back(i);
+			/// fill data matrix
+			clData.push_back(realsSpectra[i][j].toValarByRows());
+		}
+	}
+
+	ClassifierData dt = ClassifierData(clData, types);
+	net->setClassifierData(dt);
+
+	net->crossClassification(10, 8);
+	auto res = net->averageClassification();
+
+	delete net;
+	return res;
+}
+
+Classifier::avType FBedf::classifyWinds(int windLen)
+{
+	const int fftLen = smLib::fftL(windLen);
+	DEFS.setFftLen(fftLen);
+
+	ANN * net = new ANN();
+
+	/// slice winds
+	double overlapPart = 0.0;
+	const int windStep = (1. - overlapPart) * windLen;
+	const int maxNumWinds = (this->getData().cols() - windLen) / windStep;
+	std::list<uint> types{};		//types.reserve(maxNumWinds);
+	std::vector<matrix> clData{};	clData.reserve(maxNumWinds);
+
+	/// markers droppped already
+	for(int i = 0; i < realsSignals.size(); ++i)
+	{
+		for(int j = 0; j < realsSignals[i].size(); ++j)
+		{
+			for(int windStart = 0;
+				windStart < realsSignals[i][j].cols() - windLen;
+				windStart += windStep)
+			{
+				clData.push_back(realsSignals[i][j].subCols(windStart,
+															windStart + windStep));
+				types.push_back(i);
+			}
+		}
+	}
+
+	matrix clSpec{};	clSpec.reserve(clData.size());
+	auto typIt = std::begin(types);
+	for(int i = 0; i < clData.size(); ++i, ++typIt)
+	{
+		matrix pew = myLib::countSpectre(clData[i],
+										 fftLen,
+										 5);
+		if(!pew.isEmpty())
+		{
+			clSpec.push_back(pew.toValarByRows());
+			typIt = types.erase(typIt);
+			--typIt;
+		}
+	}
+
+	std::vector<uint> typs(types.size());
+	std::copy(std::begin(types), std::end(types), std::begin(typs));
+
+
+	ClassifierData dt = ClassifierData(clSpec, typs);
+	net->setClassifierData(dt);
+
+	net->crossClassification(10, 8);
+	auto res = net->averageClassification();
+
+	delete net;
+	return res;
+}
+
+
+
+
 
 
 

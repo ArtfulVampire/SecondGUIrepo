@@ -40,4 +40,37 @@ std::vector<std::vector<matrix>> sliceData(const matrix & inData,
 	return res;
 }
 
+std::pair<std::vector<matrix>, std::vector<uint>> sliceWindows(
+		const matrix & inData,
+		const std::vector<std::pair<int, int> > & markers,
+		const int windLen,
+		const double overlapPart,
+		const std::vector<int> & separators)
+{
+	const int windStep = windLen * (1. - overlapPart);
+	const int maxNumWinds = (inData.cols() - windLen) / windStep;
+	std::vector<matrix> res1{};	res1.reserve(maxNumWinds);
+	std::vector<uint> res2{};	res2.reserve(maxNumWinds);
+
+
+	int currType = 2; /// = int(fb::taskType::rest);
+	int start = markers[0].first;
+	for(const auto & mrk : markers)
+	{
+		int newType = myLib::indexOfVal(separators, mrk.second);
+		if(newType == -1) { continue; }
+		else
+		{
+			for(int windStart = start; windStart < mrk.first - windLen; windStart += windStep)
+			{
+				res1.push_back(inData.subCols(windStart, windStart + windLen));
+				res2.push_back(currType);
+			}
+			currType = newType;
+			start = mrk.first;
+		}
+	}
+	return std::make_pair(res1, res2);
+}
+
 } // end namespace myLib

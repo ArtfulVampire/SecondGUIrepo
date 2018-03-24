@@ -162,10 +162,10 @@ void drawMapsICA(const QString &mapsFilePath,
 }
 
 
-void drawMapsOnSpectra(const QString &inSpectraFilePath,
-                       const QString &outSpectraFilePath,
-                       const QString &mapsDirPath,
-                       const QString &mapsNames)
+void drawMapsOnSpectra(const QString & inSpectraFilePath,
+					   const QString & outSpectraFilePath,
+					   const QString & mapsDirPath,
+					   const QString & mapsNames)
 {
     QPixmap pic;
     pic = QPixmap(inSpectraFilePath);

@@ -5,6 +5,7 @@
 #include <myLib/mati.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/general.h>
+#include <myLib/highlevel.h>
 
 using namespace myOut;
 
@@ -18,6 +19,38 @@ matrix countEvoked(const std::vector<matrix> & inData, int length)
 	}
 	res /= inData.size();
 	return res;
+}
+
+
+//Classifier::avType MainWindow::classifyOneFile(const QString & filePath)
+//{
+//	edfFile fil;
+//	fil.readEdfFile(filePath);
+//	auto reals = myLib::sliceData(fil.getData(), fil.getMarkers(), {241, 247, 254});
+
+//}
+
+void MainWindow::drawWeights(const QString & wtsPath,
+							 const QString & spectraPath,
+							 const QString & outPath,
+							 int fftLen)
+{
+	/// draw Wts from a folder
+	ANN * net = new ANN();
+
+	ClassifierData cl = ClassifierData(spectraPath);
+	net->setClassifierData(cl);
+
+	DEFS.setFftLen(fftLen);
+
+	for(const QString & fileName : QDir(wtsPath).entryList({"*.wts"}))
+	{
+		QString drawName = fileName;
+		drawName.replace(".wts", ".jpg");
+		net->drawWeight(wtsPath + "/" + fileName,
+						outPath + "/" + drawName);
+	}
+	delete net;
 }
 
 void MainWindow::makeEvoked(const QString & edfPath,

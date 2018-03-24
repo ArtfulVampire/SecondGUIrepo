@@ -274,6 +274,17 @@ std::valarray<Typ> vecToValar(const std::vector<Typ> & in)
 template std::valarray<double> vecToValar(const std::vector<double> & in);
 template std::valarray<std::complex<double>> vecToValar(const std::vector<std::complex<double>> & in);
 
+template <typename Typ>
+std::vector<Typ> valarToVec(const std::valarray<Typ> & in)
+{
+	std::vector<Typ> res(in.size());
+	std::copy(std::begin(in),
+			  std::end(in),
+			  std::begin(res));
+	return res;
+}
+template std::vector<double> valarToVec(const std::valarray<double> & in);
+
 
 
 template <typename Cont>

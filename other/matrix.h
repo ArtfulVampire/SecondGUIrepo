@@ -94,17 +94,18 @@ public:
 	std::valarray<double> sigmaOfCols() const;
 	std::valarray<double> maxOfRows() const;
 	std::valarray<double> maxOfCols() const;
-	void pop_back();
-	void push_back(const std::valarray<double> &in);
-	void push_back(const std::vector<double> &in);
+	matrix & pop_back();
+	matrix & push_back(const std::valarray<double> &in);
+	matrix & push_back(const std::vector<double> &in);
 
 	// for compability with vector< std::vector<Type> >
-	void clear() {this->myData.clear(); }
+	void clear() { this->myData.clear(); }
 	uint size() const { return myData.size(); }
 
-	void resize(int rows, int cols, double val);
-	void resize(int rows, int cols);
-	void resize(int i);
+	matrix & resize(int rows, int cols, double val);
+	matrix & resize(int rows, int cols);
+	matrix & resize(int i);
+	matrix & reserve(int i);
 
 
 	std::valarray<double> & operator [](int i)
@@ -161,9 +162,11 @@ public:
 	matrix & vertCat(matrix && other);
 	matrix & horzCat(const matrix & other);
 	matrix & pop_front(uint numOfCols);
-	matrix subCols(int beginCol, int endCol) const; /// submatrix
-	matrix subRows(const std::vector<int> & inds) const; /// submatrix
-	matrix subRows(const std::vector<uint> & inds) const; /// submatrix
+	matrix subCols(int beginCol, int endCol) const;			/// submatrix
+	matrix subCols(int newCol) const;						/// submatrix
+	matrix subRows(const std::vector<int> & inds) const;	/// submatrix
+	matrix subRows(const std::vector<uint> & inds) const;	/// submatrix
+	matrix subRows(int newRows) const;						/// submatrix
 
 
 	std::valarray<double> matrixSystemSolveGauss(const std::valarray<double> & inVec) const;

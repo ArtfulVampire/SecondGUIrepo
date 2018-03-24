@@ -106,17 +106,19 @@ Cut::Cut() :
 	ui->nextButton->setShortcut(tr("d"));
 	ui->prevButton->setShortcut(tr("a"));
 	ui->saveSubsecPushButton->setShortcut(tr("c"));
-	ui->zeroButton->setShortcut(tr("z"));
 	ui->saveButton->setShortcut(tr("s"));
-	ui->splitButton->setShortcut(tr("x"));
 	ui->rewriteButton->setShortcut(tr("r"));
+	ui->zeroButton->setShortcut(tr("z"));
+	ui->splitButton->setShortcut(tr("x"));
 	ui->forwardFrameButton->setShortcut(QKeySequence::Forward);
 	ui->backwardFrameButton->setShortcut(QKeySequence::Back);
 	ui->forwardFrameButton->setShortcut(tr("e"));
 	ui->backwardFrameButton->setShortcut(tr("q"));
 	ui->linearApproxPushButton->setShortcut(tr("l"));
+	ui->refilterFramePushButton->setShortcut(tr("f"));
 	ui->iitpInverseCheckBox->setShortcut(tr("i"));
 	ui->iitpDisableEcgCheckBox->setShortcut(tr("o"));
+
 
 	/// files
 	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browseSlot()));
@@ -408,9 +410,13 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		case QEvent::KeyPress:
 		{
 			QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
-
-			if(keyEvent->key() == Qt::Key_Left ||
-			   keyEvent->key() == Qt::Key_Right)
+			if(keyEvent->key() == Qt::Key_Home)
+			{
+				ui->paintStartDoubleSpinBox->setValue(0.);
+				return true;
+			}
+			else if(keyEvent->key() == Qt::Key_Left ||
+					keyEvent->key() == Qt::Key_Right)
 			{
 				auto * targetSpin = ui->leftLimitSpinBox;
 				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
@@ -418,10 +424,16 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 					targetSpin = ui->rightLimitSpinBox;
 				}
 
+				int steps = 1;
+				if(keyEvent->modifiers().testFlag(Qt::ShiftModifier))
+				{
+					steps = 10; /// magic constant
+				}
+
 				switch(keyEvent->key())
 				{
-				case Qt::Key_Left:	{ targetSpin->stepDown();	break; }
-				case Qt::Key_Right:	{ targetSpin->stepUp();		break; }
+				case Qt::Key_Left:	{ targetSpin->stepBy(-steps);	break; }
+				case Qt::Key_Right:	{ targetSpin->stepBy(+steps);	break; }
 				default:			{ return false; }
 				}
 				showDerivatives();

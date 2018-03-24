@@ -618,6 +618,13 @@ matrix matrix::subCols(int beginCol, int endCol) const /// submatrix
     return res;
 }
 
+matrix matrix::subCols(int newCol) const
+{
+	matrix res(*this);
+	if(newCol < 0) { newCol += this->cols(); }
+	return res.resizeCols(newCol);
+}
+
 matrix matrix::subRows(const std::vector<int> & inds) const /// submatrix
 {
 	matrix res = matrix();
@@ -636,6 +643,13 @@ matrix matrix::subRows(const std::vector<uint> & inds) const /// submatrix
 		res.myData.push_back(myData[i]);
     }
     return res;
+}
+
+matrix matrix::subRows(int newRows) const /// submatrix
+{
+	matrix res(*this);
+	if(newRows < 0) { newRows += this->rows(); }
+	return res.resizeRows(newRows);
 }
 
 matrix matrix::covMatCols(std::valarray<double> * avRowIn) const
@@ -664,13 +678,14 @@ matrix matrix::covMatCols(std::valarray<double> * avRowIn) const
     return res;
 }
 
-void matrix::resize(int rows, int cols, double val)
+matrix & matrix::resize(int rows, int cols, double val)
 {
     this->resize(rows, cols);
     this->fill(val);
+	return *this;
 }
 
-void matrix::resize(int newRows, int newCols)
+matrix & matrix::resize(int newRows, int newCols)
 {
 	myData.resize(newRows);
 	std::for_each(std::begin(myData),
@@ -680,11 +695,19 @@ void matrix::resize(int newRows, int newCols)
 		smLib::valarResize(in, newCols);
     });
 
+	return *this;
 }
 
-void matrix::resize(int i)
+matrix & matrix::resize(int i)
 {
 	myData.resize(i);
+	return *this;
+}
+
+matrix&  matrix::reserve(int i)
+{
+	myData.reserve(i);
+	return *this;
 }
 
 
@@ -901,9 +924,10 @@ std::valarray<double> matrix::getCol(uint i, uint numCols) const
     return res;
 }
 
-void matrix::pop_back()
+matrix & matrix::pop_back()
 {
 	myData.pop_back();
+	return *this;
 }
 
 void matrix::print(uint rows, uint cols) const
@@ -922,15 +946,17 @@ void matrix::print(uint rows, uint cols) const
 //    std::cout << std::endl;
 }
 
-void matrix::push_back(const std::valarray<double> & in)
+matrix & matrix::push_back(const std::valarray<double> & in)
 {
 	myData.push_back(in);
+	return *this;
 }
 
-void matrix::push_back(const std::vector<double> & in)
+matrix & matrix::push_back(const std::vector<double> & in)
 {
 	std::valarray<double> temp{in.data(), in.size()};
 	myData.push_back(temp);
+	return *this;
 }
 
 uint matrix::cols() const
@@ -1003,8 +1029,7 @@ matrix & matrix::invert(double * det)
     }
 
     const uint size = this->rows();
-    matrix initMat(size, size);
-    initMat = (*this);
+	matrix initMat(*this);
 
     matrix tempMat(size, size, 0.);
     for(uint i = 0; i < size; ++i)

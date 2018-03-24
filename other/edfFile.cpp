@@ -2690,14 +2690,11 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
 
     edfFile fil;
     fil.readEdfFile(inEdfPath);
-    matrix newData;
+	matrix newData = fil.getData();
+	newData.eraseRow(fil.getMarkChan());	/// remove markers
+	newData = matrixW * newData;
+	newData.push_back(fil.getMarkArr());	/// return markers
 
-    matrixProduct(matrixW,
-                  fil.getData(),
-                  newData,
-				  uint(DEFS.nsWOM())); // w/o markers from globalEdf data
-
-	newData.push_back(fil.getData()[fil.getMarkChan()]); // copy markers
     fil.writeOtherData(newData, newEdfPath);
 	std::cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
