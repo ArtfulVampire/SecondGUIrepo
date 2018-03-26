@@ -53,8 +53,8 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 	int c = 0;
 	for(auto mrk : this->markers)
 	{
-		if(mrk.second == 241) { this->ans[0].push_back(this->ansInRow[c++]); }
-		else if(mrk.second == 247)  { this->ans[1].push_back(this->ansInRow[c++]); }
+		if(mrk.second == 241)		{ this->ans[0].push_back(this->ansInRow[c++]); }
+		else if(mrk.second == 247)	{ this->ans[1].push_back(this->ansInRow[c++]); }
 	}
 
 	/// divide to reals w/o markers
@@ -75,7 +75,7 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 	for(int typ = 0; typ < realsSignals.size(); ++typ)
 	{
 		solvTime[typ].resize(realsSignals[typ].size());
-		realsSpectra[typ].resize(realsSignals[typ].size());
+		realsSpectra[typ].reserve(realsSignals[typ].size());
 
 		for(int real = 0; real < realsSignals[typ].size(); ++real)
 		{
@@ -85,19 +85,40 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 			matrix a = myLib::countSpectre(realsSignals[typ][real],
 										   4096,
 										   15);
-			if(!a.isEmpty()) { realsSpectra[typ].push_back(a); }
+			realsSpectra[typ].push_back(a); /// even if empty
+//			if(!a.isEmpty()) { realsSpectra[typ].push_back(a); }
 		}
 	}
 
 	/// make freqs vector
 	freqs.clear();
-	for(int i = std::floor(this->leftFreq / this->spStep);
-		i < std::ceil(this->rightFreq / this->spStep);
+	for(int i = std::floor(FBedf::leftFreq / FBedf::spStep);
+		i < std::ceil(FBedf::rightFreq / FBedf::spStep);
 		++i)
 	{
-		freqs.push_back(i * this->spStep);
+		freqs.push_back(i * FBedf::spStep);
 	}
 	isGood = true;
+
+
+	if(0)
+	{
+		std::cout << realsSpectra.size() << std::endl; /// how many classes
+		for(const auto & in : realsSpectra)
+		{
+			std::cout << in.size() << "\t"; /// how many reals
+		}
+		std::cout << std::endl;
+
+		for(const auto & in : realsSpectra)
+		{
+			for(const auto & in2 : in)
+			{
+				std::cout << in2.size() << "\t"; /// how many rows in reals;
+			}
+			std::cout << std::endl;
+		}
+	}
 }
 
 std::vector<int> FBedf::readAns(const QString & ansPath)
@@ -137,13 +158,18 @@ std::vector<int> FBedf::readAns(const QString & ansPath)
 
 std::valarray<double> FBedf::spectralRow(taskType type, int chan, double freq)
 {
-	std::valarray<double> res(realsSpectra[int(type)].size());
+//	std::valarray<double> res(realsSpectra[int(type)].size());
+	std::vector<double> res;	res.reserve(realsSpectra[int(type)].size());
 
-	for(int i = 0; i < res.size(); ++i)
+	for(int i = 0; i < realsSpectra[int(type)].size(); ++i)
 	{
-		res[i] = realsSpectra[int(type)][i][chan][ std::floor(freq / this->spStep) ];
+		if(!realsSpectra[int(type)][i].isEmpty()) /// may be empty spectre
+		{
+			res.push_back(realsSpectra[int(type)][i][chan][ std::floor(freq / FBedf::spStep) ]);
+		}
 	}
-	return res;
+	return smLib::vecToValar(res);
+//	return res;
 }
 
 double FBedf::distSpec(taskType type1, taskType type2)
@@ -151,7 +177,7 @@ double FBedf::distSpec(taskType type1, taskType type2)
 	int all = 0;
 	int diff = 0;
 
-	for(int chan : this->chansToProcess)
+	for(int chan : FBedf::chansToProcess)
 	{
 		for(double freq : this->freqs)
 		{
@@ -166,12 +192,12 @@ double FBedf::distSpec(taskType type1, taskType type2)
 	return double(diff) / all;
 }
 
-double FBedf::insightPartOfAll(double thres)
+double FBedf::insightPartOfAll(double thres) const
 {
 	return this->getInsight(thres) / this->getNum(taskType::verb, ansType::all);
 }
 
-double FBedf::insightPartOfSolved(double thres)
+double FBedf::insightPartOfSolved(double thres) const
 {
 	return this->getInsight(thres) / this->getNum(taskType::verb, ansType::answrd);
 }
@@ -179,7 +205,7 @@ double FBedf::insightPartOfSolved(double thres)
 double FBedf::spectreDispersion(taskType typ)
 {
 	double res = 0.;
-	for(int chan : this->chansToProcess)
+	for(int chan : FBedf::chansToProcess)
 	{
 		for(double freq : this->freqs)
 		{
@@ -247,9 +273,9 @@ int FBedf::getNum(taskType typ, ansType howSolved) const
 }
 
 
-int FBedf::getInsight(double thres)
+int FBedf::getInsight(double thres) const
 {
-	auto & times = solvTime[int(taskType::verb)];
+	const auto & times = solvTime[int(taskType::verb)];
 	int res = 0;
 	std::for_each(std::begin(times), std::end(times),
 				  [&res, thres](double in)
@@ -260,7 +286,7 @@ int FBedf::getInsight(double thres)
 }
 
 
-QPixmap FBedf::kdeForSolvTime(taskType typ)
+QPixmap FBedf::kdeForSolvTime(taskType typ) const
 {
 	std::vector<double> res{};
 	std::for_each(std::begin(solvTime[int(typ)]),
@@ -272,16 +298,20 @@ QPixmap FBedf::kdeForSolvTime(taskType typ)
 	return myLib::kernelEst(smLib::vecToValar(res));
 }
 
-QPixmap FBedf::verbShortLong(double thres)
+QPixmap FBedf::verbShortLong(double thres) const
 {
 	const int taskTyp = int(taskType::verb);
 
 	std::vector<matrix> shrts;
 	std::vector<matrix> lngs;
+
 	for(int i = 0; i < solvTime[taskTyp].size(); ++i)
 	{
-		if(solvTime[1][i] > thres)	{ lngs.push_back(realsSpectra[taskTyp][i]);	}
-		else						{ shrts.push_back(realsSpectra[taskTyp][i]);	}
+		if(!realsSpectra[taskTyp][i].isEmpty())
+		{
+			if(solvTime[1][i] > thres)	{ lngs.push_back(realsSpectra[taskTyp][i]);		}
+			else						{ shrts.push_back(realsSpectra[taskTyp][i]);	}
+		}
 	}
 
 	matrix shrt	= shrts[0];	shrt.fill(0.);
@@ -298,15 +328,17 @@ QPixmap FBedf::verbShortLong(double thres)
 	}
 	shrt /= shrts.size();
 
+	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), FBedf::fftLen);
+	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), FBedf::fftLen);
 	matrix both(2, 1);
-	both[0] = shrt.toValarByRows();
-	both[1] = lng.toValarByRows();
+	both[0] = shrt.subCols(leftLim, rightLim).toValarByRows();
+	both[1] = lng.subCols(leftLim, rightLim).toValarByRows();
 
-	auto tmplt = myLib::drw::drawTemplate(true, this->leftFreq, this->rightFreq, 19);
+	auto tmplt = myLib::drw::drawTemplate(true, FBedf::leftFreq, FBedf::rightFreq, 19);
 	return myLib::drw::drawArrays(tmplt, both);
 }
 
-Classifier::avType FBedf::classifyReals()
+Classifier::avType FBedf::classifyReals() const
 {
 	ANN * net = new ANN();
 
@@ -317,24 +349,27 @@ Classifier::avType FBedf::classifyReals()
 	{
 		for(int j = 0; j < realsSpectra[i].size(); ++j)
 		{
-			/// fill types
-			types.push_back(i);
-			/// fill data matrix
-			clData.push_back(realsSpectra[i][j].toValarByRows());
+			if(!realsSpectra[i][j].isEmpty())
+			{
+				/// fill types
+				types.push_back(i);
+				/// fill data matrix
+				clData.push_back(realsSpectra[i][j].toValarByRows());
+			}
 		}
 	}
 
 	ClassifierData dt = ClassifierData(clData, types);
 	net->setClassifierData(dt);
 
-	net->crossClassification(10, 8);
+	net->crossClassification(2, 2);
 	auto res = net->averageClassification();
 
 	delete net;
 	return res;
 }
 
-Classifier::avType FBedf::classifyWinds(int windLen)
+Classifier::avType FBedf::classifyWinds(int windLen) const
 {
 	const int fftLen = smLib::fftL(windLen);
 	DEFS.setFftLen(fftLen);
@@ -354,11 +389,11 @@ Classifier::avType FBedf::classifyWinds(int windLen)
 		for(int j = 0; j < realsSignals[i].size(); ++j)
 		{
 			for(int windStart = 0;
-				windStart < realsSignals[i][j].cols() - windLen;
+				windStart < int(realsSignals[i][j].cols()) - windLen;
 				windStart += windStep)
 			{
 				clData.push_back(realsSignals[i][j].subCols(windStart,
-															windStart + windStep));
+															windStart + windLen));
 				types.push_back(i);
 			}
 		}
@@ -384,6 +419,7 @@ Classifier::avType FBedf::classifyWinds(int windLen)
 
 
 	ClassifierData dt = ClassifierData(clSpec, typs);
+	/// arguments of wrong size
 	net->setClassifierData(dt);
 
 	net->crossClassification(10, 8);
@@ -517,20 +553,89 @@ void FeedbackClass::checkStatInsight(double thres)
 
 }
 
-void FeedbackClass::checkStat()
+void FeedbackClass::writeStat()
 {
 	std::cout << std::fixed;
 	std::cout.precision(2);
 	for(auto typ : {taskType::spat, taskType::verb})
 	{
-		checkStatSolving(typ, ansType::right);
-		checkStatTimes(typ, ansType::right);	/// compares times of solved tasks
+		checkStatSolving(typ, ansType::right);	/// cout 5 values
+		checkStatTimes(typ, ansType::right);	/// cout 2 values
 	}
-	checkStatInsight(4.);
-	checkStatInsight(6.);
+	checkStatInsight(4.);	/// cout 8 values
+	checkStatInsight(6.);	/// cout 8 values
 
-	std::cout << std::endl;
 	std::cout << std::defaultfloat;
+}
+
+void FeedbackClass::writeDists() /// 1st: 0-1, 0-2, 1-2, 2nd: 0-1, 0-2, 1-2
+{
+	for(int i = 0; i < fb::numOfClasses; ++i)
+	{
+		for(int j = i + 1; j < fb::numOfClasses; ++j)
+		{
+			double a = files[0].distSpec(taskType(i), taskType(j));
+			double b = files[1].distSpec(taskType(i), taskType(j));
+			std::cout
+					<< a << "\t"
+					<< b << "\t"
+					<< (b - a) / a << "\t";
+		}
+	}
+}
+
+void FeedbackClass::writeDispersions() /// 1st: 0, 1, 2, 2nd: 0, 1, 2
+{
+	for(int i = 0; i < fb::numOfClasses; ++i)
+	{
+		double a = files[0].spectreDispersion(taskType(i));
+		double b = files[1].spectreDispersion(taskType(i));
+		std::cout
+				<< a << "\t"
+				<< b << "\t"
+				<< (b - a) / a << "\t";
+	}
+}
+
+void FeedbackClass::writeKDEs(const QString & prePath)
+{
+	for(int num : {0, 1})
+	{
+		files[num].kdeForSolvTime(taskType::spat).save(prePath + "kde_spat_" + nm(num) + ".jpg");
+		files[num].kdeForSolvTime(taskType::verb).save(prePath + "kde_verb_" + nm(num) + ".jpg");
+	}
+}
+
+void FeedbackClass::writeShortLongs(const QString & prePath)
+{
+	for(int num : {0, 1})
+	{
+		files[num].verbShortLong(4).save(prePath + "shortLong_4s_" + nm(num) + ".jpg");
+		files[num].verbShortLong(6).save(prePath + "shortLong_6s_" + nm(num) + ".jpg");
+		files[num].verbShortLong(10).save(prePath + "shortLong_10s_" + nm(num) + ".jpg");
+	}
+}
+
+void FeedbackClass::writeClass()
+{
+	if(0)
+	{
+		double a = files[0].classifyReals().first;
+		double b = files[1].classifyReals().first;
+		std::cout
+				<< a << "\t"
+				<< b << "\t"
+				<< (b - a) / a << "\t";
+	}
+
+	{
+		double a = files[0].classifyWinds(1024).first;
+		double b = files[1].classifyWinds(1024).first;
+		std::cout
+				<< a << "\t"
+				<< b << "\t"
+				<< (b - a) / a << "\t";
+	}
 }
 
 void FeedbackClass::writeFile()
@@ -595,9 +700,9 @@ void FeedbackClass::writeFile()
 
 
 /// other functions and autos
-void countStats(const QString & dear,
-				const std::vector<std::pair<QString, QString> > & guysList,
-				const QString & postfix)
+void coutAllFeatures(const QString & dear,
+					 const std::vector<std::pair<QString, QString> > & guysList,
+					 const QString & postfix)
 {
 	const QString guysPath = DEFS.dirPath() + "/" + dear;
 
@@ -609,8 +714,22 @@ void countStats(const QString & dear,
 		fb::FeedbackClass fb(guyPath, in.second, postfix);
 		if(!fb) { continue; }
 		std::cout << in.second << "\t";
-		fb.checkStat();		/// cout inside
-		fb.writeFile();
+
+		/// stats of solving and times
+//		fb.writeStat();											std::cout.flush(); /// 23
+//		fb.writeDists();										std::cout.flush(); /// 6
+//		fb.writeDispersions();									std::cout.flush(); /// 9
+//		fb.writeKDEs(guysPath + "/" + in.second + "_");			std::cout.flush();
+//		fb.writeShortLongs(guysPath + "/" + in.second + "_");	std::cout.flush();
+		fb.writeClass();										std::cout.flush();
+		std::cout << std::endl; exit(0);
+
+		///
+		std::cout << std::endl;
+
+
+		/// write solving stats into txt file
+//		fb.writeFile();
 	}
 }
 

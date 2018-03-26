@@ -9,7 +9,7 @@ namespace fb
 enum class taskType : int {spat = 0, verb = 1, rest = 2};
 enum class fileNum  : int {first = 0, third = 1};
 enum class ansType  : int {skip = 0, right = 1, wrong = 2, answrd = 3, all = 4};
-
+const int numOfClasses = 3;
 
 
 class FBedf : public edfFile
@@ -29,11 +29,12 @@ private:
 	std::vector<int> ansInRow;
 
 	/// [type][numOfReal] = spectre
-	std::vector<std::vector<matrix>> realsSpectra;
+	std::vector<std::vector<matrix>> realsSpectra; /// with empty spectra for short
 
 public:
 	static const std::vector<int> chansToProcess;
 	static const int numTasks = 40;
+	static constexpr double fftLen = 4096.;
 	static constexpr double spStep = 250. / 4096.;
 	static constexpr double leftFreq = 5.;
 	static constexpr double rightFreq = 20.;
@@ -47,19 +48,19 @@ public:
 	double spectreDispersion(taskType typ);
 	double distSpec(taskType type1, taskType type2);
 
-	double insightPartOfAll(double thres);
-	double insightPartOfSolved(double thres);
-	QPixmap kdeForSolvTime(taskType typ);
-	QPixmap verbShortLong(double thres);		/// spectra of short and long anagramms
-	Classifier::avType classifyReals();
-	Classifier::avType classifyWinds(int windLen);
+	double insightPartOfAll(double thres) const;
+	double insightPartOfSolved(double thres) const;
+	QPixmap kdeForSolvTime(taskType typ) const;
+	QPixmap verbShortLong(double thres) const;		/// spectra of short and long anagramms
+	Classifier::avType classifyReals() const;
+	Classifier::avType classifyWinds(int windLen) const;
 
 	/// get interface
 	operator bool() const { return isGood; }
 	std::valarray<double> getTimes(taskType typ, ansType howSolved) const;
 	int getNum(taskType typ, ansType howSolved) const;
 	int getAns(int i) const { return ansInRow[i]; }
-	int getInsight(double thres);
+	int getInsight(double thres) const;
 
 private:
 	bool isGood{false};
@@ -86,14 +87,14 @@ public:
 	~FeedbackClass() {}
 
 
-	void checkStat();
+	void writeStat();
 	void writeFile();
 
 	/// to make
 	void writeDists(); /// 1st: 0-1, 0-2, 1-2, 2nd: 0-1, 0-2, 1-2
 	void writeDispersions(); /// 1st: 0, 1, 2, 2nd: 0, 1, 2
-	void writeKDEs(const QString & picDir);
-	void writeShortLongs(const QString & picDir);
+	void writeKDEs(const QString & prePath);
+	void writeShortLongs(const QString & prePath);
 	void writeClass();
 
 	operator bool() { return isGood; }
@@ -117,9 +118,10 @@ private:
 
 
 
-void countStats(const QString & dear,
-				const std::vector<std::pair<QString, QString>> & guysList,
-				const QString & postfix);
+void coutAllFeatures(const QString & dear,
+					 const std::vector<std::pair<QString, QString>> & guysList,
+					 const QString & postfix);
+
 void createAnsFiles(const QString & guyPath, QString guyName);
 void checkMarkFBfinal(const QString & filePath);
 void repairMarkersInNewFB(QString edfPath, int numSession);

@@ -40,9 +40,7 @@ void MainWindow::customFunc()
 //		maxDif = std::max(maxDif, fil.getPhysMax()[i] - fil.getPhysMin()[i]);
 //	}
 //	exit(0);
-
-
-	return;
+//	return;
 
 
 #if 0
@@ -72,7 +70,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// count correctness and average times
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
@@ -84,7 +82,7 @@ void MainWindow::customFunc()
 	const QString postfix = "_fin";
 	/// make all data_fin
 #endif
-	fb::countStats(dear, guysList, postfix);
+	fb::coutAllFeatures(dear, guysList, postfix);
 	exit(0);
 #endif
 
