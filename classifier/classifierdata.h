@@ -37,7 +37,7 @@ public:
 	const QString & getFilesPath() const { return filesPath; }
 
 	/// sets
-	void setApriori(const std::valarray<double> inApriori) {apriori = inApriori; }
+	void setApriori(const std::valarray<double> & inApriori) { apriori = inApriori; }
 
 	/// matrix modifiers
 	void erase(const uint index);

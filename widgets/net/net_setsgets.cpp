@@ -182,6 +182,7 @@ void Net::setClassifier(QAbstractButton * but, bool i)
 			myANN->setLrate(ui->learnRateBox->value());
 			myANN->setCritError(ui->critErrorDoubleSpinBox->value());
 			setDimensionalitySlot();
+			return;
 		}
 		else { std::cout << "Net::setClassifier: ANN bad cast" << std::endl; }
     }

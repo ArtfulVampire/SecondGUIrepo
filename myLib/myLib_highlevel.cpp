@@ -1,5 +1,7 @@
 #include <myLib/highlevel.h>
 #include <myLib/general.h>
+#include <myLib/output.h>
+using namespace myOut;
 
 namespace myLib
 {
@@ -42,37 +44,80 @@ std::vector<std::vector<matrix>> sliceData(const matrix & inData,
 	return res;
 }
 
-std::pair<std::vector<matrix>, std::vector<uint>> sliceWindows(
+/// introduce into FBedf::FBedf(...), Net::successiveByEDFfinal, MainWindow::sliceWinds()
+/// CHECK THIS FUNCTION
+std::vector<std::tuple<matrix, uint, QString>> sliceWindows(
 		const matrix & inData,
 		const std::vector<std::pair<int, int> > & markers,
 		const int windLen,
 		const double overlapPart,
+		const int numSkipStartWinds,
+		const int numBinsSkipRest,
 		const std::vector<int> & separators)
 {
 	const int windStep = windLen * (1. - overlapPart);
 	const int maxNumWinds = (inData.cols() - windLen) / windStep;
-	std::vector<matrix> res1{};	res1.reserve(maxNumWinds);
-	std::vector<uint> res2{};	res2.reserve(maxNumWinds);
 
+	std::vector<std::tuple<matrix, uint, QString>> res{};
+	res.reserve(maxNumWinds);
 
-	int currType = 2; /// = int(fb::taskType::rest);
-	int start = markers[0].first;
-	for(const auto & mrk : markers)
+	int numReal = 0;
+	auto itSta = std::find_if(std::begin(markers), std::end(markers), [&separators](const auto & in)
+	{ return myLib::contains(separators, in.second); });
+	for(auto itMark = itSta + 1; itMark != std::end(markers); /*nothing*/++numReal)
 	{
-		int newType = myLib::indexOfVal(separators, mrk.second);
-		if(newType == -1) { continue; }
-		else
+		auto itEnd = std::find_if(itMark, std::end(markers), [&separators](const auto & in)
+		{ return myLib::contains(separators, in.second); });
+
+		if(itEnd == std::end(markers)) { break; } /// end of file, cut later
+
+		int typ = myLib::indexOfVal(separators, (*itSta).second);	/// new typ
+		QString marker = nm((*itSta).second);						/// new marker
+
+		int windowCounter = numSkipStartWinds;
+		int skipStart = numSkipStartWinds * windStep;
+		if((*itSta).second == 254) { skipStart = numBinsSkipRest; } /// magic constant
+
+		for(int startWind = (*itSta).first + skipStart;
+			startWind < ((*itEnd).first - windLen);
+			startWind += windStep)
 		{
-			for(int windStart = start; windStart < mrk.first - windLen; windStart += windStep)
-			{
-				res1.push_back(inData.subCols(windStart, windStart + windLen));
-				res2.push_back(currType);
-			}
-			currType = newType;
-			start = mrk.first;
+			QString appendName = "." + rn(numReal, 4)
+								 + "_" + marker
+								 + "." + rn(windowCounter++, 2);
+			res.push_back(std::make_tuple(inData.subCols(startWind,
+														 startWind + windLen),
+										  uint(typ),
+										  appendName)
+						  );
 		}
+
+		itSta = itEnd;											/// new real/rest start
+		itMark = itSta + 1;										/// new start to look for itEnd
 	}
-	return std::make_pair(res1, res2);
+
+	/// cut last rest
+	auto itLast = std::end(markers) - 1;
+	for(; itLast != std::begin(markers); --itLast)
+	{
+		if((*itLast).second == 254) { break; } /// should be == itSta but not necessary
+	}
+	int windowCounter = 0;
+	for(int startWind = (*itLast).first + numBinsSkipRest;
+		startWind < std::min(int(inData.cols()),
+							 (*itLast).first + 8 * 250) - windLen; /// 8 sec 250 Hz
+		startWind += windStep)
+	{
+		QString appendName = "." + rn(numReal, 4)
+							 + "_" + "254"
+							 + "." + rn(windowCounter++, 2);
+		res.push_back(std::make_tuple(inData.subCols(startWind,
+													 startWind + windLen),
+									  2,
+									  appendName)
+					  );
+	}
+	return res;
 }
 
 } // end namespace myLib

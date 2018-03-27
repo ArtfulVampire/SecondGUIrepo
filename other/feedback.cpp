@@ -9,12 +9,13 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/drw.h>
 
-/// for successive preclean
+/// for successive preclean and imitation feedback
 #include <widgets/net.h>
 
  /// for std::defaultfloat
 #include <ios>
 #include <iostream>
+#include <iomanip>
 #include <bits/ios_base.h>
 
 using namespace myOut;
@@ -87,9 +88,56 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 										   4096,
 										   15);
 			realsSpectra[typ].push_back(a); /// even if empty
-//			if(!a.isEmpty()) { realsSpectra[typ].push_back(a); }
 		}
 	}
+
+	/// make windSignals
+
+	const double overlapPart = 0.0;
+	const int windStep = (1. - overlapPart) * windLen;						/// = windLen
+	const int maxNumWinds = (this->getData().cols() - windLen) / windStep;
+	const int numSkipStartWinds = 0; /// skip 2 windows
+
+	std::vector<matrix> windSigData{};		windSigData.reserve(maxNumWinds);
+	std::vector<uint> windSigTypes{};		windSigTypes.reserve(maxNumWinds);
+
+	for(int i = 0; i < realsSignals.size(); ++i)
+	{
+		/// is rest?
+		int skipStart = (i == 2) ? 0 : numSkipStartWinds * windStep;
+		for(int j = 0; j < realsSignals[i].size(); ++j)
+		{
+			for(int windStart = 0 + skipStart;
+				windStart < int(realsSignals[i][j].cols()) - windLen;
+				windStart += windStep)
+			{
+				windSigData.push_back(realsSignals[i][j].subCols(windStart,
+																 windStart + windLen));
+				windSigTypes.push_back(i);
+			}
+		}
+	}
+
+	/// make windSpectra
+
+	this->windSpectra.clear();		this->windSpectra.reserve(windSigData.size());
+	this->windTypes.clear();		this->windTypes.reserve(windSigTypes.size());
+
+	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), windFftLen);
+	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), windFftLen);
+
+	for(int i = 0; i < windSigData.size(); ++i)
+	{
+		matrix pew = myLib::countSpectre(windSigData[i],
+										 windFftLen,
+										 5);
+		if(!pew.isEmpty())
+		{
+			this->windSpectra.push_back(pew.subCols(leftLim, rightLim).toValarByRows());
+			this->windTypes.push_back(windSigTypes[i]);
+		}
+	}
+
 
 	/// make freqs vector
 	freqs.clear();
@@ -195,12 +243,12 @@ double FBedf::distSpec(taskType type1, taskType type2)
 
 double FBedf::insightPartOfAll(double thres) const
 {
-	return this->getInsight(thres) / this->getNum(taskType::verb, ansType::all);
+	return this->getNumInsights(thres) / this->getNum(taskType::verb, ansType::all);
 }
 
 double FBedf::insightPartOfSolved(double thres) const
 {
-	return this->getInsight(thres) / this->getNum(taskType::verb, ansType::answrd);
+	return this->getNumInsights(thres) / this->getNum(taskType::verb, ansType::answrd);
 }
 
 double FBedf::spectreDispersion(taskType typ)
@@ -275,7 +323,7 @@ int FBedf::getNum(taskType typ, ansType howSolved) const
 }
 
 
-int FBedf::getInsight(double thres) const
+int FBedf::getNumInsights(double thres) const
 {
 	const auto & times = solvTime[int(taskType::verb)];
 	int res = 0;
@@ -359,9 +407,7 @@ Classifier::avType FBedf::classifyReals() const
 		{
 			if(!realsSpectra[i][j].isEmpty())
 			{
-				/// fill types
 				types.push_back(i);
-				/// fill data matrix
 				clData.push_back(realsSpectra[i][j].subCols(leftLim, rightLim).toValarByRows());
 			}
 		}
@@ -382,62 +428,13 @@ Classifier::avType FBedf::classifyReals() const
 	return res;
 }
 
-Classifier::avType FBedf::classifyWinds(int windLen) const
+Classifier::avType FBedf::classifyWinds() const
 {
-	const int windFftLen = smLib::fftL(windLen);
-
 	DEFS.setFftLen(windFftLen);
 
 	ANN * net = new ANN();
 
-
-	/// slice winds
-	double overlapPart = 0.0;
-	const int windStep = (1. - overlapPart) * windLen;						/// = windLen
-	const int maxNumWinds = (this->getData().cols() - windLen) / windStep;
-	const int numSkipStartWinds = 0; /// skip 2 windows
-
-	std::vector<uint> types{};		types.reserve(maxNumWinds);
-	std::vector<matrix> clData{};	clData.reserve(maxNumWinds);
-
-	/// markers droppped already
-	for(int i = 0; i < realsSignals.size(); ++i)
-	{
-		/// is rest?
-		int skipStart = (i == 2) ? 0 : numSkipStartWinds * windStep;
-		for(int j = 0; j < realsSignals[i].size(); ++j)
-		{
-			for(int windStart = 0 + skipStart;
-				windStart < int(realsSignals[i][j].cols()) - windLen;
-				windStart += windStep)
-			{
-				clData.push_back(realsSignals[i][j].subCols(windStart,
-															windStart + windLen));
-				types.push_back(i);
-			}
-		}
-	}
-
-
-	matrix clSpec{};			clSpec.reserve(clData.size());
-	std::vector<uint> typs;		typs.reserve(types.size());
-
-
-	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), windFftLen);
-	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), windFftLen);
-	for(int i = 0; i < clData.size(); ++i)
-	{
-		matrix pew = myLib::countSpectre(clData[i],
-										 windFftLen,
-										 5);
-		if(!pew.isEmpty())
-		{
-			clSpec.push_back(pew.subCols(leftLim, rightLim).toValarByRows());
-			typs.push_back(types[i]);
-		}
-	}
-
-	ClassifierData dt = ClassifierData(clSpec, typs);
+	ClassifierData dt = ClassifierData(this->windSpectra, this->windTypes);
 	/// arguments of wrong size
 	net->setClassifierData(dt);
 
@@ -473,9 +470,16 @@ FeedbackClass::FeedbackClass(const QString & guyPath_,
 		return guyPath + "/" + guyName + "_ans" + nm(numSes) + ".txt";
 	};
 
-	for(int i : {1, 3})
+	for(int i : {1, 2, 3})
 	{
-		auto & fil = files[int(i != 1)];
+		int fileNumber{};
+		switch(i)
+		{
+		case 1: { fileNumber = int(fileNum::first); break; }	/// 0
+		case 2: { fileNumber = int(fileNum::second); break; }	/// 2
+		case 3: { fileNumber = int(fileNum::third); break; }	/// 1
+		}
+		auto & fil = files[fileNumber];
 
 		fil = FBedf(filePath(i), ansPath(i));
 
@@ -543,8 +547,8 @@ void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 
 void FeedbackClass::checkStatInsight(double thres)
 {
-	int num1 = files[int(fileNum::first)].getInsight(thres);
-	int num2 = files[int(fileNum::third)].getInsight(thres);
+	int num1 = files[int(fileNum::first)].getNumInsights(thres);
+	int num2 = files[int(fileNum::third)].getNumInsights(thres);
 	int numAll1 = files[int(fileNum::first)].getNum(taskType::verb,
 													ansType::answrd);
 	int numAll2 = files[int(fileNum::third)].getNum(taskType::verb,
@@ -599,9 +603,10 @@ void FeedbackClass::writeDists()
 	{
 		for(int j = i + 1; j < fb::numOfClasses; ++j)
 		{
-			double a = files[0].distSpec(taskType(i), taskType(j));
-			double b = files[1].distSpec(taskType(i), taskType(j));
+			double a = files[int(fileNum::first)].distSpec(taskType(i), taskType(j));
+			double b = files[int(fileNum::third)].distSpec(taskType(i), taskType(j));
 			std::cout
+					<< std::setprecision(4)
 					<< a << "\t"
 					<< b << "\t"
 					<< (b - a) / a << "\t";
@@ -613,18 +618,19 @@ void FeedbackClass::writeDispersions() /// 1st: 0, 1, 2, 2nd: 0, 1, 2
 {
 	for(int i = 0; i < fb::numOfClasses; ++i)
 	{
-		double a = files[0].spectreDispersion(taskType(i));
-		double b = files[1].spectreDispersion(taskType(i));
+		double a = files[int(fileNum::first)].spectreDispersion(taskType(i));
+		double b = files[int(fileNum::third)].spectreDispersion(taskType(i));
 		std::cout
 				<< a << "\t"
 				<< b << "\t"
+				<< std::setprecision(4)
 				<< (b - a) / a << "\t";
 	}
 }
 
 void FeedbackClass::writeKDEs(const QString & prePath)
 {
-	for(int num : {0, 1})
+	for(int num : {int(fileNum::first), int(fileNum::third)})
 	{
 		files[num].kdeForSolvTime(taskType::spat).save(prePath + "kde_spat_" + nm(num) + ".jpg");
 		files[num].kdeForSolvTime(taskType::verb).save(prePath + "kde_verb_" + nm(num) + ".jpg");
@@ -633,7 +639,7 @@ void FeedbackClass::writeKDEs(const QString & prePath)
 
 void FeedbackClass::writeShortLongs(const QString & prePath)
 {
-	for(int num : {0, 1})
+	for(int num : {int(fileNum::first), int(fileNum::third)})
 	{
 		files[num].verbShortLong(4).save(prePath + "shortLong_4s_" + nm(num) + ".jpg");
 		files[num].verbShortLong(6).save(prePath + "shortLong_6s_" + nm(num) + ".jpg");
@@ -645,24 +651,41 @@ void FeedbackClass::writeClass()
 {
 	if(01)
 	{
-		double a = files[0].classifyReals().first;
-		double b = files[1].classifyReals().first;
+		double a = files[int(fileNum::first)].classifyReals().first;
+		double b = files[int(fileNum::third)].classifyReals().first;
 		std::cout
+				<< std::setprecision(1)
 				<< a << "\t"
 				<< b << "\t"
+				<< std::setprecision(3)
 				<< (b - a) / a << "\t";
 	}
 
 
 	if(01)
 	{
-		double a = files[0].classifyWinds(1024).first;
-		double b = files[1].classifyWinds(1024).first;
+		double a = files[int(fileNum::first)].classifyWinds().first;
+		double b = files[int(fileNum::third)].classifyWinds().first;
 		std::cout
+				<< std::setprecision(1)
 				<< a << "\t"
 				<< b << "\t"
+				<< std::setprecision(3)
 				<< (b - a) / a << "\t";
 	}
+}
+
+void FeedbackClass::writeSuccessive()
+{
+	Net * net = new Net();
+
+
+	std::cout
+			<< net->successiveByEDFfinal(
+					files[int(fileNum::first)],
+					files[int(fileNum::second)]).first
+			<< "\t"; std::cout.flush();
+	delete net;
 }
 
 void FeedbackClass::writeFile()
@@ -683,7 +706,7 @@ void FeedbackClass::writeFile()
 	/// 21, 22, 23 - correct, incorrect, not answered
 
 
-	for(int i = 0; i < 2; ++i) // fileNum
+	for(int i : {int(fileNum::first), int(fileNum::third)})
 	{
 		for(int j = 0; j < 2; ++j) // taskType
 		{
@@ -748,7 +771,9 @@ void coutAllFeatures(const QString & dear,
 //		fb.writeDispersions();									std::cout.flush(); /// 9
 //		fb.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
 //		fb.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
-		fb.writeClass();										std::cout.flush(); /// 6
+//		fb.writeClass();										std::cout.flush(); /// 6
+		fb.writeSuccessive();									std::cout.flush();
+		exit(0);
 
 		///
 		std::cout << std::endl;

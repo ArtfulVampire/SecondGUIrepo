@@ -7,7 +7,7 @@ namespace fb
 {
 
 enum class taskType : int {spat = 0, verb = 1, rest = 2};
-enum class fileNum  : int {first = 0, third = 1};
+enum class fileNum  : int {first = 0, third = 1, second = 2};
 enum class ansType  : int {skip = 0, right = 1, wrong = 2, answrd = 3, all = 4};
 const int numOfClasses = 3;
 
@@ -30,14 +30,24 @@ private:
 	/// [type][numOfReal] = spectre
 	std::vector<std::vector<matrix>> realsSpectra; /// with empty spectra for short
 
+	/// [numWind] = spectre by rows
+	matrix windSpectra;
+
+	/// [numWind]
+	std::vector<uint> windTypes;
+
 public:
 	static const std::vector<int> chansToProcess;
+
 	static const int numTasks = 40;
+	static constexpr double solveThres = 40.;			/// 40 sec for a task
+
+	static const int windLen = 1024;
+	static const int windFftLen = smLib::fftL(windLen);
 	static constexpr double fftLen = 4096.;
 	static constexpr double spStep = 250. / 4096.;
 	static constexpr double leftFreq = 5.;
 	static constexpr double rightFreq = 20.;
-	static constexpr double solveThres = 40.;			/// 40 sec for a task
 
 public:
 	/// solvTime? ans spectre inside
@@ -52,21 +62,22 @@ public:
 	QPixmap kdeForSolvTime(taskType typ) const;
 	QPixmap verbShortLong(double thres) const;		/// spectra of short and long anagramms
 	Classifier::avType classifyReals() const;
-	Classifier::avType classifyWinds(int windLen) const;
+	Classifier::avType classifyWinds() const;
 
 	/// get interface
 	operator bool() const { return isGood; }
 	std::valarray<double> getTimes(taskType typ, ansType howSolved) const;
 	int getNum(taskType typ, ansType howSolved) const;
 	int getAns(int i) const { return ansInRow[i]; }
-	int getInsight(double thres) const;
+	int getNumInsights(double thres) const;
+	const matrix & getWindSpectra() const				{ return windSpectra; }
+	const std::vector<uint> & getWindTypes() const		{ return windTypes; }
 
 private:
 	bool isGood{false};
 	std::vector<double> freqs;
 	std::vector<int> readAns(const QString & ansPath);
-	std::valarray<double> spectralRow(taskType type, int chan, double freq);
-
+	std::valarray<double> spectralRow(taskType type, int chan, double freq); /// remake and deprecate
 };
 
 
@@ -96,6 +107,7 @@ public:
 	void writeKDEs(const QString & prePath);
 	void writeShortLongs(const QString & prePath);
 	void writeClass();
+	void writeSuccessive();
 
 	operator bool() { return isGood; }
 
@@ -106,7 +118,7 @@ private:
 
 
 private:
-	FBedf files[2];
+	FBedf files[3];
 
 private:
 	QString guyPath;

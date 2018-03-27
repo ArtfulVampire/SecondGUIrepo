@@ -208,7 +208,6 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
     }
     kappa = 1. - (1. - corrSum / wholeNum) / (1. - pE);
 
-
     res << smLib::doubleRound(averageAccuracy, 2) << '\t';
     res << smLib::doubleRound(kappa, 3) << '\t';
 	res << std::endl;

@@ -59,7 +59,8 @@ private:
 							const uint newType,
 							const QString & newFileName);
 	void successiveLearningFinal(const matrix & newSpectra,
-								 const int newType);
+								 const int newType,
+								 const QString & currExpName);
 
 
     /// data
@@ -95,6 +96,8 @@ public:
 											const QString & ansPath1,
 											const QString & edfPath2,
 											const QString & ansPath2);
+	Classifier::avType successiveByEDFfinal(const fb::FBedf & file1,
+											const fb::FBedf & file2);
 	void successivePreclean(const QString & spectraPath,
 							const QStringList & filters = {"*_train*"});
 

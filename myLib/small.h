@@ -56,15 +56,15 @@ inline double gaussian(double x, double sigma = 1.) // N(0,1)
     return 1./(sigma * sqrt(2. * pi)) * exp(-x * x / (2. * sigma * sigma) );
 }
 
-inline int fftL(int in)
+inline constexpr int fftL(int in)
 {
-	return pow(2., ceil(log2(in)));
+	return std::pow(2., std::ceil(std::log2(in)));
 }
 
 inline double distance(double const x1, double const y1,
 					   double const x2, double const y2)
 {
-	return sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
+	return std::sqrt(std::pow((x1 - x2), 2) + std::pow((y1 - y2), 2));
 }
 
 template <typename T>
