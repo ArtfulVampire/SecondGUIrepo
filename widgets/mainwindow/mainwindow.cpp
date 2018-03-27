@@ -473,71 +473,37 @@ void MainWindow::drawReals()
     myTime.start();
     ui->progressBar->setValue(0);
 
-    matrix dataD;
+	const edfFile & fil = globalEdf;
+	int blueCh = fil.findChannel("EOG1");
+	int redCh = fil.findChannel("EOG2");
+	std::vector<std::pair<int, QColor>> coloured{};
+	if(blueCh != -1)	{ coloured.push_back(std::make_pair(blueCh, "blue")); }
+	if(redCh != -1)		{ coloured.push_back(std::make_pair(redCh, "red")); }
 
-	QString prePath = DEFS.dirPath() + "/" + ui->drawDirBox->currentText();
+	QString prePath = fil.getDirPath() + "/" + ui->drawDirBox->currentText();
 
-	auto a = def::edfFilters + QStringList("*." + def::plainDataExtension);
-	QStringList lst = QDir(prePath).entryList(a);
+	auto a = def::edfFilters + def::plainFilters;
+	const QStringList lst = QDir(prePath).entryList(a);
 
-    int redCh = -1;
-    int blueCh = -1;
-    const edfFile & fil = globalEdf;
+	int i = 0;
+	for(const auto & fileName : lst)
+	{
+		std::cout << fileName << std::endl;
+		const QString inPath = prePath + "/" + fileName;
+		matrix dataD = myLib::readPlainData(inPath);
+		if(dataD.cols() > 15000) { continue; }
 
-	/// magic const, switch
-	if(globalEdf.getNs() == 41)
-    {
-        redCh = 21;
-        blueCh = 22;
-    }
-	else if(globalEdf.getNs() == 22 || globalEdf.getNs() == 21)
-    {
-        redCh = 19;
-        blueCh = 20;
-    }
-	else if(globalEdf.getNs() == 24)
-    {
-        redCh = 21;
-        blueCh = 22;
-    }
-	else /// not the best solution
-    {
-        for(int i = 0; i < fil.getNs(); ++i)
-        {
-			if(fil.getLabels(i).contains("EOG1")) redCh = i;
-			else if(fil.getLabels(i).contains("EOG2")) blueCh = i;
-        }
-    }
-
-    for(int i = 0; i < lst.length(); ++i)
-    {
-        if(stopFlag)
-        {
-            break;
-        }
-		QString helpString = prePath + "/" + lst[i];
-		dataD = myLib::readPlainData(helpString);
-
-		if(dataD.cols() > 15000)
-        {
-            continue;
-        }
-
-		helpString = myLib::getPicPath(helpString, globalEdf.getDirPath());
-
-
+		QString outPath = myLib::getPicPath(inPath, fil.getDirPath());
 		myLib::drw::drawEeg(dataD * ui->drawCoeffSpinBox->value(),
-							DEFS.getFreq(),
-		{ std::make_pair(blueCh, "blue"), std::make_pair(redCh, "red") }).save(
-					helpString, 0, 100);
+							fil.getFreq(),
+							coloured).save(outPath, 0, 100);
 
-
-        ui->progressBar->setValue(100 * (i + 1) / lst.length());
+		ui->progressBar->setValue(i++ * 100/ lst.length());
         qApp->processEvents();
+		if(stopFlag) { break; }
     }
     ui->progressBar->setValue(0);
-
-	ui->textEdit->append("signals are drawn\nns equals to " + nm(globalEdf.getNs()));
+	ui->textEdit->append("signals are drawn\nns equals to " + nm(fil.getNs()));
 
     stopFlag = 0;
 	std::cout << "drawReals: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;

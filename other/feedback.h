@@ -11,7 +11,6 @@ enum class fileNum  : int {first = 0, third = 1};
 enum class ansType  : int {skip = 0, right = 1, wrong = 2, answrd = 3, all = 4};
 const int numOfClasses = 3;
 
-
 class FBedf : public edfFile
 {
 private:
@@ -67,6 +66,7 @@ private:
 	std::vector<double> freqs;
 	std::vector<int> readAns(const QString & ansPath);
 	std::valarray<double> spectralRow(taskType type, int chan, double freq);
+
 };
 
 

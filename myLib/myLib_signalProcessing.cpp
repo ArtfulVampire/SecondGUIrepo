@@ -772,9 +772,9 @@ std::valarray<std::complex<double>> spectreRtoC2(const std::valarray<double> & i
 
 	four1(pew - 1, fftLen, 1);
 
-	const double norm = sqrt(myLib::spectreNorm(fftLen,
-												inputSignal.size(),
-												srate));
+	const double norm = std::sqrt(myLib::spectreNorm(fftLen,
+													 inputSignal.size(),
+													 srate));
 
 	std::valarray<std::complex<double>> res(fftLen);
 	for(int i = 0; i < res.size(); ++i)
@@ -2972,7 +2972,7 @@ matrix countSpectre(const matrix & inData,
 	}
 	else
 	{
-		data2.pop_front(data2.cols() - fftLen); /// why front?
+		data2.pop_front(data2.cols() - fftLen);
 	}
 
 	const double threshold = 0.125;
@@ -3020,17 +3020,17 @@ std::valarray<double> calcSpectre(const std::valarray<double> & inSignal,
 		return {};
     }
 
-	const double nrm = 2. / (double(fftLength - Eyes) * DEFS.getFreq());
-	std::valarray<double> outSpectre = spectreRtoR(inSignal, fftLength) * nrm;
+	std::valarray<double> outSpectre = spectreRtoR(inSignal, fftLength) *
+									   spectreNorm(fftLength, fftLength - Eyes, DEFS.getFreq());
 //	outSpectre = std::pow(outSpectre, powArg);
 
+	const double normSmooth = std::sqrt(fftLength / double(fftLength - Eyes));
 
-	const double norm1 = sqrt(fftLength / double(fftLength - Eyes));
-	// smooth spectre
+	/// smooth spectre
 	const int leftSmoothLimit = 2; /// doesn't effect on zero component
     const int rightSmoothLimit = fftLength / 2 - 1;
 	double help1, help2;
-	for(int a = 0; a < (int)(NumOfSmooth / norm1); ++a)
+	for(int a = 0; a < (int)(NumOfSmooth / normSmooth); ++a)
     {
         help1 = outSpectre[leftSmoothLimit - 1];
         for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)

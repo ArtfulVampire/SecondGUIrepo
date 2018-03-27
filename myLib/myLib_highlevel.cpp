@@ -29,7 +29,7 @@ std::vector<std::vector<matrix>> sliceData(const matrix & inData,
 		}
 	}
 
-	/// add last rest from last 254 +8 sec
+	/// add last rest from last 254 + 8 sec
 	for(auto it = std::end(markers) - 1;  it != std::begin(markers); --it)
 	{
 		if((*it).second == 254)

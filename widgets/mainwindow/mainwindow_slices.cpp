@@ -102,114 +102,103 @@ void MainWindow::sliceWinds()
 	QTime myTime;
 	myTime.start();
 
-	QString helpString;
-
-	const std::vector<double> staMarks{241., 247.};
-	const std::vector<double> endMarks{254.};
-	const std::vector<double> allMarks = smLib::unite<std::vector<double>>({staMarks, endMarks});
+	const std::vector<int> staMarks{241, 247};
+	const std::vector<int> endMarks{254};
+	const std::vector<int> allMarks = smLib::unite<std::vector<int>>({staMarks, endMarks});
 
 	const edfFile & fil = globalEdf;
 
-	const int wndLength = std::round(fil.getFreq() * ui->windowLengthSpinBox->value());
-	const int timeShift = std::round(fil.getFreq() * ui->timeShiftSpinBox->value());
+	const int windLen = std::round(fil.getFreq() * ui->windowLengthSpinBox->value());
+	const int windStep = std::round(fil.getFreq() * ui->timeShiftSpinBox->value());
+//	const int windLen = 1024;
+//	const int windStep = 1024;
+	const auto & markers = fil.getMarkers();
 
-	const std::valarray<double> & marks = fil.getMarkArr();
+	const int numSkipStartWinds = 2;				/// magic constant
+//	const int restSkipTime = 1.5 * fil.getFreq();	/// in time-bins, magic constant
+	const int restSkipTime = 0;	/// in time-bins, magic constant
+	int numReal = 0;
 
+	std::vector<std::tuple<int, int, QString>> forSave; /// start, typ, filepath
+	forSave.reserve(fil.getDataLen() / windStep);
 
-	int sta = myLib::indexOfVal(marks, staMarks[0]);
-	for(int i = 1; i < staMarks.size(); ++i)
+	auto itSta = std::find_if(std::begin(markers), std::end(markers), [&allMarks](const auto & in)
+	{ return myLib::contains(allMarks, in.second); });
+	for(auto itMark = itSta + 1; itMark != std::end(markers); /*nothing*/++numReal)
 	{
-		sta = std::min( myLib::indexOfVal(marks, staMarks[i]), sta );
+		auto itEnd = std::find_if(itMark, std::end(markers), [&allMarks](const auto & in)
+		{ return myLib::contains(allMarks, in.second); });
+
+		if(itEnd == std::end(markers)) { break; } /// end of file, cut later
+
+		int typ = myLib::indexOfVal(allMarks, (*itSta).second);	/// new typ
+		QString marker = nm((*itSta).second);					/// new marker
+
+		int windowCounter = numSkipStartWinds;
+		int skipStart = numSkipStartWinds * windStep;
+		if((*itSta).second == 254) { skipStart = restSkipTime; } /// magic constant
+
+		for(int startWind = (*itSta).first + skipStart;
+			startWind < ((*itEnd).first - windLen);
+			startWind += windStep)
+		{
+			QString helpString = DEFS.windsFromRealsDir()
+								 + "/" + fil.getExpName()
+								 + "." + rn(numReal, 4)
+								 + "_" + marker
+								 + "." + rn(windowCounter++, 2);
+			forSave.push_back(std::tuple<int, int, QString>(startWind, typ, helpString));
+//			fil.saveSubsection(startWind, startWind + windLen, helpString, true);
+		}
+
+		itSta = itEnd;											/// new real/rest start
+		itMark = itSta + 1;										/// new start to look for itEnd
+
+		qApp->processEvents(); if(stopFlag) { stopFlag = false; break; }
 	}
-	sta += 1;
 
-	/// start, typ, filepath
-	std::vector<std::tuple<int, int, QString>> forSave;
-
-	int typ = -1;
-
-	QString marker;
-	for(int i = 0; i < allMarks.size(); ++i)
+	/// cut last rest
+	auto itLast = std::end(markers) - 1;
+	for(; itLast != std::begin(markers); --itLast)
 	{
-		if(marks[sta - 1] == allMarks[i]) { typ = i; marker = nm(allMarks[i]); break; }
+		if((*itLast).second == 254) { break; } /// should be == itSta but not necessary
 	}
-
-	int numSkipStartWinds = 2;
 	int windowCounter = 0;
-	int numReal = 1;
-
-
-
-	forSave.reserve(fil.getDataLen() / timeShift);
-	for(uint i = sta; i < fil.getDataLen() - wndLength; i += timeShift)
+	for(int startWind = (*itLast).first + restSkipTime;
+		startWind < std::min(fil.getDataLen(),
+							 int((*itLast).first + fil.getFreq() * 8)) - windLen; /// 8 sec
+		startWind += windStep)
 	{
-		std::valarray<double> mark = smLib::contSubsec(marks, i, i + wndLength);
-
-		/// hope only one of them occurs
-		/// if it's not true - skip
-		std::pair<bool, double> a = myLib::contains(mark, allMarks);
-		if(a.first)
-		{
-			for(int i = 0; i < allMarks.size(); ++i)
-			{
-				if(a.second == allMarks[i]) { typ = i; }
-			}
-			marker = nm(a.second);
-
-			++numReal;
-
-			/// jump to the beginning of a real/rest
-			i = i + myLib::indexOfVal(mark, a.second) + 1
-				+ timeShift * (numSkipStartWinds - 1)
-				;
-			windowCounter = numSkipStartWinds;	/// = 1 if not taking the first window
-		}
-		else
-		{
-			helpString = DEFS.windsFromRealsDir()
-						 + "/" + fil.getExpName()
-						 + "." + rn(numReal, 4)
-						 + "_" + marker
-//						 + "_typ_" + typ
-						 + "." + rn(windowCounter++, 2);
-			forSave.push_back(std::tuple<int, int, QString>(i, typ, helpString));
-//			fil.saveSubsection(i, i + wndLength, helpString, true);
-		}
-		qApp->processEvents();
-		if(stopFlag)
-		{
-			stopFlag = false;
-			break;
-		}
+		QString helpString = DEFS.windsFromRealsDir()
+							 + "/" + fil.getExpName()
+							 + "." + rn(numReal, 4)
+							 + "_" + "254"
+							 + "." + rn(windowCounter++, 2);
+		forSave.push_back(std::tuple<int, int, QString>(startWind, 2, helpString));
+//		fil.saveSubsection(startWind, startWind + windLen, helpString, true);
 	}
 
-	auto it = std::end(forSave); --it;
-	while(std::get<1>(*it) == 2) { --it; } /// don't save last rest
 
-//	int n = 0;
-//	for(auto bit = it; bit != std::begin(forSave); --bit)
-//	{
-//		if(std::get<1>(*bit) == 2) { ++n; }
-//	}
-//	std::cout << n << std::endl;
+	auto it = std::end(forSave) - 1;
+	while(std::get<1>(*it) == 2) { --it; } /// don't save last rest
 
 	/// save all or some last
 	if(ui->succPrecleanCheckBox->isChecked())
 	{
 		const int succMax = suc::learnSetStay * 2; /// ~=120
-		std::valarray<int> succCounter(3); succCounter = 1; /// 3 - numOfClasses
+		std::valarray<int> succCounter(3); succCounter = 0; /// 3 - numOfClasses
 
 		/// save succMax each type
 		for(; (succCounter != succMax).max() && it != std::begin(forSave); --it)
 		{
-			int locTyp = std::get<1>(*it);
-			if(succCounter[locTyp] < succMax)
+			int currWindTyp = std::get<1>(*it);
+			if(succCounter[currWindTyp] < succMax)
 			{
 				fil.saveSubsection(std::get<0>(*it),
-								   std::get<0>(*it) + wndLength,
+								   std::get<0>(*it) + windLen,
 								   std::get<2>(*it),
 								   true);
-				++succCounter[locTyp];
+				++succCounter[currWindTyp];
 
 				ui->progressBar->setValue( succCounter.sum() * 100. / (3. * succMax));
 			}
@@ -217,19 +206,15 @@ void MainWindow::sliceWinds()
 	}
 	else
 	{
-		int siz = std::distance(std::begin(forSave), it);
 		int c = 0;
-		while(1)
+		for(const auto & in : forSave)
 		{
-			fil.saveSubsection(std::get<0>(*it),
-							   std::get<0>(*it) + wndLength,
-							   std::get<2>(*it),
+			fil.saveSubsection(std::get<0>(in),
+							   std::get<0>(in) + windLen,
+							   std::get<2>(in),
 							   true);
 
-			ui->progressBar->setValue(c++ * 100. / siz);
-
-			if(it == std::begin(forSave)) { break; }
-			--it;
+			ui->progressBar->setValue(c++ * 100. / forSave.size());
 		}
 	}
 }

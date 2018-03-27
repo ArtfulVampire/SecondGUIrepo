@@ -2,7 +2,6 @@
 #define OUTPUT_H
 
 #include <other/consts.h>
-//#include <other/matrix.h>
 
 #include <ios>
 #include <iostream>

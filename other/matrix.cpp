@@ -207,13 +207,17 @@ matrix matrix::operator = (const matrixType & other)
 
 
 
-
 std::ostream & operator<< (std::ostream & os, const matrix & toOut)
 {
 	for(const auto & row : toOut)
 	{
-		os << row << "\r\n";
+		for(auto in : row)
+		{
+			os << in << "\t";
+		}
+		os << "\r\n";
 	}
+	os.flush();
 	return os;
 }
 

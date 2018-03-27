@@ -200,15 +200,15 @@ namespace def
 				QColor("gray")};
 
 	const QString XeniaFolder			{"/media/Files/Data/Xenia"};
-	const QString mriFolder			{"/media/Files/Data/MRI"};
+	const QString mriFolder				{"/media/Files/Data/MRI"};
 	const QString GalyaFolder			{"/media/Files/Data/Galya"};
 	const QString DashaFolder			{"/media/Files/Data/Dasha/AUDIO"};
-	const QString uciFolder			{"/media/Files/Data/UCI"};
-	const QString helpPath			{"/media/Files/Data/FeedbackFinalMark/Help"};
+	const QString uciFolder				{"/media/Files/Data/UCI"};
+	const QString helpPath				{"/media/Files/Data/FeedbackFinalMark/Help"};
 
 	const QString iitpFolder			{"/media/Files/Data/iitp"};
 	const QString iitpSyncFolder		{"/media/Files/Data/iitp/SYNCED"};
-	const QString iitpResFolder		{"/media/Files/Data/iitp/Results"};
+	const QString iitpResFolder			{"/media/Files/Data/iitp/Results"};
 	const QString matiFolder			{"/media/Files/Data/Mati"};
 } /// end namespace def
 

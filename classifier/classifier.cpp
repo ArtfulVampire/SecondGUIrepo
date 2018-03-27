@@ -159,7 +159,7 @@ void Classifier::printParams()
 }
 
 
-Classifier::avType Classifier::averageClassification()
+Classifier::avType Classifier::averageClassification(std::ostream & os)
 {
 #if 01
 	/// successive
@@ -215,26 +215,24 @@ Classifier::avType Classifier::averageClassification()
     res.close();
 
 
-	/// std::cout
-    confusionMatrix.print();
-	std::cout << "average accuracy = "
-			  << smLib::doubleRound(averageAccuracy, 2) << '\t';
-	std::cout << "kappa = " << smLib::doubleRound(kappa, 3) << '\t';
-	std::cout << std::endl << std::endl;
+	os << confusionMatrix;
+	os << "average accuracy = " << smLib::doubleRound(averageAccuracy, 1) << "\t";
+	os << "kappa = " << smLib::doubleRound(kappa, 3) << "\t";
+	os << std::endl << std::endl;
 
     confusionMatrix.fill(0.);
 
     return std::make_pair(averageAccuracy, kappa);
 }
 
-void Classifier::leaveOneOutClassification()
+void Classifier::leaveOneOutClassification(std::ostream & os)
 {
 	const auto & dataMatrix = this->myClassData->getData();
 	std::vector<uint> learnIndices;
-	std::cout << "LOO: max = " << dataMatrix.rows() << std::endl;
+	os << "LOO: max = " << dataMatrix.rows() << std::endl;
 	for(uint i = 0; i < dataMatrix.rows(); ++i)
 	{
-		if((i + 1) % 10 == 0) { std::cout << i + 1 << " "; std::cout.flush(); }
+		if((i + 1) % 10 == 0) { os << i + 1 << " "; os.flush(); }
 
 		learnIndices.clear();
 		learnIndices.resize(dataMatrix.rows() - 1);
@@ -281,8 +279,10 @@ std::vector<uint>> Classifier::makeIndicesSetsCross(
 	return make_pair(learnInd, tallInd);
 }
 
-void Classifier::crossClassification(int numOfPairs, int fold)
+void Classifier::crossClassification(int numOfPairs, int fold, std::ostream & os)
 {
+
+
 	const matrix & dataMatrix = this->myClassData->getData();
 	const auto & types = this->myClassData->getTypes();
 
@@ -293,10 +293,10 @@ void Classifier::crossClassification(int numOfPairs, int fold)
 		arr[ types[i] ].push_back(i);
 	}
 
-	std::cout << "Cross-Class: max = " << numOfPairs << std::endl;
+	os << "Cross-Class: max = " << numOfPairs << std::endl;
 	for(int i = 0; i < numOfPairs; ++i)
 	{
-		std::cout << i + 1 << ":  "; std::cout.flush();
+		os << i + 1 << ":  "; std::cout.flush();
 
 		for(int i = 0; i < DEFS.numOfClasses(); ++i)
 		{
@@ -304,12 +304,12 @@ void Classifier::crossClassification(int numOfPairs, int fold)
 		}
 		for(int numFold = 0; numFold < fold; ++numFold)
 		{
-			std::cout << numFold + 1 << " ";  std::cout.flush();
+			os << numFold + 1 << " ";  os.flush();
 			auto sets = this->makeIndicesSetsCross(arr, fold, numFold); // on const arr
 			this->learn(sets.first);
 			this->test(sets.second);
 		}
-		std::cout << std::endl;
+		os << std::endl;
 	}
 }
 

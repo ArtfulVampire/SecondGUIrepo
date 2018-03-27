@@ -192,24 +192,14 @@ QString getPicPath(const QString & dataPath,
 				   const QString & ExpNameDir)
 {
 	QString fileName = myLib::getFileName(dataPath);
-    fileName.replace('.', '_');
+	fileName.replace("." + def::plainDataExtension, "_");
 
-	QString helpString = (ExpNameDir + "/'");
+	QString addName{};
+	if(dataPath.contains("Reals"))		{ addName = "Signals"; }
+	else if(dataPath.contains("winds")) { addName = "Signals/winds"; }
+	else if(dataPath.contains("cut"))	{ addName = "SignalsCut"; }
 
-    if(dataPath.contains("Reals"))
-    {
-		helpString += "Signals";
-	}
-    else if(dataPath.contains("winds"))
-	{
-		helpString += "Signals/winds";
-    }
-    else if(dataPath.contains("cut"))
-    {
-        helpString += "SignalsCut";
-    }
-	helpString += "/" + fileName + ".jpg";
-    return helpString;
+	return ExpNameDir + "/" + addName + "/" + fileName + ".jpg";
 }
 
 int getTypeOfFileName(const QString & fileName, const QStringList & markers)

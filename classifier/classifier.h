@@ -79,8 +79,8 @@ public:
 	ClassifierData * getClassifierData() { return myClassData; }
 
 	/// 
-	void leaveOneOutClassification();
-	void crossClassification(int numOfPairs, int fold);
+	void leaveOneOutClassification(std::ostream & os = std::cout);
+	void crossClassification(int numOfPairs, int fold, std::ostream & os = std::cout);
 	void trainTestClassification(const QString & trainTemplate = "_train",
 								 const QString & testTemplate = "_test");
 	void halfHalfClassification();
@@ -95,7 +95,7 @@ public:
     Classifier();
     virtual ~Classifier();
 
-	avType averageClassification(); /// on confusionMatrix
+	avType averageClassification(std::ostream & os = std::cout); /// on confusionMatrix
 
 	virtual void learn(std::vector<uint> & indices) = 0;
 	void learnAll();
@@ -181,7 +181,7 @@ public:
 	void writeWeight(const QString & wtsPath = QString()) const;
     void drawWeight(QString wtsPath = QString(),
 					QString picPath = QString());
-    double adjustLearnRate();
+	double adjustLearnRate(std::ostream & os = std::cout);
 
 	/// returning output layer values
 	/// should be made virtual = 0

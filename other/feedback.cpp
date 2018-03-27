@@ -188,7 +188,6 @@ double FBedf::distSpec(taskType type1, taskType type2)
 			if(a != 0) { ++diff; }
 		}
 	}
-
 	return double(diff) / all;
 }
 
@@ -340,10 +339,15 @@ QPixmap FBedf::verbShortLong(double thres) const
 
 Classifier::avType FBedf::classifyReals() const
 {
+	DEFS.setFftLen(FBedf::fftLen);
 	ANN * net = new ANN();
 
 	std::vector<uint> types{};	types.reserve(160);
 	matrix clData{};			clData.reserve(160);
+
+
+	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), FBedf::fftLen);
+	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), FBedf::fftLen);
 
 	for(int i = 0; i < realsSpectra.size(); ++i)
 	{
@@ -354,7 +358,7 @@ Classifier::avType FBedf::classifyReals() const
 				/// fill types
 				types.push_back(i);
 				/// fill data matrix
-				clData.push_back(realsSpectra[i][j].toValarByRows());
+				clData.push_back(realsSpectra[i][j].subCols(leftLim, rightLim).toValarByRows());
 			}
 		}
 	}
@@ -362,8 +366,13 @@ Classifier::avType FBedf::classifyReals() const
 	ClassifierData dt = ClassifierData(clData, types);
 	net->setClassifierData(dt);
 
-	net->crossClassification(2, 2);
-	auto res = net->averageClassification();
+	std::ofstream nullStream("/dev/null");
+	net->adjustLearnRate(nullStream);
+//	net->adjustLearnRate();
+//	net->crossClassification(5, 5, nullStream);
+	net->leaveOneOutClassification(nullStream);
+//	net->leaveOneOutClassification();
+	auto res = net->averageClassification(nullStream);
 
 	delete net;
 	return res;
@@ -371,24 +380,30 @@ Classifier::avType FBedf::classifyReals() const
 
 Classifier::avType FBedf::classifyWinds(int windLen) const
 {
-	const int fftLen = smLib::fftL(windLen);
-	DEFS.setFftLen(fftLen);
+	const int windFftLen = smLib::fftL(windLen);
+
+	DEFS.setFftLen(windFftLen);
 
 	ANN * net = new ANN();
 
+
 	/// slice winds
 	double overlapPart = 0.0;
-	const int windStep = (1. - overlapPart) * windLen;
+	const int windStep = (1. - overlapPart) * windLen;						/// = windLen
 	const int maxNumWinds = (this->getData().cols() - windLen) / windStep;
-	std::list<uint> types{};		//types.reserve(maxNumWinds);
+	const int numSkipStartWinds = 0; /// skip 2 windows
+
+	std::vector<uint> types{};		types.reserve(maxNumWinds);
 	std::vector<matrix> clData{};	clData.reserve(maxNumWinds);
 
 	/// markers droppped already
 	for(int i = 0; i < realsSignals.size(); ++i)
 	{
+		/// is rest?
+		int skipStart = (i == 2) ? 0 : numSkipStartWinds * windStep;
 		for(int j = 0; j < realsSignals[i].size(); ++j)
 		{
-			for(int windStart = 0;
+			for(int windStart = 0 + skipStart;
 				windStart < int(realsSignals[i][j].cols()) - windLen;
 				windStart += windStep)
 			{
@@ -399,31 +414,34 @@ Classifier::avType FBedf::classifyWinds(int windLen) const
 		}
 	}
 
-	matrix clSpec{};	clSpec.reserve(clData.size());
-	auto typIt = std::begin(types);
-	for(int i = 0; i < clData.size(); ++i, ++typIt)
+
+	matrix clSpec{};			clSpec.reserve(clData.size());
+	std::vector<uint> typs;		typs.reserve(types.size());
+
+
+	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), windFftLen);
+	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), windFftLen);
+	for(int i = 0; i < clData.size(); ++i)
 	{
 		matrix pew = myLib::countSpectre(clData[i],
-										 fftLen,
+										 windFftLen,
 										 5);
 		if(!pew.isEmpty())
 		{
-			clSpec.push_back(pew.toValarByRows());
-			typIt = types.erase(typIt);
-			--typIt;
+			clSpec.push_back(pew.subCols(leftLim, rightLim).toValarByRows());
+			typs.push_back(types[i]);
 		}
 	}
-
-	std::vector<uint> typs(types.size());
-	std::copy(std::begin(types), std::end(types), std::begin(typs));
-
 
 	ClassifierData dt = ClassifierData(clSpec, typs);
 	/// arguments of wrong size
 	net->setClassifierData(dt);
 
-	net->crossClassification(10, 8);
-	auto res = net->averageClassification();
+	std::ofstream nullStream("/dev/null");
+	net->adjustLearnRate(nullStream);
+//	net->crossClassification(5, 5, nullStream);
+	net->leaveOneOutClassification(nullStream);
+	auto res = net->averageClassification(nullStream);
 
 	delete net;
 	return res;
@@ -618,7 +636,7 @@ void FeedbackClass::writeShortLongs(const QString & prePath)
 
 void FeedbackClass::writeClass()
 {
-	if(0)
+	if(01)
 	{
 		double a = files[0].classifyReals().first;
 		double b = files[1].classifyReals().first;
@@ -628,6 +646,8 @@ void FeedbackClass::writeClass()
 				<< (b - a) / a << "\t";
 	}
 
+
+	if(01)
 	{
 		double a = files[0].classifyWinds(1024).first;
 		double b = files[1].classifyWinds(1024).first;
@@ -719,9 +739,9 @@ void coutAllFeatures(const QString & dear,
 //		fb.writeStat();											std::cout.flush(); /// 23
 //		fb.writeDists();										std::cout.flush(); /// 6
 //		fb.writeDispersions();									std::cout.flush(); /// 9
-//		fb.writeKDEs(guysPath + "/" + in.second + "_");			std::cout.flush();
-//		fb.writeShortLongs(guysPath + "/" + in.second + "_");	std::cout.flush();
-		fb.writeClass();										std::cout.flush();
+//		fb.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
+//		fb.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
+		fb.writeClass();										std::cout.flush(); /// 6
 		std::cout << std::endl; exit(0);
 
 		///

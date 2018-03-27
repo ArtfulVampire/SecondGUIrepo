@@ -23,9 +23,9 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
     {
     case myMode::k_fold:
     {
-		this->crossClassification();
-//		myModel->crossClassification(ui->numOfPairsBox->value(),
-//									 ui->foldSpinBox->value());
+//		this->crossClassification();
+		myModel->crossClassification(ui->numOfPairsBox->value(),
+									 ui->foldSpinBox->value());
 		break;
     }
     case myMode::N_fold:
