@@ -42,6 +42,7 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 	if(!QFile::exists(edfPath) ||
 	   !QFile::exists(ansPath))
 	{
+		std::cout << "FBedf: some of files absent" << std::endl;
 		return;
 	}
 
@@ -101,6 +102,7 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 	isGood = true;
 
 
+	/// test cout
 	if(0)
 	{
 		std::cout << realsSpectra.size() << std::endl; /// how many classes
@@ -203,6 +205,7 @@ double FBedf::insightPartOfSolved(double thres) const
 
 double FBedf::spectreDispersion(taskType typ)
 {
+	/// remake via subRows, subcols, transpose
 	double res = 0.;
 	for(int chan : FBedf::chansToProcess)
 	{
@@ -312,6 +315,7 @@ QPixmap FBedf::verbShortLong(double thres) const
 			else						{ shrts.push_back(realsSpectra[taskTyp][i]);	}
 		}
 	}
+	if(shrts.size() == 0) { return {}; }
 
 	matrix shrt	= shrts[0];	shrt.fill(0.);
 	matrix lng	= lngs[0];	lng.fill(0.);
@@ -369,8 +373,8 @@ Classifier::avType FBedf::classifyReals() const
 	std::ofstream nullStream("/dev/null");
 	net->adjustLearnRate(nullStream);
 //	net->adjustLearnRate();
-//	net->crossClassification(5, 5, nullStream);
-	net->leaveOneOutClassification(nullStream);
+	net->crossClassification(10, 5, nullStream);
+//	net->leaveOneOutClassification(nullStream);
 //	net->leaveOneOutClassification();
 	auto res = net->averageClassification(nullStream);
 
@@ -439,8 +443,8 @@ Classifier::avType FBedf::classifyWinds(int windLen) const
 
 	std::ofstream nullStream("/dev/null");
 	net->adjustLearnRate(nullStream);
-//	net->crossClassification(5, 5, nullStream);
-	net->leaveOneOutClassification(nullStream);
+	net->crossClassification(10, 5, nullStream);
+//	net->leaveOneOutClassification(nullStream);
 	auto res = net->averageClassification(nullStream);
 
 	delete net;
@@ -472,9 +476,12 @@ FeedbackClass::FeedbackClass(const QString & guyPath_,
 	for(int i : {1, 3})
 	{
 		auto & fil = files[int(i != 1)];
+
 		fil = FBedf(filePath(i), ansPath(i));
+
 		if(!fil)
 		{
+			std::cout << "badFile: " << filePath(i) << std::endl;
 			this->isGood = false;
 			return;
 		}
@@ -586,7 +593,7 @@ void FeedbackClass::writeStat()
 	std::cout << std::defaultfloat;
 }
 
-void FeedbackClass::writeDists() /// 1st: 0-1, 0-2, 1-2, 2nd: 0-1, 0-2, 1-2
+void FeedbackClass::writeDists()
 {
 	for(int i = 0; i < fb::numOfClasses; ++i)
 	{
@@ -742,7 +749,6 @@ void coutAllFeatures(const QString & dear,
 //		fb.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
 //		fb.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
 		fb.writeClass();										std::cout.flush(); /// 6
-		std::cout << std::endl; exit(0);
 
 		///
 		std::cout << std::endl;

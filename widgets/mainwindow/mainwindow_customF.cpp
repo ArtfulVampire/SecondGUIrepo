@@ -84,6 +84,7 @@ void MainWindow::customFunc()
 	/// make all data_fin
 #endif
 	fb::coutAllFeatures(dear, guysList, postfix);
+//	fb::coutAllFeatures(dear, {subj::guysFBfinal[2]}, postfix);
 	exit(0);
 #endif
 
