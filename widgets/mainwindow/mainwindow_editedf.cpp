@@ -64,8 +64,7 @@ void MainWindow::rereferenceCARSlot()
 	std::valarray<double> refArr(globalEdf.getDataLen());
 	for(QString chanName : usedLabels)
 	{
-		auto ref = globalEdf.findChannel(chanName);
-		refArr += globalEdf.getData(ref);
+		refArr += globalEdf.getData(chanName);
 	}
 	refArr /= usedLabels.size();
 

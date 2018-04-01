@@ -607,7 +607,7 @@ matrix Cut::makeDrawData()
 void Cut::paintData(matrix & drawDataLoc)
 {
 	/// zero some channels
-	auto ecg = edfFil.findChannel("ECG");
+	int ecg = edfFil.findChannel("ECG");
 	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg != -1)
 	{
 		drawDataLoc[ecg] = 0; /// for iitp ecg

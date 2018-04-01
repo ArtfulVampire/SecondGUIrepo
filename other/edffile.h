@@ -218,7 +218,7 @@ public:
 
 	edfFile & zeroChannels(const std::vector<uint> & chanNums);
 
-	uint findChannel(const QString & str) const;
+	int findChannel(const QString & str) const;
 //	std::vector<uint> findChannels(const QString & filter) const;
 	std::vector<int> findChannels(const QString & filter) const;
 	std::vector<int> findChannels(const std::vector<QString> & strs) const;

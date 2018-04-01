@@ -268,8 +268,9 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		this->transducerType = std::vector<QString> (this->ns, myLib::fitString("IITP transducer", 80));
 		this->physDim = std::vector<QString> (this->ns, myLib::fitString("IITPdim", 8));
 
-		this->physMin.resize(this->ns, -2048);
-		this->physMax.resize(this->ns, 2048);
+		/// 2048 not enough for gonios sometimes
+		this->physMin.resize(this->ns, -4096);
+		this->physMax.resize(this->ns, 4096);
 
 		this->digMin.resize(this->ns, -32768);
 		this->digMax.resize(this->ns, 32768);
@@ -1562,7 +1563,7 @@ edfFile & edfFile::multiplyChannels(std::vector<uint> chanNums, double mult)
 	return *this;
 }
 
-uint edfFile::findChannel(const QString & str) const
+int edfFile::findChannel(const QString & str) const
 {
 	for(int i = 0; i < this->ns; ++i)
 	{
@@ -2068,8 +2069,7 @@ edfFile edfFile::rereferenceDataCAR() const
 	std::valarray<double> refArr(temp.edfData.cols());
 	for(QString chanName : usedLabels)
 	{
-		auto ref = temp.findChannel(chanName);
-		refArr += temp[ref];
+		refArr += temp[temp.findChannel(chanName)];
 	}
 	refArr /= usedLabels.size();
 
@@ -2215,13 +2215,13 @@ edfFile & edfFile::removeChannels(const std::vector<int> & chanList)
 {
     std::set<int, std::greater<int>> excludeSet;
     for(int val : chanList)
-    {
-		excludeSet.emplace(val);
+	{
+		if(val != -1) { excludeSet.emplace(val); }
     }
 
     for(int k : excludeSet)
 	{
-		if(k < 0) continue; /// good for -1 in findChannel
+//		if(k == -1) continue; /// good for -1 in findChannel
 
 		this->edfData.eraseRow(k);
         this->channels.erase(std::begin(this->channels) + k);
@@ -2235,12 +2235,12 @@ edfFile & edfFile::removeChannels(const std::vector<uint> & chanList)
 	std::set<uint, std::greater<uint>> excludeSet;
 	for(uint val : chanList)
 	{
-		if(val == -1) { excludeSet.emplace(val); }
+		if(val != -1) { excludeSet.emplace(val); }
 	}
 
 	for(uint k : excludeSet)
 	{
-//		 continue; /// good for -1 in findChannel
+//		if(k == -1) continue; /// good for -1 in findChannel
 
 		this->edfData.eraseRow(k);
 		this->channels.erase(std::begin(this->channels) + k);

@@ -67,8 +67,8 @@ bool IITPtestInitialFiles(const QString & guyName)
 			std::cout << eeg << " contains Oz " << std::endl;
 		}
 
-		/// replicate duplicates of ECG
-		auto ecgs = fil.findChannels("ECG ");
+		/// replicate duplicates of ECG channel, rewrite
+		auto ecgs = fil.findChannels("ECG");
 		if(ecgs.size() > 1)
 		{
 			std::cout << eeg << " contains too many Markers (ECG) channels" << std::endl;
@@ -78,8 +78,8 @@ bool IITPtestInitialFiles(const QString & guyName)
 		}
 	}
 
-	/// emg file channels - interest emg
-	/// emg file channels - interest gonios
+	/// emg file channels - interest emg presence
+	/// emg file channels - interest gonios presence
 	for(const auto & emg : emgs)
 	{
 		edfFile fil;
@@ -991,9 +991,9 @@ void IITPremoveZchans(const QString & guyName, const QString & dirPath)
 	{
 		edfFile fil;
 		fil.readEdfFile(dirPath + "/" + guyName + "/" + fl);
-		auto a = fil.findChannel("Fpz");
-		auto b = fil.findChannel("Oz");
-		fil.removeChannels(std::vector<uint>{a, b});
+		int a = fil.findChannel("Fpz");
+		int b = fil.findChannel("Oz");
+		fil.removeChannels(std::vector<int>{a, b});
 		fil.writeEdfFile(fil.getFilePath());
 	}
 }
@@ -1010,9 +1010,9 @@ void IITPremoveZchans(const QString & hauptDir)
 //			if(!fl.contains("_1") && !fl.contains("_2")) continue;
 			edfFile fil;
 			fil.readEdfFile(hauptDir + "/" + dr + "/" + fl);
-			auto a = fil.findChannel("Fpz");
-			auto b = fil.findChannel("Oz");
-			fil.removeChannels(std::vector<uint>{a, b});
+			int a = fil.findChannel("Fpz");
+			int b = fil.findChannel("Oz");
+			fil.removeChannels(std::vector<int>{a, b});
 			fil.writeEdfFile(fil.getFilePath());
 		}
 	}
@@ -1196,7 +1196,7 @@ void IITPstagedToEnveloped(const QString & guyName,
 		dt.readEdfFile(filePath(fileNum));
 		for(QString emgChan : iitp::emgNames)
 		{
-			auto num = dt.findChannel(emgChan);
+			int num = dt.findChannel(emgChan);
 			if(num == -1) { continue; }
 
 			auto env = myLib::hilbertPieces(dt.getData(num));

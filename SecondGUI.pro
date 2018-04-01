@@ -40,13 +40,15 @@ QMAKE_CXXFLAGS += -D_GLIBCXX_USE_CXX11_ABI=0
 #INCLUDEPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
 #DEPENDPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
 
-SOURCES += main.cpp\
+SOURCES += \
+main.cpp\
 widgets/mainwindow/mainwindow.cpp \
 widgets/mainwindow/mainwindow_slices.cpp \
 widgets/mainwindow/mainwindow_ica.cpp \
 widgets/mainwindow/mainwindow_editedf.cpp \
 widgets/mainwindow/mainwindow_autos.cpp \
 widgets/mainwindow/mainwindow_customF.cpp \
+widgets/mainwindow/mainwindow_mati.cpp \
 myLib/myLib_clustering.cpp \
 myLib/myLib_signalProcessing.cpp \
 myLib/myLib_draws.cpp \
@@ -80,6 +82,7 @@ other/autos_galya.cpp \
 other/autos.cpp \
 other/feedback.cpp \
 other/edfFile.cpp \
+other/defs.cpp \
 widgets/net/net.cpp \
 widgets/net/net_classification.cpp \
 widgets/net/net_setsgets.cpp \
@@ -91,12 +94,9 @@ widgets/cut/cut_smartFind.cpp \
 widgets/cut/cut_modify.cpp \
 widgets/cut/cut_navi.cpp \
 widgets/cut/cut_iitp.cpp \
-widgets/cut/cut_files.cpp \
-widgets/mainwindow/mainwindow_mati.cpp \
-    other/defs.cpp
+widgets/cut/cut_files.cpp
 
-HEADERS  += \
-widgets/cut.h \
+HEADERS += \
 myLib/drw.h \
 myLib/signalProcessing.h \
 myLib/wavelet.h \
@@ -116,6 +116,7 @@ myLib/iitp_variables.h \
 myLib/qtlib.h \
 myLib/temp.h \
 myLib/vectr.h \
+widgets/cut.h \
 widgets/mainwindow.h \
 widgets/net.h \
 widgets/spectre.h \
@@ -126,10 +127,11 @@ other/matrix.h \
 other/edffile.h \
 other/subjects.h \
 other/feedback.h \
-    other/defs.h \
-    other/consts.h
+other/defs.h \
+other/consts.h
 
-FORMS+= mainwindow.ui \
+FORMS +=\
+mainwindow.ui \
 cut.ui \
 net.ui \
 spectre.ui

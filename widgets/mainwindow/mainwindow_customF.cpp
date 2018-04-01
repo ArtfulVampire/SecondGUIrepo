@@ -41,7 +41,7 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-//	return;
+	return;
 
 
 #if 0
@@ -71,7 +71,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// count correctness and average times
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
@@ -212,8 +212,9 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
+	/// insert absent channels for all files of a guy
 	{
-		const QString guy = "Michael";
+		const QString guy = "Ivan";
 		const QString guyPath = def::iitpFolder + "/" + guy;
 		const QString postfix = "_eeg";
 		auto badFiles = autos::IITPtestEegChannels(guyPath, postfix);
@@ -247,7 +248,7 @@ void MainWindow::customFunc()
 
 	return;
 
-	QString guy = "Michael";
+	QString guy = "Elena";
 //	for(QString guy : guyList)
 //	for(QString guy : vrList)
 	{
@@ -272,16 +273,17 @@ void MainWindow::customFunc()
 		if(0)
 		{
 //			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
-//			autos::IITPdatToEdf(guy);								/// all dat files in dir
-//			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites all _emg.edf
+//			exit(0);
+			autos::IITPdatToEdf(guy);								/// all dat files in dir
+			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites all _emg.edf
 			if(!autos::IITPtestInitialFiles(guy))
 			{
 				exit(0);
 			}
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
-
-		if(0)
+//		return;
+		if(01)
 		{
 			if(01)
 			{

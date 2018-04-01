@@ -153,11 +153,12 @@ MainWindow::MainWindow() :
 					 [this](int a) { globalEdf.setMatiFlag(a); });
 #else
 	qtLib::hideLayout(ui->matiGridLayout);
-	ui->matiPieceLengthSpinBox->hide();
+	qtLib::hideLayout(ui->matiCutLayout);
+//	ui->matiPieceLengthSpinBox->hide();
+//	ui->matiPieceLenlabel->hide();
 	ui->matiCheckBox->hide();
 	ui->matiPreprocessingPushButton->hide();
-	ui->matiPieceLenlabel->hide();
-	ui->matiAdjustPiecesCheckBox->hide();
+	ui->matiAdjustPiecesCheckBox->hide();		/// to deprecate
 #endif
 	qtLib::hideLayout(ui->testDataGridLayout);
 
@@ -206,7 +207,9 @@ MainWindow::MainWindow() :
 					 this, SLOT(cleanEdfFromEyesSlot()));
 
 	QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
+
 #if 1
+	/// reduce ns in Reals
 	ui->reduceChannesPushButton->hide();
 #endif
 
