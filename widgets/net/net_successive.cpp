@@ -226,8 +226,7 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 					  def::helpPath + "/" + localExpName + "_last.jpg");
 
 	std::ofstream nullStr("dev/null/");
-	auto res = myANN->averageClassification(nullStr);
-	return res;
+	return myANN->averageClassification(nullStr);
 }
 Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QString & ansPath1,
 											 const QString & edfPath2, const QString & ansPath2)
