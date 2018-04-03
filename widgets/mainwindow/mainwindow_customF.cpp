@@ -79,12 +79,11 @@ void MainWindow::customFunc()
 	const QString postfix = "_good";
 #else /// final (~16 people)
 	const QString dear = "FeedbackFinalMark";
-	const auto & guysList = subj::guysFBfinal;
 	const QString postfix = "_fin";
-	/// make all data_fin
+	const auto & guysList = subj::guysFBfinal;
 #endif
 	fb::coutAllFeatures(dear, guysList, postfix);
-//	fb::coutAllFeatures(dear, {subj::guysFBfinal[2]}, postfix);
+//	fb::coutAllFeatures(dear, {subj::guysFBfinal[9]}, postfix);
 	exit(0);
 #endif
 

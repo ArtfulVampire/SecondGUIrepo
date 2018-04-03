@@ -606,7 +606,7 @@ void FeedbackClass::writeDists()
 			double a = files[int(fileNum::first)].distSpec(taskType(i), taskType(j));
 			double b = files[int(fileNum::third)].distSpec(taskType(i), taskType(j));
 			std::cout
-					<< std::setprecision(4)
+//					<< std::setprecision(4)
 					<< a << "\t"
 					<< b << "\t"
 					<< (b - a) / a << "\t";
@@ -621,9 +621,9 @@ void FeedbackClass::writeDispersions() /// 1st: 0, 1, 2, 2nd: 0, 1, 2
 		double a = files[int(fileNum::first)].spectreDispersion(taskType(i));
 		double b = files[int(fileNum::third)].spectreDispersion(taskType(i));
 		std::cout
+//				<< std::setprecision(4)
 				<< a << "\t"
 				<< b << "\t"
-				<< std::setprecision(4)
 				<< (b - a) / a << "\t";
 	}
 }
@@ -654,10 +654,9 @@ void FeedbackClass::writeClass()
 		double a = files[int(fileNum::first)].classifyReals().first;
 		double b = files[int(fileNum::third)].classifyReals().first;
 		std::cout
-				<< std::setprecision(1)
+//				<< std::setprecision(3)
 				<< a << "\t"
 				<< b << "\t"
-				<< std::setprecision(3)
 				<< (b - a) / a << "\t";
 	}
 
@@ -667,10 +666,9 @@ void FeedbackClass::writeClass()
 		double a = files[int(fileNum::first)].classifyWinds().first;
 		double b = files[int(fileNum::third)].classifyWinds().first;
 		std::cout
-				<< std::setprecision(1)
+//				<< std::setprecision(3)
 				<< a << "\t"
 				<< b << "\t"
-				<< std::setprecision(3)
 				<< (b - a) / a << "\t";
 	}
 }
@@ -771,9 +769,9 @@ void coutAllFeatures(const QString & dear,
 //		fb.writeDispersions();									std::cout.flush(); /// 9
 //		fb.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
 //		fb.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
-//		fb.writeClass();										std::cout.flush(); /// 6
+		fb.writeClass();										std::cout.flush(); /// 6
 		fb.writeSuccessive();									std::cout.flush();
-		exit(0);
+//		exit(0);
 
 		///
 		std::cout << std::endl;
