@@ -41,7 +41,7 @@ void MainWindow::customFunc()
 //	}
 //	exit(0);
 
-	return;
+//	return;
 
 
 #if 0
@@ -215,12 +215,44 @@ void MainWindow::customFunc()
 	/// insert absent channels for all files of a guy
 	{
 		const QString guy = "Ivan";
-		const QString guyPath = def::iitpFolder + "/" + guy;
-		const QString postfix = "_eeg";
+		const QString guyPath = def::iitpSyncFolder + "/" + guy + "/bc_noRectify";
+		const QString postfix = "_sum_new";
 		auto badFiles = autos::IITPtestEegChannels(guyPath, postfix);
 		autos::IITPinsertChannels(guyPath, badFiles);
 		exit(0);
 	}
+#endif
+
+#if 0
+	return;
+	/// replace Knee_r with Elbow_r		when legs only
+	/// and Knee_r with -Knee_l			when legs + arms
+	for(const QString & guy : {"Elena", "Ivan"})
+	{
+		const QString pth = def::iitpSyncFolder + "/" + guy;
+		for(const QString & mrk : {"02", "30", "31"})
+		{
+			const QString filePath = pth + "/" + guy + "_" + mrk + "_sum_new.edf";
+			if(!QFile::exists(filePath)) { continue; }
+
+			edfFile dt;
+			dt.readEdfFile(filePath);
+			dt.setData(dt.findChannel("Knee_r"), dt.getData("Elbow_r"));
+			dt.setData(dt.findChannel("Elbow_r"), std::valarray<double>(0., dt.getDataLen()));
+			dt.rewriteEdfFile();
+		}
+		for(const QString & mrk : {"17", "34", "35"})
+		{
+			const QString filePath = pth + "/" + guy + "_" + mrk + "_sum_new.edf";
+			if(!QFile::exists(filePath)) { continue; }
+
+			edfFile dt;
+			dt.readEdfFile(filePath);
+			dt.setData(dt.findChannel("Knee_r"), -dt.getData("Knee_l"));
+			dt.rewriteEdfFile();
+		}
+	}
+	exit(0);
 #endif
 
 #if 0
@@ -245,6 +277,7 @@ void MainWindow::customFunc()
 //		"Ira2",
 //		"Victor2"
 	};
+
 
 	return;
 
@@ -283,7 +316,7 @@ void MainWindow::customFunc()
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
 //		return;
-		if(01)
+		if(0)
 		{
 			if(01)
 			{
@@ -298,15 +331,25 @@ void MainWindow::customFunc()
 			return; /// manual sync
 		}
 		/// copy files to SYNCED
+		if(0)
+		{
+			/// rectifyEMG in SYNCED
+			autos::IITPrectifyEmg(guy);
+			exit(0);
+		}
 //		return;
-		if(01)
+		if(0)
 		{
 			std::cout << "staging start" << std::endl;
 			autos::IITPstaging(guy);							/// flex/extend markers
 			std::cout << "staging end, copy start" << std::endl;
 			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
 			std::cout << "copy end, reref start" << std::endl;
-			autos::IITPrerefCAR(guy);							/// rewrite ALL edfs in SYNCED/guy_car
+			autos::IITPrerefCAR(guy + "_car");					/// rewrite ALL edfs in SYNCED/guy_car
+		}
+		/// CHECK car files if needed
+		if(01)
+		{
 			std::cout << "copy end, process start" << std::endl;
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
 			std::cout << "process end, draw start" << std::endl;

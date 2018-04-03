@@ -113,7 +113,7 @@ std::vector<std::pair<QString, std::vector<QString>>> IITPtestEegChannels(const 
 	/// check all EEG channels presence
 	std::vector<std::pair<QString, std::vector<QString>>> res;
 	const auto filesList = QDir(guyDir).entryList({"*" + postfix + ".edf"});
-	for(auto edf : filesList)
+	for(const auto & edf : filesList)
 	{
 		edfFile fil;
 		fil.readEdfFile(guyDir + "/" + edf);
@@ -136,7 +136,7 @@ std::vector<std::pair<QString, std::vector<QString>>> IITPtestEegChannels(const 
 			res.push_back({edf, absChans});
 
 			/// cout
-			if(0)
+			if(01)
 			{
 				std::cout << edf << ": ";
 				for(auto ch : absChans)
@@ -1019,7 +1019,7 @@ void IITPremoveZchans(const QString & hauptDir)
 }
 
 
-void IITPemgToAbs(const QString & guyName,
+void IITPrectifyEmg(const QString & guyName,
 				  QString postfix,
 				  const QString & dirPath)
 {
@@ -1056,7 +1056,7 @@ void IITPemgToAbs(const QString & guyName,
 		dt.readEdfFile(filePath(fileNum));
 		for(QString emgChan : iitp::emgNames)
 		{
-			auto num = dt.findChannel(emgChan);
+			int num = dt.findChannel(emgChan);
 			if(num == -1) { continue; }
 
 			auto ab = dt.getData(num);
@@ -1086,11 +1086,16 @@ void IITPrerefCAR(const QString & guyName,
 {
 
 	const auto & usedLabels = coords::lbl19;	/// to build reref array
+
+//	const std::vector<QString> usedLabels{"Fp1", "Fp2",
+//									  "F7", "F3", "Fz",       "F8",
+//									  "T3", "C3", "Cz", "C4", "T4",
+//									  "T5", "P3", "Pz", "P4", "T6",
+//									  "O1", "O2"};
+
 	const auto & rerefLabels = coords::lbl19;	/// list to reref
 
-	const QString workPath = dirPath + "/" + guyName
-							 + "_car"			/// pewpew
-							 ;
+	const QString workPath = dirPath + "/" + guyName;
 
 
 	QStringList edfs = QDir(workPath).entryList(def::edfFilters);
@@ -1107,19 +1112,16 @@ void IITPrerefCAR(const QString & guyName,
 
 		/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - Ref
 		std::valarray<double> refArr(fil.getDataLen());
-		for(QString chanName : usedLabels)
+		for(const QString & chanName : usedLabels)
 		{
-//			std::cout << chanName << " st" << std::endl;
-			auto ref = fil.findChannel(chanName);
+			int ref = fil.findChannel(chanName);
 			refArr += fil.getData(ref);
-//			std::cout << chanName << " en" << std::endl;
 		}
 		refArr /= usedLabels.size();
 
 
 		for(int i = 0; i < fil.getNs(); ++i)
 		{
-//			std::cout << i << " "; std::cout.flush();
 			auto it = std::find_if(std::begin(rerefLabels),
 								   std::end(rerefLabels),
 								   [fil, i](const QString & in)
@@ -1136,10 +1138,10 @@ void IITPrerefCAR(const QString & guyName,
 				fil.setLabel(i, newLabel);
 			}
 		}
-//		std::cout << std::endl;
-		fil.writeEdfFile(workPath + "/" + fileName
-//						 .replace(".edf", "_car.edf") /// add name or not
-						 );
+		/// add name or not
+		fil.rewriteEdfFile();
+//		fil.writeEdfFile(workPath + "/" + fileName.replace(".edf", "_car.edf"));
+
 	}
 }
 

@@ -131,6 +131,8 @@ void IITPconcat(const QString & guyName,
 void IITPdatToEdf(const QString & guyName);
 
 bool IITPtestInitialFiles(const QString & guyName);
+
+/// vector[fileName, [absent channels]]
 std::vector<std::pair<QString, std::vector<QString>>> IITPtestEegChannels(const QString & guyDir,
 																		  const QString & postfix);
 
@@ -169,7 +171,7 @@ void IITPrerefCAR(const QString & guyName,
 				  const QString & dirPath = def::iitpSyncFolder,
 				  const QString & addFilter = QString());
 
-void IITPemgToAbs(const QString & guyName,
+void IITPrectifyEmg(const QString & guyName,
 				  QString postfix = "_sum_new",
 				  const QString & dirPath = def::iitpSyncFolder);
 void IITPstagedToEnveloped(const QString & guyName,

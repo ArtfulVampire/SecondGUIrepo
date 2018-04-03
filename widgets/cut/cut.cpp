@@ -29,6 +29,8 @@ Cut::Cut() :
 	ui->suffixComboBox->addItem("emg");
 	ui->suffixComboBox->addItem("sum");
 	ui->suffixComboBox->addItem("new");
+	ui->suffixComboBox->addItem("sum_new");
+	ui->suffixComboBox->addItem("car");
 	ui->suffixComboBox->setCurrentText("");
 //	ui->suffixComboBox->setCurrentText("sum"); /// iitp
 
