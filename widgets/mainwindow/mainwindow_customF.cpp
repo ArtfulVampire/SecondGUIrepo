@@ -43,7 +43,6 @@ void MainWindow::customFunc()
 
 //	return;
 
-
 #if 0
 	/// check markers
 	const QString path = QString("/media/Files/Data/FeedbackNewMark/");

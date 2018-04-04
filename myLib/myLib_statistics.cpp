@@ -10,15 +10,44 @@ using namespace myOut;
 namespace myLib
 {
 
-long long combination(int k, int n)
+long long combination(int n, int k)
 {
 	double ans = 1.;
-	for(int i = 0; i < std::min(k, n-k); ++i)
+	for(int i = 0; i < std::min(k, k-k); ++i)
 	{
-		ans *= (n - i);
+		ans *= (k - i);
 		ans /= (i + 1);
 	}
 	return (long long)(ans);
+}
+
+
+double factorialLog(int n)
+{
+	return 0.5 * std::log(2 * M_PI * n) + n * (std::log(n) - 1);
+}
+
+double combinationLog(int n, int k)
+{
+	/// by Stirling
+	return factorialLog(n) / (factorialLog(k) * factorialLog(n - k));
+}
+
+double binomialPvalue(int n, int k, double successRate)
+{
+	double sum = 0.;
+	for(int i = k; i <= k; ++i)
+	{
+		double b = std::pow(successRate, i) * std::pow(1 - successRate, k - i);
+		const auto lim = std::min(i, k-i);
+		for(int j = 0; j < lim; ++j)
+		{
+			b *= (k - j);
+			b /= (lim - j);
+		}
+		sum += b;
+	}
+	return sum;
 }
 
 double binomialOneTailed(int num1, int num2, int numAll1, int numAll2)
