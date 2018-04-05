@@ -40,7 +40,7 @@ class Classifier
 {
 public:
 	typedef std::pair<double, double> avType; /// average accuracy, Cohen's kappa
-
+	typedef std::tuple<bool, int, double> classOneType; /// true or not, outClass, error
 protected:
 	ModelType myType;
     QString typeString;
@@ -84,6 +84,8 @@ public:
 	void trainTestClassification(const QString & trainTemplate = "_train",
 								 const QString & testTemplate = "_test");
 	void halfHalfClassification();
+	void cleaningNfold(int num = 3);
+	void cleaningKfold(int num = 3, int fold = 5);
 
 private:
 	std::pair<std::vector<uint>, std::vector<uint>> makeIndicesSetsCross(
@@ -101,16 +103,19 @@ public:
 	void learnAll();
 
 	void test(const std::vector<uint> & indices);
+	classOneType test(uint index) { return classifyDatum(index); }
     void testAll();
 
     virtual void successiveRelearn();
 	virtual void printParams();
 	virtual void adjustToNewData() {}
 
-	std::pair<uint, double> classifyDatumLast();
+//	std::pair<uint, double> classifyDatumLast();
+	classOneType classifyDatumLast();
 
 protected:
-	std::pair<uint, double> classifyDatum(uint vecNum); // return class and error, effect on confMat
+//	std::pair<uint, double> classifyDatum(uint vecNum); // return class and error, effect on confMat
+	classOneType classifyDatum(uint vecNum); // effect on confMat
 	virtual void classifyDatum1(uint vecNum) = 0;		// just count outputLayer
 	void classifyDatumLast1();
 };
@@ -193,6 +198,9 @@ protected:
     /// successive
     void successiveRelearn() override;
 	void adjustToNewData() override;
+
+public:
+//	static void cleaningNfold(matrix & inData, std::vector<uint> & inTypes);
 };
 
 

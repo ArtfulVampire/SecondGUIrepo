@@ -74,6 +74,11 @@ public:
 		static defs d{};
 		return d;
 	}
+	static std::ofstream & nullStream()
+	{
+		static std::ofstream str("/dev/null");
+		return str;
+	}
 private:
 	defs()
 	{
@@ -228,6 +233,7 @@ public:
 
 #define DEFS defs::inst()
 #define globalEdf defs::inst().getEdfRef()
+#define DEVNULL defs::nullStream()
 
 
 #endif /// COORD_H

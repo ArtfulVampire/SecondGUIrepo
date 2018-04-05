@@ -70,7 +70,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// count correctness and average times
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";

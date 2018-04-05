@@ -119,6 +119,7 @@ public:
     void loadData(const QString & spectraPath = DEFS.dirPath()
 												+ "/SpectraSmooth",
 				  const QStringList & filters = {"*.psd"});
+//	void loadData(const QString & matrix, const std::vector<uint> & types);
 	void loadDataUCI(const QString & setName);
 	void loadDataXenia(const QString & filesPath = DEFS.dirPath() + "/Xenia_tables",
 					   const QString & type = "bd_new");

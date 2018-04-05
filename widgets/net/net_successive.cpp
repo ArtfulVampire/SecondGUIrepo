@@ -135,10 +135,11 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 
 	myClassifierData = ClassifierData();
 
+	/// not via constructor because of norming
 	for(int i = 0; i < file1.getWindTypes().size(); ++i)
 	{
-		myClassifierData.push_back(file1.getWindSpectra()[i],
-								   file1.getWindTypes()[i],
+		myClassifierData.push_back(file1.getWindSpectra(i),
+								   file1.getWindTypes(i),
 								   "L " + nm(i));
 	}
 	myClassifierData.reduceSize(suc::learnSetStay);
@@ -332,9 +333,9 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
 	myClassifierData.addItem(newSpectre, newType, newFileName);
 
 	// take the last and increment confusion matrix
-	const std::pair<int, double> outType = myModel->classifyDatumLast();
+	const Classifier::classOneType outType = myModel->classifyDatumLast();
 
-	if((outType.first == newType && outType.second < suc::errorThreshold)
+	if((std::get<0>(outType) && std::get<2>(outType) < suc::errorThreshold)
 	   || passed[newType] < suc::learnSetStay /// add first learnSetStay windows unconditionally
 	   )
 	{
@@ -369,9 +370,9 @@ void Net::successiveLearningFinal(const matrix & newSpectra,
 		myClassifierData.addItem(in, newType, "");
 
 		/// take the last and increment confusion matrix
-		const std::pair<int, double> outType = myModel->classifyDatumLast();
+		const Classifier::classOneType outType = myModel->classifyDatumLast();
 
-		if((outType.first == newType && outType.second < suc::errorThreshold)
+		if((std::get<0>(outType) && std::get<2>(outType) < suc::errorThreshold)
 		   || passed[newType] < suc::learnSetStay /// add first learnSetStay windows unconditionally
 		   )
 		{

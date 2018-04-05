@@ -83,7 +83,6 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 		{
 			solvTime[typ][real] = realsSignals[typ][real].cols() / this->srate;
 
-
 			matrix a = myLib::countSpectre(realsSignals[typ][real],
 										   4096,
 										   15);
@@ -167,6 +166,94 @@ FBedf::FBedf(const QString & edfPath, const QString & ansPath)
 				std::cout << in2.size() << "\t"; /// how many rows in reals;
 			}
 			std::cout << std::endl;
+		}
+	}
+}
+
+
+ClassifierData FBedf::prepareClDataWinds(bool reduce)
+{
+	ClassifierData clData{};
+	for(int i = 0; i < windTypes.size(); ++i)
+	{
+		clData.push_back(
+					windSpectra[i],
+					windTypes[i],
+					"L " + nm(i));
+	}
+	if(reduce) { clData.reduceSize(suc::learnSetStay); }
+	clData.setApriori(clData.getClassCount());
+	clData.z_transform();
+	return clData;
+}
+
+double FBedf::partOfCleanedWinds()
+{
+	this->remakeWindows(0.0);
+	auto clData = this->prepareClDataWinds(false);
+	const double init = clData.size();
+
+	ANN * ann = new ANN();
+	ann->setClassifierData(clData);
+//	int counter = 0;
+	do
+	{
+		clData = *(ann->getClassifierData());
+		ann->setClassifierData(clData);			/// to zero confusion matrix
+//		ann->cleaningNfold(2);
+		ann->cleaningKfold(3, 2);
+//		std::cout << counter++ << " "; std::cout.flush();
+	}
+	while(ann->averageClassification(DEVNULL).first != 100.);
+
+	const double last = ann->getClassifierData()->size();
+
+	return (init - last) / init;
+}
+
+void FBedf::remakeWindows(double overlapPart)
+{
+	/// make windSignals
+	const int windStep = (1. - overlapPart) * windLen;						/// = windLen
+	const int maxNumWinds = (this->getData().cols() - windLen) / windStep;
+	const int numSkipStartWinds = 0; /// skip 2 windows
+
+	std::vector<matrix> windSigData{};		windSigData.reserve(maxNumWinds);
+	std::vector<uint> windSigTypes{};		windSigTypes.reserve(maxNumWinds);
+
+	for(int i = 0; i < realsSignals.size(); ++i)
+	{
+		/// is rest?
+		int skipStart = (i == 2) ? 0 : numSkipStartWinds * windStep;
+		for(int j = 0; j < realsSignals[i].size(); ++j)
+		{
+			for(int windStart = 0 + skipStart;
+				windStart < int(realsSignals[i][j].cols()) - windLen;
+				windStart += windStep)
+			{
+				windSigData.push_back(realsSignals[i][j].subCols(windStart,
+																 windStart + windLen));
+				windSigTypes.push_back(i);
+			}
+		}
+	}
+
+	/// make windSpectra
+	this->windSpectra.clear();		this->windSpectra.reserve(windSigData.size());
+	this->windTypes.clear();		this->windTypes.reserve(windSigTypes.size());
+
+	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), windFftLen);
+	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), windFftLen);
+
+	for(int i = 0; i < windSigData.size(); ++i)
+	{
+		matrix pew = myLib::countSpectre(windSigData[i],
+										 windFftLen,
+										 5);
+		if(!pew.isEmpty())
+		{
+			this->windSpectra.push_back(pew.subCols(leftLim, rightLim).toValarByRows());
+			this->windTypes.push_back(windSigTypes[i]);
 		}
 	}
 }
@@ -416,13 +503,12 @@ Classifier::avType FBedf::classifyReals() const
 	ClassifierData dt = ClassifierData(clData, types);
 	net->setClassifierData(dt);
 
-	std::ofstream nullStream("/dev/null");
-	net->adjustLearnRate(nullStream);
+	net->adjustLearnRate(DEVNULL);
 //	net->adjustLearnRate();
-	net->crossClassification(10, 5, nullStream);
-//	net->leaveOneOutClassification(nullStream);
+	net->crossClassification(10, 5, DEVNULL);
+//	net->leaveOneOutClassification(DEVNULL);
 //	net->leaveOneOutClassification();
-	auto res = net->averageClassification(nullStream);
+	auto res = net->averageClassification(DEVNULL);
 
 	delete net;
 	return res;
@@ -438,11 +524,10 @@ Classifier::avType FBedf::classifyWinds() const
 	/// arguments of wrong size
 	net->setClassifierData(dt);
 
-	std::ofstream nullStream("/dev/null");
-	net->adjustLearnRate(nullStream);
-	net->crossClassification(10, 5, nullStream);
-//	net->leaveOneOutClassification(nullStream);
-	auto res = net->averageClassification(nullStream);
+	net->adjustLearnRate(DEVNULL);
+	net->crossClassification(10, 5, DEVNULL);
+//	net->leaveOneOutClassification(DEVNULL);
+	auto res = net->averageClassification(DEVNULL);
 
 	delete net;
 	return res;
@@ -475,9 +560,9 @@ FeedbackClass::FeedbackClass(const QString & guyPath_,
 		int fileNumber{};
 		switch(i)
 		{
-		case 1: { fileNumber = int(fileNum::first); break; }	/// 0
-		case 2: { fileNumber = int(fileNum::second); break; }	/// 2
-		case 3: { fileNumber = int(fileNum::third); break; }	/// 1
+		case 1: { fileNumber = int(fileNum::first);		break; }	/// 0
+		case 2: { fileNumber = int(fileNum::second);	break; }	/// 2
+		case 3: { fileNumber = int(fileNum::third);		break; }	/// 1
 		}
 		auto & fil = files[fileNumber];
 
@@ -577,9 +662,6 @@ void FeedbackClass::checkStatInsight(double thres)
 //			<< "improvement = "
 //			<< std::endl
 			   ;
-
-
-
 }
 
 void FeedbackClass::writeStat()
@@ -614,7 +696,7 @@ void FeedbackClass::writeDists()
 	}
 }
 
-void FeedbackClass::writeDispersions() /// 1st: 0, 1, 2, 2nd: 0, 1, 2
+void FeedbackClass::writeDispersions()
 {
 	for(int i = 0; i < fb::numOfClasses; ++i)
 	{
@@ -673,6 +755,57 @@ void FeedbackClass::writeClass()
 	}
 }
 
+
+void FeedbackClass::remakeWindows(fileNum num, double overlapPart)
+{
+	this->files[int(num)].remakeWindows(overlapPart);
+}
+
+ClassifierData FeedbackClass::prepareClDataWinds(fileNum num, bool reduce)
+{
+	return this->files[int(num)].prepareClDataWinds(reduce);
+}
+
+
+void FeedbackClass::writeLearnedPatterns()
+{
+	ANN * ann = new ANN();
+
+	this->files[int(fileNum::first)].remakeWindows(3.5 / 4.0);
+
+	auto clData = prepareClDataWinds(fileNum::first, true);
+
+	ann->setClassifierData(clData);
+	ann->cleaningNfold(3);
+//	ann->getClassifierData()->z_transform(); /// again?
+	ann->learnAll();
+
+	QString wtsPath = files[int(fileNum::first)].getFilePath();
+	wtsPath.replace(".edf", ".wts");
+	ann->writeWeight(wtsPath);
+
+	this->files[int(fileNum::second)].remakeWindows(3.5 / 4.0);
+	auto clData2 = prepareClDataWinds(fileNum::second, false);
+	ann->setClassifierData(clData2);
+	ann->readWeight(wtsPath);
+	ann->testAll();
+	auto res1 = ann->averageClassification(DEVNULL);
+
+	this->files[int(fileNum::third)].remakeWindows(3.5 / 4.0);
+	auto clData3 = prepareClDataWinds(fileNum::third, false);
+	ann->setClassifierData(clData3);
+	ann->readWeight(wtsPath);
+	ann->testAll();
+	auto res2 = ann->averageClassification(DEVNULL);
+
+	std::cout
+			<< res1.first << "\t"
+			<< res2.first << "\t"
+			   ;
+
+	delete ann;
+}
+
 void FeedbackClass::writeSuccessive()
 {
 	Net * net = new Net();
@@ -684,6 +817,28 @@ void FeedbackClass::writeSuccessive()
 					files[int(fileNum::second)]).first
 			<< "\t"; std::cout.flush();
 	delete net;
+}
+
+void FeedbackClass::writeSuccessive3()
+{
+	ANN * ann = new ANN();
+	this->files[int(fileNum::third)].remakeWindows(3.5 / 4.0);
+	auto clData3 = prepareClDataWinds(fileNum::third, false);
+	ann->setClassifierData(clData3);
+	ann->readWeight(def::helpPath + "/" + this->files[int(fileNum::third)].getExpName().left(3)
+			+ "_last.wts");
+	ann->testAll();
+	auto res2 = ann->averageClassification(DEVNULL);
+	std::cout << res2.first << "\t";
+}
+
+
+void FeedbackClass::writePartOfCleaned()
+{
+	for(fileNum num : {fileNum::first, fileNum::second, fileNum::third})
+	{
+		std::cout << this->files[int(num)].partOfCleanedWinds() << "\t";
+	}
 }
 
 void FeedbackClass::writeFile()
@@ -761,7 +916,9 @@ void coutAllFeatures(const QString & dear,
 
 		fb::FeedbackClass fb(guyPath, in.second, postfix);
 		if(!fb) { continue; }
-		std::cout << in.second << "\t";
+
+		/// ExpName
+//		std::cout << in.second << "\t";
 
 		/// stats of solving and times
 //		fb.writeStat();											std::cout.flush(); /// 23
@@ -769,8 +926,12 @@ void coutAllFeatures(const QString & dear,
 //		fb.writeDispersions();									std::cout.flush(); /// 9
 //		fb.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
 //		fb.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
-		fb.writeClass();										std::cout.flush(); /// 6
-		fb.writeSuccessive();									std::cout.flush();
+//		fb.writeClass();										std::cout.flush(); /// 6
+//		fb.writeSuccessive();									std::cout.flush();
+//		fb.writeLearnedPatterns();								std::cout.flush();
+//		fb.writeSuccessive3();									std::cout.flush();
+		fb.writePartOfCleaned();								std::cout.flush();
+
 //		exit(0);
 
 		///

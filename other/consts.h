@@ -210,6 +210,7 @@ namespace def
 	const QString iitpSyncFolder		{"/media/Files/Data/iitp/SYNCED"};
 	const QString iitpResFolder			{"/media/Files/Data/iitp/Results"};
 	const QString matiFolder			{"/media/Files/Data/Mati"};
+
 } /// end namespace def
 
 namespace coords

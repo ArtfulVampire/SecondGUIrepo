@@ -53,6 +53,10 @@ public:
 	/// solvTime? ans spectre inside
 	FBedf() { isGood = false; }
 	FBedf(const QString & edfPath, const QString & ansPath);
+	void remakeWindows(double overlapPart);
+
+	ClassifierData prepareClDataWinds(bool reduce);
+	double partOfCleanedWinds();
 
 	double spectreDispersion(taskType typ);
 	double distSpec(taskType type1, taskType type2);
@@ -70,8 +74,10 @@ public:
 	int getNum(taskType typ, ansType howSolved) const;
 	int getAns(int i) const { return ansInRow[i]; }
 	int getNumInsights(double thres) const;
-	const matrix & getWindSpectra() const				{ return windSpectra; }
-	const std::vector<uint> & getWindTypes() const		{ return windTypes; }
+	const matrix & getWindSpectra() const						{ return windSpectra; }
+	const std::vector<uint> & getWindTypes() const				{ return windTypes; }
+	const std::valarray<double> & getWindSpectra(int i) const	{ return windSpectra[i]; }
+	uint getWindTypes(int i) const								{ return windTypes[i]; }
 
 private:
 	bool isGood{false};
@@ -109,6 +115,14 @@ public:
 	void writeClass();
 	void writeSuccessive();
 
+	void remakeWindows(fileNum num, double overlapPart);
+	ClassifierData prepareClDataWinds(fileNum num, bool reduce);
+	void writeLearnedPatterns();
+
+
+	void writeSuccessive3();
+	void writePartOfCleaned();
+
 	operator bool() { return isGood; }
 
 private:
@@ -138,6 +152,7 @@ void createAnsFiles(const QString & guyPath, QString guyName);
 void checkMarkFBfinal(const QString & filePath);
 void repairMarkersInNewFB(QString edfPath, int numSession);
 void successiveNetPrecleanWinds(const QString & windsPath);
+
 
 
 } // end namespace fb

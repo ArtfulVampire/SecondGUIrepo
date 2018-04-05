@@ -551,3 +551,41 @@ double ANN::adjustLearnRate(std::ostream & os)
 }
 
 
+//void ANN::cleaningNfold(matrix & inData, std::vector<uint> & inTypes)
+//{
+//	ClassifierData clData(inData, inTypes);
+//	ANN * ann = new ANN();
+//	ann->setClassifierData(clData);
+
+
+//	for(int i = 0; i < 5; ++i)
+//	{
+//		std::vector<uint> learnIndices{};
+//		std::vector<uint> exclude{};
+//		for(uint i = 0; i < clData.size(); ++i)
+//		{
+////			if((i + 1) % 10 == 0) { os << i + 1 << " "; os.flush(); }
+
+//			learnIndices.clear();
+//			learnIndices.resize(clData.size() - 1);
+//			std::iota(std::begin(learnIndices),
+//					  std::begin(learnIndices) + i,
+//					  0);
+//			std::iota(std::begin(learnIndices) + i,
+//					  std::end(learnIndices),
+//					  i + 1);
+
+//			ann->learn(learnIndices);
+//			auto a = ann->test(i);
+//			if(!std::get<0>(a))
+//			{
+//				exclude.push_back(i);
+//			}
+
+//		}
+//		clData.erase(exclude);
+//	}
+//	inData = clData.getData();
+//	inTypes = clData.getTypes();
+//	delete ann;
+//}

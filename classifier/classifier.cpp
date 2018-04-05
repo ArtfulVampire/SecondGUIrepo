@@ -61,7 +61,7 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 //								myClassData->getTypes()[vecNum]);
 // }
 
-std::pair<uint, double> Classifier::classifyDatum(uint vecNum)
+Classifier::classOneType Classifier::classifyDatum(uint vecNum)
 {
 	this->classifyDatum1(vecNum);
 
@@ -74,11 +74,12 @@ std::pair<uint, double> Classifier::classifyDatum(uint vecNum)
 	confusionMatrix[myClassData->getTypes()[vecNum]][outClass] += 1.;
 	printResult(typeString + ".txt", outClass, vecNum);
 	smLib::normalize(outputLayer); /// for clLib::countError
-	return std::make_pair(outClass,
-						  clLib::countError(outputLayer, myClassData->getTypes()[vecNum]));
+	return std::make_tuple(myClassData->getTypes()[vecNum] == outClass,
+						   outClass,
+						   clLib::countError(outputLayer, myClassData->getTypes()[vecNum]));
 }
 
-std::pair<uint, double> Classifier::classifyDatumLast()
+Classifier::classOneType Classifier::classifyDatumLast()
 {
 	return classifyDatum(myClassData->getData().rows() - 1);
 }
@@ -118,7 +119,7 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
     {
 		pew = nm(vecNum) + "\n";
 
-		outStr << vecNum+2 << ":\ttrue = " << myClassData->getTypes()[vecNum] << "\tpred = " << predType << "\n";
+		outStr << vecNum + 2 << ":\ttrue = " << myClassData->getTypes()[vecNum] << "\tpred = " << predType << "\n";
     }
     outStr.close();
 }
@@ -280,13 +281,11 @@ std::vector<uint>> Classifier::makeIndicesSetsCross(
 
 void Classifier::crossClassification(int numOfPairs, int fold, std::ostream & os)
 {
-
-
 	const matrix & dataMatrix = this->myClassData->getData();
 	const auto & types = this->myClassData->getTypes();
 
 	std::vector<std::vector<uint>> arr; // [class][index]
-	arr.resize(DEFS.numOfClasses());
+	arr.resize(this->myClassData->getNumOfCl());
 	for(uint i = 0; i < dataMatrix.rows(); ++i)
 	{
 		arr[ types[i] ].push_back(i);
@@ -297,7 +296,7 @@ void Classifier::crossClassification(int numOfPairs, int fold, std::ostream & os
 	{
 		os << i + 1 << ":  "; std::cout.flush();
 
-		for(int i = 0; i < DEFS.numOfClasses(); ++i)
+		for(int i = 0; i < this->myClassData->getNumOfCl(); ++i)
 		{
 			smLib::mix(arr[i]);
 		}
@@ -358,3 +357,74 @@ void Classifier::halfHalfClassification()
 	this->test(tallIndices);
 }
 
+void Classifier::cleaningNfold(int num)
+{
+	for(int i = 0; i < num; ++i)
+	{
+		std::vector<uint> learnIndices{};
+		std::vector<uint> exclude{};
+		for(uint i = 0; i < this->myClassData->size(); ++i)
+		{
+			learnIndices.clear();
+			learnIndices.resize(this->myClassData->size() - 1);
+			std::iota(std::begin(learnIndices),
+					  std::begin(learnIndices) + i,
+					  0);
+			std::iota(std::begin(learnIndices) + i,
+					  std::end(learnIndices),
+					  i + 1);
+
+			this->learn(learnIndices);
+			auto a = this->test(i);
+			if(!std::get<0>(a))
+			{
+				exclude.push_back(i);
+			}
+
+		}
+		this->myClassData->erase(exclude);
+	}
+}
+
+void Classifier::cleaningKfold(int num, int fold)
+{
+	const int numOfCl = this->myClassData->getNumOfCl();
+
+	std::vector<std::vector<uint>> arr; // [class][index]
+	arr.resize(numOfCl);
+
+	for(int i = 0; i < num; ++i)
+	{
+		/// fill arr
+		for(auto & inArr : arr) { inArr.clear(); }
+		for(uint i = 0; i < this->myClassData->size(); ++i)
+		{
+			arr[ this->myClassData->getTypes()[i] ].push_back(i);
+		}
+		/// mix arr
+		for(auto & inArr : arr) { smLib::mix(inArr); }
+
+		/// make indices
+		auto sets = this->makeIndicesSetsCross(arr, fold, 0);
+		this->learn(sets.first);
+
+		/// remove some indices
+		std::vector<uint> exclude{};
+		for(uint i : sets.second)
+		{
+			auto a = this->test(i);
+			if(!std::get<0>(a))
+			{
+				exclude.push_back(i);
+			}
+		}
+		this->myClassData->erase(exclude);
+	}
+
+	/// reset params
+	confusionMatrix = matrix(numOfCl, numOfCl, 0);
+	outputLayer = std::valarray<double>(0., numOfCl);
+
+	/// classify
+	this->crossClassification(2, fold, DEVNULL);
+}

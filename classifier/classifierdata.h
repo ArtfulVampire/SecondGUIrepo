@@ -35,13 +35,13 @@ public:
 	const std::valarray<double> & getClassCount() const { return classCount; }
 	const std::valarray<double> & getApriori() const { return apriori; }
 	const QString & getFilesPath() const { return filesPath; }
+	int size() { return dataMatrix.rows(); }
 
 	/// sets
 	void setApriori(const std::valarray<double> & inApriori) { apriori = inApriori; }
 
 	/// matrix modifiers
 	void erase(const uint index);
-
 	void erase(const std::vector<uint> & eraseIndices);
 	void print();
 
@@ -61,7 +61,6 @@ public:
 	void resizeCols(int newCols);
 	void reduceSize(uint oneClass);
 	void clean(uint size, const QString & filter = QString());
-
 
 	/// data modifiers
 	void centering();		// by cols
