@@ -476,6 +476,54 @@ QPixmap FBedf::verbShortLong(double thres) const
 	return myLib::drw::drawArrays(tmplt, both);
 }
 
+QPixmap FBedf::rightWrongSpec(taskType typ) const
+{
+	std::vector<matrix> rights;
+	std::vector<matrix> wrongs;
+
+	int wrongsType = 0;
+
+	if(typ == taskType::spat) /// right vs wrong
+	{
+		wrongsType = 2;
+	}
+	else if(typ == taskType::verb) /// ans vs noans
+	{
+		wrongsType = 0;
+	}
+
+	for(int i = 0; i < solvTime[int(typ)].size(); ++i)
+	{
+		if(ans[int(typ)][i] == 1)				{ rights.push_back(realsSpectra[int(typ)][i]);	}
+		else if(ans[int(typ)][i] == wrongsType)	{ wrongs.push_back(realsSpectra[int(typ)][i]);	}
+	}
+
+	if(rights.size() == 0 || wrongs.size() == 0) { return {}; }
+
+	matrix rght	= rights[0];	rght.fill(0.);
+	matrix wrng	= wrongs[0];	wrng.fill(0.);
+	for(const auto & sp : wrongs)
+	{
+		wrng += sp;
+	}
+	wrng /= wrongs.size();
+
+	for(const auto & sp : rights)
+	{
+		rght += sp;
+	}
+	rght /= rights.size();
+
+	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), FBedf::fftLen);
+	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), FBedf::fftLen);
+	matrix both(2, 1);
+	both[0] = rght.subCols(leftLim, rightLim).toValarByRows();
+	both[1] = wrng.subCols(leftLim, rightLim).toValarByRows();
+
+	auto tmplt = myLib::drw::drawTemplate(true, FBedf::leftFreq, FBedf::rightFreq, 19);
+	return myLib::drw::drawArrays(tmplt, both);
+}
+
 Classifier::avType FBedf::classifyReals() const
 {
 	DEFS.setFftLen(FBedf::fftLen);
@@ -729,6 +777,16 @@ void FeedbackClass::writeShortLongs(const QString & prePath)
 	}
 }
 
+
+void FeedbackClass::writeRightWrong(const QString & prePath)
+{
+	for(int num : {int(fileNum::first), int(fileNum::third), int(fileNum::second)})
+	{
+		files[num].rightWrongSpec(taskType::spat).save(prePath + "spat_" + nm(num) + ".jpg");
+		files[num].rightWrongSpec(taskType::verb).save(prePath + "verb_" + nm(num) + ".jpg");
+	}
+}
+
 void FeedbackClass::writeClass()
 {
 	if(01)
@@ -914,23 +972,30 @@ void coutAllFeatures(const QString & dear,
 		const QString guyPath = guysPath + "/" + in.first;
 		if(!QDir(guyPath).exists()) { continue; }
 
-		fb::FeedbackClass fb(guyPath, in.second, postfix);
-		if(!fb) { continue; }
+
+		fb::FeedbackClass fb(guyPath, in.second, postfix); if(!fb) { continue; }
 
 		/// ExpName
 //		std::cout << in.second << "\t";
+
+//		FBedf fil(guyPath + "/" + in.second + "_1.edf",
+//				  guyPath + "/" + in.second + "_ans1.txt");
+//		for(double time = 3.; time <= 6.; time += 0.5)
+//		{
+//			std::cout << fil.getNumInsights(time) << "\t";
+//		}
 
 		/// stats of solving and times
 //		fb.writeStat();											std::cout.flush(); /// 23
 //		fb.writeDists();										std::cout.flush(); /// 6
 //		fb.writeDispersions();									std::cout.flush(); /// 9
 //		fb.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
-//		fb.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
+		fb.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
 //		fb.writeClass();										std::cout.flush(); /// 6
 //		fb.writeSuccessive();									std::cout.flush();
 //		fb.writeLearnedPatterns();								std::cout.flush();
 //		fb.writeSuccessive3();									std::cout.flush();
-		fb.writePartOfCleaned();								std::cout.flush();
+//		fb.writePartOfCleaned();								std::cout.flush();
 
 //		exit(0);
 

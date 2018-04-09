@@ -1126,12 +1126,13 @@ void edfFile::handleDatum(int currNs,
 
 //                currDatum = a; // generality encephalan
             }
-			if(writeMarkersFlag &&
-			   !edfPlusFlag &&
-               currDatum != 0) // make markers file when read only
-            {
-                writeMarker(currDatum, currTimeIndex);
-            }
+
+//			if(writeMarkersFlag &&
+//			   !edfPlusFlag &&
+//			   currDatum != 0) // make markers file when read only
+//			{
+//				writeMarker(currDatum, currTimeIndex);
+//			}
         }
     }
 	else // if write
@@ -1188,11 +1189,24 @@ void edfFile::handleDatum(int currNs,
 void edfFile::writeMarkers() const
 {
 	std::ofstream markersStream((dirPath + "/" + "markers.txt").toStdString());
+	std::ofstream taskMarkersStream((dirPath + "/" + "taskMarkers.txt").toStdString());
+
 	for(const auto & mrk : markers)
 	{
 		markersStream << mrk.first << "\t"
 					  << mrk.first / double(this->srate) << "\t"
 					  << mrk.second;
+
+		if(mrk.second == 241 || mrk.second == 247 || mrk.second == 254)
+		{
+			taskMarkersStream << mrk.first << "\t"
+							  << mrk.first / double(this->srate) << "\t"
+							  << mrk.second << "\r\n";
+			if(mrk.second == 254)
+			{
+				taskMarkersStream << "\r\n";
+			}
+		}
 
 		if(this->matiFlag)
 		{
@@ -1212,6 +1226,7 @@ void edfFile::writeMarkers() const
 		markersStream << "\r\n";
 	}
 	markersStream.close();
+	taskMarkersStream.close();
 }
 
 void edfFile::writeMarker(double currDatum,

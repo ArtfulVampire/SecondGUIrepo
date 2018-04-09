@@ -18,13 +18,8 @@ MainWindow::MainWindow() :
     setWindowTitle("Main");
     setlocale(LC_NUMERIC, "C");
 
-    autoProcessingFlag = false;
 	stdOutBuf = std::cout.rdbuf();
     stopFlag = 0;
-
-
-//	QButtonGroup * group1;
-//	group1 = new QButtonGroup(this);
 
 	QButtonGroup * group2;
 	group2 = new QButtonGroup(this);
@@ -41,7 +36,7 @@ MainWindow::MainWindow() :
 	ui->drawDirBox->addItem("winds");
     ui->drawDirBox->addItem("SpectraSmooth");
 	ui->drawDirBox->addItem("SpectraSmooth/winds");
-	ui->drawDirBox->addItem("winds/SpectraSmooth"); /// tcpClient test
+	ui->drawDirBox->addItem("winds/SpectraSmooth"); /// for tcpClient test
 	ui->drawDirBox->addItem("winds/fromreal");
 
 	/// set fileMarks lineEdit
@@ -60,7 +55,6 @@ MainWindow::MainWindow() :
 	ui->reduceChannelsComboBox->addItem("EEG,other,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,EOG,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,mark");
-
 	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
 
 	/// in seconds !!!!!
@@ -130,8 +124,11 @@ MainWindow::MainWindow() :
     ui->matiPieceLengthSpinBox->setMinimum(4);
     ui->matiPieceLengthSpinBox->setValue(16);
 	ui->matiCheckBox->setChecked(DEFS.isUser(username::Mati));
+	ui->elenaSliceCheckBox->setChecked(DEFS.isUser(username::ElenaC));
 	ui->markerBinTimeSpinBox->setMaximum(250 * 60 * 60 * 2);   // 2 hours
 	ui->markerSecTimeDoubleSpinBox->setMaximum(60 * 60 * 2); // 2 hours
+
+	ui->eogBipolarCheckBox->setChecked(false);
 
 #if SHOW_MATI_WIDGETS
 	/// mati
@@ -154,8 +151,6 @@ MainWindow::MainWindow() :
 #else
 	qtLib::hideLayout(ui->matiGridLayout);
 	qtLib::hideLayout(ui->matiCutLayout);
-//	ui->matiPieceLengthSpinBox->hide();
-//	ui->matiPieceLenlabel->hide();
 	ui->matiCheckBox->hide();
 	ui->matiPreprocessingPushButton->hide();
 	ui->matiAdjustPiecesCheckBox->hide();		/// to deprecate
@@ -212,6 +207,8 @@ MainWindow::MainWindow() :
 	/// reduce ns in Reals
 	ui->reduceChannesPushButton->hide();
 #endif
+
+
 
     customFunc();
 }

@@ -15,33 +15,28 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-	ui->matiCheckBox->setChecked(false);
-	ui->realsButton->setChecked(true);
-	if(DEFS.isUser(username::ElenaC))
+	return;
+#if 0
+	/// find huge spectra
 	{
-		ui->elenaSliceCheckBox->setChecked(true); // Elena
-		ui->eogBipolarCheckBox->setChecked(false); // Elena
+		const QString workPath = "/media/Files/Data/Xenia/FINAL_res";
+		for(const QString & fileName : QDir(workPath).entryList({"*no_spectre*"}))
+		{
+			std::ifstream str((workPath + "/" + fileName).toStdString());
+			double tmp;
+			while(str >> tmp)
+			{
+				if(tmp > 100.)
+				{
+					std::cout << fileName << std::endl;
+					str.close();
+					break;
+				}
+			}
+		}
+		exit(0);
 	}
-
-	/// feedback successive
-//	const QString wrk = DEFS.dirPath() + "/FeedbackFinalMark/Avdeev";
-//	Net * net = new Net();
-//	net->successiveByEDFfinal(wrk + "/AKV_1_fin.edf",
-//							  wrk + "/AKV_ans1.txt",
-//							  wrk + "/AKV_2_fin.edf",
-//							  wrk + "/AKV_ans2.txt");
-//	exit(0);
-
-//	edfFile fil;
-//	fil.readEdfFile("/media/Files/Data/Geodesics/Polina/Mal.edf");
-//	double maxDif = 0;
-//	for(int i = 0; i < fil.getNs() - 1; ++i)
-//	{
-//		maxDif = std::max(maxDif, fil.getPhysMax()[i] - fil.getPhysMin()[i]);
-//	}
-//	exit(0);
-
-//	return;
+#endif
 
 #if 0
 	/// check markers
@@ -78,7 +73,8 @@ void MainWindow::customFunc()
 	const QString postfix = "_good";
 #else /// final (~16 people)
 	const QString dear = "FeedbackFinalMark";
-	const QString postfix = "_fin";
+//	const QString postfix = "_fin";
+	const QString postfix = "";
 	const auto & guysList = subj::guysFBfinal;
 #endif
 	fb::coutAllFeatures(dear, guysList, postfix);

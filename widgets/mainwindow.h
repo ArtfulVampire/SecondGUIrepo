@@ -139,7 +139,6 @@ private:
     matrix spocMixMatrix;
 	std::valarray<double> spocWVector;
 
-    bool autoProcessingFlag;
     bool stopFlag;
 };
 

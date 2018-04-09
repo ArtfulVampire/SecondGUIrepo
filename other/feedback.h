@@ -65,6 +65,7 @@ public:
 	double insightPartOfSolved(double thres) const;
 	QPixmap kdeForSolvTime(taskType typ) const;
 	QPixmap verbShortLong(double thres) const;		/// spectra of short and long anagramms
+	QPixmap rightWrongSpec(taskType typ) const;
 	Classifier::avType classifyReals() const;
 	Classifier::avType classifyWinds() const;
 
@@ -112,6 +113,7 @@ public:
 	void writeDispersions(); /// 1st: 0, 1, 2, 2nd: 0, 1, 2
 	void writeKDEs(const QString & prePath);
 	void writeShortLongs(const QString & prePath);
+	void writeRightWrong(const QString & prePath);
 	void writeClass();
 	void writeSuccessive();
 
