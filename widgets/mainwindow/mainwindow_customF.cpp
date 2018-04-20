@@ -15,24 +15,59 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-	return;
+
 #if 0
-	/// find huge spectra
+	/// count correctness and average times
+#if 0 /// new (~10 people)
+	const QString dear = "FeedbackNewMark";
+	const auto & guysList = subj::guysFBnew;
+	const QString postfix = "_good";
+#else /// final (~16 people)
+	const QString dear = "FeedbackFinalMark";
+	const QString postfix = "_fin";
+//	const QString postfix = "";
+	const auto & guysList = subj::guysFBfinal;
+#endif
+	fb::coutAllFeatures(dear, guysList, postfix);
+//	fb::coutAllFeatures(dear, {subj::guysFBfinal[9]}, postfix);
+	exit(0);
+#endif
+
+#if 0
+	edfFile fil;
+	fil.readEdfFile("/media/Files/Data/Geodesics/MPI_20/MPI.edf");
+	int cz = fil.findChannel("Cz");
+	for(int i = 0; i < 19; ++i)
 	{
-		const QString workPath = "/media/Files/Data/Xenia/FINAL_res";
-		for(const QString & fileName : QDir(workPath).entryList({"*no_spectre*"}))
+//		if(i == cz) continue;
+		fil.setData(i, fil.getData(i) - fil.getData(cz));
+	}
+	fil.writeEdfFile("/media/Files/Data/Geodesics/MPI_20/MPI_cz.edf");
+	exit(0);
+#endif
+
+#if 0
+	const QString mpiPath = "/media/Files/Data/Geodesics/MPI_128to20";
+	edfFile fil;
+	fil.readEdfFile(mpiPath + "/" + "MPI_01.edf");
+	for(int i = 1; i <= 8; ++i)
+	{
+		fil.concatFile(mpiPath + "/" + "MPI_" + rn(i, 2) + ".edf");
+	}
+	fil.writeEdfFile(mpiPath + "/" + "MPI.edf");
+	exit(0);
+#endif
+
+#if 0
+	{
+		const QString workPath = "/media/Files/Data/Geodesics/MPI_128";
+		for(const QString & fileName : QDir(workPath).entryList(def::edfFilters))
 		{
-			std::ifstream str((workPath + "/" + fileName).toStdString());
-			double tmp;
-			while(str >> tmp)
-			{
-				if(tmp > 100.)
-				{
-					std::cout << fileName << std::endl;
-					str.close();
-					break;
-				}
-			}
+			QString newName = fileName;
+			newName.replace("301_Malinovskaya_20_01_", "MPI_");
+			newName.remove("_f3.5-40_rr_eyesClean_new_rdc");
+			QFile::rename(workPath + "/" + fileName,
+						  workPath + "/" + newName);
 		}
 		exit(0);
 	}
@@ -62,23 +97,6 @@ void MainWindow::customFunc()
 			}
 		}
 	}
-	exit(0);
-#endif
-
-#if 01
-	/// count correctness and average times
-#if 0 /// new (~10 people)
-	const QString dear = "FeedbackNewMark";
-	const auto & guysList = subj::guysFBnew;
-	const QString postfix = "_good";
-#else /// final (~16 people)
-	const QString dear = "FeedbackFinalMark";
-//	const QString postfix = "_fin";
-	const QString postfix = "";
-	const auto & guysList = subj::guysFBfinal;
-#endif
-	fb::coutAllFeatures(dear, guysList, postfix);
-//	fb::coutAllFeatures(dear, {subj::guysFBfinal[9]}, postfix);
 	exit(0);
 #endif
 

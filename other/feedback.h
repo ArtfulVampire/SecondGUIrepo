@@ -28,7 +28,7 @@ private:
 	std::vector<int> ansInRow;
 
 	/// [type][numOfReal] = spectre
-	std::vector<std::vector<matrix>> realsSpectra; /// with empty spectra for short
+	std::vector<std::vector<matrix>> realsSpectra; /// with empty spectra for short reals
 
 	/// [numWind] = spectre by rows
 	matrix windSpectra;

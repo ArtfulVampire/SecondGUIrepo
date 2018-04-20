@@ -55,6 +55,7 @@ MainWindow::MainWindow() :
 	ui->reduceChannelsComboBox->addItem("EEG,other,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,EOG,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,mark");
+	ui->reduceChannelsComboBox->addItem("128to19mark");
 	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
 
 	/// in seconds !!!!!
@@ -69,11 +70,6 @@ MainWindow::MainWindow() :
     ui->windowLengthSpinBox->setValue(4);
     ui->realsButton->setChecked(true);
 
-	if(DEFS.isUser(username::Ossadtchi))
-    {
-        ui->timeShiftSpinBox->setValue(10);
-        ui->windowLengthSpinBox->setValue(10);
-	}
 
 	ui->highFreqFilterDoubleSpinBox->setMaximum(500);
 	ui->lowFreqFilterDoubleSpinBox->setMaximum(500);
@@ -123,12 +119,24 @@ MainWindow::MainWindow() :
     ui->matiPieceLengthSpinBox->setMaximum(64);
     ui->matiPieceLengthSpinBox->setMinimum(4);
     ui->matiPieceLengthSpinBox->setValue(16);
-	ui->matiCheckBox->setChecked(DEFS.isUser(username::Mati));
-	ui->elenaSliceCheckBox->setChecked(DEFS.isUser(username::ElenaC));
 	ui->markerBinTimeSpinBox->setMaximum(250 * 60 * 60 * 2);   // 2 hours
 	ui->markerSecTimeDoubleSpinBox->setMaximum(60 * 60 * 2); // 2 hours
 
 	ui->eogBipolarCheckBox->setChecked(false);
+
+	/// user-dependent
+	ui->matiCheckBox->setChecked(DEFS.isUser(username::Mati));
+	ui->elenaSliceCheckBox->setChecked(DEFS.isUser(username::ElenaC));
+	ui->elenaPolyCheckBox->setChecked(DEFS.isUser(username::ElenaC));
+	if(DEFS.isUser(username::Ossadtchi))
+	{
+		ui->timeShiftSpinBox->setValue(10);
+		ui->windowLengthSpinBox->setValue(10);
+	}
+	else
+	{
+		ui->reduceChannesPushButton->hide(); /// reduce ns in Reals
+	}
 
 #if SHOW_MATI_WIDGETS
 	/// mati
@@ -169,7 +177,6 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
 	QObject::connect(ui->fileMarkersLineEdit, SIGNAL(editingFinished()),
 					 this, SLOT(setFileMarkers()));
-
 	QObject::connect(ui->cleanDirsButton, SIGNAL(clicked()), this, SLOT(cleanDirs()));
 	QObject::connect(ui->cleanDirsCheckAllButton, &QPushButton::clicked,
 					 [this](){ this->cleanDirsCheckAllBoxes(true); });
@@ -203,10 +210,6 @@ MainWindow::MainWindow() :
 
 	QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
 
-#if 1
-	/// reduce ns in Reals
-	ui->reduceChannesPushButton->hide();
-#endif
 
 
 
@@ -243,13 +246,25 @@ void MainWindow::changeRedNsLine(int a)
 	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
 #else
 	QString str = ui->reduceChannelsComboBox->itemText(a);
-	QString outStr;
+	QString outStr{};
 	bool eeg = str.contains("EEG");
 	bool reref = str.contains("reref");
 	bool emg = str.contains("EMG");
 	bool eog = str.contains("EOG");
 	bool mark = str.contains("mark");
 	bool oth = str.contains("other");
+
+	if(str.startsWith("128"))
+	{
+		outStr.clear();
+		for(const QString & ch : coords::chans128to20str)
+		{
+			outStr += nm(globalEdf.findChannel(ch) + 1) + " ";
+		}
+		ui->reduceChannelsLineEdit->setText(outStr);
+		return;
+	}
+
 	for(int i = 0; i < globalEdf.getNs(); ++i)
 	{
 		const QString & lab = globalEdf.getLabels(i);

@@ -454,7 +454,7 @@ void Spectre::psaSlot()
 								  colors);
         }
     }
-	else if(DEFS.isUser(username::Ossadtchi))
+	else //if(DEFS.isUser(username::Ossadtchi))
     {
 		myLib::drawArraysInLine(avPicPath,
 								drawData);

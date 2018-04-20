@@ -24,13 +24,13 @@
      </rect>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>281</x>
       <y>211</y>
       <width>805</width>
-      <height>316</height>
+      <height>349</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="processingGridLayout">
@@ -382,13 +382,13 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>284</x>
       <y>74</y>
       <width>801</width>
-      <height>113</height>
+      <height>125</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="cutDataLayout">
@@ -468,15 +468,22 @@
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="cutOtherChecksLayout">
-       <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
         <widget class="QCheckBox" name="elenaSliceCheckBox">
          <property name="text">
           <string>Elena</string>
          </property>
         </widget>
        </item>
-       <item>
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="elenaPolyCheckBox">
+         <property name="text">
+          <string>writePoly</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
         <widget class="QCheckBox" name="succPrecleanCheckBox">
          <property name="text">
           <string>for succ</string>
@@ -532,13 +539,13 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>701</x>
       <y>1</y>
-      <width>151</width>
-      <height>25</height>
+      <width>162</width>
+      <height>28</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="testDataGridLayout">
@@ -554,13 +561,13 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>22</x>
       <y>505</y>
       <width>213</width>
-      <height>222</height>
+      <height>246</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="matiGridLayout">
@@ -647,13 +654,13 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>11</x>
       <y>1</y>
       <width>661</width>
-      <height>24</height>
+      <height>27</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="browseLayout">
@@ -676,7 +683,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>14</x>
@@ -711,7 +718,7 @@
      <x>0</x>
      <y>0</y>
      <width>1100</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

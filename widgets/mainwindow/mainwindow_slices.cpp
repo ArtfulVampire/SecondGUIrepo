@@ -304,6 +304,8 @@ void MainWindow::sliceElena()
 		std::cout << "sliceElena: some of vegetative channels is absent" << std::endl;
 	}
 
+	bool writePoly = ui->elenaPolyCheckBox->isChecked();
+
 	auto saveSpecPoly = [&](int startBin,
 						int finBin,
 						const QString & pieceNumber,
@@ -476,12 +478,15 @@ void MainWindow::sliceElena()
 		if(eyesSta != std::end(marks) && eyesFin != std::end(marks))
 		{
 			/// save values for whole rest
-			saveSpecPoly((*eyesSta).first,
-						 (*eyesFin).first,
-						 nm(1500 + typ * 100),			/// restNumber (1500 - closed, 1600 - open)
-						 nm(eyesMarks[typ][0]),			/// taskMark
-					nm(eyesCodes[typ])				/// operMark
-					);
+			if(writePoly)
+			{
+				saveSpecPoly((*eyesSta).first,
+							 (*eyesFin).first,
+							 nm(1500 + typ * 100),			/// restNumber (1500 - closed, 1600 - open)
+							 nm(eyesMarks[typ][0]),			/// taskMark
+						nm(eyesCodes[typ])				/// operMark
+						);
+			}
 
 
 			/// save values for windows in rest
@@ -501,13 +506,15 @@ void MainWindow::sliceElena()
 								   i + restWindow * fil.getFreq(),
 								   helpString,
 								   true);
-
-				saveSpecPoly(i,
-							 i + restWindow * fil.getFreq(),
-							 QString("0_" + nm(windCounter)),	/// restNumber
-							 nm(eyesMarks[typ][0]),			/// taskMark
-						nm(eyesCodes[typ])				/// operMark
-						);
+				if(writePoly)
+				{
+					saveSpecPoly(i,
+								 i + restWindow * fil.getFreq(),
+								 QString("0_" + nm(windCounter)),	/// restNumber
+								 nm(eyesMarks[typ][0]),			/// taskMark
+							nm(eyesCodes[typ])				/// operMark
+							);
+				}
 			}
 		}
 	}
@@ -572,11 +579,14 @@ void MainWindow::sliceElena()
 										   true);
 
 						/// new 6-Mar-18
-						saveSpecPoly(start,
-									 i,
-									 nm(number),
-									 nm(marker),
-									 nm(markChanArr[i]));
+						if(writePoly)
+						{
+							saveSpecPoly(start,
+										 i,
+										 nm(number),
+										 nm(marker),
+										 nm(markChanArr[i]));
+						}
 
 						allNumbers.erase(number);
 					}

@@ -56,25 +56,31 @@ void MainWindow::rereferenceCARSlot()
 	QString helpString = globalEdf.getFilePath();
 
 	rereferenceData("N");
+	const auto & usedChannels = coords::lbl19;	/// to build reref array
+	const auto & rerefChannels = coords::lbl21;	/// list to reref (with EOG)
 
-	const auto & usedLabels = coords::lbl19;	/// to build reref array
-	const auto & rerefLabels = coords::lbl21;	/// list to reref (with EOG)
+	const auto & usedChannels = coords::lbl19;	/// to build reref array
+	const auto & rerefChannels = coords::lbl21;	/// list to reref (with EOG)
 
 	/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - N
-	std::valarray<double> refArr(globalEdf.getDataLen());
-	for(QString chanName : usedLabels)
-	{
-		refArr += globalEdf.getData(chanName);
-	}
-	refArr /= usedLabels.size();
 
+	std::valarray<double> refArr(globalEdf.getDataLen());
+	for(const auto & chan : usedChannels) /// works for both int and QString
+	{
+		refArr += globalEdf.getData(chan);
+	}
+	refArr /= usedChannels.size();
+
+#if 0
+	/// old 20-Apr-18
 	for(int i = 0; i < globalEdf.getNs(); ++i)
 	{
-		auto it = std::find_if(std::begin(rerefLabels), std::end(rerefLabels),
+		auto it = std::find_if(std::begin(rerefChannels),
+							   std::end(rerefChannels),
 							   [this, i](const QString & in)
 		{ return globalEdf.getLabels(i).contains(in); });
 
-		if(it != std::end(rerefLabels))
+		if(it != std::end(rerefChannels))
 		{
 			if(!(*it).contains("EOG"))
 			{
@@ -83,7 +89,7 @@ void MainWindow::rereferenceCARSlot()
 			else
 			{
 				/// N-EOG1, N-EOG2
-				/// crutch because inversed EOG
+				/// crutch because of inversed EOG in Encephalan
 				globalEdf.setData(i, globalEdf.getData(i) + refArr);
 			}
 
@@ -93,7 +99,30 @@ void MainWindow::rereferenceCARSlot()
 			globalEdf.setLabel(i, newLabel);
 		}
 	}
+#else
+	/// new 20-Apr-18
+	for(int i = 0; i < rerefChannels.size(); ++i)
+	{
+		int chan = globalEdf.findChannel(rerefChannels[i]);
 
+		if(!globalEdf.getLabels(chan).contains("EOG"))
+		{
+			/// EEG
+			globalEdf.setData(chan, globalEdf.getData(chan) - refArr);
+		}
+		else
+		{
+			/// N-EOG1, N-EOG2
+			/// crutch because of inversed EOG in Encephalan
+			globalEdf.setData(chan, globalEdf.getData(chan) + refArr);
+		}
+
+		/// set new label *-CAR
+		QString newLabel = globalEdf.getLabels(chan);
+		newLabel = myLib::fitString(newLabel.left(newLabel.indexOf('-') + 1) + "CAR", 16);
+		globalEdf.setLabel(chan, newLabel);
+	}
+#endif
 	helpString.replace(".edf", "_car.edf", Qt::CaseInsensitive);
 	if(1)
 	{

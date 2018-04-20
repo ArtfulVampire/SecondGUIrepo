@@ -216,7 +216,7 @@ void Cut::setValuesByEdf()
 
 	const bool iitpFlag = edfFil.getDirPath().contains("iitp", Qt::CaseInsensitive);
 
-	const int localLimit = (edfFil.getNs() >= 128) ?
+	const int localLimit = (edfFil.getNs() >= coords::manyChannels) ?
 						  (coords::chans128to20.size() - 1) : (edfFil.getNs() - 1);
 	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
 	{

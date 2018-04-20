@@ -494,8 +494,11 @@ QPixmap FBedf::rightWrongSpec(taskType typ) const
 
 	for(int i = 0; i < solvTime[int(typ)].size(); ++i)
 	{
-		if(ans[int(typ)][i] == 1)				{ rights.push_back(realsSpectra[int(typ)][i]);	}
-		else if(ans[int(typ)][i] == wrongsType)	{ wrongs.push_back(realsSpectra[int(typ)][i]);	}
+		if(!realsSpectra[int(typ)][i].isEmpty())
+		{
+			if(ans[int(typ)][i] == 1)				{ rights.push_back(realsSpectra[int(typ)][i]);	}
+			else if(ans[int(typ)][i] == wrongsType)	{ wrongs.push_back(realsSpectra[int(typ)][i]);	}
+		}
 	}
 
 	if(rights.size() == 0 || wrongs.size() == 0) { return {}; }
@@ -990,7 +993,8 @@ void coutAllFeatures(const QString & dear,
 //		fb.writeDists();										std::cout.flush(); /// 6
 //		fb.writeDispersions();									std::cout.flush(); /// 9
 //		fb.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
-		fb.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
+//		fb.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
+//		fb.writeRightWrong(guyPath + "/" + in.second + "_");	std::cout.flush();
 //		fb.writeClass();										std::cout.flush(); /// 6
 //		fb.writeSuccessive();									std::cout.flush();
 //		fb.writeLearnedPatterns();								std::cout.flush();

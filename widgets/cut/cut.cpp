@@ -485,7 +485,7 @@ void Cut::showDerivatives()
 	const int st = 5;
 
 	int numSig1 = ui->derivChan1SpinBox->value();
-	if(edfFil.getNs() >= 128) { numSig1 = coords::chans128to20[ui->derivChan1SpinBox->value()]; }
+	if(edfFil.getNs() >= coords::manyChannels) { numSig1 = coords::chans128to20[ui->derivChan1SpinBox->value()]; }
 	const std::valarray<double> & sig1 = dataCutLocal[numSig1];
 
 	const int ind1 = ui->leftLimitSpinBox->value();
@@ -500,7 +500,7 @@ void Cut::showDerivatives()
 	}
 
 	int numSig2 = ui->derivChan2SpinBox->value();
-	if(edfFil.getNs() >= 128) { numSig2 = coords::chans128to20[ui->derivChan2SpinBox->value()]; }
+	if(edfFil.getNs() >= coords::manyChannels) { numSig2 = coords::chans128to20[ui->derivChan2SpinBox->value()]; }
 	const std::valarray<double> & sig2 = dataCutLocal[numSig2];
 	const int ind2 = ui->rightLimitSpinBox->value();
 	ui->derivVal2SpinBox->setValue(sig2[ind2]);
@@ -541,7 +541,7 @@ void Cut::colorSpinSlot(QSpinBox * spin, QLineEdit * lin)
 		if(myFileType == fileType::edf && !edfFil.isEmpty())
 		{
 			QString ch{};
-			if(edfFil.getNs() >= 128)
+			if(edfFil.getNs() >= coords::manyChannels)
 			{
 				ch = edfFil.getLabels(coords::chans128to20[n]);
 			}
@@ -581,7 +581,7 @@ std::vector<std::pair<int, QColor>> Cut::makeColouredChans()
 void Cut::paint()
 {
 	drawData = this->makeDrawData();
-	if(drawData.rows() >= 128)
+	if(drawData.rows() >= coords::manyChannels)
 	{
 		drawData = drawData.subRows(coords::chans128to20);
 	}
@@ -627,7 +627,7 @@ void Cut::paintData(matrix & drawDataLoc)
 									 edfFil.getFreq(),
 									 colouredChans);
 	/// draw markers numbers
-	if(edfFil.getNs() >= 128)
+	if(edfFil.getNs() >= coords::manyChannels)
 	{
 		/// suppose we have taken markers channel as last
 		const int mrk = drawDataLoc.rows() - 1;
