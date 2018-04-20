@@ -55,12 +55,16 @@ void MainWindow::rereferenceCARSlot()
 
 	QString helpString = globalEdf.getFilePath();
 
+#if 0
+	/// Encephalan
 	rereferenceData("N");
 	const auto & usedChannels = coords::lbl19;	/// to build reref array
 	const auto & rerefChannels = coords::lbl21;	/// list to reref (with EOG)
-
-	const auto & usedChannels = coords::lbl19;	/// to build reref array
-	const auto & rerefChannels = coords::lbl21;	/// list to reref (with EOG)
+#else
+	/// Geodesics
+	const auto & usedChannels = smLib::range(0, globalEdf.getNs() - 2);	/// to build reref array
+	const auto & rerefChannels = smLib::range(0, globalEdf.getNs() - 2);	/// list to reref (with EOG)
+#endif
 
 	/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - N
 
