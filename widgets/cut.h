@@ -53,6 +53,7 @@ private:
 	bool checkBadRange(int start, int end, QString func); // return true if too long
 
 	void paintData(matrix & drawDataLoc);
+	void repaintData(matrix & drawDataLoc, int sta, int fin);
 	matrix makeDrawData();
 
 	/// manual signal draw
@@ -61,7 +62,9 @@ private:
 	void manualDrawAddUndo();
 
 	void colorSpinSlot(QSpinBox * spin, QLineEdit * lin);
+	double normCoeff();
 	void paintLimits();
+	void paintMarkers(const matrix & drawDataLoc);
 	void setValuesByEdf();
 	void resetLimits();
 	void showDerivatives();
@@ -156,8 +159,7 @@ private:
 
 	bool manualDrawFlag{false};						/// manual signal draw
 	QPoint manualDrawStart{};						/// manual signal draw
-	QPoint manualDrawStartBC{};						/// manual signal draw
-	matrix manualDrawDataBackup;		/// manual signal draw
+	matrix manualDrawDataBackup;					/// manual signal draw
 
 	/// edf and related widget-globals
 	fileType myFileType{fileType::edf}; /// to deprecate, leave edf only

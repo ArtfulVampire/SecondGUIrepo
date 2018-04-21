@@ -294,6 +294,10 @@ void Cut::openFile(const QString & dataFileName)
 	ui->filePathLineEdit->setText(dataFileName);
 	ui->iitpDisableEcgCheckBox->setChecked(false);
 
+	manualDrawFlag = false;
+	manualDrawStart = QPoint{};
+	manualDrawDataBackup.clear();
+
 	leftDrawLimit = 0;
 	if(this->myFileType == fileType::real)
 	{

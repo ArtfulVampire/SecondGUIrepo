@@ -766,6 +766,7 @@ QPixmap redrawEegCopy(const QPixmap & prev,
 	return pic;
 }
 
+/// [sta, fin)
 void redrawEeg(QPixmap & pic,
 			   int sta,
 			   int fin,
@@ -775,14 +776,14 @@ void redrawEeg(QPixmap & pic,
 {
 	pic = pic.scaled(pic.width(), myLib::drw::eegPicHeight);
 	QPainter paint;
-	pic.fill();
 	paint.begin(&pic);
 
 	const double norm = 1.;
 
 	/// white before redraw
+	paint.setPen("white");
 	paint.setBrush(QBrush("white"));
-	paint.drawRect(0, sta, fin-sta, pic.height());
+	paint.drawRect(sta - 1, 0, fin-sta + 1, pic.height()); /// magic +-1
 
 	for(int chanNum = 0; chanNum < inData.rows(); ++chanNum)
 	{
@@ -803,7 +804,8 @@ void redrawEeg(QPixmap & pic,
 		}
 
 		const double offsetY = (chanNum + 1) * pic.height() / (inData.rows() + 2);
-		for(int currX = sta; currX < fin - 1; ++currX)
+
+		for(int currX = sta - 2; currX < fin + 2; ++currX)  /// magic +-2
 		{
 			paint.drawLine(currX,
 						   offsetY + inData[chanNum][currX] * norm,

@@ -687,7 +687,12 @@ void Cut::linearApproxSlot()
 	logAction("linearApprox", lef, rig, chanList);
 	this->linearApprox(lef, rig, chanList);
 	resetLimits();
-	paint();
+
+	drawData = makeDrawData();
+	repaintData(drawData, lef, rig);
+
+//	paint();
+
 	ui->scrollArea->setFocus();
 }
 

@@ -450,7 +450,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			if(ev->modifiers().testFlag(Qt::ShiftModifier))
 			{
 				manualDrawFlag = true;
-				manualDrawStartBC = manualDrawStart = ev->pos();
+				manualDrawStart = ev->pos();
 				manualDrawDataBackup = drawData;
 				return true;
 			}
@@ -460,7 +460,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		{
 			/// draw some orange signal
 			QMouseEvent * mouseMoveEvent = static_cast<QMouseEvent*>(event);
-			if(mouseMoveEvent->buttons() & Qt::LeftButton)
+			if((mouseMoveEvent->buttons() & Qt::LeftButton) && manualDrawFlag)
 			{
 				manualDraw(mouseMoveEvent);
 			}
@@ -652,6 +652,7 @@ void Cut::paint()
 	if(!drawData.isEmpty()) { this->paintData(drawData); }
 }
 
+
 matrix Cut::makeDrawData()
 {
 	if(dataCutLocal.isEmpty() || !drawFlag || !fileOpened) return {};
@@ -675,8 +676,7 @@ int Cut::getDrawedChannel(QMouseEvent * clickEvent)
 	std::cout << clickEvent->x() << "\t" << clickEvent->y() << std::endl;
 
 	auto vals = this->drawData.getCol(clickEvent->x());
-	const double norm = ui->yNormDoubleSpinBox->value()
-						* (ui->yNormInvertCheckBox->isChecked() ? -1 : 1);
+	const double norm = normCoeff();
 	double dist = 1000;
 	int num = -1;
 	for(int i = 0; i < drawData.rows(); ++i)
@@ -714,21 +714,14 @@ void Cut::manualDraw(QMouseEvent * mouseMoveEvent)
 
 
 	const double offsetY = (numChan + 1) * ui->scrollArea->height() / (drawData.rows() + 2);
-	const double norm = ui->yNormDoubleSpinBox->value()
-						* (ui->yNormInvertCheckBox->isChecked() ? -1 : 1);
+	const double norm = normCoeff();
 
 	QPoint sta = manualDrawStart;
 	QPoint fin = mouseMoveEvent->pos();
 	if(sta.x() == fin.x()) { return; }
 	if(manualDrawStart.x() > mouseMoveEvent->x()) { std::swap(sta, fin); }
 
-
-	std::cout << "sta: " << sta.x() << "\t" << sta.y() << std::endl;
-	std::cout << "fin: " << fin.x() << "\t" << fin.y() << std::endl;
-	std::cout << "fin - sta: " << fin.x() - sta.x() << "\t" << fin.y() - sta.y() << std::endl;
-	std::cout << std::endl;
-
-	for(int x = sta.x(); x <= fin.x(); ++x)
+	for(int x = sta.x(); x <= fin.x(); ++x) /// [sta, fin]
 	{
 		dataCutLocal[numChan][x + leftDrawLimit] =
 				((sta.y() - offsetY)										/// init value
@@ -737,13 +730,19 @@ void Cut::manualDraw(QMouseEvent * mouseMoveEvent)
 				/ (norm * ui->scrollArea->height() / currentPic.height() ); /// norm
 	}
 	drawData = this->makeDrawData();
-	paintData(drawData);
+//	paintData(drawData);
+	repaintData(drawData, sta.x(), fin.x());
 	manualDrawStart = mouseMoveEvent->pos();
 }
 
-void Cut::paintData(matrix & drawDataLoc)
+double Cut::normCoeff()
 {
-	/// zero some channels
+	return ui->yNormDoubleSpinBox->value()
+			* ((ui->yNormInvertCheckBox->isChecked())? -1 : 1);
+}
+
+void Cut::repaintData(matrix & drawDataLoc, int sta, int fin)
+{
 	int ecg = edfFil.findChannel("ECG");
 	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg != -1)
 	{
@@ -754,58 +753,64 @@ void Cut::paintData(matrix & drawDataLoc)
 		if(ch < drawDataLoc.rows()) { drawDataLoc[ch] = 0; }
 	}
 
-	double coeff = ui->yNormDoubleSpinBox->value()
-				   * ((ui->yNormInvertCheckBox->isChecked())? -1 : 1);
-	auto colouredChans = this->makeColouredChans();
+	myLib::drw::redrawEeg(currentPic,
+						  sta, fin,
+						  drawDataLoc * normCoeff(),
+						  edfFil.getFreq(),
+						  this->makeColouredChans());
 
-	currentPic = myLib::drw::drawEeg(drawDataLoc * coeff,
+	paintMarkers(drawDataLoc);
+	paintLimits();
+}
+
+void Cut::paintData(matrix & drawDataLoc)
+{
+	int ecg = edfFil.findChannel("ECG");
+	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg != -1)
+	{
+		drawDataLoc[ecg] = 0; /// for iitp ecg
+	}
+	for(int ch : this->zeroedChannels)
+	{
+		if(ch < drawDataLoc.rows()) { drawDataLoc[ch] = 0; }
+	}
+
+	currentPic = myLib::drw::drawEeg(drawDataLoc * normCoeff(),
 									 edfFil.getFreq(),
-									 colouredChans);
-	/// draw markers numbers
+									 this->makeColouredChans());
+	paintMarkers(drawDataLoc);
+	paintLimits();
+}
+
+void Cut::paintMarkers(const matrix & drawDataLoc)
+{
+	int mrk{-1};
 	if(edfFil.getNs() >= coords::manyChannels)
 	{
-		/// suppose we have taken markers channel as last
-		const int mrk = drawDataLoc.rows() - 1;
-
-		QPainter pnt;
-		pnt.begin(&currentPic);
-		pnt.setFont(QFont("", 18)); /// magic const
-
-		for(int i = 0; i < drawDataLoc.cols(); ++i)
-		{
-			if(drawDataLoc[mrk][i] != 0.)
-			{
-				/// magic consts
-				pnt.drawText(i,
-							 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
-							 nm(int(drawDataLoc[mrk][i])));
-			}
-		}
-		pnt.end();
+		mrk = drawDataLoc.rows() - 1;
 	}
 	else
 	{
-		const int mrk = edfFil.getMarkChan();
-		if(mrk > 0)
-		{
-			QPainter pnt;
-			pnt.begin(&currentPic);
-			pnt.setFont(QFont("", 18)); /// magic const
+		mrk = edfFil.getMarkChan();
+	}
 
-			for(int i = 0; i < drawDataLoc.cols(); ++i)
-			{
-				if(drawDataLoc[mrk][i] != 0.)
-				{
-					/// magic consts
-					pnt.drawText(i,
-								 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
-								 nm(int(drawDataLoc[mrk][i])));
-				}
-			}
-			pnt.end();
+	if(mrk < 0) { return; }
+
+	QPainter pnt;
+	pnt.begin(&currentPic);
+	pnt.setFont(QFont("", 18)); /// magic const
+
+	for(int i = 0; i < drawDataLoc.cols(); ++i)
+	{
+		if(drawDataLoc[mrk][i] != 0.)
+		{
+			/// magic consts
+			pnt.drawText(i,
+						 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
+						 nm(int(drawDataLoc[mrk][i])));
 		}
 	}
-	paintLimits();
+	pnt.end();
 }
 
 void Cut::paintLimits()
