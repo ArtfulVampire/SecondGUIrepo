@@ -377,6 +377,13 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		}
 		case QEvent::MouseButtonRelease:
 		{
+			if(manualDrawFlag)
+			{
+				manualDrawFlag = false;
+				manualDrawAddUndo();
+				return true;
+			}
+
 			QMouseEvent * clickEvent = static_cast<QMouseEvent*>(event);
 			switch(clickEvent->button())
 			{
@@ -432,6 +439,32 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			return true;
 
 			break;
+		}
+		case QEvent::MouseButtonPress:
+		{
+			/// start manualDraw
+			QMouseEvent * ev = static_cast<QMouseEvent*>(event);
+			int numChan = ui->color3SpinBox->value();
+			if(numChan == -1) { return true; } /// do nothing
+
+			if(ev->modifiers().testFlag(Qt::ShiftModifier))
+			{
+				manualDrawFlag = true;
+				manualDrawStartBC = manualDrawStart = ev->pos();
+				manualDrawDataBackup = drawData;
+				return true;
+			}
+			break;
+		}
+		case QEvent::MouseMove:
+		{
+			/// draw some orange signal
+			QMouseEvent * mouseMoveEvent = static_cast<QMouseEvent*>(event);
+			if(mouseMoveEvent->buttons() & Qt::LeftButton)
+			{
+				manualDraw(mouseMoveEvent);
+			}
+			return true;
 		}
 		case QEvent::KeyPress:
 		{
@@ -657,6 +690,55 @@ int Cut::getDrawedChannel(QMouseEvent * clickEvent)
 		}
 	}
 	return num;
+}
+
+void Cut::manualDrawAddUndo()
+{
+	int start = leftDrawLimit;
+	int k = ui->color3SpinBox->value();
+	undoData.push_back(manualDrawDataBackup);
+	auto undoAction = [start, k, this]()
+	{
+		std::copy(std::begin(undoData.back()[k]),
+				  std::end(undoData.back()[k]),
+				  std::begin(dataCutLocal[k]) + start);
+		undoData.pop_back();
+	};
+	undoActions.push_back(undoAction);
+}
+
+void Cut::manualDraw(QMouseEvent * mouseMoveEvent)
+{
+	const int numChan = ui->color3SpinBox->value();
+	if(numChan == -1) { return; }
+
+
+	const double offsetY = (numChan + 1) * ui->scrollArea->height() / (drawData.rows() + 2);
+	const double norm = ui->yNormDoubleSpinBox->value()
+						* (ui->yNormInvertCheckBox->isChecked() ? -1 : 1);
+
+	QPoint sta = manualDrawStart;
+	QPoint fin = mouseMoveEvent->pos();
+	if(sta.x() == fin.x()) { return; }
+	if(manualDrawStart.x() > mouseMoveEvent->x()) { std::swap(sta, fin); }
+
+
+	std::cout << "sta: " << sta.x() << "\t" << sta.y() << std::endl;
+	std::cout << "fin: " << fin.x() << "\t" << fin.y() << std::endl;
+	std::cout << "fin - sta: " << fin.x() - sta.x() << "\t" << fin.y() - sta.y() << std::endl;
+	std::cout << std::endl;
+
+	for(int x = sta.x(); x <= fin.x(); ++x)
+	{
+		dataCutLocal[numChan][x + leftDrawLimit] =
+				((sta.y() - offsetY)										/// init value
+				 + (x - sta.x()) / double(fin.x() - sta.x())				/// inclination
+				 * (fin.y() - sta.y()))										/// range
+				/ (norm * ui->scrollArea->height() / currentPic.height() ); /// norm
+	}
+	drawData = this->makeDrawData();
+	paintData(drawData);
+	manualDrawStart = mouseMoveEvent->pos();
 }
 
 void Cut::paintData(matrix & drawDataLoc)

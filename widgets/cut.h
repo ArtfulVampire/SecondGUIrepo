@@ -55,8 +55,12 @@ private:
 	void paintData(matrix & drawDataLoc);
 	matrix makeDrawData();
 
-	void colorSpinSlot(QSpinBox * spin, QLineEdit * lin);
+	/// manual signal draw
 	int getDrawedChannel(QMouseEvent * clickEvent);
+	void manualDraw(QMouseEvent * mouseMoveEvent);
+	void manualDrawAddUndo();
+
+	void colorSpinSlot(QSpinBox * spin, QLineEdit * lin);
 	void paintLimits();
 	void setValuesByEdf();
 	void resetLimits();
@@ -149,6 +153,11 @@ private:
 	static const int scrollAreaGapY = 15;
 	static const int picScaleGapY = 20;
 	bool drawFlag{false}; /// to prevent many redraws in e.g. setValuesByEdf()
+
+	bool manualDrawFlag{false};						/// manual signal draw
+	QPoint manualDrawStart{};						/// manual signal draw
+	QPoint manualDrawStartBC{};						/// manual signal draw
+	matrix manualDrawDataBackup;		/// manual signal draw
 
 	/// edf and related widget-globals
 	fileType myFileType{fileType::edf}; /// to deprecate, leave edf only
