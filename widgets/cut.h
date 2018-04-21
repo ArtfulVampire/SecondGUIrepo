@@ -56,6 +56,7 @@ private:
 	matrix makeDrawData();
 
 	void colorSpinSlot(QSpinBox * spin, QLineEdit * lin);
+	int getDrawedChannel(QMouseEvent * clickEvent);
 	void paintLimits();
 	void setValuesByEdf();
 	void resetLimits();

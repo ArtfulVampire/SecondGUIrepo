@@ -226,11 +226,12 @@ void MainWindow::customFunc()
 #if 0
 	/// insert absent channels for all files of a guy
 	{
-		const QString guy = "Ivan";
-		const QString guyPath = def::iitpSyncFolder + "/" + guy + "/bc_noRectify";
-		const QString postfix = "_sum_new";
+		const QString guy = "Isakov2";
+//		const QString guyPath = def::iitpSyncFolder + "/" + guy + "/bc_noRectify";
+		const QString guyPath = def::iitpFolder + "/" + guy;
+		const QString postfix = "_eeg";
 		auto badFiles = autos::IITPtestEegChannels(guyPath, postfix);
-		autos::IITPinsertChannels(guyPath, badFiles);
+//		autos::IITPinsertChannels(guyPath, badFiles);
 		exit(0);
 	}
 #endif
@@ -291,9 +292,9 @@ void MainWindow::customFunc()
 	};
 
 
-	return;
+//	return;
 
-	QString guy = "Elena";
+	QString guy = "Isakov2";
 //	for(QString guy : guyList)
 //	for(QString guy : vrList)
 	{
@@ -317,8 +318,7 @@ void MainWindow::customFunc()
 		}
 		if(0)
 		{
-//			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
-//			exit(0);
+			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
 			autos::IITPdatToEdf(guy);								/// all dat files in dir
 			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites all _emg.edf
 			if(!autos::IITPtestInitialFiles(guy))
@@ -360,7 +360,7 @@ void MainWindow::customFunc()
 			autos::IITPrerefCAR(guy + "_car");					/// rewrite ALL edfs in SYNCED/guy_car
 		}
 		/// CHECK car files if needed
-		if(01)
+		if(0)
 		{
 			std::cout << "copy end, process start" << std::endl;
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car

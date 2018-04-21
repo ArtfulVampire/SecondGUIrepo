@@ -398,11 +398,35 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 								ui->paintLengthDoubleSpinBox->value()); }
 				break;
 			}
-			case Qt::LeftButton:	{ this->mousePressSlot(clickEvent->button(),
-														   clickEvent->x());	break; }
+			case Qt::LeftButton:
+			{
+				if(clickEvent->modifiers().testFlag(Qt::ControlModifier))
+				{
+					/// choose a channel and make it orange
+					ui->color3SpinBox->setValue(this->getDrawedChannel(clickEvent));
+					return true;
+				}
+				else
+				{
+					this->mousePressSlot(clickEvent->button(),
+										 clickEvent->x());
+				}
+				break;
+			}
 			case Qt::RightButton:	{ this->mousePressSlot(clickEvent->button(),
 														   clickEvent->x());	break; }
-			case Qt::MiddleButton:	{ ui->yNormDoubleSpinBox->setValue(1.);		break; }
+			case Qt::MiddleButton:
+			{
+				if(clickEvent->modifiers().testFlag(Qt::ControlModifier))
+				{
+					ui->yNormInvertCheckBox->click();
+				}
+				else
+				{
+					ui->yNormDoubleSpinBox->setValue(1.);
+				}
+				break;
+			}
 			default: { return false; }
 			}
 			return true;
@@ -415,6 +439,13 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			if(keyEvent->key() == Qt::Key_Home)
 			{
 				ui->paintStartDoubleSpinBox->setValue(0.);
+				return true;
+			}
+			else if(keyEvent->key() == Qt::Key_End)
+			{
+				ui->paintStartDoubleSpinBox->setValue(
+												this->dataCutLocal.cols() / edfFil.getFreq() -
+												ui->paintLengthDoubleSpinBox->value());
 				return true;
 			}
 			else if(keyEvent->key() == Qt::Key_Left ||
@@ -604,6 +635,28 @@ matrix Cut::makeDrawData()
 		rightDrawLimit = dataCutLocal.cols();
 	}
 	return dataCutLocal.subCols(leftDrawLimit, rightDrawLimit);
+}
+
+int Cut::getDrawedChannel(QMouseEvent * clickEvent)
+{
+	std::cout << clickEvent->x() << "\t" << clickEvent->y() << std::endl;
+
+	auto vals = this->drawData.getCol(clickEvent->x());
+	const double norm = ui->yNormDoubleSpinBox->value()
+						* (ui->yNormInvertCheckBox->isChecked() ? -1 : 1);
+	double dist = 1000;
+	int num = -1;
+	for(int i = 0; i < drawData.rows(); ++i)
+	{
+		const double offsetY = (i + 1) * ui->scrollArea->height() / (drawData.rows() + 2);
+		const double D = std::abs(offsetY + vals[i] * norm - clickEvent->y());
+		if(D < dist)
+		{
+			dist = D;
+			num = i;
+		}
+	}
+	return num;
 }
 
 void Cut::paintData(matrix & drawDataLoc)
