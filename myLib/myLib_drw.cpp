@@ -749,6 +749,87 @@ QPixmap drawRealisation(const QString & inPath, int srate)
 	return drawEeg(inData, srate);
 }
 
+QPixmap redrawEegCopy(const QPixmap & prev,
+				  int sta,
+				  int fin,
+				  const matrix & inData,
+				  int srate,
+				  const std::vector<std::pair<int, QColor> > & colouredChans)
+{
+	QPixmap pic = prev;
+	redrawEeg(pic,
+			  sta,
+			  fin,
+			  inData,
+			  srate,
+			  colouredChans);
+	return pic;
+}
+
+void redrawEeg(QPixmap & pic,
+			   int sta,
+			   int fin,
+			   const matrix & inData,
+			   int srate,
+			   const std::vector<std::pair<int, QColor> > & colouredChans)
+{
+	pic = pic.scaled(pic.width(), myLib::drw::eegPicHeight);
+	QPainter paint;
+	pic.fill();
+	paint.begin(&pic);
+
+	const double norm = 1.;
+
+	/// white before redraw
+	paint.setBrush(QBrush("white"));
+	paint.drawRect(0, sta, fin-sta, pic.height());
+
+	for(int chanNum = 0; chanNum < inData.rows(); ++chanNum)
+	{
+		/// set color
+		auto it = std::find_if(std::begin(colouredChans), std::end(colouredChans),
+							   [chanNum](const std::pair<int, QColor> & in)
+		{
+			return (in.first == chanNum);
+		}
+		);
+		if(it != std::end(colouredChans))
+		{
+			paint.setPen(QPen(QBrush((*it).second), myLib::drw::penWidth));
+		}
+		else
+		{
+			paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth)); /// default color
+		}
+
+		const double offsetY = (chanNum + 1) * pic.height() / (inData.rows() + 2);
+		for(int currX = sta; currX < fin - 1; ++currX)
+		{
+			paint.drawLine(currX,
+						   offsetY + inData[chanNum][currX] * norm,
+						   currX + 1,
+						   offsetY + inData[chanNum][currX + 1] * norm);
+		}
+	}
+	/// paint seconds marks
+	paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
+	for(int numSec = 0; numSec < (inData.cols() / srate) + 1; ++numSec)
+	{
+		paint.drawLine(numSec * srate, pic.height(),
+					   numSec * srate, pic.height() - 32);
+		paint.drawText(numSec * srate,
+					   pic.height() - 35,
+					   nm(numSec));
+
+		for(int subSec = 1; subSec < 5; ++subSec) /// const 5
+		{
+			paint.drawLine((numSec + subSec / 5.) * srate, pic.height(),
+						   (numSec + subSec / 5.) * srate, pic.height() - 25);
+		}
+	}
+	paint.end();
+}
+
 QPixmap drawEeg(const matrix & inData,
 				int srate,
 				const std::vector<std::pair<int, QColor>> & colouredChans)

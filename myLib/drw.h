@@ -175,6 +175,18 @@ QPixmap drawMannWitneyInLine(const QPixmap & templatePic,
 
 /// EEGs
 QPixmap drawRealisation(const QString & inPath, int srate);
+QPixmap redrawEegCopy(const QPixmap & prev,
+					  int sta,
+					  int fin,
+					  const matrix & inData,
+					  int srate,
+					  const std::vector<std::pair<int, QColor> > & colouredChans = {});
+void redrawEeg(QPixmap & prev,
+			   int sta,
+			   int fin,
+			   const matrix & inData,
+			   int srate,
+			   const std::vector<std::pair<int, QColor> > & colouredChans = {});
 QPixmap drawEeg(const matrix & inData,
 				int srate,
 				const std::vector<std::pair<int, QColor>> & colouredChans = {});
