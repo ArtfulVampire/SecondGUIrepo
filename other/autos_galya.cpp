@@ -304,9 +304,11 @@ void countHilbert(const matrix & inData,
 	std::valarray<double> envSpec;
 
 	std::vector<std::pair<double, double>> filters{
-		std::make_pair(0.5, 70), /// i.e. no filter
-		std::make_pair(4, 6),
-		std::make_pair(8, 13)
+				std::make_pair(0.5, 70),	/// [0] i.e. no filter
+				std::make_pair(4, 6),		/// [1]
+				std::make_pair(8, 13),		/// [2]
+				std::make_pair(8, 10),		/// [3]
+				std::make_pair(10, 13)		/// [4]
 	};
 
 	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); // [filter][chan][0-carr, 1-SD]
@@ -383,6 +385,7 @@ void countHilbert(const matrix & inData,
 		for(int ch = 0; ch < inData.rows(); ++ch)
 		{
 			for(int filt : {0, 1, 2}) /// whole, theta, alpha
+//			for(int filt : {3, 4}) /// 8-10, 10-13
 			{
 				for(int func : {0, 1})  /// carr or SD
 				{
@@ -950,7 +953,7 @@ void Xenia_TBI_finalest(const QString & finalPath,
 
 		/// list of guys
 		QStringList guys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-		for(QString guy : guys)
+		for(const QString & guy : guys)
 		{
 			const QString guyPath = groupPath + "/" + guy;
 
@@ -1331,8 +1334,9 @@ void EdfsToFolders(const QString & inPath)
 		{
 			QDir().mkpath(inPath + "/" + ExpName);
 		}
-		QFile::copy(inPath + "/" + in,
-					inPath + "/" + ExpName + "/" + in);
+		/// copy if not delete initial
+		QFile::rename(inPath + "/" + in,
+					  inPath + "/" + ExpName + "/" + in);
 	}
 }
 
@@ -1490,24 +1494,10 @@ void ProcessAllInOneFolder(const QString & inPath,
 }
 
 void ProcessByFolders(const QString & inPath,
-//					  const QString & outPath,
 					  const std::vector<QString> & markers)
 {
 	QTime myTime;
 	myTime.start();
-	/// to arguments
-//	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_fon"};
-
-//	const std::vector<QString> markers{"_rest"};
-//	const std::vector<QString> markers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
-//	const std::vector<QString> markers{"_2sv", "_2zv", "_4sv", "_4zv",
-//									   "_8sv", "_8zv", "_16sv", "_16zv", "_og", "_zg"};
-//	const std::vector<QString> markers{"_brush", "_cry", "_fire", "_flower",
-//									   "_isopropanol", "_needles", "_vanilla", "_wc"};
-
-	// 26-feb-18, tbi
-//	const std::vector<QString> markers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
-//									   "_ph", "_rv", "_sc", "_sm", "_og", "_zg"};
 
 	const int numChan = 19;
 //	const int numChan = 31; /// MRI and other
@@ -1518,35 +1508,29 @@ void ProcessByFolders(const QString & inPath,
 	}
 
 	/// calculation
-	auto guyList = QDir(inPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-	for(QString guy : guyList)
+	auto guyList = QDir(inPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	for(const QString & guy : guyList)
 	{
 		const QString guyPath = inPath + "/" + guy;
-
-		if(0) /// repair fileNames
-		{
-			repair::deleteSpacesFolders(guyPath);
-			repair::toLatinDir(guyPath);
-			repair::toLowerDir(guyPath);
-		}
 
 		QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
 		if(edfs.isEmpty())
 		{
 			std::cout << "ProcessByFolders: guyPath is empty " << guy << std::endl;
+			continue;
 		}
+
 		QString ExpName = edfs[0];
 		ExpName = ExpName.left(ExpName.lastIndexOf('_'));
 
-
 		/// physMinMax & holes
-		if(0)
+		if(01)
 		{
 			repair::physMinMaxDir(guyPath);
 			repair::holesDir(guyPath,
 							 numChan,
 							 guyPath);	/// rewrite after repair
-			continue;
+//			continue;
 		}
 
 		/// rereference
@@ -1556,13 +1540,13 @@ void ProcessByFolders(const QString & inPath,
 		}
 
 		/// filter?
-		if(0)
+		if(01)
 		{
 			/// already done ?
 			autos::refilterFolder(guyPath,
 								  1.6,
 								  30.);
-			continue;
+//			continue;
 		}
 
 		/// cut?
@@ -1587,7 +1571,7 @@ void ProcessByFolders(const QString & inPath,
 		/// make one line file for each stimulus
 		if(01)
 		{
-			for(QString mark : markers)
+			for(const QString & mark : markers)
 			{
 				QStringList fileNamesToArrange;
 

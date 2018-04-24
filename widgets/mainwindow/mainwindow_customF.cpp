@@ -395,13 +395,14 @@ void MainWindow::customFunc()
 	const QString workPath = "/media/Files/Data/Xenia/FINAL";
 	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};
 
-	if(0) /// initial rename guyDirs as edfs inside
+	if(0)
 	{
-		for(QString subdir : subdirs)
+		/// initial rename guyDirs as edfs inside
+		for(const QString & subdir : subdirs)
 		{
 			const QString groupPath = workPath + "/" + subdir;
 			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-			for(QString guy : groupGuys)
+			for(const QString & guy : groupGuys)
 			{
 				const QString guyPath = groupPath + "/" + guy;
 				repair::deleteSpacesDir(guyPath);
@@ -414,14 +415,15 @@ void MainWindow::customFunc()
 		}
 		exit(0);
 	}
-	if(0) /// check each guy has all stimuli files - OK
+	if(0)
 	{
+		/// check each guy has all stimuli files - OK
 		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-		for(QString subdir : subdirs)
+		for(const QString & subdir : subdirs)
 		{
 			const QString groupPath = workPath + "/" + subdir;
 			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-			for(QString guy : groupGuys)
+			for(const QString & guy : groupGuys)
 			{
 				const QString guyPath = groupPath + "/" + guy;
 				const QStringList guyFiles = QDir(guyPath).entryList(def::edfFilters);
@@ -439,6 +441,7 @@ void MainWindow::customFunc()
 		}
 		exit(0);
 	}
+
 	if(0) /// find absent guyNames in guys_finalest.txt and rename properly (manually)
 	{
 		/// read guys_finalest.txt
@@ -456,7 +459,7 @@ void MainWindow::customFunc()
 
 
 		std::vector<QString> guysReal{};
-		for(QString subdir : subdirs)
+		for(const QString & subdir : subdirs)
 		{
 			const QString groupPath = workPath + "/" + subdir;
 			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
@@ -479,10 +482,323 @@ void MainWindow::customFunc()
 	{
 		DEFS.setAutosUser(autosUser::XeniaFinalest);
 		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-		DEFS.setAutosMask(featuresMask::wavelet);
+		DEFS.setAutosMask(featuresMask::Hilbert);
 		autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
 	}
 
+	exit(0);
+#endif
+
+#if 0
+	/// insert channels
+	const QString fn = "/media/Files/Data/Galya/24Apr18Tankina/Autism_adults/25j_Nf/25j_Nf_2sv.edf";
+	edfFile fl;
+	fl.readEdfFile(fn);
+	auto dat = fl.getData("T4");
+	dat = 0.;
+	edfChannel ch = fl.getChannels(3); ch.label = "EEG T3-A1";
+
+	fl.insertChannel(fl.findChannel("C3"), dat, ch);
+	fl.rewriteEdfFile();
+
+	exit(0);
+#endif
+
+#if 0
+	/// Galya processing things
+	/// 15Mar18
+
+
+	const QString workPath = def::GalyaFolder + "/24Apr18Tankina";
+
+	/// tactile
+//	const std::vector<QString> usedMarkers{"_buk", "_kis", "_rol", "_sch", "_fon"};
+//	const std::vector<QString> usedMarkers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
+//	const std::vector<QString> usedMarkers{"_rest"};
+
+	/// Dasha
+//	const std::vector<QString> usedMarkers{"_brush", "_cry", "_fire", "_flower",
+//										   "_isopropanol", "_needles", "_vanilla", "_wc"};
+
+	///	26-feb-18, tbi
+//	const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+//										   "_ph", "_rv", "_sc", "_sm", "_og", "_zg"};
+	/// other tbi
+//	const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+//										   "_og", "_rv", "_sm", "_zg"};
+
+	/// rhythm adoption
+	const std::vector<QString> usedMarkers{"_2sv", "_2zv",
+										   "_4sv", "_4zv",
+										   "_8sv", "_8zv",
+										   "_16sv", "_16zv",
+										   "_og", "_zg"};
+
+	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+//	const QStringList subdirs{""};
+
+
+	if(0)
+	{
+		/// initial repair and to folders
+		for(const QString & subdir : subdirs)
+		{
+			repair::toLatinDir(workPath + "/" + subdir);
+			repair::deleteSpacesDir(workPath + "/" + subdir);
+			repair::toLowerDir(workPath + "/" + subdir);
+			/// some special names cleaning
+			for(const QString & fileName : QDir(workPath + "/" + subdir).entryList(def::edfFilters))
+			{
+				QString newName = fileName;
+				newName.replace("_dl.edf", ".edf", Qt::CaseInsensitive);
+				newName.replace("_dl_", "_", Qt::CaseInsensitive);
+				newName.replace("_PR.", ".", Qt::CaseInsensitive);
+				newName.replace("_PR_", "_", Qt::CaseInsensitive);
+				newName.replace("_2_", "_2", Qt::CaseInsensitive);
+				newName.replace("_4_", "_4", Qt::CaseInsensitive);
+				newName.replace("_8_", "_8", Qt::CaseInsensitive);
+				newName.replace("_16_", "_16", Qt::CaseInsensitive);
+				newName.replace("_fon", "_zg", Qt::CaseInsensitive);
+
+				bool p = false;
+				for(auto mrk : usedMarkers)
+				{
+					if(newName.contains(mrk)) { p = true; break;}
+				}
+				if(!p)
+				{
+					std::cout << subdir + "/" + newName << std::endl;
+				}
+
+				if(newName != fileName)
+				{
+					QFile::remove(workPath + "/" + subdir + "/" + newName);
+					QFile::rename(workPath + "/" + subdir + "/" + fileName,
+								  workPath + "/" + subdir + "/" + newName);
+				}
+
+			}
+			autos::EdfsToFolders(workPath + "/" + subdir);
+		}
+		exit(0);
+	}
+
+	if(0)
+	{
+		/// checks and corrects channels order consistency
+		QString str19;
+		for(int i = 0; i < 19; ++i)
+		{
+			str19 += nm(i + 1) + " ";
+		}
+
+		for(const QString & subdir : subdirs)
+		{
+			const QString groupDir = workPath + "/" + subdir;
+			const auto guyDirs = QDir(groupDir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+
+			for(const QString & guyDir : guyDirs) /// each guy
+			{
+				const QString guyPath = groupDir + "/" + guyDir;
+				auto filList = QDir(guyPath).entryList(def::edfFilters); /// edfs of one guy
+				for(const QString & fl : filList)
+				{
+					edfFile file;
+					file.readEdfFile(guyPath + "/" + fl, true);
+					QString helpString{};
+					for(int i = 0; i < 19; ++i)
+					{
+						helpString += nm(file.findChannel(coords::lbl19[i]) + 1) + " ";
+					}
+					if(helpString != str19)
+					{
+						std::cout << fl << std::endl;
+						/// rewrite file with correct chan order - read with data
+//						file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
+					}
+				}
+			}
+		}
+		exit(0);
+	}
+
+	if(0)
+	{
+		/// compose a list of markers
+		std::set<QString> markers{};
+		for(const QString & fn : QDir(workPath).entryList(def::edfFilters))
+		{
+			int a = fn.lastIndexOf('_');
+			int b = fn.lastIndexOf('.');
+			QString mrk = fn.mid(a + 1, b - a - 1);
+			markers.emplace(mrk);
+		}
+		for(const auto & mrk : markers)
+		{
+//			std::cout << R"(")" << mrk << R"(", )";
+			std::cout << mrk << " ";
+		}
+		std::cout << std::endl;
+		exit(0);
+	}
+
+	if(0)
+	{
+		/// calculation itself
+		for(const QString & subdir : subdirs)
+		{
+			DEFS.setAutosUser(autosUser::Galya);
+
+			autos::ProcessByFolders(workPath + "/" + subdir, usedMarkers);
+		}
+		exit(0);
+	}
+
+	if(0)
+	{
+		/// test table rows lengths
+		for(const QString & subdir : subdirs)
+		{
+			QFile feel(workPath + "/" + subdir + "_out/all.txt");
+			feel.open(QIODevice::ReadOnly);
+			while(!feel.atEnd())
+			{
+				std::cout << QString(feel.readLine()).count('\t') << std::endl;
+			}
+			feel.close();
+		}
+		exit(0);
+	}
+
+	/// labels part
+
+
+	if(0)
+	{
+		///make labels file
+
+		const QString sep{"\t"};
+//		const QString sep{"\r\n"};
+
+		std::ofstream lab;
+		lab.open((workPath + "/labels.txt").toStdString());
+
+		std::vector<QString> labels1 = coords::lbl19;
+		for(QString & in : labels1) { in = in.toLower(); }
+
+		const QString initFreq = "_1.6_30";
+
+		for(QString mark : usedMarkers)
+		{
+			mark.remove('_');
+
+			/// FFT
+			/// 18 ranges 1-Hz-wide, 19 channels = 342 values
+			for(int i = 2; i < 20; ++i)
+			{
+				for(QString lbl : labels1)
+				{
+					lab << mark
+						<< "_" << "fft"
+						<< "_" << nm(i)
+						<< "_" << nm(i+1)
+						<< "_"  << lbl << sep;
+				}
+			}
+
+			/// ALPHA
+			for(QString lbl : labels1) /// 19 values
+			{
+				lab << mark
+					<< "_" << "alpha"
+					<< initFreq
+					<< "_" << lbl << sep;
+			}
+
+			/// Hilbert and Fractal Dimension 5*19 = 95 values
+			for(QString fir : {
+				QString("fd")		+ initFreq,
+				QString("hilbcarr")	+ initFreq,
+				QString("hilbcarr")	+ "_8_13",
+				QString("hilbsd")	+ initFreq,
+				QString("hilbsd")	+ "_8_13"
+		}
+				)
+			{
+				for(QString lbl : labels1)
+				{
+					lab << mark
+						<< "_" << fir
+						<< "_"
+						<< lbl << sep;
+				}
+			}
+
+			/// HJORTH
+			/// 38 values
+			for(QString fir : {"hjmob", "hjcom"})
+			{
+				for(QString lbl : labels1)
+				{
+					lab << mark
+						<< "_" << fir
+						<< initFreq
+						<< "_" << lbl << sep;
+				}
+
+			}
+
+#if 0
+			/// WAVELET
+			/// 19*19 = 361 values
+			for(int i = 0; i < 19; ++i)
+			{
+				for(QString lbl : labels1)
+				{
+					lab << mark
+						<< "_" << nm(i + 2)
+						<< "_" << lbl << sep;
+				}
+			}
+#endif
+
+
+			/// logFFT
+			/// 18*19 = 342 values
+			for(int i = 2; i < 20; ++i)
+			{
+				for(QString lbl : labels1)
+				{
+					lab << mark
+						<< "_" << "logfft"
+						<< "_" << nm(i)
+						<< "_" << nm(i+1)
+						<< "_"  << lbl << sep;
+				}
+			}
+		}
+		lab.close();
+		exit(0);
+	}
+
+	if(0)
+	{
+		if(01)
+		{
+			/// cout lengths of all txts
+			for(const QString & subdir : subdirs)
+			{
+				for(QString fn : QDir(workPath + "/" + subdir + "_out").entryList({"*.txt"}))
+				{
+					std::cout << fn << "\t"
+							  << myLib::countSymbolsInFile(workPath + "/" + subdir + "_out" + "/" + fn, '\t') << std::endl;
+				}
+			}
+		}
+		std::cout << "labels.txt" << "\t"
+				  << myLib::countSymbolsInFile(workPath + "/labels.txt", '\t') << std::endl;
+		exit(0);
+	}
 	exit(0);
 #endif
 
@@ -1188,265 +1504,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
-	/// Galya processing things
-	/// 15Mar18
-
-	const QString workPath = def::GalyaFolder + "/15Mar18";
-	const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
-										   "_og", "_rv", "_sm", "_zg"};
-
-	if(0)
-	{
-		/// delete old versions, rename _new files
-		QStringList lst = QDir(workPath).entryList({"*_new.edf"}, QDir::Files);
-		for(const QString & newName : lst)
-		{
-			QString oldName = newName;
-			oldName.replace("_new.edf", ".edf");
-			QFile::remove(workPath + "/" + oldName);
-			QFile::rename(workPath + "/" + newName,
-						  workPath + "/" + oldName);
-		}
-		exit(0);
-	}
-
-	if(0)
-	{
-		/// initial repair and to folders
-//		for(QString add : {"young", "adults"})
-		{
-//			repair::toLatinDir(workPath);
-//			repair::deleteSpacesDir(workPath);
-//			repair::toLowerDir(workPath);
-			/// some special names cleaning
-			for(QString fileName : QDir(workPath).entryList(def::edfFilters))
-			{
-//				QString newName = fileName;
-//				newName.replace(".edf", "_rest.edf", Qt::CaseInsensitive);
-//				newName.replace("_DL_", "_", Qt::CaseInsensitive);
-//				newName.replace("_dl.", ".", Qt::CaseInsensitive);
-//				newName.replace("_PR.", ".", Qt::CaseInsensitive);
-//				newName.replace("_rest_", "_", Qt::CaseInsensitive);
-//				newName.replace("_rest.", ".", Qt::CaseInsensitive);
-//				newName.replace("FON_", "", Qt::CaseInsensitive);
-
-//				QFile::rename(workPath + "/" + fileName,
-//							  workPath + "/" + newName);
-			}
-
-			autos::EdfsToFolders(workPath);
-
-		}
-		exit(0);
-	}
-
-	if(0)
-	{
-		/// checks and corrects channels order consistency
-		QString str19;
-		for(int i = 0; i < 19; ++i)
-		{
-			str19 += nm(i + 1) + " ";
-		}
-//		for(QString add : {"young", "adults"})
-//		{
-			const QString tact = workPath;
-			auto dirList = QDir(tact).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-			for(QString dr : dirList) /// each guy
-			{
-				const QString pt = tact + "/" + dr;
-				auto filList = QDir(pt).entryList(def::edfFilters); /// edfs of one guy
-				for(QString fl : filList)
-				{
-					edfFile file;
-					file.readEdfFile(pt + "/" + fl, true);
-					QString helpString{};
-					for(int i = 0; i < 19; ++i)
-					{
-						helpString += nm(file.findChannel(coords::lbl19[i]) + 1) + " ";
-					}
-					if(helpString != str19)
-					{
-						std::cout << fl << std::endl;
-						/// rewrite file with correct chan order - read with data
-//						file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
-					}
-				}
-			}
-//		}
-		exit(0);
-	}
-
-	if(0)
-	{
-		/// compose a list of markers
-		std::set<QString> markers{};
-		for(const QString & fn : QDir(workPath).entryList(def::edfFilters))
-		{
-			int a = fn.lastIndexOf('_');
-			int b = fn.lastIndexOf('.');
-			QString mrk = fn.mid(a + 1, b - a - 1);
-			markers.emplace(mrk);
-		}
-		for(const auto & mrk : markers)
-		{
-//			std::cout << R"(")" << mrk << R"(", )";
-			std::cout << mrk << " ";
-		}
-		std::cout << std::endl;
-		exit(0);
-	}
-	if(0)
-	{
-		/// calculation itself
-		DEFS.setAutosUser(autosUser::Galya);
-//		autos::ProcessAllInOneFolder(workPath);
-
-		autos::ProcessByFolders(workPath, usedMarkers);
-		exit(0);
-	}
-	if(0)
-	{
-		/// test table rows lengths
-		QFile feel(workPath + "_out/all.txt");
-		feel.open(QIODevice::ReadOnly);
-		while(!feel.atEnd())
-		{
-			std::cout << QString(feel.readLine()).count('\t') << std::endl;
-		}
-		feel.close();
-		exit(0);
-	}
-
-	/// labels part
-
-	if(01)
-	{
-		if(01)
-		{
-			/// cout lengths of all txts
-			for(QString fn : QDir(workPath + "_out").entryList({"*.txt"}))
-			{
-				std::cout << fn << "\t"
-						  << myLib::countSymbolsInFile(workPath + "_out" + "/" + fn, '\t') << std::endl;
-			}
-		}
-
-		std::cout << "labels.txt" << "\t"
-				  << myLib::countSymbolsInFile(workPath + "_out" + "/" + "labels.txt", '\t') << std::endl;
-		exit(0);
-	}
-
-	if(0)
-	{
-		///make labels file
-
-		const QString sep{"\t"};
-//		const QString sep{"\r\n"};
-
-		std::ofstream lab;
-		lab.open((workPath + "_out" + "/labels.txt").toStdString());
-
-		std::vector<QString> labels1 = coords::lbl19;
-		for(QString & in : labels1) { in = in.toLower(); }
-
-		const QString initFreq = "_1.6_30";
-
-		for(QString mark : usedMarkers)
-		{
-			mark.remove('_');
-
-			/// FFT
-			/// 18 ranges 1-Hz-wide, 19 channels = 342 values
-			for(int i = 2; i < 20; ++i)
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_" << "fft"
-						<< "_" << nm(i)
-						<< "_" << nm(i+1)
-						<< "_"  << lbl << sep;
-				}
-			}
-
-			/// ALPHA
-			for(QString lbl : labels1) /// 19 values
-			{
-				lab << mark
-					<< "_" << "alpha"
-					<< initFreq
-					<< "_" << lbl << sep;
-			}
-
-			/// Hilbert and Fractal Dimension 5*19 = 95 values
-			for(QString fir : {
-				QString("fd")		+ initFreq,
-				QString("hilbcarr")	+ initFreq,
-				QString("hilbcarr")	+ "_8_13",
-				QString("hilbsd")	+ initFreq,
-				QString("hilbsd")	+ "_8_13"
-		}
-				)
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_" << fir
-						<< "_"
-						<< lbl << sep;
-				}
-			}
-
-			/// HJORTH
-			/// 38 values
-			for(QString fir : {"hjmob", "hjcom"})
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_" << fir
-						<< initFreq
-						<< "_" << lbl << sep;
-				}
-
-			}
-
-#if 0
-			/// WAVELET
-			/// 19*19 = 361 values
-			for(int i = 0; i < 19; ++i)
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_" << nm(i + 2)
-						<< "_" << lbl << sep;
-				}
-			}
-#endif
-
-
-			/// logFFT
-			/// 18*19 = 342 values
-			for(int i = 2; i < 20; ++i)
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_" << "logfft"
-						<< "_" << nm(i)
-						<< "_" << nm(i+1)
-						<< "_"  << lbl << sep;
-				}
-			}
-		}
-		lab.close();
-		exit(0);
-	}
-	exit(0);
-#endif
 
 #if 0
 	/// Xenia test 30 sec, 15+15 sec
