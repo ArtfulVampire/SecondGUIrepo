@@ -212,6 +212,32 @@ namespace def
 	const QString iitpResFolder			{"/media/Files/Data/iitp/Results"};
 	const QString matiFolder			{"/media/Files/Data/Mati"};
 
+//	const std::pair<double, double> deltaRhythm{1., 4.};
+//	const std::pair<double, double> thetaRhythm{4., 8.};
+//	const std::pair<double, double> alphaRhythm{8., 13.};
+//	const std::pair<double, double> lowAlphaRhythm{8., 10.5};
+//	const std::pair<double, double> highAlphaRhythm{10.5, 13.};
+//	const std::pair<double, double> betaRhythm{13., 40.};
+//	const std::pair<double, double> lowBetaRhythm{13., 25.};
+//	const std::pair<double, double> highBetaRhythm{25., 40.};
+//	const std::pair<double, double> gammaRhythm{40., 70.};
+
+	const std::map<QString, std::pair<double, double>> rhythms
+	{
+		{"delta", {1., 4.}},
+		{"theta", {4., 8.}},
+		{"alpha", {8., 13.}},
+		{"alphaLow", {8., 10.5}},
+		{"alphaHigh", {10.5, 13.}},
+		{"beta", {13., 40.}},
+		{"betaLow", {13., 25.}},
+		{"betaHigh", {25., 40.}},
+		{"gamma", {40., 70.}}
+	};
+
+
+
+
 } /// end namespace def
 
 namespace coords

@@ -40,16 +40,6 @@ void Cut::refilterResetSlot()
 	paint();
 }
 
-void zeroData(matrix & inData, int leftLim, int rightLim)
-{
-	for(int k = 0; k < inData.rows() - 1; ++k) /// don't affect markers DEFS generality nsWOM
-	{
-		std::fill(std::begin(inData[k]) + leftLim,
-				  std::begin(inData[k]) + rightLim,
-				  0.);
-	}
-}
-
 void Cut::subtractMeansSlot()
 {
 	for(int i = 0; i < dataCutLocal.rows(); ++i)
@@ -333,9 +323,12 @@ void Cut::zero(int start, int end)
 
 
 	logAction("zeroData", start, end);
-	zeroData(dataCutLocal,
-			 start,
-			 end);
+	for(int k = 0; k < dataCutLocal.rows() - 1; ++k)
+	{
+		std::fill(std::begin(dataCutLocal[k]) + start,
+				  std::begin(dataCutLocal[k]) + end,
+				  0.);
+	}
 	resetLimits();
 	paint();
 

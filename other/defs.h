@@ -197,12 +197,15 @@ public:
 	void setDrawNorm(double in)					{ this->drawNorm = in; }
 	auto getDrawNorm() const					{ return this->drawNorm; }
 
+	/// to deprecate, globalEdf.getExpName()
 	void setExpName(const QString & in)			{ this->ExpName = in; }
 	auto getExpName() const						{ return this->ExpName; }
 
+	/// to deprecate, globalEdf.getExpName()
 	void setNs(int in)							{ this->ns = in; }
 	auto getNs() const							{ return this->ns; }
 
+	/// to deprecate, globalEdf.getExpName()
 	void setFreq(double in)						{ this->freq = in; }
 	auto getFreq() const						{ return this->freq; }
 
