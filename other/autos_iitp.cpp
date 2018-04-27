@@ -437,7 +437,7 @@ void IITPtestCoh2(const QString & guyName)
 													   dt.findChannel("Ta_r"),
 													   freq)));
 			}
-			myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(10, true, lowFreq, highFreq),
+			myLib::drw::drawOneArray(myLib::drw::drawOneTemplate("Cz", lowFreq, highFreq),
 									 smLib::vecToValar(outCoh)).save(
 						"/media/Files/Data/iitp/" + names[i] + postfix + ".jpg", 0, 100);
 //			std::cout << postfix << std::endl;

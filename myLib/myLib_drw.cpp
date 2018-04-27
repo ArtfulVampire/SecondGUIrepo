@@ -84,8 +84,7 @@ QPixmap drawOneGraph(const std::valarray<double> & inData,
 	return pic;
 }
 
-QPixmap drawOneTemplate(const int chanNum,
-						const bool channelsFlag,
+QPixmap drawOneTemplate(const QString & chanName,
 						const double leftF,
 						const double rightF)
 {
@@ -117,7 +116,7 @@ QPixmap drawOneTemplate(const int chanNum,
 	const int lineLen = 5;
 
 	paint.setFont(QFont("Helvitica", myLib::drw::fontSizeHz));
-	for(int k = 0; k < graphWidth + 1; ++k) /// +1 ?
+	for(int k = 0; k < myLib::drw::graphWidth + 1; ++k) /// +1 ?
 	{
 		const double cF = currFreq(k);
 		if( std::abs(cF - std::round(cF)) <= unit / 2. )
@@ -147,22 +146,11 @@ QPixmap drawOneTemplate(const int chanNum,
 	}
 	/// draw channel name
 	paint.setFont(QFont("Helvetica", int(myLib::drw::fontSizeChan), -1, false));
-	if(chanNum >= 0)
+	if(!chanName.isEmpty())
 	{
-		if(channelsFlag)
-		{
-			helpString = coords::lbl21[chanNum]
-						 + "(" + nm(chanNum + 1) + ")" // can be commented
-						 ;
-		}
-		else
-		{
-			helpString = nm(chanNum + 1);
-
-		}
 		paint.drawText(QPointF(X - myLib::drw::fontSizeChan * 2/3,
-							   Y - graphHeight + myLib::drw::fontSizeChan),
-					   helpString);
+							   Y - myLib::drw::graphHeight + myLib::drw::fontSizeChan),
+					   chanName);
 	}
 	paint.end();
 	return pic;
@@ -180,9 +168,12 @@ QPixmap drawTemplate(const bool channelsFlag,
 
 	for(int chanNum = 0; chanNum < numOfChannels; ++chanNum)
 	{
+		QString chanName = nm(chanNum + 1);
+		if(channelsFlag)	{ chanName.prepend(coords::lbl21[chanNum] + " ("); chanName += ")"; }
+
 		paint.drawPixmap(myLib::drw::xx[chanNum],
 						 myLib::drw::yy[chanNum],
-						 myLib::drw::drawOneTemplate(chanNum, channelsFlag, leftF, rightF));
+						 myLib::drw::drawOneTemplate(chanName, leftF, rightF));
 	}
 	paint.end();
 	return pic;
@@ -542,7 +533,7 @@ void cutCentralChannels(const QString & inPath)
 }
 
 
-QPixmap drawOneSpectrum(const std::valarray<double> & inData,
+QPixmap drawOneSpectrum(const std::valarray<double> & inSignal,
 						double leftFr,
 						double rightFr,
 						double srate,
@@ -551,9 +542,9 @@ QPixmap drawOneSpectrum(const std::valarray<double> & inData,
 {
 	std::valarray<double> drawArr = myLib::subSpectrumR(
 										myLib::smoothSpectre(
-											myLib::spectreRtoR(inData)
-											* myLib::spectreNorm(smLib::fftL(inData.size()),
-																 inData.size(),
+											myLib::spectreRtoR(inSignal)
+											* myLib::spectreNorm(smLib::fftL(inSignal.size()),
+																 inSignal.size(),
 																 srate)
 											,
 											numOfSmooth),
@@ -561,12 +552,11 @@ QPixmap drawOneSpectrum(const std::valarray<double> & inData,
 										rightFr,
 										srate);
 //	std::cout << drawArr << std::endl;
-	return myLib::drw::drawOneArray(myLib::drw::drawOneTemplate(-1, false, leftFr, rightFr),
+	return myLib::drw::drawOneArray(myLib::drw::drawOneTemplate("", leftFr, rightFr),
 									drawArr,
 									drawArr.max(),
 									color);
 }
-
 
 QPixmap drawOneArray(const QPixmap & templatePic,
 					 const std::valarray<double> & inData,

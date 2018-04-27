@@ -489,6 +489,98 @@ void countHjorth(const matrix & inData,
 	}
 }
 
+double countRhythmAdoption(const std::valarray<double> & sigRest,
+						   const std::valarray<double> & sigAdop,
+						   double freq)
+{
+	int fftLen = std::max(smLib::fftL(sigRest.size()),
+						  smLib::fftL(sigAdop.size()));
+	auto specRest = myLib::spectreRtoR(sigRest, fftLen);
+	auto specAdop = myLib::spectreRtoR(sigAdop, fftLen);
+
+	int lowFr = fftLimit(freq - 0.5, DEFS.getFreq(), fftLen);
+	int higFr = fftLimit(freq + 0.5, DEFS.getFreq(), fftLen);
+
+	return
+			std::accumulate(std::begin(specAdop) + lowFr,
+							std::begin(specAdop) + higFr,
+							0.)
+			/
+			std::accumulate(std::begin(specRest) + lowFr,
+							std::begin(specRest) + higFr,
+							0.)
+			;
+
+}
+
+void rhythmAdoption(const QString & filesPath,
+					const QString & restMark,
+					const QString & stimType)
+{
+	const int numChans = 19;
+	const std::vector<int> freqs{2, 4, 8, 16};
+	matrix res(freqs.size(), numChans);
+
+	const QString restFileName = QDir(filesPath).entryList({"*" + restMark + "*"})[0];
+	const QString ExpName = restFileName.left(restFileName.indexOf(restMark));
+
+//	std::cout << restFileName << std::endl;
+//	std::cout << ExpName << std::endl;
+
+	edfFile restEdf;
+	restEdf.readEdfFile(filesPath + "/" + restFileName);
+	const matrix restData = restEdf.getData();
+
+	for(int j = 0; j < freqs.size(); ++j)
+	{
+		edfFile currFile;
+		currFile.readEdfFile(filesPath + "/"
+							 + ExpName + "_" + nm(freqs[j]) + stimType + ".edf");
+
+		for(int i = 0; i < numChans; ++i)
+		{
+			res[j][i] = countRhythmAdoption(restData[i],
+											currFile.getData(i),
+											freqs[j]);
+		}
+	}
+
+	QDir dr(filesPath);
+	dr.cdUp();
+	dr.mkdir("out");
+	dr.cd("out");
+
+	std::ofstream outFile((dr.absolutePath() + "/"
+						   + ExpName + "_" + stimType + ".txt").toStdString());
+	outFile.precision(3);
+	for(int i = 0; i < res.rows(); ++i)
+	{
+		outFile << res[i] << "\t"; ///
+	}
+	outFile.close();
+}
+
+void rhythmAdoptionGroup(const QString & groupPath,
+						 const QString & restMark,
+						 const QString & stimType)
+{
+	auto lst = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+
+	for(const QString & guy : lst)
+	{
+		if(guy == "out") { continue; }
+
+		rhythmAdoption(groupPath + "/" + guy,
+					   restMark,
+					   stimType);
+	}
+
+	autos::ArrangeFilesToTable(groupPath + "/out",
+							   groupPath + "/out/all_" + stimType + ".txt",
+							   false,
+							   stimType);
+}
+
 
 /// further generalizations
 void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)

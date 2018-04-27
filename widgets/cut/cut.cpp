@@ -199,6 +199,8 @@ Cut::Cut() :
 					 this, SLOT(refilterResetSlot()));
 	QObject::connect(ui->subtractMeanFramePushButton, SIGNAL(clicked(bool)),
 					 this, SLOT(subtractMeanFrameSlot()));
+	QObject::connect(ui->drawSpectrumPushButton, SIGNAL(clicked(bool)),
+					 this, SLOT(drawSpectre()));
 
 	/// smartFind
 	QObject::connect(ui->smartFindShowPushButton, &QPushButton::clicked,
@@ -415,13 +417,19 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				}
 				else
 				{
+//					this->drawSpectre();
 					this->mousePressSlot(clickEvent->button(),
 										 clickEvent->x());
 				}
 				break;
 			}
-			case Qt::RightButton:	{ this->mousePressSlot(clickEvent->button(),
-														   clickEvent->x());	break; }
+			case Qt::RightButton:
+			{
+//				this->drawSpectre();
+				this->mousePressSlot(clickEvent->button(),
+									 clickEvent->x());
+				break;
+			}
 			case Qt::MiddleButton:
 			{
 				if(clickEvent->modifiers().testFlag(Qt::ControlModifier))
@@ -540,6 +548,43 @@ void Cut::resetLimits()
 
 	ui->rightLimitSpinBox->setValue(dataCutLocal.cols());
 	ui->leftLimitSpinBox->setValue(0); /// sometimes fails under Windows
+}
+
+void Cut::drawSpectre()
+{
+	const int num = ui->color3SpinBox->value();
+	if(num == -1) { return; }
+
+	if(ui->rightLimitSpinBox->value() - ui->leftLimitSpinBox->value() < 512) { return; }
+
+	std::valarray<double> sig = smLib::contSubsec(dataCutLocal[num],
+												  ui->leftLimitSpinBox->value(),
+												  ui->rightLimitSpinBox->value());
+
+	auto smoothSpec = myLib::smoothSpectre(
+						  myLib::spectreWelchRtoR(sig,
+												  0.5,
+												  edfFil.getFreq(),
+												  myLib::windowName::Hann,
+												  512),
+						  5);
+
+	std::valarray<double> drawArr = myLib::subSpectrumR(
+										smoothSpec,
+										ui->refilterLowFreqSpinBox->value(),
+										ui->refilterHighFreqSpinBox->value(),
+										edfFil.getFreq());
+
+	QString lab = edfFil.getLabels(num); lab.remove("EEG "); lab = lab.left(lab.indexOf('-'));
+	QPixmap toDraw = myLib::drw::drawOneArray(
+						 myLib::drw::drawOneTemplate(lab,
+													 ui->refilterLowFreqSpinBox->value(),
+													 ui->refilterHighFreqSpinBox->value()),
+						 drawArr,
+						 drawArr.max(),
+						 "black");
+
+	ui->spectreLabel->setPixmap(toDraw.scaled(ui->spectreLabel->size()));
 }
 
 void Cut::showDerivatives()
@@ -673,7 +718,7 @@ matrix Cut::makeDrawData()
 
 int Cut::getDrawedChannel(QMouseEvent * clickEvent)
 {
-	std::cout << clickEvent->x() << "\t" << clickEvent->y() << std::endl;
+//	std::cout << clickEvent->x() << "\t" << clickEvent->y() << std::endl;
 
 	auto vals = this->drawData.getCol(clickEvent->x());
 	const double norm = normCoeff();

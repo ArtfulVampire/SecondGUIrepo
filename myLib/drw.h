@@ -77,8 +77,7 @@ int numOfChans(int inDataSize);
 
 /// big funcs
 /// ones
-QPixmap drawOneTemplate(const int chanNum,
-						const bool channelsFlag,
+QPixmap drawOneTemplate(const QString & chanName,
 						const double leftF,
 						const double rightF);
 
@@ -98,7 +97,7 @@ QPixmap drawOneGraph(const std::valarray<double> & inData,
 					 int picHeight = 600,
 					 std::pair<double, double> lims = std::pair<double, double>{});
 
-QPixmap drawOneSpectrum(const std::valarray<double> & inData,
+QPixmap drawOneSpectrum(const std::valarray<double> & inSignal,
 						double leftFr,
 						double rightFr,
 						double srate,

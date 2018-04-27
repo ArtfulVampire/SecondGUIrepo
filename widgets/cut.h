@@ -113,6 +113,7 @@ public slots:
 	void smartFindNextSlot();
 	void smartFindPrevSlot();
 
+	void drawSpectre();
 	void paint();
 	void forwardStepSlot();
     void backwardStepSlot();

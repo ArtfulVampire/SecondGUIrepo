@@ -55,6 +55,17 @@ const std::vector<std::tuple<int, QString, featureFuncType, int>> FEATURES {
 QString getFeatureString(featuresMask in);
 int getFileLength(int in);
 
+double countRhythmAdoption(const std::valarray<double> & sigRest,
+						   const std::valarray<double> & sigAdop,
+						   double freq);
+
+
+void rhythmAdoptionGroup(const QString & groupPath,
+						 const QString & restMark,
+						 const QString & stimType);
+void rhythmAdoption(const QString & filesPath,
+					const QString & restMark,			/// "_og", "_zg" or "_fon"
+					const QString & stimType);		/// "sv" or "zv"
 
 /// what to do with files
 void countFeatures(const matrix & inData,

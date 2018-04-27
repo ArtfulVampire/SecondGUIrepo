@@ -16,6 +16,7 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 
+
 #if 0
 	/// count correctness and average times
 #if 0 /// new (~10 people)
@@ -534,6 +535,7 @@ void MainWindow::customFunc()
 										   "_16sv", "_16zv",
 										   "_og", "_zg"};
 
+	/// groups
 	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 //	const QStringList subdirs{""};
 
@@ -645,11 +647,23 @@ void MainWindow::customFunc()
 	if(0)
 	{
 		/// calculation itself
+
 		for(const QString & subdir : subdirs)
 		{
 			DEFS.setAutosUser(autosUser::Galya);
 
-			autos::ProcessByFolders(workPath + "/" + subdir, usedMarkers);
+			autos::ProcessByFolders(workPath + "/" + subdir,
+									usedMarkers);
+
+			/// rhythm adoption
+			for(const QString & stimType : {"sv", "zv"})
+			{
+				autos::rhythmAdoptionGroup(workPath + "/" + subdir,
+										   "_zg",
+										   stimType);
+			}
+
+
 		}
 		exit(0);
 	}
