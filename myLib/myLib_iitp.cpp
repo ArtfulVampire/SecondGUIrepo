@@ -713,9 +713,22 @@ std::vector<int> suspectGoodThreshold(const std::valarray<double> & piece, doubl
 std::vector<int> suspectGoodSecDeriv(const std::valarray<double> & piece)
 {
 	std::vector<std::pair<int, double>> preRes{};
+	std::vector<int> res{};
 	const int st = 5;
 	std::valarray<double> secondDeriv = piece.cshift(2 * st) - piece * 2. + piece.cshift(-2 * st);
 	secondDeriv = secondDeriv.apply(std::abs);
+
+#if 1
+	/// zero secondDeriv somewhere
+	std::valarray<double> pieceAbs = piece.apply(std::abs);
+	for(int i = 0; i < pieceAbs.size(); ++i)
+	{
+		if(pieceAbs[i] < 0.7 * pieceAbs.max()) /// magic const
+		{
+			secondDeriv[i] = 0.;
+		}
+	}
+#endif
 
 	for(int k = 0; k < 2 * st; ++k)
 	{
@@ -726,7 +739,9 @@ std::vector<int> suspectGoodSecDeriv(const std::valarray<double> & piece)
 	for (int k = 2 * st; k < secondDeriv.size() - 2 * st; ++k)
 	{
 		bool tmp = true;
-		for(int z = 0; z < st; ++z)
+		if(secondDeriv[k] == 0.) { continue; } /// magic const
+//		if(secondDeriv[k] < 5.) { continue; } /// magic const
+		for(int z = 0; z < 15; ++z) /// magic const
 		{
 			if(secondDeriv[k] < secondDeriv[k + z] ||
 			   secondDeriv[k] < secondDeriv[k - z])
@@ -738,18 +753,21 @@ std::vector<int> suspectGoodSecDeriv(const std::valarray<double> & piece)
 		if(tmp)
 		{
 			preRes.push_back({k, secondDeriv[k]});
+			res.push_back(k);
 		}
 	}
 
+#if 0
 	/// take two with the highest values
+	res.clear();
 	std::sort(std::begin(preRes),
 			  std::end(preRes),
 			  [](const auto & in1, const auto & in2)
 	{ return in1.second  > in2. second; });
 
-	std::vector<int> res{};
 	if(preRes.size() > 0) { res.push_back(preRes[0].first); }
 	if(preRes.size() > 1) { res.push_back(preRes[1].first); }
+#endif
 
 	return res;
 }
@@ -843,7 +861,15 @@ iitpData & iitpData::staging(const QString & chanName,
 			candidates = suspectGoodThreshold(val, alpha);
 #else
 			/// marker by absolute value of second derivative
-			candidates = suspectGoodSecDeriv(val);
+			if(currSign > 0)
+			{
+				const double alpha = 0.5;
+				candidates = suspectGoodThreshold(val, alpha);
+			}
+			else
+			{
+				candidates = suspectGoodSecDeriv(val);
+			}
 #endif
 
 			/// adjust for zero marker places (hole they dont overlap)
