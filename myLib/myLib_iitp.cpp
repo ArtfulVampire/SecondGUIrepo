@@ -692,6 +692,69 @@ iitpData & iitpData::staging(int numGonioChan)
 
 }
 
+
+std::vector<int> suspectGoodThreshold(const std::valarray<double> & piece, double alpha)
+{
+	std::vector<int> res{};
+
+	double maxVal = *std::max_element(std::begin(piece), std::end(piece));
+	double threshold = (1. - alpha) * maxVal;
+
+	for(int j = 0; j < piece.size() - 1; ++j)
+	{
+		if((piece[j] - threshold) * (piece[j + 1] - threshold) <= 0.)
+		{
+			res.push_back(j);
+		}
+	}
+	return res;
+}
+
+std::vector<int> suspectGoodSecDeriv(const std::valarray<double> & piece)
+{
+	std::vector<std::pair<int, double>> preRes{};
+	const int st = 5;
+	std::valarray<double> secondDeriv = piece.cshift(2 * st) - piece * 2. + piece.cshift(-2 * st);
+	secondDeriv = secondDeriv.apply(std::abs);
+
+	for(int k = 0; k < 2 * st; ++k)
+	{
+		secondDeriv[k] = 0.;
+		secondDeriv[secondDeriv.size() - 1 - k] = 0.;
+	}
+
+	for (int k = 2 * st; k < secondDeriv.size() - 2 * st; ++k)
+	{
+		bool tmp = true;
+		for(int z = 0; z < st; ++z)
+		{
+			if(secondDeriv[k] < secondDeriv[k + z] ||
+			   secondDeriv[k] < secondDeriv[k - z])
+			{
+				tmp = false;
+				break;
+			}
+		}
+		if(tmp)
+		{
+			preRes.push_back({k, secondDeriv[k]});
+		}
+	}
+
+	/// take two with the highest values
+	std::sort(std::begin(preRes),
+			  std::end(preRes),
+			  [](const auto & in1, const auto & in2)
+	{ return in1.second  > in2. second; });
+
+	std::vector<int> res{};
+	if(preRes.size() > 0) { res.push_back(preRes[0].first); }
+	if(preRes.size() > 1) { res.push_back(preRes[1].first); }
+
+	return res;
+}
+
+
 iitpData & iitpData::staging(const QString & chanName,
 							 int markerMin,
 							 int markerMax)
@@ -754,87 +817,57 @@ iitpData & iitpData::staging(const QString & chanName,
 
 	int currSign = sign(chan[0]);
 	int start = 0;
-	const double alpha = 0.20;
-	const int lefrig = 8;
 
 	std::ofstream of("/media/Files/Data/iitp/out.txt", std::ios_base::app);
-//	std::ostream & os = of;
-
-//	os << chanName << std::endl;
 	for(int i = 0; i < chan.size() - 1; ++i) // -1 for stability
 	{
 
 		if(sign(chan[i]) != currSign)
 		{
-//			os << "start = " << start << std::endl;
 			int end = i - 1;
-			if(end - start < 10) { break; }
 
+			if(end - start < 10)
+			{
+				break;
+				start = i;
+				currSign *= -1;
+			}
 
-			std::valarray<double> val = smLib::contSubsec(chan, start, end);
+			std::valarray<double> val = smLib::contSubsec(chan, start, end + 1); /// i
 			val = val.apply(std::abs);
 
-			/// marker on 80% of peak
-			double maxVal = *std::max_element(std::begin(val), std::end(val));
-			double threshold = (1. - alpha) * maxVal;
+			std::vector<int> candidates{};
+#if 0
+			/// marker on (1. - alpha) of peak
+			const double alpha = 0.20;
+			candidates = suspectGoodThreshold(val, alpha);
+#else
+			/// marker by absolute value of second derivative
+			candidates = suspectGoodSecDeriv(val);
+#endif
 
-			std::vector<int> candidates;
-
-			srand(time(NULL));
-			for(int j = 0; j < val.size() - 1; ++j)
+			/// adjust for zero marker places (hole they dont overlap)
+			const int lefrig = 8;
+			for(auto & in : candidates)
 			{
-				/// val[j] <= threshold <= val[j + 1]
-				/// val[j] >= threshold >= val[j + 1]
-				if((val[j] - threshold) * (val[j + 1] - threshold) <= 0.)
+				in += start;
+				/// look for zero marker in the neighbourhood
+				for(int k = 0; k < lefrig; ++k)
 				{
-					if(currSign == 1)
+					if(in + k < marks.size() && marks[in + k] == 0.)
 					{
-						/// look for zero marker in the neighbourhood
-						for(int k = 0; k < lefrig; ++k)
-						{
-							if(start + j + k < marks.size() && marks[start + j + k] == 0.)
-							{
-//								os << start + j + k << std::endl;
-//								marks[start + j + k] = markerMax;
-								candidates.push_back(start + j + k);
-								break;
-							}
-							else if(start + j - k > 0 && marks[start + j - k] == 0.)
-							{
-//								os << start + j - k << std::endl;
-//								marks[start + j - k] = markerMax;
-								candidates.push_back(start + j - k);
-								break;
-							}
-						}
-		//				marks[start + j + 10 - rand()%20] = markerMax;
+						in = in + k;
+						break;
 					}
-					else
+					else if(in - k > 0 && marks[in - k] == 0.)
 					{
-						/// look for zero marker in the neighbourhood
-						for(int k = 0; k < lefrig; ++k)
-						{
-							if(start + j + k < marks.size() && marks[start + j + k] == 0.)
-							{
-//								os << start + j + k << std::endl;
-//								marks[start + j + k] = markerMin;
-								candidates.push_back(start + j + k);
-								break;
-							}
-							else if(start + j - k > 0 && marks[start + j - k] == 0.)
-							{
-//								os << start + j - k << std::endl;
-//								marks[start + j - k] = markerMin;
-								candidates.push_back(start + j - k);
-								break;
-							}
-						}
-		//				marks[start + j + 10 - rand()%20] = markerMin;
+						in = in - k;
+						break;
 					}
 				}
-
 			}
-			/// mark only first and last threshold crossing
+
+			/// mark only first and last threshold crossing. Also okay if size == 1
 			if(!candidates.empty())
 			{
 				marks[candidates.front()] = ((currSign == 1) ? markerMax : markerMin);
@@ -849,10 +882,8 @@ iitpData & iitpData::staging(const QString & chanName,
 				   << std::endl;
 			}
 
-
 			start = i;
-			currSign *= -1; /// currSign = sign(chan[start]);
-//			os << "end = " << end << std::endl;
+			currSign *= -1;
 		}
 	}
 	of.close();

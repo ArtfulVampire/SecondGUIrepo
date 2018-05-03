@@ -269,7 +269,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// IITP
 	QStringList guyList{
 		"Alex",		//
@@ -351,14 +351,15 @@ void MainWindow::customFunc()
 			exit(0);
 		}
 //		return;
-		if(0)
+		if(01)
 		{
 			std::cout << "staging start" << std::endl;
 			autos::IITPstaging(guy);							/// flex/extend markers
 			std::cout << "staging end, copy start" << std::endl;
-			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
+//			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
 			std::cout << "copy end, reref start" << std::endl;
-			autos::IITPrerefCAR(guy + "_car");					/// rewrite ALL edfs in SYNCED/guy_car
+//			autos::IITPrerefCAR(guy + "_car");					/// rewrite ALL edfs in SYNCED/guy_car
+			return;
 		}
 		/// CHECK car files if needed
 		if(0)

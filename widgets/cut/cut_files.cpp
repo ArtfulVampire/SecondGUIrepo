@@ -284,6 +284,22 @@ void Cut::setValuesByEdf()
 	ui->color3SpinBox->setValue(-1);	/// maybe -> paint
 }
 
+void Cut::marksToDrawSet()
+{
+	QStringList a = ui->marksToDrawLineEdit->text().split(QRegExp("[,; ]"),
+														  QString::SkipEmptyParts);
+	marksToDraw.clear();
+	for(const auto & in : a)
+	{
+		bool ok = false;
+		int b = in.toInt(&ok);
+		if(ok)
+		{
+			marksToDraw.push_back(b);
+		}
+	}
+}
+
 void Cut::openFile(const QString & dataFileName)
 {
 	fileOpened = false; /// to prevent many paints
@@ -297,6 +313,8 @@ void Cut::openFile(const QString & dataFileName)
 	manualDrawFlag = false;
 	manualDrawStart = QPoint{};
 	manualDrawDataBackup.clear();
+
+	marksToDrawSet();
 
 	leftDrawLimit = 0;
 	if(this->myFileType == fileType::real)

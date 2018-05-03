@@ -8,6 +8,9 @@
 #include <myLib/qtlib.h>
 #include <myLib/output.h>
 
+#include <myLib/iitp_consts.h>
+#include <myLib/iitp.h>
+
 using namespace myOut;
 
 Cut::Cut() :
@@ -191,6 +194,8 @@ Cut::Cut() :
 						 [this, p](){ this->colorSpinSlot(std::get<0>(p), std::get<1>(p)); } );
 		QObject::connect(std::get<2>(p), SIGNAL(returnPressed()), this, SLOT(paint()));
 	}
+	QObject::connect(ui->marksToDrawLineEdit, &QLineEdit::editingFinished,
+					 [this](){ marksToDrawSet(); paint(); });
 	QObject::connect(ui->refilterFramePushButton, SIGNAL(clicked(bool)),
 					 this, SLOT(refilterFrameSlot()));
 	QObject::connect(ui->refilterAllPushButton, SIGNAL(clicked(bool)),
@@ -658,6 +663,24 @@ void Cut::colorSpinSlot(QSpinBox * spin, QLineEdit * lin)
 			{
 				ch = edfFil.getLabels(n);
 			}
+
+			/// iitp interesting markers
+			if(DEFS.isUser(username::IITP) && ch.contains("IT") && ch.contains("_"))
+			{
+				int gonioNum{};
+				for(const QString & in : iitp::gonioNames)
+				{
+					if(ch.contains(in))
+					{
+						gonioNum = myLib::indexOfVal(iitp::gonioNames, in);
+						break;
+					}
+				}
+				ui->iitpInterMarksLineEdit->setText(nm(iitp::gonioMinMarker(gonioNum))
+													+ " "
+													+ nm(iitp::gonioMinMarker(gonioNum) + 1));
+			}
+
 			lin->setText(ch
 						 .remove("EEG ")
 						 .remove("IT ")
@@ -665,6 +688,7 @@ void Cut::colorSpinSlot(QSpinBox * spin, QLineEdit * lin)
 						 .remove("EMG ")
 						 );
 		}
+
 	}
 	else
 	{
@@ -847,12 +871,15 @@ void Cut::paintMarkers(const matrix & drawDataLoc)
 
 	for(int i = 0; i < drawDataLoc.cols(); ++i)
 	{
-		if(drawDataLoc[mrk][i] != 0.)
+		const double & toDraw = drawDataLoc[mrk][i];
+		bool allowed = marksToDraw.empty()
+					   || myLib::contains(marksToDraw, int(toDraw));
+		if(toDraw != 0. && allowed)
 		{
 			/// magic consts
 			pnt.drawText(i,
 						 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
-						 nm(int(drawDataLoc[mrk][i])));
+						 nm(int(toDraw)));
 		}
 	}
 	pnt.end();

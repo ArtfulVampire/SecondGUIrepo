@@ -113,6 +113,7 @@ public slots:
 	void smartFindNextSlot();
 	void smartFindPrevSlot();
 
+	void marksToDrawSet();
 	void drawSpectre();
 	void paint();
 	void forwardStepSlot();
@@ -157,6 +158,7 @@ private:
 	static const int scrollAreaGapY = 15;
 	static const int picScaleGapY = 20;
 	bool drawFlag{false}; /// to prevent many redraws in e.g. setValuesByEdf()
+	std::vector<int> marksToDraw{};
 
 	bool manualDrawFlag{false};						/// manual signal draw
 	QPoint manualDrawStart{};						/// manual signal draw
