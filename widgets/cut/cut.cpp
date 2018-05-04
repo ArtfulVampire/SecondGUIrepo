@@ -34,6 +34,7 @@ Cut::Cut() :
 	ui->suffixComboBox->addItem("new");
 	ui->suffixComboBox->addItem("sum_new");
 	ui->suffixComboBox->addItem("car");
+	ui->suffixComboBox->addItem("stag");
 	ui->suffixComboBox->setCurrentText("");
 //	ui->suffixComboBox->setCurrentText("sum"); /// iitp
 
@@ -740,17 +741,16 @@ matrix Cut::makeDrawData()
 	return dataCutLocal.subCols(leftDrawLimit, rightDrawLimit);
 }
 
+/// check - works not especially accurate
 int Cut::getDrawedChannel(QMouseEvent * clickEvent)
 {
-//	std::cout << clickEvent->x() << "\t" << clickEvent->y() << std::endl;
-
 	auto vals = this->drawData.getCol(clickEvent->x());
 	const double norm = normCoeff();
 	double dist = 1000;
 	int num = -1;
 	for(int i = 0; i < drawData.rows(); ++i)
 	{
-		const double offsetY = (i + 1) * ui->scrollArea->height() / (drawData.rows() + 2);
+		const double offsetY = (i + 1) * ui->scrollArea->height() / double(drawData.rows() + 2);
 		const double D = std::abs(offsetY + vals[i] * norm - clickEvent->y());
 		if(D < dist)
 		{

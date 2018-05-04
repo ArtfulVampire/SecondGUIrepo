@@ -269,35 +269,10 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// IITP
-	QStringList guyList{
-		"Alex",		//
-		"Aliev",	//
-		"Aliev2",	//
-		"Boris",	//
-		"Dima",		//
-		"Egor",		//
-		"Galya",	//
-		"Ira",		//
-		"Isakov",	//
-		"Levik",	//
-		"Oleg",		//
-		"Victor"	//
-	};
-	QStringList vrList{
-		"Aliev2"
-//		"Dima2",
-//		"Ira2",
-//		"Victor2"
-	};
-
-
 //	return;
-
 	QString guy = "Isakov2";
-//	for(QString guy : guyList)
-//	for(QString guy : vrList)
 	{
 		if(0)
 		{
@@ -353,22 +328,22 @@ void MainWindow::customFunc()
 //		return;
 		if(01)
 		{
-			std::cout << "staging start" << std::endl;
-			autos::IITPstaging(guy);							/// flex/extend markers
-			std::cout << "staging end, copy start" << std::endl;
-//			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
-			std::cout << "copy end, reref start" << std::endl;
-//			autos::IITPrerefCAR(guy + "_car");					/// rewrite ALL edfs in SYNCED/guy_car
-			return;
+//			std::cout << "staging start" << std::endl;
+//			autos::IITPstaging(guy);							/// flex/extend markers
+//			std::cout << "staging end, copy start" << std::endl;
+			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
+//			std::cout << "copy end, reref start" << std::endl;
+			autos::IITPrerefCAR(guy + "_car");					/// rewrite ALL edfs in SYNCED/guy_car
+//			return;
 		}
 		/// CHECK car files if needed
-		if(0)
+		if(01)
 		{
-			std::cout << "copy end, process start" << std::endl;
+//			std::cout << "copy end, process start" << std::endl;
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
-			std::cout << "process end, draw start" << std::endl;
+//			std::cout << "process end, draw start" << std::endl;
 			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
-			std::cout << "all end" << std::endl;
+//			std::cout << "all end" << std::endl;
 //			continue;
 //			exit(0);
 		}

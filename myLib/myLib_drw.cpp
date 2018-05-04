@@ -793,7 +793,7 @@ void redrawEeg(QPixmap & pic,
 			paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth)); /// default color
 		}
 
-		const double offsetY = (chanNum + 1) * pic.height() / (inData.rows() + 2);
+		const double offsetY = (chanNum + 1) * pic.height() / double(inData.rows() + 2);
 
 		for(int currX = sta - 2; currX < fin + 2; ++currX)  /// magic +-2
 		{

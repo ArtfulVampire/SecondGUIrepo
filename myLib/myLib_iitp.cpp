@@ -791,48 +791,6 @@ iitpData & iitpData::staging(const QString & chanName,
 		return (in > 0) ? 1 : -1;
 	};
 
-
-
-#if 0
-	/// test first and second derivatives
-
-	const int st = 5;
-	std::valarray<double> firstDeriv = chan.cshift(-st) - chan.cshift(st);
-
-	std::valarray<double> secondDeriv = chan.cshift(2 * st) - chan * 2. + chan.cshift(-2 * st);
-
-	for(int k = 0; k < st + 1; ++k)
-	{
-		firstDeriv[k] = 0.;
-		firstDeriv[firstDeriv.size() - 1 - k] = 0.;
-	}
-	for(int k = 0; k < 2 * st; ++k)
-	{
-		secondDeriv[k] = 0.;
-		secondDeriv[secondDeriv.size() - 1 - k] = 0.;
-	}
-
-	myLib::histogram(firstDeriv,
-					 50,
-					 "/media/Files/Data/deriv.jpg",
-	{-25, 25});
-
-	firstDeriv *= 10;
-	secondDeriv *= 30;
-
-	std::copy(std::begin(firstDeriv),
-			  std::end(firstDeriv),
-			  std::begin(this->edfData[this->findChannel("Ankle_r")]) + start);
-	std::copy(std::begin(secondDeriv),
-			  std::end(secondDeriv),
-			  std::begin(this->edfData[this->findChannel("Knee_l")]) + start);
-
-	return *this;
-#endif
-
-
-
-
 	int currSign = sign(chan[0]);
 	int start = 0;
 
@@ -855,22 +813,27 @@ iitpData & iitpData::staging(const QString & chanName,
 			val = val.apply(std::abs);
 
 			std::vector<int> candidates{};
-#if 0
-			/// marker on (1. - alpha) of peak
-			const double alpha = 0.20;
-			candidates = suspectGoodThreshold(val, alpha);
-#else
-			/// marker by absolute value of second derivative
-			if(currSign > 0)
+
+			/// Isakov2
+			if(chanName.contains("Knee") && this->ExpName.contains("Isakov2"))
 			{
-				const double alpha = 0.5;
-				candidates = suspectGoodThreshold(val, alpha);
+				/// marker by absolute value of second derivative
+				if(currSign > 0)
+				{
+					const double alpha = 0.05;
+					candidates = suspectGoodThreshold(val, alpha);
+				}
+				else
+				{
+					candidates = suspectGoodSecDeriv(val);
+				}
 			}
 			else
 			{
-				candidates = suspectGoodSecDeriv(val);
+				/// marker on (1. - alpha) of peak
+				const double alpha = 0.20;
+				candidates = suspectGoodThreshold(val, alpha);
 			}
-#endif
 
 			/// adjust for zero marker places (hole they dont overlap)
 			const int lefrig = 8;
@@ -914,6 +877,45 @@ iitpData & iitpData::staging(const QString & chanName,
 	}
 	of.close();
 	return *this;
+
+
+#if 0
+	/// test first and second derivatives
+
+	const int st = 5;
+	std::valarray<double> firstDeriv = chan.cshift(-st) - chan.cshift(st);
+
+	std::valarray<double> secondDeriv = chan.cshift(2 * st) - chan * 2. + chan.cshift(-2 * st);
+
+	for(int k = 0; k < st + 1; ++k)
+	{
+		firstDeriv[k] = 0.;
+		firstDeriv[firstDeriv.size() - 1 - k] = 0.;
+	}
+	for(int k = 0; k < 2 * st; ++k)
+	{
+		secondDeriv[k] = 0.;
+		secondDeriv[secondDeriv.size() - 1 - k] = 0.;
+	}
+
+	myLib::histogram(firstDeriv,
+					 50,
+					 "/media/Files/Data/deriv.jpg",
+	{-25, 25});
+
+	firstDeriv *= 10;
+	secondDeriv *= 30;
+
+	std::copy(std::begin(firstDeriv),
+			  std::end(firstDeriv),
+			  std::begin(this->edfData[this->findChannel("Ankle_r")]) + start);
+	std::copy(std::begin(secondDeriv),
+			  std::end(secondDeriv),
+			  std::begin(this->edfData[this->findChannel("Knee_l")]) + start);
+
+	return *this;
+#endif
+
 }
 
 
