@@ -16,6 +16,96 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 
+#if 01
+	/// calculate anagrams solving
+	const QString workPath = "/media/Files/Data/FeedbackFinalMark";
+
+	std::valarray<int> correct(0, 240);
+
+	std::vector<int> types;
+	std::ifstream typesFile((workPath + "/stimTypes.txt").toStdString());
+	char typ;
+	while(typesFile >> typ)
+	{
+		while(typ != 'S' && typ != 'V') { typesFile >> typ; }
+		(typ == 'S') ? (types.push_back(0)) : (types.push_back(1));
+	}
+	typesFile.close();
+
+	std::cout << types.size() << std::endl;
+
+	std::vector<QString> anags;
+	QFile anagFile((workPath + "/anagrams.txt"));
+	anagFile.open(QIODevice::ReadOnly);
+	while(!anagFile.atEnd())
+	{
+		auto a = QString(anagFile.readLine());
+		a.resize(6);
+		anags.push_back(a);
+	}
+	anagFile.close();
+
+	std::cout << anags.size() << std::endl;
+
+	for(const auto sub : subj::guysFBfinal)
+	{
+		const QString guyPath = workPath + "/" + sub.first;
+		int counter = 0;
+
+		for(int i : {1, 2, 3})
+		{
+			const QString ansPath = guyPath + "/" + sub.second + "_ans" + nm(i) + ".txt";
+
+			std::ifstream answers(ansPath.toStdString());
+			char ans;
+			while(answers >> ans)
+			{
+				while(ans != '0' && ans != '1' && ans != '2') { answers >> ans; }
+
+				bool ok{};
+				int tmp = QString(ans).toInt(&ok);
+
+				if(ok && tmp == 1)
+				{
+					++correct[counter];
+				}
+				++counter;
+			}
+			answers.close();
+		}
+	}
+	std::cout << correct.size() << std::endl;
+
+	std::vector<std::pair<QString, int>> solved;
+
+	int counter = 0;
+	for(int i = 0; i < correct.size(); ++i)
+	{
+		if(types[i] == 1)
+		{
+			solved.push_back(std::make_pair(anags[counter++], correct[i]));
+		}
+	}
+
+	for(const auto & in : solved)
+	{
+		std::cout << in.first << "\t" << in.second << std::endl;
+	}
+
+	std::cout << std::endl;
+
+	std::sort(std::begin(solved), std::end(solved),
+			  [](const auto & in1, const auto & in2) { return in1.second > in2.second; });
+
+	for(const auto & in : solved)
+	{
+		std::cout << in.first << "\t" << in.second << std::endl;
+	}
+
+
+
+	exit(0);
+#endif
 
 #if 0
 	/// count correctness and average times

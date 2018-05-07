@@ -45,13 +45,13 @@ const std::vector<std::pair<QString, QString>> guysFBfinal {
 			std::make_pair("Semyonov_n", "SAV"),
 			std::make_pair("Sergeev_n", "SAA"),
 			/// other
-			std::make_pair("Evstyushin_n", "ENI"),		/// juleek
-			std::make_pair("Kravetz_ua_n", "KEA"),		/// low performance
-			std::make_pair("Laszov_n", "LMA"),			/// high performance
-			std::make_pair("Markina", "MAM"),			/// low performance
-			std::make_pair("Nikonenko", "NUA"),			/// low performance
-			std::make_pair("Shafikova_s", "SDR"),		/// single data
-			std::make_pair("Tankina_s", "TOA")			/// single data
+//			std::make_pair("Evstyushin_n", "ENI"),		/// juleek
+//			std::make_pair("Kravetz_ua_n", "KEA"),		/// low performance
+//			std::make_pair("Laszov_n", "LMA"),			/// high performance
+//			std::make_pair("Markina", "MAM"),			/// low performance
+//			std::make_pair("Nikonenko", "NUA"),			/// low performance
+//			std::make_pair("Shafikova_s", "SDR"),		/// single data
+//			std::make_pair("Tankina_s", "TOA")			/// single data
 
 };
 
