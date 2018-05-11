@@ -16,97 +16,6 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 
-#if 01
-	/// calculate anagrams solving
-	const QString workPath = "/media/Files/Data/FeedbackFinalMark";
-
-	std::valarray<int> correct(0, 240);
-
-	std::vector<int> types;
-	std::ifstream typesFile((workPath + "/stimTypes.txt").toStdString());
-	char typ;
-	while(typesFile >> typ)
-	{
-		while(typ != 'S' && typ != 'V') { typesFile >> typ; }
-		(typ == 'S') ? (types.push_back(0)) : (types.push_back(1));
-	}
-	typesFile.close();
-
-	std::cout << types.size() << std::endl;
-
-	std::vector<QString> anags;
-	QFile anagFile((workPath + "/anagrams.txt"));
-	anagFile.open(QIODevice::ReadOnly);
-	while(!anagFile.atEnd())
-	{
-		auto a = QString(anagFile.readLine());
-		a.resize(6);
-		anags.push_back(a);
-	}
-	anagFile.close();
-
-	std::cout << anags.size() << std::endl;
-
-	for(const auto sub : subj::guysFBfinal)
-	{
-		const QString guyPath = workPath + "/" + sub.first;
-		int counter = 0;
-
-		for(int i : {1, 2, 3})
-		{
-			const QString ansPath = guyPath + "/" + sub.second + "_ans" + nm(i) + ".txt";
-
-			std::ifstream answers(ansPath.toStdString());
-			char ans;
-			while(answers >> ans)
-			{
-				while(ans != '0' && ans != '1' && ans != '2') { answers >> ans; }
-
-				bool ok{};
-				int tmp = QString(ans).toInt(&ok);
-
-				if(ok && tmp == 1)
-				{
-					++correct[counter];
-				}
-				++counter;
-			}
-			answers.close();
-		}
-	}
-	std::cout << correct.size() << std::endl;
-
-	std::vector<std::pair<QString, int>> solved;
-
-	int counter = 0;
-	for(int i = 0; i < correct.size(); ++i)
-	{
-		if(types[i] == 1)
-		{
-			solved.push_back(std::make_pair(anags[counter++], correct[i]));
-		}
-	}
-
-	for(const auto & in : solved)
-	{
-		std::cout << in.first << "\t" << in.second << std::endl;
-	}
-
-	std::cout << std::endl;
-
-	std::sort(std::begin(solved), std::end(solved),
-			  [](const auto & in1, const auto & in2) { return in1.second > in2.second; });
-
-	for(const auto & in : solved)
-	{
-		std::cout << in.first << "\t" << in.second << std::endl;
-	}
-
-
-
-	exit(0);
-#endif
-
 #if 0
 	/// count correctness and average times
 #if 0 /// new (~10 people)
@@ -573,10 +482,9 @@ void MainWindow::customFunc()
 
 #if 0
 	/// Galya processing things
-	/// 15Mar18
 
-
-	const QString workPath = def::GalyaFolder + "/24Apr18Tankina";
+//	const QString workPath = def::GalyaFolder + "/24Apr18Tankina";
+	const QString workPath = def::GalyaFolder + "/RhythmAdoption11May18";
 
 	/// tactile
 //	const std::vector<QString> usedMarkers{"_buk", "_kis", "_rol", "_sch", "_fon"};
@@ -598,8 +506,11 @@ void MainWindow::customFunc()
 	const std::vector<QString> usedMarkers{"_2sv", "_2zv",
 										   "_4sv", "_4zv",
 										   "_8sv", "_8zv",
-										   "_16sv", "_16zv",
-										   "_og", "_zg"};
+										   "_16sv", "_16zv"
+										   , "_fon"
+//										   , "_og"
+//										   , "_zg"
+										  };
 
 	/// groups
 	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
@@ -626,7 +537,6 @@ void MainWindow::customFunc()
 				newName.replace("_4_", "_4", Qt::CaseInsensitive);
 				newName.replace("_8_", "_8", Qt::CaseInsensitive);
 				newName.replace("_16_", "_16", Qt::CaseInsensitive);
-				newName.replace("_fon", "_zg", Qt::CaseInsensitive);
 
 				bool p = false;
 				for(auto mrk : usedMarkers)
@@ -718,14 +628,15 @@ void MainWindow::customFunc()
 		{
 			DEFS.setAutosUser(autosUser::Galya);
 
-			autos::ProcessByFolders(workPath + "/" + subdir,
-									usedMarkers);
+			/// usual processing
+//			autos::ProcessByFolders(workPath + "/" + subdir,
+//									usedMarkers);
 
 			/// rhythm adoption
 			for(const QString & stimType : {"sv", "zv"})
 			{
 				autos::rhythmAdoptionGroup(workPath + "/" + subdir,
-										   "_zg",
+										   "_fon",
 										   stimType);
 			}
 
@@ -733,6 +644,7 @@ void MainWindow::customFunc()
 		}
 		exit(0);
 	}
+
 
 	if(0)
 	{
@@ -751,7 +663,35 @@ void MainWindow::customFunc()
 	}
 
 	/// labels part
+	if(0)
+	{
+		/// labels rhythm adoption
 
+		const QString sep{"\t"};
+//		const QString sep{"\r\n"};
+
+		std::vector<QString> labels1 = coords::lbl19;
+		for(QString & in : labels1) { in = in.toLower(); }
+
+
+		std::ofstream lab;
+		for(const QString & T : {"sv", "zv"})
+		{
+			lab.open((workPath + "/labels_" + T + ".txt").toStdString());
+
+			for(int fr : {2, 4, 8, 16})
+			{
+				for(QString lbl : labels1)
+				{
+					lab << nm(fr)
+						<< "_" << T
+						<< "_" << lbl << sep;
+				}
+			}
+			lab.close();
+		}
+		exit(0);
+	}
 
 	if(0)
 	{
@@ -881,6 +821,99 @@ void MainWindow::customFunc()
 	}
 	exit(0);
 #endif
+
+
+#if 0
+	/// calculate anagrams solving
+	const QString workPath = "/media/Files/Data/FeedbackFinalMark";
+
+	std::valarray<int> correct(0, 240);
+
+	std::vector<int> types;
+	std::ifstream typesFile((workPath + "/stimTypes.txt").toStdString());
+	char typ;
+	while(typesFile >> typ)
+	{
+		while(typ != 'S' && typ != 'V') { typesFile >> typ; }
+		(typ == 'S') ? (types.push_back(0)) : (types.push_back(1));
+	}
+	typesFile.close();
+
+	std::cout << types.size() << std::endl;
+
+	std::vector<QString> anags;
+	QFile anagFile((workPath + "/anagrams.txt"));
+	anagFile.open(QIODevice::ReadOnly);
+	while(!anagFile.atEnd())
+	{
+		auto a = QString(anagFile.readLine());
+		a.resize(6);
+		anags.push_back(a);
+	}
+	anagFile.close();
+
+	std::cout << anags.size() << std::endl;
+
+	for(const auto sub : subj::guysFBfinal)
+	{
+		const QString guyPath = workPath + "/" + sub.first;
+		int counter = 0;
+
+		for(int i : {1, 2, 3})
+		{
+			const QString ansPath = guyPath + "/" + sub.second + "_ans" + nm(i) + ".txt";
+
+			std::ifstream answers(ansPath.toStdString());
+			char ans;
+			while(answers >> ans)
+			{
+				while(ans != '0' && ans != '1' && ans != '2') { answers >> ans; }
+
+				bool ok{};
+				int tmp = QString(ans).toInt(&ok);
+
+				if(ok && tmp == 1)
+				{
+					++correct[counter];
+				}
+				++counter;
+			}
+			answers.close();
+		}
+	}
+	std::cout << correct.size() << std::endl;
+
+	std::vector<std::pair<QString, int>> solved;
+
+	int counter = 0;
+	for(int i = 0; i < correct.size(); ++i)
+	{
+		if(types[i] == 1)
+		{
+			solved.push_back(std::make_pair(anags[counter++], correct[i]));
+		}
+	}
+
+	for(const auto & in : solved)
+	{
+		std::cout << in.first << "\t" << in.second << std::endl;
+	}
+
+	std::cout << std::endl;
+
+	std::sort(std::begin(solved), std::end(solved),
+			  [](const auto & in1, const auto & in2) { return in1.second > in2.second; });
+
+	for(const auto & in : solved)
+	{
+		std::cout << in.first << "\t" << in.second << std::endl;
+	}
+
+
+
+	exit(0);
+#endif
+
 
 #if 0
 	/// check ratio crossSpectrum my and matlab
