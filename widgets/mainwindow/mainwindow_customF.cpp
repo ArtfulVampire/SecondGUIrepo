@@ -467,12 +467,14 @@ void MainWindow::customFunc()
 
 #if 0
 	/// insert channels
-	const QString fn = "/media/Files/Data/Galya/24Apr18Tankina/Autism_adults/25j_Nf/25j_Nf_2sv.edf";
+//	const QString fn = "/media/Files/Data/Galya/24Apr18Tankina/Autism_adults/25j_Nf/25j_Nf_2sv.edf";
+	const QString fn = "/media/Files/Data/Galya/RhythmAdoption11May18/shizo/25g_Nf/25g_Nf_2sv.edf";
 	edfFile fl;
 	fl.readEdfFile(fn);
-	auto dat = fl.getData("T4");
+
+	auto dat = fl.getData("C3"); /// what to copy
 	dat = 0.;
-	edfChannel ch = fl.getChannels(3); ch.label = "EEG T3-A1";
+	edfChannel ch = fl.getChannels(3); ch.label = "EEG T3-A1"; /// where to copy
 
 	fl.insertChannel(fl.findChannel("C3"), dat, ch);
 	fl.rewriteEdfFile();
@@ -480,7 +482,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// Galya processing things
 
 //	const QString workPath = def::GalyaFolder + "/24Apr18Tankina";
@@ -513,9 +515,10 @@ void MainWindow::customFunc()
 										  };
 
 	/// groups
-	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-//	const QStringList subdirs{""};
+//	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+	const QStringList subdirs{"add"};
 
+	return;
 
 	if(0)
 	{
@@ -556,6 +559,16 @@ void MainWindow::customFunc()
 				}
 
 			}
+//			autos::EdfsToFolders(workPath + "/" + subdir);
+		}
+		exit(0);
+	}
+
+	if(0)
+	{
+		for(const QString & subdir : subdirs)
+		{
+//			autos::rewriteNew(workPath + "/" + subdir);
 			autos::EdfsToFolders(workPath + "/" + subdir);
 		}
 		exit(0);
@@ -639,8 +652,6 @@ void MainWindow::customFunc()
 										   "_fon",
 										   stimType);
 			}
-
-
 		}
 		exit(0);
 	}

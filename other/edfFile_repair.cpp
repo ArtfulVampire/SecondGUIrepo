@@ -1,6 +1,7 @@
 #include <other/edffile.h>
 
 #include <myLib/dataHandlers.h>
+#include <myLib/signalProcessing.h>
 
 using namespace myOut;
 
@@ -60,7 +61,7 @@ void toLatinFileOrFolder(const QString & fileOrFolderPath)
 void toLatinDir(const QString & dirPath, const QStringList & filters)
 {
     QStringList leest;
-    if(!filters.empty())
+	if(!filters.isEmpty())
     {
         leest = QDir(dirPath).entryList(filters);
     }
@@ -342,7 +343,7 @@ void toLowerFileOrFolder(const QString & fileOrFolderPath)
 void toLowerDir(const QString & dirPath, const QStringList & filters)
 {
 	QStringList leest;
-	if(!filters.empty())
+	if(!filters.isEmpty())
 	{
 		leest = QDir(dirPath).entryList(filters);
 	}
@@ -355,6 +356,105 @@ void toLowerDir(const QString & dirPath, const QStringList & filters)
 	{
 		toLowerFileOrFolder(dirPath + "/" + str);
 	}
+}
+
+void testArtifacts(const QString & dirPath, const QStringList & filters)
+{
+	QStringList leest;
+	if(!filters.isEmpty())
+	{
+		leest = QDir(dirPath).entryList(filters);
+	}
+	else
+	{
+		leest = QDir(dirPath).entryList();
+	}
+
+
+	const double amplThreshold = 150.;
+	const int fftLen = 512;
+	const myLib::windowName window = myLib::windowName::Hamming;
+
+	for(const QString & str : leest)
+	{
+
+		edfFile fil;
+		fil.readEdfFile(dirPath + "/" + str);
+		const double srate = fil.getFreq();
+
+		if(fil.getData().maxAbsVal() > amplThreshold)
+		{
+			std::cout << fil.getFileNam() << ": amplitude " << std::endl;
+			continue;
+		}
+
+		using specType = std::valarray<std::complex<double>>;
+		const int windStep = fftLen * 0.5;
+		const std::valarray<double> wnd = myLib::fftWindow(fftLen, window);
+
+		for(int i = 0; i < 19; ++i) /// numChans magic const
+		{
+			const int siz = (fil.getData(i).size() - fftLen) / windStep;
+			int num = 0;
+			std::valarray<double> thetaPart(siz);
+			std::valarray<double> thetaAbs(siz);
+			std::valarray<double> betaPart(siz);
+			std::valarray<double> betaAbs(siz);
+
+			for(int windStart = 0;
+				windStart < fil.getData(i).size() - fftLen;
+				windStart += windStep, ++num)
+			{
+				std::valarray<double> part1 = smLib::contSubsec(fil.getData(i),
+																windStart,
+																windStart + fftLen) * wnd;
+				const specType spec1 = myLib::spectreRtoC2(part1, fftLen, srate);
+				specType tmp = spec1 * spec1.apply(std::conj);
+
+				/// magic consts
+				double theta = std::abs(std::accumulate(
+											std::begin(tmp) + fftLimit(4., srate, fftLen),
+											std::begin(tmp) + fftLimit(7.5, srate, fftLen),
+											std::complex<double>{}));
+				double beta = std::abs(std::accumulate(
+											std::begin(tmp) + fftLimit(15., srate, fftLen),
+											std::begin(tmp) + fftLimit(20., srate, fftLen),
+											std::complex<double>{}));
+				double whole = std::abs(std::accumulate(
+											std::begin(tmp) + fftLimit(5., srate, fftLen),
+											std::begin(tmp) + fftLimit(20., srate, fftLen),
+											std::complex<double>{}));
+				thetaPart[num] = theta / whole;
+				thetaAbs[num] = theta;
+				betaPart[num] = beta / whole;
+				betaAbs[num] = beta;
+			}
+
+			/// magic consts
+			if(thetaPart.max() > 0.5)
+			{
+				std::cout << fil.getFileNam() << ": thetaPart " << std::endl;
+				continue;
+			}
+			if(thetaAbs.max() > 300)
+			{
+				std::cout << fil.getFileNam() << ": thetaAbs " << std::endl;
+				continue;
+			}
+			if(betaPart.max() > 0.5)
+			{
+				std::cout << fil.getFileNam() << ": betaPart " << std::endl;
+				continue;
+			}
+			if(betaAbs.max() > 300)
+			{
+				std::cout << fil.getFileNam() << ": betaAbs " << std::endl;
+				continue;
+			}
+
+		}
+	}
+
 }
 
 void fullRepairDir(const QString & dirPath, const QStringList & filters)

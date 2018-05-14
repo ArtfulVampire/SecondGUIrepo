@@ -93,6 +93,8 @@ void calculateFeatures(const QString & pathWithEdfs,
 					 const QString & outPath);
 
 /// quite useful general functions
+
+void rewriteNew(const QString & inPath);
 void EdfsToFolders(const QString & inPath);
 void ProcessByFolders(const QString & inPath,
 					  const std::vector<QString> & markers);

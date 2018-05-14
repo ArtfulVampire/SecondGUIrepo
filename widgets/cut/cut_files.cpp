@@ -14,43 +14,27 @@ using namespace myOut;
 void Cut::next()
 {
 	QString helpString;
-
-	auto iterBackup = fileListIter;
-	++fileListIter;
-	for(; fileListIter != std::end(filesList); ++fileListIter)
+	if(fileListIter == std::end(filesList) - 1)
 	{
-		if((*fileListIter).contains(QRegExp(R"({_num|_000|_sht})"))) /// magig const regexp
-		{
-			std::cout << "next: bad name" << std::endl;
-			continue;
-		}
-		helpString = myLib::getDirPathLib(currentFile) + "/" + (*fileListIter);
-		openFile(helpString);
+		std::cout << "prev: bad number, too big" << std::endl;
 		return;
 	}
-	fileListIter = iterBackup;
-	std::cout << "next: bad number, too big" << std::endl;
+	++fileListIter;
+	helpString = myLib::getDirPathLib(currentFile) + "/" + (*fileListIter);
+	openFile(helpString);
 }
 
 void Cut::prev()
 {
-	QString helpString;
-
-	auto iterBackup = fileListIter;
-	--fileListIter;
-	for(; fileListIter != std::begin(filesList); --fileListIter)
+	if(fileListIter == std::begin(filesList))
 	{
-		if((*fileListIter).contains(QRegExp(R"({_num|_000|_sht})"))) /// magig const regexp
-		{
-			std::cout << "prev: bad name" << std::endl;
-			continue;
-		}
-		helpString = myLib::getDirPathLib(currentFile) + "/" + (*fileListIter);
-		openFile(helpString);
+		std::cout << "prev: bad number, too little" << std::endl;
 		return;
 	}
-	fileListIter = iterBackup;
-	std::cout << "prev: bad number, too little" << std::endl;
+
+	--fileListIter;
+	QString helpString = myLib::getDirPathLib(currentFile) + "/" + (*fileListIter);
+	openFile(helpString);
 }
 
 
@@ -182,6 +166,15 @@ void Cut::browseSlot()
 
 	filesList = QDir(myLib::getDirPathLib(helpString)).entryList(
 	{"*" + ui->suffixComboBox->currentText() +  "*." + myLib::getExtension(helpString)});
+
+	for(const QString & in : filesList)
+	{
+		/// magic const
+		if(in.contains(QRegExp(R"({_num|_000|_sht})")))
+		{
+			filesList.removeAll(in);
+		}
+	}
 
 	fileListIter = std::find(std::begin(filesList),
 							 std::end(filesList),

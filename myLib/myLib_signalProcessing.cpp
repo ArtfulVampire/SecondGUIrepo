@@ -625,10 +625,10 @@ std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
 }
 
 std::valarray<std::complex<double>> spectreWelchRtoC(const std::valarray<double> & inputSignal,
-									   double overlap,
-									   double srate,
-									   myLib::windowName window,
-									   int fftLen)
+													 double overlap,
+													 double srate,
+													 myLib::windowName window,
+													 int fftLen)
 {
 	using specType = std::valarray<std::complex<double>>;
 

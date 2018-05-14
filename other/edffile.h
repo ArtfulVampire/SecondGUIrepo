@@ -460,6 +460,8 @@ void toLowerFileOrFolder(const QString & filePath);
 void toLowerDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
 
 void fullRepairDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+
+void testArtifacts(const QString & dirPath, const QStringList & filters = def::edfFilters);
 }
 
 #endif // EDFFILE_H

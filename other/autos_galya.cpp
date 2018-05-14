@@ -570,14 +570,16 @@ void rhythmAdoptionGroup(const QString & groupPath,
 	{
 		if(guy == "out") { continue; }
 
-		rhythmAdoption(groupPath + "/" + guy,
-					   restMark,
-					   stimType);
+//		rhythmAdoption(groupPath + "/" + guy,
+//					   restMark,
+//					   stimType);
 	}
 
+	QString subdir = groupPath.mid(groupPath.lastIndexOf("/") + 1);
+
 	autos::ArrangeFilesToTable(groupPath + "/out",
-							   groupPath + "/out/all_" + stimType + ".txt",
-							   false,
+							   groupPath + "/out/all_" + subdir + "_" + stimType + ".txt",
+							   true,
 							   stimType);
 }
 
@@ -1211,7 +1213,7 @@ void ArrangeFilesToTable(const QString & inPath,
 
 		if(writePeople)
 		{
-			fileNames << fileName << "\n";
+			fileNames << fileName.left(fileName.lastIndexOf(".")) << "\n";
 		}
 
 		QFile fil(deer.absolutePath() + "/" + fileName);
@@ -1413,6 +1415,20 @@ void refilterFolder(const QString & procDirPath,
 		edfFile fil;
 		fil.readEdfFile(helpString);
 		fil.refilter(lowFreq, highFreq, isNotch).writeEdfFile(helpString);
+	}
+}
+
+void rewriteNew(const QString & inPath)
+{
+	auto lst = QDir(inPath).entryList({"*_new.edf"});
+	for(const QString & in : lst)
+	{
+		QString oldName = in;
+		oldName.replace("_new.edf", ".edf");
+
+		QFile::remove(inPath + "/" + oldName);
+		QFile::rename(inPath + "/" + in,
+					  inPath + "/" + oldName);
 	}
 }
 

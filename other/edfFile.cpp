@@ -685,27 +685,30 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
     handleParamArray(digMax, ns, 8, readFlag, edfDescriptor, header);
 #endif
 
-    if(readFlag)
-    {
-        for(int i = 0; i < ns; ++i)
-        {
-            if(labels[i].contains("EEG", Qt::CaseInsensitive))
-            {
-                if(physMax[i] == physMin[i])
-                {
-					std::cout << ExpName << "\t"
-						 << "edfFile::readEdfFile: phys Max/Min are equal, chan(from 1) = "
-						 << i + 1 << " - " << labels[i] << std::endl;
-                }
-                if(digMax[i] == digMin[i])
-                {
-					std::cout << ExpName << "\t"
-						 << "edfFile::readEdfFile:  dig Max/Min are equal, chan(from 1) = "
-						 << i + 1 << " - " << labels[i] << std::endl;
-                }
-            }
-        }
-    }
+	if(0)
+	{
+		if(readFlag)
+		{
+			for(int i = 0; i < ns; ++i)
+			{
+				if(labels[i].contains("EEG", Qt::CaseInsensitive))
+				{
+					if(physMax[i] == physMin[i])
+					{
+						std::cout << ExpName << "\t"
+								  << "edfFile::readEdfFile: phys Max/Min are equal, chan(from 1) = "
+								  << i + 1 << " - " << labels[i] << std::endl;
+					}
+					if(digMax[i] == digMin[i])
+					{
+						std::cout << ExpName << "\t"
+								  << "edfFile::readEdfFile:  dig Max/Min are equal, chan(from 1) = "
+								  << i + 1 << " - " << labels[i] << std::endl;
+					}
+				}
+			}
+		}
+	}
 #if EDFSTREAM
 	handleParamArray(prefiltering, ns, 80, readFlag, edfStream, headerStream);
 	handleParamArray(nr, ns, 8, readFlag, edfStream, headerStream);
