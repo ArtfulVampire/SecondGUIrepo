@@ -570,9 +570,9 @@ void rhythmAdoptionGroup(const QString & groupPath,
 	{
 		if(guy == "out") { continue; }
 
-//		rhythmAdoption(groupPath + "/" + guy,
-//					   restMark,
-//					   stimType);
+		rhythmAdoption(groupPath + "/" + guy,
+					   restMark,
+					   stimType);
 	}
 
 	QString subdir = groupPath.mid(groupPath.lastIndexOf("/") + 1);

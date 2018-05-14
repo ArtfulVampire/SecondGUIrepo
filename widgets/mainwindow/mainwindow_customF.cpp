@@ -518,7 +518,6 @@ void MainWindow::customFunc()
 //	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 	const QStringList subdirs{"add"};
 
-	return;
 
 	if(0)
 	{
@@ -573,6 +572,8 @@ void MainWindow::customFunc()
 		}
 		exit(0);
 	}
+
+//	return;
 
 	if(0)
 	{
@@ -633,7 +634,7 @@ void MainWindow::customFunc()
 		exit(0);
 	}
 
-	if(0)
+	if(01)
 	{
 		/// calculation itself
 
