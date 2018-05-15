@@ -1202,7 +1202,7 @@ void ArrangeFilesToTable(const QString & inPath,
 		fileNames.open(peoplePath.toStdString());
 	}
 
-	for(const QString & fileName : deer.entryList({"*" + auxFilter + "*.txt"},
+	for(const QString & fileName : deer.entryList({"*" + auxFilter + ".txt"}, //// pewpepwpewpwe
 												  QDir::Files,
 												  QDir::Name
 //												  | QDir::Reversed

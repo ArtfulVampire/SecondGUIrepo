@@ -14,7 +14,7 @@ using namespace myOut;
 void Cut::next()
 {
 	QString helpString;
-	if(fileListIter == std::end(filesList) - 1)
+	if(fileListIter + 1 == std::end(filesList))
 	{
 		std::cout << "prev: bad number, too big" << std::endl;
 		return;

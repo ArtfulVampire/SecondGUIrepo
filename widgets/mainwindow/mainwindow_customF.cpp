@@ -482,7 +482,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// Galya processing things
 
 //	const QString workPath = def::GalyaFolder + "/24Apr18Tankina";
@@ -516,7 +516,7 @@ void MainWindow::customFunc()
 
 	/// groups
 //	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-	const QStringList subdirs{"add"};
+	const QStringList subdirs{"young"};
 
 
 	if(0)
@@ -563,6 +563,8 @@ void MainWindow::customFunc()
 		exit(0);
 	}
 
+//	return;
+
 	if(0)
 	{
 		for(const QString & subdir : subdirs)
@@ -573,7 +575,6 @@ void MainWindow::customFunc()
 		exit(0);
 	}
 
-//	return;
 
 	if(0)
 	{
@@ -634,7 +635,7 @@ void MainWindow::customFunc()
 		exit(0);
 	}
 
-	if(01)
+	if(0)
 	{
 		/// calculation itself
 
