@@ -56,7 +56,7 @@ Cut::Cut() :
 
     ui->scrollArea->setWidget(ui->picLabel);
     ui->scrollArea->installEventFilter(this);
-	ui->picLabel->installEventFilter(this);
+//	ui->picLabel->installEventFilter(this);
 
 	ui->color1LineEdit->setText("blue");
 	ui->color2LineEdit->setText("red");
@@ -208,6 +208,8 @@ Cut::Cut() :
 	QObject::connect(ui->drawSpectrumPushButton, SIGNAL(clicked(bool)),
 					 this, SLOT(drawSpectre()));
 
+
+
 	/// smartFind
 	QObject::connect(ui->smartFindShowPushButton, &QPushButton::clicked,
 					 [this](){ this->smartFindShowValues(); });
@@ -327,7 +329,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 bool Cut::eventFilter(QObject *obj, QEvent *event)
 {
     if(obj == ui->scrollArea)
-    {
+	{
 		switch(event->type())
 		{
 		case QEvent::Wheel:
@@ -391,8 +393,8 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				manualDrawAddUndo();
 				return true;
 			}
-
 			QMouseEvent * clickEvent = static_cast<QMouseEvent*>(event);
+
 			switch(clickEvent->button())
 			{
 			case Qt::BackButton:
@@ -419,7 +421,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				{
 					/// choose a channel and make it orange
 					ui->color3SpinBox->setValue(this->getDrawedChannel(clickEvent));
-					return true;
 				}
 				else
 				{
@@ -451,8 +452,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			default: { return false; }
 			}
 			return true;
-
-			break;
 		}
 		case QEvent::MouseButtonPress:
 		{
@@ -468,7 +467,10 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				manualDrawDataBackup = drawData;
 				return true;
 			}
-			break;
+			else
+			{
+				return false;
+			}
 		}
 		case QEvent::MouseMove:
 		{
@@ -477,8 +479,9 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			if((mouseMoveEvent->buttons() & Qt::LeftButton) && manualDrawFlag)
 			{
 				manualDraw(mouseMoveEvent);
+				return true;
 			}
-			return true;
+			return false;
 		}
 		case QEvent::KeyPress:
 		{
@@ -486,14 +489,12 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			if(keyEvent->key() == Qt::Key_Home)
 			{
 				ui->paintStartDoubleSpinBox->setValue(0.);
-				return true;
 			}
 			else if(keyEvent->key() == Qt::Key_End)
 			{
 				ui->paintStartDoubleSpinBox->setValue(
 												this->dataCutLocal.cols() / edfFil.getFreq() -
 												ui->paintLengthDoubleSpinBox->value());
-				return true;
 			}
 			else if(keyEvent->key() == Qt::Key_Left ||
 					keyEvent->key() == Qt::Key_Right)
@@ -518,7 +519,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				}
 				showDerivatives();
 				paintLimits();
-				return true;
 			}
 			else if(keyEvent->key() == Qt::Key_Z ||
 					keyEvent->key() == Qt::Key_X ||
@@ -536,10 +536,9 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 					case Qt::Key_V:	{ pasteSlot();	break; }
 					default:			{ return false; }
 					}
-					return true;
 				}
 			}
-			break;
+			return true;
 		}
 		default: { return false; }
 		}
@@ -744,6 +743,7 @@ matrix Cut::makeDrawData()
 /// check - works not especially accurate
 int Cut::getDrawedChannel(QMouseEvent * clickEvent)
 {
+	std::cout << 1 << std::endl;
 	auto vals = this->drawData.getCol(clickEvent->x());
 	const double norm = normCoeff();
 	double dist = 1000;

@@ -683,9 +683,6 @@ void Cut::linearApproxSlot()
 
 	drawData = makeDrawData();
 	repaintData(drawData, lef, rig);
-
-//	paint();
-
 	ui->scrollArea->setFocus();
 }
 

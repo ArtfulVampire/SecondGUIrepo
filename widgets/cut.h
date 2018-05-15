@@ -20,6 +20,7 @@
 #include <QShortcut>
 #include <QSpinBox>
 #include <QLineEdit>
+#include <QShortcut>
 
 namespace Ui {
     class Cut;
