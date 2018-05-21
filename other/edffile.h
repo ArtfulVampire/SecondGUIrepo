@@ -127,12 +127,13 @@ class edfFile
 public:
 
 	edfFile()=default;
+	edfFile(edfFile && other)=default;
 	~edfFile() {}
 
 	edfFile(const edfFile & other, bool noData = false);
 	edfFile(const QString & txtFilePath, inst which = inst::mati);
 
-	edfFile & operator=(const edfFile & other)=default;
+//	edfFile & operator=(const edfFile & other)=default;
 	edfFile & operator=(edfFile && other)=default;
 
 	operator bool() { return edfData.isEmpty(); }
