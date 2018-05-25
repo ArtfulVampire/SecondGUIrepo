@@ -279,15 +279,40 @@ std::vector<uint>> Classifier::makeIndicesSetsCross(
 	return make_pair(learnInd, tallInd);
 }
 
-void Classifier::peopleClassification(std::ostream & os)
+void Classifier::peopleClassification(bool indZ, std::ostream & os)
 {
 	const int size = this->myClassData->size();
 
 	/// compose a set of people
 	std::set<QString> people{};
-	for(const QString & in : this->myClassData->getFileNames())
+	std::map<QString, std::vector<uint>> zSets{};
+	for(int i = 0; i < size; ++i)
 	{
-		people.emplace(in.left(in.indexOf('_')));
+		const QString a = this->myClassData->getFileNames()[i];
+		const QString guy = a.left(a.indexOf('_'));
+		people.emplace(guy);
+
+		zSets[guy].push_back(i);
+	}
+
+//	for(const QString & guy : people)
+//	{
+//		for(auto in : zSets[guy])
+//		{
+//			std::cout << this->myClassData->getFileNames()[in] << std::endl;
+//		}
+//		std::cout << std::endl;
+//	}
+
+
+	if(indZ)
+	{
+		/// z-transform for each guy separately?
+		for(const QString & guy : people)
+		{
+			this->myClassData->z_transformSubset(zSets[guy]);
+		}
+
 	}
 
 	std::vector<uint> learnSet{};	learnSet.reserve(size);

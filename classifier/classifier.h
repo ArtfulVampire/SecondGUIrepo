@@ -80,7 +80,7 @@ public:
 	ClassifierData * getClassifierData() { return myClassData; }
 
 	/// 
-	void peopleClassification(std::ostream & os = std::cout);
+	void peopleClassification(bool indZ, std::ostream & os = std::cout);
 	void leaveOneOutClassification(std::ostream & os = std::cout);
 	void crossClassification(int numOfPairs, int fold, std::ostream & os = std::cout);
 	void trainTestClassification(const QString & trainTemplate = "_train",

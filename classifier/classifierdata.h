@@ -15,10 +15,12 @@
 class ClassifierData
 {
 public:
-	ClassifierData() {numOfCl = 3; }
+	ClassifierData() { numOfCl = 3; }
 	~ClassifierData() {}
-	ClassifierData(const matrix & inData, const std::vector<uint> & inTypes);
+
 	ClassifierData(const QString & inPath, const QStringList & filters = QStringList());
+	ClassifierData(const matrix & inData, const std::vector<uint> & inTypes);
+
 	ClassifierData(const ClassifierData &) = default;
 	ClassifierData(ClassifierData &&) = default;
 	ClassifierData & operator=(const ClassifierData &) = default;
@@ -48,9 +50,12 @@ public:
 	void push_back(const std::valarray<double> & inDatum,
 				   uint inType,
 				   const QString & inFileName);
+
+	 /// apply centering & variancing & push_back, for successiveLearning
 	void addItem(const std::valarray<double> & inDatum,
 				 uint inType,
-				 const QString & inFileName); /// apply centering & variancing & push_back
+				 const QString & inFileName);
+
 	void removeFirstItemOfType(uint type);
 	void pop_back();
 	void pop_front();
@@ -63,25 +68,31 @@ public:
 	void clean(uint size, const QString & filter = QString());
 
 	/// data modifiers
-	void centering();		// by cols
+	void centering();
 	void variancing(double var = 10.);
 	void z_transform(double var = 10.);
+
+	/// for Classifier::peopleClassification
+	void centeringSubset(const std::vector<uint> & rows);
+	void variancingSubset(const std::vector<uint> & rows, double var = 10.);
+	void z_transformSubset(const std::vector<uint> & rows, double var = 10.);
 
 	ClassifierData toPca(int numOfPca = 30, double var = 80.) const;
 	ClassifierData productLeft(const matrix & coeffs = matrix()) const;
 
 private:
 	uint numOfCl{};
-	std::valarray<double> averageDatum{};
-	std::valarray<double> sigmaVector{};
-	double variance{1.};
-	matrix dataMatrix{}; // biases for Net are imaginary
+	matrix dataMatrix{};						// biases for Net are imaginary
 	std::vector<uint> types{};
-	std::vector<std::vector<uint>> indices{}; // arrays of indices for each class
-	std::vector<QString> fileNames{}; // unused
-	std::valarray<double> classCount{}; // really int but...
-	std::valarray<double> apriori{};
+	std::vector<std::vector<uint>> indices{};	// arrays of indices for each class
+	std::vector<QString> fileNames{};			// used in Classifier::peopleClassification
+	std::valarray<double> classCount{};			// really int but...
+	std::valarray<double> apriori{};			// for some classifiers like NBC
 	QString filesPath{};
+
+	std::valarray<double> averageDatum{};	/// used in addItem
+	std::valarray<double> sigmaVector{};	/// used in addItem
+	double variance{1.};					/// used in addItem
 };
 
 #endif // CLASSIFIERDATA_H

@@ -38,7 +38,7 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
 	}
 	case myMode::people:
 	{
-		myModel->peopleClassification(); break;
+		myModel->peopleClassification(ui->indZcheckBox->isChecked()); break;
 	}
     case myMode::half_half:
     {

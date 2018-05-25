@@ -65,6 +65,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 						fileName);
 	}
 	this->apriori = classCount;
+
 	this->z_transform();
 }
 
@@ -254,6 +255,50 @@ void ClassifierData::resizeCols(int newCols)
 }
 
 
+void ClassifierData::centeringSubset(const std::vector<uint> & rows)
+{
+	std::valarray<double> avRow(dataMatrix.cols());
+	for(auto in : rows)
+	{
+		avRow += dataMatrix[in];
+	}
+	avRow /= rows.size();
+
+	for(auto in : rows)
+	{
+		dataMatrix[in] -= avRow;
+	}
+}
+
+void ClassifierData::variancingSubset(const std::vector<uint> & rows, double var)
+{
+	this->variance = var;
+	matrix tmp = dataMatrix.subRows(rows);
+	tmp.transpose();
+
+	std::valarray<double> sgmVec(tmp.rows());
+	for(uint i = 0; i < tmp.rows(); ++i)
+	{
+		sgmVec[i] = smLib::sigma(tmp[i]);
+		if(sgmVec[i] != 0.)
+		{
+			tmp[i] /= sgmVec[i] * var;
+		}
+	}
+	tmp.transpose();
+
+	for(int i = 0; i < rows.size(); ++i)
+	{
+		dataMatrix[rows[i]] = tmp[i];
+	}
+}
+
+void ClassifierData::z_transformSubset(const std::vector<uint> & rows, double var)
+{
+	this->centeringSubset(rows);
+	this->variancingSubset(rows, var);
+}
+
 void ClassifierData::centering()
 {
 	averageDatum = dataMatrix.averageRow();
@@ -275,7 +320,6 @@ void ClassifierData::variancing(double var)
 		sigmaVector[i] = smLib::sigma(tmp[i]);
 		if(sigmaVector[i] != 0.)
 		{
-			// to equal variance, 10 for reals, 5 winds
 			tmp[i] /= sigmaVector[i] * var;
 		}
 	}
