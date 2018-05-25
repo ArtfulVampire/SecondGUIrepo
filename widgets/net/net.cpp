@@ -14,8 +14,9 @@ Net::Net() :
     /// 0
     myButtonGroup.push_back(new QButtonGroup());
     myButtonGroup.back()->addButton(ui->leaveOneOutRadioButton);
-    myButtonGroup.back()->addButton(ui->crossRadioButton);
-    myButtonGroup.back()->addButton(ui->trainTestRadioButton);
+	myButtonGroup.back()->addButton(ui->crossRadioButton);
+	myButtonGroup.back()->addButton(ui->trainTestRadioButton);
+	myButtonGroup.back()->addButton(ui->peopleClassRadioButton);
     myButtonGroup.back()->addButton(ui->halfHalfRadioButton);
     /// 1
     myButtonGroup.push_back(new QButtonGroup());
@@ -109,7 +110,7 @@ Net::Net() :
 
 
 
-    QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
+	QObject::connect(ui->loadDataButton, SIGNAL(clicked()), this, SLOT(loadDataSlot()));
     QObject::connect(ui->pcaPushButton, SIGNAL(clicked()), this, SLOT(pca()));
 	QObject::connect(ui->stopButton, &QPushButton::clicked, [this](){ this->stopFlag = true; });
 
@@ -291,5 +292,3 @@ void Net::loadDataSlot()
 	}
 	myClassifierData = ClassifierData(helpString);
 }
-
-

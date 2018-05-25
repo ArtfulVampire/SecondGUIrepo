@@ -8,6 +8,7 @@
 #include <iostream>
 #include <random>
 #include <chrono>
+#include <set>
 
 #include <myLib/small.h>
 #include <myLib/output.h>
@@ -79,6 +80,7 @@ public:
 	ClassifierData * getClassifierData() { return myClassData; }
 
 	/// 
+	void peopleClassification(std::ostream & os = std::cout);
 	void leaveOneOutClassification(std::ostream & os = std::cout);
 	void crossClassification(int numOfPairs, int fold, std::ostream & os = std::cout);
 	void trainTestClassification(const QString & trainTemplate = "_train",

@@ -38,6 +38,7 @@ void Net::loadDataXenia(const QString & filesPath, const QString & type)
 	myClassifierData = ClassifierData(xeniaData, xeniaTypes);
 }
 
+
 void Net::pca()
 {
 	QTime myTime;

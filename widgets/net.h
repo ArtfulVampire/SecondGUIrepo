@@ -43,7 +43,7 @@ private:
     void aaDefaultSettings();
 
     /// data
-    enum class myMode {N_fold, k_fold, train_test,  half_half};
+	enum class myMode {N_fold, k_fold, train_test,  half_half, people};
     enum class source {winds, reals, pca, bayes};
     myMode Mode = myMode::N_fold;
     source Source = source::reals;
@@ -71,7 +71,7 @@ private:
     QString filesPath;
 
 	/// class - deprecated, moved to Classifier
-    void crossClassification();
+	void crossClassification();
     void leaveOneOutClassification();
     void halfHalfClassification();
     void trainTestClassification(const QString & trainTemplate = "_train",

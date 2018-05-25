@@ -265,6 +265,10 @@ void Net::setModeSlot(QAbstractButton * but, bool i)
     {
 		Mode = myMode::k_fold;
     }
+	else if(but->text().contains("people"))
+	{
+		Mode = myMode::people;
+	}
 	else if(but->text().contains("train"))
     {
 		Mode = myMode::train_test;

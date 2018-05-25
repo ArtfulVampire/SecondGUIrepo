@@ -31,7 +31,7 @@ public:
 	const matrix & getData() const { return dataMatrix; }
 	const std::vector<uint> & getTypes() const { return types; }
 	const std::vector<std::vector<uint>> & getIndices() const { return indices; }
-	const std::vector<QString> & getFileNames() const { return fileNames; } // unused
+	const std::vector<QString> & getFileNames() const { return fileNames; }
 	const std::valarray<double> & getClassCount() const { return classCount; }
 	const std::valarray<double> & getApriori() const { return apriori; }
 	const QString & getFilesPath() const { return filesPath; }

@@ -279,6 +279,63 @@ std::vector<uint>> Classifier::makeIndicesSetsCross(
 	return make_pair(learnInd, tallInd);
 }
 
+void Classifier::peopleClassification(std::ostream & os)
+{
+	const int size = this->myClassData->size();
+
+	/// compose a set of people
+	std::set<QString> people{};
+	for(const QString & in : this->myClassData->getFileNames())
+	{
+		people.emplace(in.left(in.indexOf('_')));
+	}
+
+	std::vector<uint> learnSet{};	learnSet.reserve(size);
+	std::vector<uint> testSet{};	testSet.reserve(size);
+	for(const QString & guy : people)
+	{
+		std::cout << guy << "\t";
+	}
+	os << "peopleClassification: " << std::endl;
+	std::cout << std::endl;
+
+	for(const QString & guy : people)
+	{
+		learnSet.clear();
+		testSet.clear();
+		for(uint i = 0; i < size; ++i)
+		{
+			if(this->myClassData->getFileNames()[i].startsWith(guy))
+			{
+				testSet.push_back(i);
+			}
+			else
+			{
+				learnSet.push_back(i);
+			}
+		}
+//		for(auto i : learnSet)
+//		{
+//			std::cout << this->myClassData->getFileNames()[i] << std::endl;
+//		}
+//		std::cout << std::endl;
+//		for(auto i : testSet)
+//		{
+//			std::cout << this->myClassData->getFileNames()[i] << std::endl;
+//		}
+//		std::cout << std::endl << std::endl << std::endl;
+
+		this->learn(learnSet);
+		this->test(testSet);
+
+		this->averageClassification(DEVNULL);
+		os << guy
+		   << "\t" << smLib::doubleRound(this->averageAccuracy, 2)
+		   << "\t" << smLib::doubleRound(this->kappa, 3)
+		   << std::endl;
+	}
+}
+
 void Classifier::crossClassification(int numOfPairs, int fold, std::ostream & os)
 {
 	const matrix & dataMatrix = this->myClassData->getData();

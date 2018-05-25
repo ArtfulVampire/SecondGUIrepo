@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>450</x>
-     <y>230</y>
+     <y>250</y>
      <width>161</width>
      <height>101</height>
     </rect>
@@ -61,7 +61,7 @@
      <x>21</x>
      <y>1</y>
      <width>591</width>
-     <height>221</height>
+     <height>240</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -170,6 +170,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QRadioButton" name="peopleClassRadioButton">
+        <property name="text">
+         <string>people</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QRadioButton" name="trainTestRadioButton">
         <property name="text">
          <string>train - test</string>
@@ -254,7 +261,7 @@
    <property name="geometry">
     <rect>
      <x>190</x>
-     <y>230</y>
+     <y>260</y>
      <width>255</width>
      <height>240</height>
     </rect>
@@ -344,7 +351,7 @@
    <property name="geometry">
     <rect>
      <x>470</x>
-     <y>340</y>
+     <y>360</y>
      <width>120</width>
      <height>130</height>
     </rect>
@@ -395,10 +402,10 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>31</x>
-     <y>230</y>
-     <width>133</width>
-     <height>108</height>
+     <x>20</x>
+     <y>250</y>
+     <width>134</width>
+     <height>112</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_6">
@@ -458,8 +465,8 @@
     <rect>
      <x>10</x>
      <y>371</y>
-     <width>149</width>
-     <height>112</height>
+     <width>161</width>
+     <height>124</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_7">

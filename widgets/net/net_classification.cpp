@@ -35,7 +35,11 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
     case myMode::train_test:
     {
 		myModel->trainTestClassification(); break;
-    }
+	}
+	case myMode::people:
+	{
+		myModel->peopleClassification(); break;
+	}
     case myMode::half_half:
     {
 		myModel->halfHalfClassification(); break;
