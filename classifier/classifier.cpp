@@ -317,6 +317,7 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 
 	std::vector<uint> learnSet{};	learnSet.reserve(size);
 	std::vector<uint> testSet{};	testSet.reserve(size);
+
 	for(const QString & guy : people)
 	{
 		std::cout << guy << "\t";
@@ -344,6 +345,7 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 //			std::cout << this->myClassData->getFileNames()[i] << std::endl;
 //		}
 //		std::cout << std::endl;
+
 //		for(auto i : testSet)
 //		{
 //			std::cout << this->myClassData->getFileNames()[i] << std::endl;
