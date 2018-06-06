@@ -13,8 +13,8 @@
 
 
 
-typedef std::vector<std::pair<double, double>> coordType;
-typedef std::vector<std::vector<double>> mat;
+using coordType = std::vector<std::pair<double, double>>;
+using mat = std::vector<std::vector<double>>;
 
 namespace clust
 {

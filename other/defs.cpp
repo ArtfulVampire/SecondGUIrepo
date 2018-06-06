@@ -108,6 +108,7 @@ void defs::setUser(username in)
 	case username::MichaelA:
 	{
 		this->dir->cd("/media/Files/Data");
+		fileMarkers = QStringList{"_241", "_247", "_254"};
 		break;
 	}
 	case username::MichaelB:

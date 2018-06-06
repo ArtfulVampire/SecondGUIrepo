@@ -979,7 +979,7 @@ void coutAllFeatures(const QString & dear,
 		fb::FeedbackClass fb(guyPath, in.second, postfix); if(!fb) { continue; }
 
 		/// ExpName
-//		std::cout << in.second << "\t";
+		std::cout << in.second << "\t";
 
 //		FBedf fil(guyPath + "/" + in.second + "_1.edf",
 //				  guyPath + "/" + in.second + "_ans1.txt");
@@ -989,7 +989,7 @@ void coutAllFeatures(const QString & dear,
 //		}
 
 		/// stats of solving and times
-//		fb.writeStat();											std::cout.flush(); /// 23
+		fb.writeStat();											std::cout.flush(); /// 23
 //		fb.writeDists();										std::cout.flush(); /// 6
 //		fb.writeDispersions();									std::cout.flush(); /// 9
 //		fb.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();

@@ -394,7 +394,7 @@ bool areEqualFiles(QString path1, QString path2)
 	QTime myTime;
 	myTime.start();
 
-	typedef qint8 byte;
+	using byte = qint8;
 	FILE * fil1 = fopen(path1, "rb");
 	FILE * fil2 = fopen(path2, "rb");
 	if(fil1 == NULL || fil2 == NULL)

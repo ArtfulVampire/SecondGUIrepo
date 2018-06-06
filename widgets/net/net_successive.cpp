@@ -131,7 +131,7 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 											 const fb::FBedf & file2)
 {
 	DEFS.setFftLen(fb::FBedf::windFftLen);
-	const QString localExpName = file1.getExpName().left(3); //// magic constant
+	const QString localExpName = file1.getExpName().left(file1.getExpName().indexOf('_'));
 
 	myClassifierData = ClassifierData();
 
@@ -229,6 +229,51 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 	std::ofstream nullStr("dev/null/");
 	return myANN->averageClassification(nullStr);
 }
+
+void Net::innerClassHistogram(const fb::FBedf & file1)
+{
+#if 0
+	DEFS.setFftLen(fb::FBedf::windFftLen);
+	const QString localExpName = file1.getExpName().left(file1.getExpName().indexOf('_'));
+
+	myClassifierData = ClassifierData();
+
+	/// not via constructor because of norming
+	for(int i = 0; i < file1.getWindTypes().size(); ++i)
+	{
+		myClassifierData.push_back(file1.getWindSpectra(i),
+								   file1.getWindTypes(i),
+								   "L " + nm(i));
+	}
+	myClassifierData.reduceSize(suc::learnSetStay);
+	myClassifierData.setApriori(myClassifierData.getClassCount());
+	myClassifierData.z_transform();
+
+	this->setClassifier(ModelType::NBC);
+	this->setClassifier(ModelType::ANN);
+	ANN * myANN = dynamic_cast<ANN *>(myModel);
+	if(!myANN)
+	{
+		std::cout << "Net::successiveByEDF: ANN bad cast" << std::endl;
+		return {};
+	}
+
+	/// get initial weights on the train set
+	myANN->setCritError(0.05);
+	myANN->setLrate(0.002);
+	myANN->learnAll();
+
+	/// save these weights
+	myANN->writeWeight(def::helpPath + "/" + localExpName + "_init.wts");
+	myANN->drawWeight(def::helpPath + "/" + localExpName + "_init.wts",
+					  def::helpPath + "/" + localExpName + "_init.jpg");
+
+	/// consts - set postlearn
+	myANN->setCritError(0.01);
+	myANN->setLrate(0.005);
+#endif
+}
+
 Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QString & ansPath1,
 											 const QString & edfPath2, const QString & ansPath2)
 {

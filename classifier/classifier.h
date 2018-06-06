@@ -40,8 +40,8 @@ std::valarray<double> oneHot(uint siz, uint hotIndex);
 class Classifier
 {
 public:
-	typedef std::pair<double, double> avType; /// average accuracy, Cohen's kappa
-	typedef std::tuple<bool, int, double> classOneType; /// true or not, outClass, error
+	using avType = std::pair<double, double>;				/// average accuracy, Cohen's kappa
+	using classOneType = std::tuple<bool, int, double>;		/// correctness, outClass, error
 protected:
 	ModelType myType;
     QString typeString;
@@ -49,12 +49,12 @@ protected:
 	ClassifierData * myClassData;
 
 	matrix confusionMatrix; // [realClass] [predictedClass]
-    double averageAccuracy;
-	double kappa;
-	std::valarray<double> outputLayer; /// output of classification
+	double averageAccuracy;				/// to deprecate
+	double kappa;						/// to deprecate
+	std::valarray<double> outputLayer;	/// output of classification
 
-	bool testCleanFlag  = false; /// delete wrong classified files
-    bool resetFlag = true; /// reset learning values before new learning
+	bool testCleanFlag  = false;		/// delete wrong classified files
+	bool resetFlag = true;				/// reset learning weights before new learning
 
 
 /// sheeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeet
@@ -129,13 +129,13 @@ protected:
 class ANN : public Classifier
 {
 #if WEIGHT_MATRIX
-    typedef std::vector<matrix> weightType;
+	using weightType = std::vector<matrix> ;
 #else
-    typedef std::vector<std::vector<std::valarray<double>>> weightType;
+	using weightType = std::vector<std::vector<std::valarray<double>>>;
 #endif
 
 
-    typedef std::vector<std::valarray<double>> outputType;
+	using outputType = std::vector<std::valarray<double>>;
 
 private:
     int epoch = 0;

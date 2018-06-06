@@ -17,8 +17,31 @@ void MainWindow::customFunc()
 {
 
 #if 0
+	std::ofstream ff;
+	ff.open("/media/Files/Data/aklsjajkdf.txt");
+ff << 0 << "\t";
+	for(int j = 10; j <= 40; ++j)
+	{
+		ff << j << "\t";
+	}
+	ff << std::endl;
+
+	for(int i = 10; i <= 40; ++i)
+	{
+		ff << i << "\t";
+		for(int j = 10; j <= 40; ++j)
+		{
+			ff << myLib::binomialOneTailed(i, j, 40) << "\t";
+		}
+		ff << std::endl;
+	}
+	ff.close();
+	exit(0);
+#endif
+
+#if 0
 	/// count correctness and average times
-#if 0 /// new (~10 people)
+#if 01 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
 	const QString postfix = "_good";

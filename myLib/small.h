@@ -32,7 +32,7 @@ inline bool isInt(const QString & in) { return QString::number(in.toInt()) == in
 
 inline double doubleRound(double in, int numSigns)
 {
-	return std::round(in * pow(10., numSigns)) / double(pow(10, numSigns));
+	return std::round(in * std::pow(10., numSigns)) / double(std::pow(10, numSigns));
 }
 
 inline std::complex<double> doubleRound(const std::complex<double> & in, int numSigns)
@@ -43,17 +43,17 @@ inline std::complex<double> doubleRound(const std::complex<double> & in, int num
 
 inline double doubleRound(double in)
 {
-    return doubleRound(in, 2 - floor(log10(in))); // 2 significant numbers
+	return doubleRound(in, 2 - std::floor(std::log10(in))); // 2 significant numbers
 }
 
 inline double doubleRoundFraq(double in, int denom)
 {
-    return ceil(in * denom - 0.5) / denom;
+	return std::ceil(in * denom - 0.5) / denom;
 }
 
 inline double gaussian(double x, double sigma = 1.) // N(0,1)
 {
-    return 1./(sigma * sqrt(2. * pi)) * exp(-x * x / (2. * sigma * sigma) );
+	return 1./(sigma * std::sqrt(2. * pi)) * std::exp(-x * x / (2. * sigma * sigma) );
 }
 
 inline constexpr int fftL(int in)

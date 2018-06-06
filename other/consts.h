@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 
-typedef unsigned int uint;
+using uint = unsigned int;
 
 #if __cplusplus >= 201703L
 #define CPP17 1
@@ -41,12 +41,6 @@ typedef unsigned int uint;
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
 #endif
-
-/// 0 - old namespace def, 1 - new defs singleton
-#ifndef DEF_TYPE
-#define DEF_TYPE 0
-#endif
-
 
 namespace coords
 {

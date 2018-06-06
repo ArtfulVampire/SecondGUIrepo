@@ -97,9 +97,10 @@ public:
 											const QString & edfPath2,
 											const QString & ansPath2);
 	Classifier::avType successiveByEDFfinal(const fb::FBedf & file1,
-											const fb::FBedf & file2);
+											const fb::FBedf & file2);	
 	void successivePreclean(const QString & spectraPath,
 							const QStringList & filters = {"*_train*"});
+	void innerClassHistogram(const fb::FBedf & file1);
 
     /// setsgets
 	void setErrCrit(double in);

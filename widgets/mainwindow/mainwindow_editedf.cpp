@@ -364,7 +364,14 @@ void MainWindow::reduceChannelsEDFSlot()
 	myTime.start();
 
 	QString helpString = globalEdf.getFilePath();
-	helpString.replace(".edf", "_rdc.edf", Qt::CaseInsensitive);
+	if(ui->reduceChannelsLineEdit->text() == "other,mark")
+	{
+		helpString.replace(".edf", "_veget.edf", Qt::CaseInsensitive);
+	}
+	else
+	{
+		helpString.replace(".edf", "_rdc.edf", Qt::CaseInsensitive);
+	}
 
 	globalEdf = globalEdf.reduceChannels(this->makeChanList());
 

@@ -6,7 +6,7 @@
 #include <omp.h>
 #endif
 
-#include <other/consts.h> // for uint typedef and dataFolder
+#include <other/consts.h> // for uint and dataFolder
 
 #include <cmath>
 #include <QString>

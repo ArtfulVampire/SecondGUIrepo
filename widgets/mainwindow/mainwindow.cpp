@@ -55,6 +55,7 @@ MainWindow::MainWindow() :
 	ui->reduceChannelsComboBox->addItem("EEG,other,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,EOG,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,mark");
+	ui->reduceChannelsComboBox->addItem("other,mark");
 	ui->reduceChannelsComboBox->addItem("128to19mark");
 	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
 

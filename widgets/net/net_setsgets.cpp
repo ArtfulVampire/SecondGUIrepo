@@ -134,6 +134,8 @@ void Net::setClassifier(const QString & in)
 
 void Net::setClassifier(ModelType typ)
 {
+	/// the next function void Net::setClassifier(QAbstractButton * but, bool i)
+	/// reacts on this one
 	if(typ == ModelType::ANN)
     {
         ui->classANNRadioButton->setChecked(true);
