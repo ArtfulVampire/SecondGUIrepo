@@ -8,7 +8,15 @@ namespace fb
 
 enum class taskType : int {spat = 0, verb = 1, rest = 2};
 enum class fileNum  : int {first = 0, third = 1, second = 2};
-enum class ansType  : int {skip = 0, right = 1, wrong = 2, answrd = 3, all = 4};
+
+/// bit structure is used in getNum(...) and getTimes(...)
+enum class ansType : int {skip		= 0b0001,					/// 1
+						  correct	= 0b0010,					/// 2
+						  wrong		= 0b0100,					/// 4
+						  answrd	= correct | wrong,			/// 6
+						  all		= correct | wrong | skip	/// 7
+						 };
+
 const int numOfClasses = 3;
 
 class FBedf : public edfFile
@@ -22,10 +30,10 @@ private:
 	std::vector<std::valarray<double>> solvTime;
 
 	/// [type][numReal]
-	std::vector<std::vector<int>> ans;
+	std::vector<std::vector<ansType>> ans;
 
 	/// [numReal]
-	std::vector<int> ansInRow;
+	std::vector<ansType> ansInRow;
 
 	/// [type][numOfReal] = spectre
 	std::vector<std::vector<matrix>> realsSpectra; /// with empty spectra for short reals
@@ -34,7 +42,10 @@ private:
 	matrix windSpectra;
 
 	/// [numWind]
-	std::vector<uint> windTypes;
+	std::vector<taskType> windTypes;
+
+	/// [numWind]
+	std::vector<ansType> windAns;
 
 public:
 	static const std::vector<int> chansToProcess;
@@ -51,9 +62,14 @@ public:
 
 public:
 	/// solvTime? ans spectre inside
-	FBedf() { isGood = false; }
-	FBedf(const QString & edfPath, const QString & ansPath);
-	void remakeWindows(double overlapPart);
+	FBedf() {}
+	FBedf(const QString & edfPath, const QString & ansPath,
+		  double overlapPart = 0.0,
+		  int numSkipStartWinds = 0);
+	FBedf(const FBedf & other) = default; /// used in Net::innerClassHistogram
+
+
+	void remakeWindows(double overlapPart = 0.0, int numSkipStartWinds = 0);
 
 	ClassifierData prepareClDataWinds(bool reduce);
 	double partOfCleanedWinds();
@@ -73,17 +89,20 @@ public:
 	operator bool() const { return isGood; }
 	std::valarray<double> getTimes(taskType typ, ansType howSolved) const;
 	int getNum(taskType typ, ansType howSolved) const;
-	int getAns(int i) const { return ansInRow[i]; }
+	ansType getAns(int i) const { return ansInRow[i]; }
 	int getNumInsights(double thres) const;
 	const matrix & getWindSpectra() const						{ return windSpectra; }
-	const std::vector<uint> & getWindTypes() const				{ return windTypes; }
+	const std::vector<taskType> & getWindTypes() const			{ return windTypes; }
 	const std::valarray<double> & getWindSpectra(int i) const	{ return windSpectra[i]; }
-	uint getWindTypes(int i) const								{ return windTypes[i]; }
+	taskType getWindTypes(int i) const							{ return windTypes[i]; }
+	ansType getWindAns(int i) const								{ return windAns[i]; }
+	int getLeftLim() const { return fftLimit(fb::FBedf::leftFreq, srate, fb::FBedf::windFftLen); }
+	int getRightLim() const { return fftLimit(fb::FBedf::rightFreq, srate, fb::FBedf::windFftLen); }
 
 private:
 	bool isGood{false};
 	std::vector<double> freqs;
-	std::vector<int> readAns(const QString & ansPath);
+	std::vector<ansType> readAns(const QString & ansPath);
 	std::valarray<double> spectralRow(taskType type, int chan, double freq); /// remake and deprecate
 };
 

@@ -8,24 +8,29 @@ using namespace myOut;
 
 void ClassifierData::adjust()
 {
+//	numOfCl = *std::max_element(std::begin(types), std::end(types)) + 1;
 	/// can be generilized via std::set and set.size()
-	numOfCl = *std::max_element(std::begin(types), std::end(types)) + 1;
+	std::set<int> typesSet{};
+	for(auto in : types) { typesSet.emplace(in); }
+	numOfCl = typesSet.size();
 
-	this->indices.resize(numOfCl, std::vector<uint>{});
-	for(uint i = 0; i < this->types.size(); ++i)
-	{
-		this->indices[this->types[i]].push_back(i);
-	}
+	recountIndices();
 
 	classCount.resize(numOfCl);
 	for(uint i = 0; i < numOfCl; ++i)
 	{
 		classCount[i] = indices[i].size();
 	}
+	apriori = smLib::normalized(classCount);
+}
 
-	fileNames.resize(this->types.size(), QString());
-
-	apriori = classCount;
+void ClassifierData::recountIndices()
+{
+	this->indices.resize(numOfCl, std::vector<uint>{});
+	for(uint i = 0; i < this->types.size(); ++i)
+	{
+		this->indices[this->types[i]].push_back(i);
+	}
 }
 
 ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & inTypes)
@@ -38,6 +43,7 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 
 	this->types = inTypes;
 	this->dataMatrix = inData;
+	this->fileNames.resize(this->types.size(), QString()); /// empty names
 
 	adjust();
 
@@ -64,7 +70,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 						myLib::getTypeOfFileName(fileName, DEFS.getFileMarks()),
 						fileName);
 	}
-	this->apriori = classCount;
+	this->apriori = smLib::normalized(classCount);
 
 	this->z_transform();
 }
@@ -118,16 +124,8 @@ void ClassifierData::erase(const std::vector<uint> & eraseIndices)
 	}
 	smLib::eraseItems(types, eraseIndices);
 
-	/// indices - just recount
-	indices.resize(numOfCl);
-	for(int i = 0; i < numOfCl; ++i)
-	{
-		indices[i].clear();
-	}
-	for(uint i = 0; i < types.size(); ++i)
-	{
-		indices[ types[i] ].push_back(i);
-	}
+	/// indices - just recount from scratch
+	recountIndices();
 }
 
 void ClassifierData::removeFirstItemOfType(uint type)
@@ -248,11 +246,11 @@ void ClassifierData::resizeRows(int newRows)
 }
 
 
-/// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-void ClassifierData::resizeCols(int newCols)
-{
+///// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+//void ClassifierData::resizeCols(int newCols)
+//{
 
-}
+//}
 
 
 void ClassifierData::centeringSubset(const std::vector<uint> & rows)

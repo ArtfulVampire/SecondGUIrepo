@@ -100,7 +100,7 @@ public:
 											const fb::FBedf & file2);	
 	void successivePreclean(const QString & spectraPath,
 							const QStringList & filters = {"*_train*"});
-	void innerClassHistogram(const fb::FBedf & file1);
+	void innerClassHistogram(const fb::FBedf & file1, fb::taskType typ);
 
     /// setsgets
 	void setErrCrit(double in);

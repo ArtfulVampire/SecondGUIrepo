@@ -77,7 +77,9 @@ public:
 	void printResult(const QString & fileName, uint predType, uint vecNum);
 
 	void setClassifierData(ClassifierData & in);
-	ClassifierData * getClassifierData() { return myClassData; }
+	ClassifierData * getClassifierData()			{ return myClassData; }
+	std::valarray<double> getOutputLayer() const	{ return outputLayer; }
+	double getOutputLayer(int i) const				{ return outputLayer[i]; }
 
 	/// 
 	void peopleClassification(bool indZ, std::ostream & os = std::cout);

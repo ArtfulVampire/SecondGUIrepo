@@ -21,7 +21,22 @@ std::list<std::valarray<double>> edfFile::getDataAsList() const
     return res;
 }
 
-void edfFile::setDataFromList(const std::list<std::valarray<double>> & inList)
+
+const std::valarray<double> & edfFile::getData(const QString & ch) const
+{
+	static std::valarray<double> badRes{};
+	badRes = decltype(badRes){};
+	auto a = this->findChannel(ch);
+	if(a == -1)
+	{
+		std::cout << "edfFile::getData(QString): no such label - ";
+		std::cout << ch << std::endl;
+		return badRes;
+	}
+	return edfData[a];
+}
+
+edfFile & edfFile::setDataFromList(const std::list<std::valarray<double>> & inList)
 {
 	this->edfData.resize(inList.front().size(), inList.size());
     uint col = 0;
@@ -32,6 +47,7 @@ void edfFile::setDataFromList(const std::list<std::valarray<double>> & inList)
 			this->edfData[i][col] = (*it)[i];
         }
     }
+	return *this;
 }
 
 

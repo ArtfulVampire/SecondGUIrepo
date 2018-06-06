@@ -24,23 +24,25 @@ public:
 	ClassifierData(const ClassifierData &) = default;
 	ClassifierData(ClassifierData &&) = default;
 	ClassifierData & operator=(const ClassifierData &) = default;
-	ClassifierData & operator=(const matrix &);
+//	ClassifierData & operator=(const matrix &); /// unused
 
-	void adjust();
+	void adjust();	/// sets proper numCl, indices, classCount
+	void recountIndices();
 
 	/// gets
-	uint getNumOfCl() const { return numOfCl; }
-	const matrix & getData() const { return dataMatrix; }
-	const std::vector<uint> & getTypes() const { return types; }
-	const std::vector<std::vector<uint>> & getIndices() const { return indices; }
-	const std::vector<QString> & getFileNames() const { return fileNames; }
-	const std::valarray<double> & getClassCount() const { return classCount; }
-	const std::valarray<double> & getApriori() const { return apriori; }
-	const QString & getFilesPath() const { return filesPath; }
-	int size() { return dataMatrix.rows(); }
+	const matrix & getData() const								{ return dataMatrix; }
+	int size() const											{ return dataMatrix.rows(); }
+	uint getNumOfCl() const										{ return numOfCl; }
+	const std::vector<uint> & getTypes() const					{ return types; }
+	const std::vector<std::vector<uint>> & getIndices() const	{ return indices; }
+	const std::vector<QString> & getFileNames() const			{ return fileNames; }
+	const std::valarray<double> & getClassCount() const			{ return classCount; }
+	const std::valarray<double> & getApriori() const			{ return apriori; }
+	const QString & getFilesPath() const						{ return filesPath; }
 
 	/// sets
-	void setApriori(const std::valarray<double> & inApriori) { apriori = inApriori; }
+	void setApriori(const std::valarray<double> & inApriori)
+	{ apriori = smLib::normalized(inApriori); }
 
 	/// matrix modifiers
 	void erase(const uint index);
@@ -51,7 +53,7 @@ public:
 				   uint inType,
 				   const QString & inFileName);
 
-	 /// apply centering & variancing & push_back, for successiveLearning
+	 /// apply centering, variancing and push_back, for Net::successiveLearning
 	void addItem(const std::valarray<double> & inDatum,
 				 uint inType,
 				 const QString & inFileName);
@@ -63,7 +65,7 @@ public:
 //	void push_front(const std::valarray<double> & inDatum, uint inType); // unused - insert(0)
 	void resize(int rows, int cols, double val);
 	void resizeRows(int newRows);
-	void resizeCols(int newCols);
+//	void resizeCols(int newCols);
 	void reduceSize(uint oneClass);
 	void clean(uint size, const QString & filter = QString());
 
@@ -82,11 +84,11 @@ public:
 
 private:
 	uint numOfCl{};
-	matrix dataMatrix{};						// biases for Net are imaginary
-	std::vector<uint> types{};
-	std::vector<std::vector<uint>> indices{};	// arrays of indices for each class
+	matrix dataMatrix{};						// the data, biases for Net are imaginary
+	std::vector<uint> types{};					// vector of object types
+	std::vector<std::vector<uint>> indices{};	// arrays of indices for each class used WHERE ???
 	std::vector<QString> fileNames{};			// used in Classifier::peopleClassification
-	std::valarray<double> classCount{};			// really int but...
+	std::valarray<double> classCount{};			// number of objects of each class
 	std::valarray<double> apriori{};			// for some classifiers like NBC
 	QString filesPath{};
 

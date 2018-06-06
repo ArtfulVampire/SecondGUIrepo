@@ -14,6 +14,7 @@ std::vector<std::vector<matrix>> sliceData(const matrix & inData,
 										   const std::vector<int> & separators
 										   = std::vector<int>{241, 247, 254});
 
+/// vector(data, type, filename)
 std::vector<std::tuple<matrix, uint, QString>> sliceWindows(
 		const matrix & inData,
 		const std::vector<std::pair<int, int> > & markers,

@@ -441,10 +441,24 @@ void Classifier::halfHalfClassification()
 	this->test(tallIndices);
 }
 
+/// check by Meyers - local variables in lambda
 void Classifier::cleaningNfold(int num)
 {
-	for(int i = 0; i < num; ++i)
+	int counter = 0;
+	bool hazWrong = false;
+
+	std::function<bool(void)> pred;
+	if(num > 0)
 	{
+		pred = [&counter, num](){ return counter < num; };
+	}
+	{
+		pred = [&hazWrong](){ return hazWrong; };
+	}
+
+	do
+	{
+		hazWrong = false;
 		std::vector<uint> learnIndices{};
 		std::vector<uint> exclude{};
 		for(uint i = 0; i < this->myClassData->size(); ++i)
@@ -463,11 +477,13 @@ void Classifier::cleaningNfold(int num)
 			if(!std::get<0>(a))
 			{
 				exclude.push_back(i);
+				hazWrong = true;
 			}
 
 		}
 		this->myClassData->erase(exclude);
-	}
+
+	} while (pred());
 }
 
 void Classifier::cleaningKfold(int num, int fold)

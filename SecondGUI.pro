@@ -80,7 +80,6 @@ other/matrix.cpp \
 other/autos_iitp.cpp \
 other/autos_galya.cpp \
 other/autos.cpp \
-other/feedback.cpp \
 other/edfFile.cpp \
 other/defs.cpp \
 widgets/net/net.cpp \
@@ -94,7 +93,10 @@ widgets/cut/cut_smartFind.cpp \
 widgets/cut/cut_modify.cpp \
 widgets/cut/cut_navi.cpp \
 widgets/cut/cut_iitp.cpp \
-widgets/cut/cut_files.cpp
+widgets/cut/cut_files.cpp \
+    other/feedback_proc.cpp \
+    other/feedback_fbClass.cpp \
+    other/feedback_fbedf.cpp
 
 HEADERS += \
 myLib/drw.h \
