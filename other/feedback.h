@@ -66,7 +66,9 @@ public:
 	FBedf(const QString & edfPath, const QString & ansPath,
 		  double overlapPart = 0.0,
 		  int numSkipStartWinds = 0);
-	FBedf(const FBedf & other) = default; /// used in Net::innerClassHistogram
+	FBedf(const FBedf & other)=default; /// used in Net::innerClassHistogram
+	FBedf & operator=(FBedf && other)=default;	/// used in FeedbackClass constructor
+	FBedf & operator=(const FBedf & other)=default;
 
 
 	void remakeWindows(double overlapPart = 0.0, int numSkipStartWinds = 0);
@@ -128,8 +130,8 @@ public:
 	void writeFile();
 
 	/// to make
-	void writeDists(); /// 1st: 0-1, 0-2, 1-2, 2nd: 0-1, 0-2, 1-2
-	void writeDispersions(); /// 1st: 0, 1, 2, 2nd: 0, 1, 2
+	void writeDists();				/// 1st: 0-1, 0-2, 1-2, 2nd: 0-1, 0-2, 1-2
+	void writeDispersions();		/// 1st: 0, 1, 2, 2nd: 0, 1, 2
 	void writeKDEs(const QString & prePath);
 	void writeShortLongs(const QString & prePath);
 	void writeRightWrong(const QString & prePath);

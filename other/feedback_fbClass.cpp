@@ -26,9 +26,9 @@ FeedbackClass::FeedbackClass(const QString & guyPath_,
 		int fileNumber{};
 		switch(i)
 		{
-		case 1: { fileNumber = int(fileNum::first);		break; }	/// 0
-		case 2: { fileNumber = int(fileNum::second);	break; }	/// 2
-		case 3: { fileNumber = int(fileNum::third);		break; }	/// 1
+		case 1: { fileNumber = static_cast<int>(fileNum::first);		break; }	/// 0
+		case 2: { fileNumber = static_cast<int>(fileNum::second);		break; }	/// 2
+		case 3: { fileNumber = static_cast<int>(fileNum::third);		break; }	/// 1
 		}
 		auto & fil = files[fileNumber];
 
@@ -46,8 +46,8 @@ FeedbackClass::FeedbackClass(const QString & guyPath_,
 
 void FeedbackClass::checkStatTimes(taskType typ, ansType howSolved)
 {
-	std::valarray<double> vals1 = files[int(fileNum::first)].getTimes(typ, howSolved);
-	std::valarray<double> vals2 = files[int(fileNum::third)].getTimes(typ, howSolved);
+	std::valarray<double> vals1 = files[static_cast<int>(fileNum::first)].getTimes(typ, howSolved);
+	std::valarray<double> vals2 = files[static_cast<int>(fileNum::third)].getTimes(typ, howSolved);
 
 	if(0)
 	{
@@ -74,8 +74,8 @@ void FeedbackClass::checkStatTimes(taskType typ, ansType howSolved)
 
 void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 {
-	int num1 = files[int(fileNum::first)].getNum(typ, howSolved); /// solved in the  first file
-	int num2 = files[int(fileNum::third)].getNum(typ, howSolved); /// solved in the second file
+	int num1 = files[static_cast<int>(fileNum::first)].getNum(typ, howSolved); /// solved in the  first file
+	int num2 = files[static_cast<int>(fileNum::third)].getNum(typ, howSolved); /// solved in the second file
 
 	if(0)
 	{
@@ -98,11 +98,11 @@ void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 
 void FeedbackClass::checkStatInsight(double thres)
 {
-	int num1 = files[int(fileNum::first)].getNumInsights(thres);
-	int num2 = files[int(fileNum::third)].getNumInsights(thres);
-	int numAll1 = files[int(fileNum::first)].getNum(taskType::verb,
+	int num1 = files[static_cast<int>(fileNum::first)].getNumInsights(thres);
+	int num2 = files[static_cast<int>(fileNum::third)].getNumInsights(thres);
+	int numAll1 = files[static_cast<int>(fileNum::first)].getNum(taskType::verb,
 													ansType::answrd);
-	int numAll2 = files[int(fileNum::third)].getNum(taskType::verb,
+	int numAll2 = files[static_cast<int>(fileNum::third)].getNum(taskType::verb,
 													ansType::answrd);
 
 	/// of all
@@ -151,8 +151,8 @@ void FeedbackClass::writeDists()
 	{
 		for(int j = i + 1; j < fb::numOfClasses; ++j)
 		{
-			double a = files[int(fileNum::first)].distSpec(taskType(i), taskType(j));
-			double b = files[int(fileNum::third)].distSpec(taskType(i), taskType(j));
+			double a = files[static_cast<int>(fileNum::first)].distSpec(taskType(i), taskType(j));
+			double b = files[static_cast<int>(fileNum::third)].distSpec(taskType(i), taskType(j));
 			std::cout
 //					<< std::setprecision(4)
 					<< a << "\t"
@@ -166,8 +166,8 @@ void FeedbackClass::writeDispersions()
 {
 	for(int i = 0; i < fb::numOfClasses; ++i)
 	{
-		double a = files[int(fileNum::first)].spectreDispersion(taskType(i));
-		double b = files[int(fileNum::third)].spectreDispersion(taskType(i));
+		double a = files[static_cast<int>(fileNum::first)].spectreDispersion(taskType(i));
+		double b = files[static_cast<int>(fileNum::third)].spectreDispersion(taskType(i));
 		std::cout
 //				<< std::setprecision(4)
 				<< a << "\t"
@@ -209,8 +209,8 @@ void FeedbackClass::writeClass()
 {
 	if(01)
 	{
-		double a = files[int(fileNum::first)].classifyReals().first;
-		double b = files[int(fileNum::third)].classifyReals().first;
+		double a = files[static_cast<int>(fileNum::first)].classifyReals().first;
+		double b = files[static_cast<int>(fileNum::third)].classifyReals().first;
 		std::cout
 //				<< std::setprecision(3)
 				<< a << "\t"
@@ -221,8 +221,8 @@ void FeedbackClass::writeClass()
 
 	if(01)
 	{
-		double a = files[int(fileNum::first)].classifyWinds().first;
-		double b = files[int(fileNum::third)].classifyWinds().first;
+		double a = files[static_cast<int>(fileNum::first)].classifyWinds().first;
+		double b = files[static_cast<int>(fileNum::third)].classifyWinds().first;
 		std::cout
 //				<< std::setprecision(3)
 				<< a << "\t"
@@ -234,12 +234,12 @@ void FeedbackClass::writeClass()
 
 void FeedbackClass::remakeWindows(fileNum num, double overlapPart)
 {
-	this->files[int(num)].remakeWindows(overlapPart);
+	this->files[static_cast<int>(num)].remakeWindows(overlapPart);
 }
 
 ClassifierData FeedbackClass::prepareClDataWinds(fileNum num, bool reduce)
 {
-	return this->files[int(num)].prepareClDataWinds(reduce);
+	return this->files[static_cast<int>(num)].prepareClDataWinds(reduce);
 }
 
 
@@ -247,7 +247,7 @@ void FeedbackClass::writeLearnedPatterns()
 {
 	ANN * ann = new ANN();
 
-	this->files[int(fileNum::first)].remakeWindows(3.5 / 4.0);
+	this->files[static_cast<int>(fileNum::first)].remakeWindows(3.5 / 4.0);
 
 	auto clData = prepareClDataWinds(fileNum::first, true);
 
@@ -256,11 +256,11 @@ void FeedbackClass::writeLearnedPatterns()
 //	ann->getClassifierData()->z_transform(); /// again?
 	ann->learnAll();
 
-	QString wtsPath = files[int(fileNum::first)].getFilePath();
+	QString wtsPath = files[static_cast<int>(fileNum::first)].getFilePath();
 	wtsPath.replace(".edf", ".wts");
 	ann->writeWeight(wtsPath);
 
-	this->files[int(fileNum::second)].remakeWindows(3.5 / 4.0);
+	this->files[static_cast<int>(fileNum::second)].remakeWindows(3.5 / 4.0);
 	auto clData2 = prepareClDataWinds(fileNum::second, false);
 	ann->setClassifierData(clData2);
 	ann->readWeight(wtsPath);
@@ -289,8 +289,8 @@ void FeedbackClass::writeSuccessive()
 
 	std::cout
 			<< net->successiveByEDFfinal(
-					files[int(fileNum::first)],
-					files[int(fileNum::second)]).first
+					files[static_cast<int>(fileNum::first)],
+					files[static_cast<int>(fileNum::second)]).first
 			<< "\t"; std::cout.flush();
 	delete net;
 }
@@ -298,10 +298,10 @@ void FeedbackClass::writeSuccessive()
 void FeedbackClass::writeSuccessive3()
 {
 	ANN * ann = new ANN();
-	this->files[int(fileNum::third)].remakeWindows(3.5 / 4.0);
+	this->files[static_cast<int>(fileNum::third)].remakeWindows(3.5 / 4.0);
 	auto clData3 = prepareClDataWinds(fileNum::third, false);
 	ann->setClassifierData(clData3);
-	ann->readWeight(def::helpPath + "/" + this->files[int(fileNum::third)].getExpName().left(3)
+	ann->readWeight(def::helpPath + "/" + this->files[static_cast<int>(fileNum::third)].getExpName().left(3)
 			+ "_last.wts");
 	ann->testAll();
 	auto res2 = ann->averageClassification(DEVNULL);
@@ -313,7 +313,7 @@ void FeedbackClass::writePartOfCleaned()
 {
 	for(fileNum num : {fileNum::first, fileNum::second, fileNum::third})
 	{
-		std::cout << this->files[int(num)].partOfCleanedWinds() << "\t";
+		std::cout << this->files[static_cast<int>(num)].partOfCleanedWinds() << "\t";
 	}
 }
 
@@ -335,7 +335,7 @@ void FeedbackClass::writeFile()
 	/// 21, 22, 23 - correct, incorrect, not answered
 
 
-	for(int i : {int(fileNum::first), int(fileNum::third)})
+	for(int i : {static_cast<int>(fileNum::first), static_cast<int>(fileNum::third)})
 	{
 		for(int j = 0; j < 2; ++j) // taskType
 		{
