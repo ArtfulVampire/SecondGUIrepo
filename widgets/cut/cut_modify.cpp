@@ -175,8 +175,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 template<class... params> void Cut::logAction(const params &... par)
 {
 	std::ofstream outStr;
-	QString name = edfFil.getExpName();
-	name = name.left(name.indexOf('_'));
+	QString name = edfFil.getExpNameShort();
 	outStr.open((edfFil.getDirPath() + "/" +
 				 name + "_cutLog.txt").toStdString(), std::ios_base::app);
 	myWrite(outStr, par...);

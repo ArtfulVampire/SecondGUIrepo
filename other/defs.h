@@ -200,6 +200,7 @@ public:
 	/// to deprecate, globalEdf.getExpName()
 	void setExpName(const QString & in)			{ this->ExpName = in; }
 	auto getExpName() const						{ return this->ExpName; }
+	auto getExpNameShort() const				{ return this->ExpName.left(ExpName.indexOf('_')); }
 
 	/// to deprecate, globalEdf.getExpName()
 	void setNs(int in)							{ this->ns = in; }

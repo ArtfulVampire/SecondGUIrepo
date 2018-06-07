@@ -93,7 +93,7 @@ FBedf::FBedf(const QString & edfPath,
 
 			matrix a = myLib::countSpectre(realsSignals[typ][real],
 										   4096,
-										   15);
+										   15); /// magic consts
 			realsSpectra[typ].push_back(a); /// even if empty
 		}
 	}
@@ -204,6 +204,7 @@ ClassifierData FBedf::prepareClDataWinds(bool reduce)
 	if(reduce) { clData.reduceSize(suc::learnSetStay); }
 	clData.setApriori(clData.getClassCount());
 	clData.z_transform();
+	clData.adjust();
 	return clData;
 }
 
@@ -221,6 +222,7 @@ double FBedf::partOfCleanedWinds()
 		clData = *(ann->getClassifierData());
 		ann->setClassifierData(clData);			/// to zero confusion matrix
 //		ann->cleaningNfold(2);
+//		ann->cleaningNfold(-1);
 		ann->cleaningKfold(3, 2);
 //		std::cout << counter++ << " "; std::cout.flush();
 	}
@@ -544,6 +546,58 @@ QPixmap FBedf::rightWrongSpec(taskType typ) const
 
 	auto tmplt = myLib::drw::drawTemplate(true, FBedf::leftFreq, FBedf::rightFreq, 19);
 	return myLib::drw::drawArrays(tmplt, both);
+}
+
+matrix FBedf::backgroundCompare(taskType typ, ansType howSolved) const
+{
+	/// compose average spectre for the task
+	matrix avTask{};
+	{
+		const int taskNum = static_cast<int>(typ);
+		int counter = 1;
+		for(int i = 0; i < realsSpectra[taskNum].size(); ++i)
+		{
+			if(!realsSpectra[taskNum][i].isEmpty()
+			   && (static_cast<int>(ans[taskNum][i]) & static_cast<int>(howSolved)) /// check correctness
+			   )
+			{
+				if(avTask.isEmpty())
+				{
+					avTask = realsSpectra[taskNum][i];
+				}
+				else
+				{
+					avTask += realsSpectra[taskNum][i];
+					++counter;
+				}
+			}
+		}
+		avTask /= counter;
+	}
+
+	/// compose average spectre for the backgroung
+	matrix avRest{};
+	{
+		int counter = 1;
+		const int numRest = static_cast<int>(taskType::rest);
+		for(int i = 0; i < realsSpectra[numRest].size(); ++i)
+		{
+			if( !realsSpectra[numRest][i].isEmpty() )
+			{
+				if( avRest.isEmpty() )
+				{
+					avRest = realsSpectra[numRest][i];
+				}
+				else
+				{
+					avRest += realsSpectra[numRest][i];
+					++counter;
+				}
+			}
+		}
+		avRest /= counter;
+	}
+	return (avTask - avRest);
 }
 
 Classifier::avType FBedf::classifyReals() const

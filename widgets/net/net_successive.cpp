@@ -133,7 +133,7 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 											 const fb::FBedf & file2)
 {
 	DEFS.setFftLen(fb::FBedf::windFftLen);
-	const QString localExpName = file1.getExpName().left(file1.getExpName().indexOf('_'));
+	const QString localExpName = file1.getExpNameShort();
 
 	myClassifierData = ClassifierData();
 
@@ -236,7 +236,7 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ)
 {
 	DEFS.setFftLen(fb::FBedf::windFftLen);
-//	const QString localExpName = file1.getExpName().left(file1.getExpName().indexOf('_'));
+//	const QString localExpName = file1.getExpNameShort();
 
 	/// load windows spectra (2 or 3 classes), (from all or correct only)
 	/// which class to discard in case of 2 classes
@@ -323,7 +323,7 @@ void Net::successiveProcessing()
 
 	const QString helpString = DEFS.windsSpectraDir();
 
-	this->loadData(helpString, {DEFS.getExpName().left(3) + "*" + trainMarker + "*"});
+	this->loadData(helpString, {DEFS.getExpNameShort() + "*" + trainMarker + "*"});
 
 	/// leave 800, z_transform, then reduceSize
 	myClassifierData.reduceSize(suc::learnSetStay);
@@ -346,7 +346,7 @@ void Net::successiveProcessing()
 
 
 	QStringList leest = QDir(helpString).entryList(
-	{DEFS.getExpName().left(3) + "*" + testMarker + "*"}); /// special generality
+	{DEFS.getExpNameShort() + "*" + testMarker + "*"}); /// special generality
 
 	this->passed.resize(this->myClassifierData.getNumOfCl());
 	this->passed = 0.;

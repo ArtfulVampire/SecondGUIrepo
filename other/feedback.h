@@ -9,7 +9,10 @@ namespace fb
 enum class taskType : int {spat = 0, verb = 1, rest = 2};
 enum class fileNum  : int {first = 0, third = 1, second = 2};
 
-/// bit structure is used in getNum(...) and getTimes(...)
+/// bit structure is used in:
+/// FBedf::getNum
+/// FBedf::getTimes
+/// FBedf::backgroundCompare
 enum class ansType : int {skip		= 0b0001,					/// 1
 						  correct	= 0b0010,					/// 2
 						  wrong		= 0b0100,					/// 4
@@ -35,7 +38,7 @@ private:
 	/// [numReal]
 	std::vector<ansType> ansInRow;
 
-	/// [type][numOfReal] = spectre
+	/// [type][numOfReal] = spectre[channel][freq]
 	std::vector<std::vector<matrix>> realsSpectra; /// with empty spectra for short reals
 
 	/// [numWind] = spectre by rows
@@ -70,7 +73,6 @@ public:
 	FBedf & operator=(FBedf && other)=default;	/// used in FeedbackClass constructor
 	FBedf & operator=(const FBedf & other)=default;
 
-
 	void remakeWindows(double overlapPart = 0.0, int numSkipStartWinds = 0);
 
 	ClassifierData prepareClDataWinds(bool reduce);
@@ -81,11 +83,13 @@ public:
 
 	double insightPartOfAll(double thres) const;
 	double insightPartOfSolved(double thres) const;
+
 	QPixmap kdeForSolvTime(taskType typ) const;
 	QPixmap verbShortLong(double thres) const;		/// spectra of short and long anagramms
 	QPixmap rightWrongSpec(taskType typ) const;
 	Classifier::avType classifyReals() const;
 	Classifier::avType classifyWinds() const;
+	matrix backgroundCompare(taskType typ, ansType howSolved) const;
 
 	/// get interface
 	operator bool() const { return isGood; }
@@ -93,11 +97,13 @@ public:
 	int getNum(taskType typ, ansType howSolved) const;
 	ansType getAns(int i) const { return ansInRow[i]; }
 	int getNumInsights(double thres) const;
+
 	const matrix & getWindSpectra() const						{ return windSpectra; }
 	const std::vector<taskType> & getWindTypes() const			{ return windTypes; }
 	const std::valarray<double> & getWindSpectra(int i) const	{ return windSpectra[i]; }
 	taskType getWindTypes(int i) const							{ return windTypes[i]; }
 	ansType getWindAns(int i) const								{ return windAns[i]; }
+
 	int getLeftLim() const { return fftLimit(fb::FBedf::leftFreq, srate, fb::FBedf::windFftLen); }
 	int getRightLim() const { return fftLimit(fb::FBedf::rightFreq, srate, fb::FBedf::windFftLen); }
 
@@ -137,14 +143,15 @@ public:
 	void writeRightWrong(const QString & prePath);
 	void writeClass();
 	void writeSuccessive();
+	void writeBackgroundCompare(taskType typ, ansType howSolved);
+
 
 	void remakeWindows(fileNum num, double overlapPart);
 	ClassifierData prepareClDataWinds(fileNum num, bool reduce);
-	void writeLearnedPatterns();
-
 
 	void writeSuccessive3();
 	void writePartOfCleaned();
+	void writeLearnedPatterns();
 
 	operator bool() { return isGood; }
 

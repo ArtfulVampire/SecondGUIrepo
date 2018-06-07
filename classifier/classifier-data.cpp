@@ -7,9 +7,9 @@
 using namespace myOut;
 
 void ClassifierData::adjust()
-{
-//	numOfCl = *std::max_element(std::begin(types), std::end(types)) + 1;
-	/// can be generilized via std::set and set.size()
+{	
+	/// generalize and move everywhere from uint to std::map<uint, uint>
+	/// get the number of a class by its marker
 	std::set<int> typesSet{};
 	for(auto in : types) { typesSet.emplace(in); }
 	numOfCl = typesSet.size();

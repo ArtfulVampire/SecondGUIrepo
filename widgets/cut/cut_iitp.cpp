@@ -69,8 +69,7 @@ void Cut::iitpManualSlot()
 void Cut::iitpLog(const QString & typ, int num, const QString & add)
 {
 	std::ofstream outStr;
-	QString name = edfFil.getExpName();
-	name = name.left(name.indexOf('_'));
+	QString name = edfFil.getExpNameShort();
 	outStr.open((edfFil.getDirPath() + "/" +
 				 name + "_syncLog.txt").toStdString(), std::ios_base::app);
 	outStr << edfFil.getExpName() << "\t"

@@ -350,16 +350,17 @@ public:
 	const std::valarray<double> & getDigMax() const					{ return digMax; }
 	const std::valarray<double> & getDigMin() const					{ return digMin; }
 	const std::valarray<double> & getNr() const						{ return nr; }
-	const std::vector<std::pair<int, int>> & getMarkers() const		{ return markers; }
 	const QString & getHeaderRest() const							{ return headerRest; }
 
+	const std::vector<std::pair<int, int>> & getMarkers() const		{ return markers; }
 	const std::vector<edfChannel> & getChannels() const				{ return channels; }
 	const edfChannel & getChannels(int i) const						{ return channels[i]; }
 
 	const QString & getFilePath() const								{ return filePath; }
 	const QString & getDirPath() const								{ return dirPath; }
 	const QString & getExpName() const								{ return ExpName; }
-	QString getFileNam() const							{ return myLib::getFileName(filePath); }
+	QString getExpNameShort() const				{ return ExpName.left(ExpName.indexOf('_')); }
+	QString getFileNam() const					{ return myLib::getFileName(filePath); }
 
 	// flags
 	// gets

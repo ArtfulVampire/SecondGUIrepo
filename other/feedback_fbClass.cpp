@@ -205,6 +205,23 @@ void FeedbackClass::writeRightWrong(const QString & prePath)
 	}
 }
 
+void FeedbackClass::writeBackgroundCompare(taskType typ, ansType howSolved)
+{
+	int counter = 1;
+	for(fileNum nn : {fileNum::first, fileNum::second, fileNum::third})
+	{
+		const int fileN = static_cast<int>(nn);
+		matrix diff = this->files[fileN].backgroundCompare(typ, howSolved);
+		myLib::drw::drawArray(myLib::drw::drawTemplate(true, FBedf::leftFreq, FBedf::rightFreq),
+							  diff).save(def::helpPath + "/"
+										 + this->files[fileN].getExpNameShort()
+										 + "_" + nm(counter++)
+										 + "_" + nm(static_cast<int>(typ))
+										 + "_" + nm(static_cast<int>(howSolved))
+										 + "_taskRest.jpg");
+	}
+}
+
 void FeedbackClass::writeClass()
 {
 	if(01)
@@ -245,6 +262,7 @@ ClassifierData FeedbackClass::prepareClDataWinds(fileNum num, bool reduce)
 
 void FeedbackClass::writeLearnedPatterns()
 {
+
 	ANN * ann = new ANN();
 
 	this->files[static_cast<int>(fileNum::first)].remakeWindows(3.5 / 4.0);
@@ -301,7 +319,9 @@ void FeedbackClass::writeSuccessive3()
 	this->files[static_cast<int>(fileNum::third)].remakeWindows(3.5 / 4.0);
 	auto clData3 = prepareClDataWinds(fileNum::third, false);
 	ann->setClassifierData(clData3);
-	ann->readWeight(def::helpPath + "/" + this->files[static_cast<int>(fileNum::third)].getExpName().left(3)
+	ann->readWeight(def::helpPath
+					+ "/"
+					+ this->files[static_cast<int>(fileNum::third)].getExpNameShort()
 			+ "_last.wts");
 	ann->testAll();
 	auto res2 = ann->averageClassification(DEVNULL);
