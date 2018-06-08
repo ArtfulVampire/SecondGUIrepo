@@ -362,10 +362,6 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
     }
 #elif 1
 
-
-
-
-
 #if MATRIX_OMP
 #pragma omp parallel for
     for(uint i = 0; i < dim1; ++i)
@@ -696,6 +692,31 @@ matrix matrix::subRows(int newRows) const /// submatrix
 	return res.resizeRows(newRows);
 }
 
+
+matrix & matrix::centerRows(int numRows)
+{
+	/// count zero columns
+	int zeroCols = 0;
+	for(int i = 0; i < this->cols(); ++i)
+	{
+		const std::valarray<double> col = this->getCol(i, numRows);
+		if((col == 0.).min() == true) { ++zeroCols; }
+	}
+
+	for(int i = 0; i < numRows; ++i)
+	{
+		/// centering
+		const double meanVal = smLib::mean(myData[i]) * this->cols() / (this->cols() - zeroCols);
+		std::for_each(std::begin(myData[i]),
+					  std::end(myData[i]),
+					  [meanVal](double & in)
+		{
+			if(in != 0.) { in -= meanVal; }
+		});
+	}
+	return *this;
+}
+
 matrix matrix::covMatCols(std::valarray<double> * avRowIn) const
 {
     matrix cop = *this;
@@ -718,7 +739,7 @@ matrix matrix::covMatCols(std::valarray<double> * avRowIn) const
 		cop.myData[j] -= *avRow;
     }
 
-    matrix res = matrix::transpose(cop) * cop;
+	matrix res = matrix::transposed(cop) * cop;
     return res;
 }
 
@@ -1008,7 +1029,7 @@ uint matrix::cols() const
 	return myData[0].size();
 }
 
-matrix matrix::transpose(const matrix &input)
+matrix matrix::transposed(const matrix &input)
 {
 #if 1
     matrix res(input.cols(), input.rows());
@@ -1029,10 +1050,11 @@ matrix matrix::transpose(const matrix &input)
     return res;
 #endif
 }
+
 matrix & matrix::transpose()
 {
 #if 1
-    (*this) = matrix::transpose(*this);
+	(*this) = matrix::transposed(*this);
 #else
     int oldCols = this->cols();
     int oldRows = this->rows();
@@ -1061,6 +1083,13 @@ double matrix::trace() const
         res += (*this)[i][i];
     }
     return res;
+}
+
+
+static matrix inverted(const matrix & input)
+{
+	matrix res(input);
+	return res.invert();
 }
 
 matrix & matrix::invert(double * det)

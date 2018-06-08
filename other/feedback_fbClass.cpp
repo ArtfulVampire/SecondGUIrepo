@@ -151,8 +151,8 @@ void FeedbackClass::writeDists()
 	{
 		for(int j = i + 1; j < fb::numOfClasses; ++j)
 		{
-			double a = files[static_cast<int>(fileNum::first)].distSpec(taskType(i), taskType(j));
-			double b = files[static_cast<int>(fileNum::third)].distSpec(taskType(i), taskType(j));
+			double a = files[static_cast<int>(fileNum::first)].distSpec(taskType(i), taskType(j), ansType::all);
+			double b = files[static_cast<int>(fileNum::third)].distSpec(taskType(i), taskType(j), ansType::all);
 			std::cout
 //					<< std::setprecision(4)
 					<< a << "\t"
@@ -166,8 +166,8 @@ void FeedbackClass::writeDispersions()
 {
 	for(int i = 0; i < fb::numOfClasses; ++i)
 	{
-		double a = files[static_cast<int>(fileNum::first)].spectreDispersion(taskType(i));
-		double b = files[static_cast<int>(fileNum::third)].spectreDispersion(taskType(i));
+		double a = files[static_cast<int>(fileNum::first)].spectreDispersion(taskType(i), ansType::all);
+		double b = files[static_cast<int>(fileNum::third)].spectreDispersion(taskType(i), ansType::all);
 		std::cout
 //				<< std::setprecision(4)
 				<< a << "\t"

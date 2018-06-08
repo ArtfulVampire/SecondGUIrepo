@@ -9,17 +9,17 @@ namespace fb
 enum class taskType : int {spat = 0, verb = 1, rest = 2};
 enum class fileNum  : int {first = 0, third = 1, second = 2};
 
-/// bit structure is used in:
-/// FBedf::getNum
-/// FBedf::getTimes
-/// FBedf::backgroundCompare
+/// bit structure is used in FBedf::isGoodAns
 enum class ansType : int {skip		= 0b0001,					/// 1
 						  correct	= 0b0010,					/// 2
+						  notwrong	= correct | skip,			/// 3
 						  wrong		= 0b0100,					/// 4
+						  bad		= wrong | skip,				/// 5
 						  answrd	= correct | wrong,			/// 6
 						  all		= correct | wrong | skip	/// 7
 						 };
 
+/// omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg
 const int numOfClasses = 3;
 
 class FBedf : public edfFile
@@ -77,6 +77,9 @@ private:
 	int individualAlphaPeakIndexWind() const;
 	int individualAlphaPeakIndexReal() const;
 
+	bool isGoodAns(ansType real, ansType expected) const;
+	bool isGoodAns(taskType typ, int numReal, ansType expected) const;
+
 public:
 	/// solvTime? ans spectre inside
 	FBedf() {}
@@ -86,32 +89,31 @@ public:
 	FBedf(const FBedf & other)=default;			/// used in Net::innerClassHistogram
 	FBedf & operator=(FBedf && other)=default;	/// used in FeedbackClass constructor
 	FBedf & operator=(const FBedf & other)=default;
+	operator bool() const { return isGood; }
 
 	void remakeWindows(double overlapPart = 0.0, int numSkipStartWinds = 0);
 
 	ClassifierData prepareClDataWinds(bool reduce);
 	double partOfCleanedWinds();
 
-	double spectreDispersion(taskType typ);
-	double distSpec(taskType type1, taskType type2);
-
-	double insightPartOfAll(double thres) const;
-	double insightPartOfSolved(double thres) const;
-
-
+	/// complex calculations
+	double spectreDispersion(taskType typ, ansType howSolved);
+	double distSpec(taskType type1, taskType type2, ansType howSolved);
 	QPixmap kdeForSolvTime(taskType typ) const;
 	QPixmap verbShortLong(double thres) const;		/// spectra of short and long anagramms
 	QPixmap rightWrongSpec(taskType typ) const;
 	Classifier::avType classifyReals(bool alphaFlag) const;
 	Classifier::avType classifyWinds(bool alphaFlag) const;
 	matrix backgroundCompare(taskType typ, ansType howSolved) const;
+	double insightPartOfAll(double thres) const;
+	double insightPartOfSolved(double thres) const;
+
 
 	/// get interface
-	operator bool() const { return isGood; }
-	std::valarray<double> getTimes(taskType typ, ansType howSolved) const;
 	int getNum(taskType typ, ansType howSolved) const;
-	ansType getAns(int i) const { return ansInRow[i]; }
 	int getNumInsights(double thres) const;
+	ansType getAns(int i) const { return ansInRow[i]; }
+	std::valarray<double> getTimes(taskType typ, ansType howSolved) const;
 
 	const matrix & getWindSpectra() const						{ return windSpectra; }
 	const std::vector<taskType> & getWindTypes() const			{ return windTypes; }
@@ -124,7 +126,7 @@ private:
 	bool isGood{false};
 	std::vector<double> freqs;
 	std::vector<ansType> readAns(const QString & ansPath);
-	std::valarray<double> spectralRow(taskType type, int chan, double freq); /// remake and deprecate
+	std::valarray<double> spectralRow(taskType typ, ansType howSolved, int chan, double freq); /// remake and deprecate
 };
 
 

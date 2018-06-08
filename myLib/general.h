@@ -87,8 +87,8 @@ QString rerefChannel(const QString & initialName,
 					 const QString & earsChan = "20",
 					 const QString & groundChan = "21",
 					 const std::vector<QString> & sign = {"-", "+"});
-void dealWithEyes(matrix & inData,
-				  const int dimension);
+void centerMatrixRows(matrix & inData,
+				  const int howManyRows);
 
 
 } // myLib namespace

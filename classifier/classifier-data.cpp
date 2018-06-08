@@ -338,7 +338,7 @@ void ClassifierData::z_transform(double var)
 ClassifierData ClassifierData::toPca(int numOfPca, double var) const
 {
 	matrix centeredMatrix;
-	centeredMatrix = matrix::transpose(dataMatrix);
+	centeredMatrix = matrix::transposed(dataMatrix);
 
 	/// is useless if centering is on
 	for(int i = 0; i < centeredMatrix.rows(); ++i)
@@ -352,16 +352,17 @@ ClassifierData ClassifierData::toPca(int numOfPca, double var) const
 		trace += smLib::variance(centeredMatrix[i]);
 	}
 
-	matrix eigenVectors;
-	std::valarray<double> eigenValues;
 	const double eigenValuesTreshold = pow(10., -8.);
 
-	myLib::svd(centeredMatrix,
-			   eigenVectors,
-			   eigenValues,
-			   centeredMatrix.rows(),
-			   eigenValuesTreshold,
-			   numOfPca);
+	/// auto [eigenVectors, eigenValues] =
+	matrix eigenVectors;
+	std::valarray<double> eigenValues;
+	auto a = myLib::svd(centeredMatrix,
+						centeredMatrix.rows(),
+						eigenValuesTreshold,
+						numOfPca);
+	eigenVectors = a.first;
+	eigenValues = a.second;
 
 	centeredMatrix.transpose();
 	matrix pcaMatrix = centeredMatrix * eigenVectors;

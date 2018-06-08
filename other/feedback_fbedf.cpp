@@ -328,23 +328,37 @@ std::vector<ansType> FBedf::readAns(const QString & ansPath)
 	return res;
 }
 
-std::valarray<double> FBedf::spectralRow(taskType type, int chan, double freq)
+bool FBedf::isGoodAns(ansType real, ansType expected) const
 {
-//	std::valarray<double> res(realsSpectra[static_cast<int>(type)].size());
-	std::vector<double> res;	res.reserve(realsSpectra[static_cast<int>(type)].size());
-
-	for(int i = 0; i < realsSpectra[static_cast<int>(type)].size(); ++i)
-	{
-		if(!realsSpectra[static_cast<int>(type)][i].isEmpty()) /// may be empty spectre
-		{
-			res.push_back(realsSpectra[static_cast<int>(type)][i][chan][ std::floor(freq / FBedf::spStep) ]);
-		}
-	}
-	return smLib::vecToValar(res);
-//	return res;
+	return (static_cast<int>(real) & static_cast<int>(expected));
 }
 
-double FBedf::distSpec(taskType type1, taskType type2)
+bool FBedf::isGoodAns(taskType typ, int numReal, ansType expected) const
+{
+	return isGoodAns(ans[static_cast<int>(typ)][numReal], expected);
+}
+
+std::valarray<double> FBedf::spectralRow(taskType typ, ansType howSolved, int chan, double freq)
+{
+	const int taskNum = static_cast<int>(typ);
+	std::vector<double> res;	res.reserve(realsSpectra[taskNum].size());
+
+	for(int i = 0; i < realsSpectra[taskNum].size(); ++i)
+	{
+		if(realsSpectra[taskNum][i].isEmpty()	/// may be empty spectre
+		   || !isGoodAns(typ, i, howSolved)	/// may be uninteresting answer
+		   )
+		{
+			continue;
+		}
+		/// else
+		res.push_back(realsSpectra[taskNum][i][chan][ std::floor(freq / FBedf::spStep) ]);
+
+	}
+	return smLib::vecToValar(res);
+}
+
+double FBedf::distSpec(taskType type1, taskType type2, ansType howSolved)
 {
 	int all = 0;
 	int diff = 0;
@@ -353,8 +367,8 @@ double FBedf::distSpec(taskType type1, taskType type2)
 	{
 		for(double freq : this->freqs)
 		{
-			auto a = myLib::MannWhitney(this->spectralRow(type1, chan, freq),
-										this->spectralRow(type2, chan, freq),
+			auto a = myLib::MannWhitney(this->spectralRow(type1, howSolved, chan, freq),
+										this->spectralRow(type2, howSolved, chan, freq),
 										0.05);
 			++all;
 			if(a != 0) { ++diff; }
@@ -422,7 +436,7 @@ int FBedf::individualAlphaPeakIndexReal() const
 	return lef + myLib::indexOfMax(tmp);
 }
 
-double FBedf::spectreDispersion(taskType typ)
+double FBedf::spectreDispersion(taskType typ, ansType howSolved)
 {
 	/// remake via subRows, subcols, transpose
 	double res = 0.;
@@ -430,7 +444,7 @@ double FBedf::spectreDispersion(taskType typ)
 	{
 		for(double freq : this->freqs)
 		{
-			auto row = this->spectralRow(typ, chan, freq);
+			auto row = this->spectralRow(typ, howSolved, chan, freq);
 			res += smLib::sigma(row) / smLib::mean(row);
 		}
 	}
@@ -448,8 +462,7 @@ std::valarray<double> FBedf::getTimes(taskType typ, ansType howSolved) const
 	/// else
 	for(int i = 0; i < solvTime[taskNum].size(); ++i)
 	{
-		if(static_cast<int>( ans[taskNum][i] ) &
-		   static_cast<int>( howSolved ))
+		if( isGoodAns(typ, i, howSolved) )
 		{
 			res.push_back(solvTime[taskNum][i]);
 		}
@@ -470,7 +483,7 @@ int FBedf::getNum(taskType typ, ansType howSolved) const
 	int num = 0;
 	for(auto in : ans[taskNum])
 	{
-		if(static_cast<int>(in) & static_cast<int>(howSolved)) { ++num; }
+		if(isGoodAns(in, howSolved)) { ++num; }
 	}
 	return num;
 }
@@ -546,6 +559,7 @@ QPixmap FBedf::verbShortLong(double thres) const
 
 QPixmap FBedf::rightWrongSpec(taskType typ) const
 {
+	const int taskNum = static_cast<int>(typ);
 	std::vector<matrix> rights;
 	std::vector<matrix> wrongs;
 
@@ -560,12 +574,12 @@ QPixmap FBedf::rightWrongSpec(taskType typ) const
 		wrongsType = ansType::skip;
 	}
 
-	for(int i = 0; i < solvTime[static_cast<int>(typ)].size(); ++i)
+	for(int i = 0; i < solvTime[taskNum].size(); ++i)
 	{
-		if(!realsSpectra[static_cast<int>(typ)][i].isEmpty())
+		if(!realsSpectra[taskNum][i].isEmpty())
 		{
-			if(ans[static_cast<int>(typ)][i] == ansType::correct)	{ rights.push_back(realsSpectra[static_cast<int>(typ)][i]);	}
-			else if(ans[static_cast<int>(typ)][i] == wrongsType)	{ wrongs.push_back(realsSpectra[static_cast<int>(typ)][i]);	}
+			if(ans[taskNum][i] == ansType::correct)	{ rights.push_back(realsSpectra[taskNum][i]);	}
+			else if(ans[taskNum][i] == wrongsType)	{ wrongs.push_back(realsSpectra[taskNum][i]);	}
 		}
 	}
 
@@ -607,7 +621,7 @@ matrix FBedf::backgroundCompare(taskType typ, ansType howSolved) const
 		for(int i = 0; i < realsSpectra[taskNum].size(); ++i)
 		{
 			if(!realsSpectra[taskNum][i].isEmpty()
-			   && (static_cast<int>(ans[taskNum][i]) & static_cast<int>(howSolved)) /// check correctness
+			   && isGoodAns(typ, i, howSolved) /// check correctness
 			   )
 			{
 				if(avTask.isEmpty())

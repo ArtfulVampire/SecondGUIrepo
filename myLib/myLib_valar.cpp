@@ -209,7 +209,7 @@ template double sigmaToMean(const std::valarray<double> & arr);
 template <class Container>
 double norma(const Container & in)
 {
-	return sqrt(normaSq(in));
+	return std::sqrt(normaSq(in));
 }
 template double norma(const std::valarray<double> & arr);
 //template double norma(const std::vector<double> & arr);
@@ -255,7 +255,7 @@ template double variance(const std::valarray<double> & arr);
 template <class Container>
 double sigma(const Container & arr)
 {
-	return sqrt(variance(arr));
+	return std::sqrt(variance(arr));
 }
 template double sigma(const std::valarray<double> & arr);
 //template double sigma(const std::vector<double> & arr);

@@ -50,7 +50,7 @@ void Net::pca()
 	const int NetLength = dataMatrix.cols();
 
 	matrix centeredMatrix;
-	centeredMatrix = matrix::transpose(dataMatrix);
+	centeredMatrix = matrix::transposed(dataMatrix);
 	// now rows = spectral points/features, cols - vectors
 
 	// count covariations
@@ -70,17 +70,19 @@ void Net::pca()
 	std::cout << "trace covMatrix = " << trace << std::endl;
 
 	// count eigenvalue decomposition
-	matrix eigenVectors;
-	std::valarray<double> eigenValues;
+
 	const double eigenValuesTreshold = pow(10., -8.);
 	const int numOfPc = this->ui->pcaNumberSpinBox->value();
 
-	myLib::svd(centeredMatrix,
-			   eigenVectors,
-			   eigenValues,
-			   centeredMatrix.rows(),
-			   eigenValuesTreshold,
-			   numOfPc);
+	/// auto [eigenVectors, eigenValues] =
+	matrix eigenVectors;
+	std::valarray<double> eigenValues;
+	auto a = myLib::svd(centeredMatrix,
+						centeredMatrix.rows(),
+						eigenValuesTreshold,
+						numOfPc);
+	eigenVectors = a.first;
+	eigenValues = a.second;
 
 
 	double sum1 = 0.;

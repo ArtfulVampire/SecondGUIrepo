@@ -138,12 +138,18 @@ public:
 	bool operator == (const matrix & other);
 	bool operator != (const matrix & other);
 
+	/// transpose
+	matrix operator !() { return matrix::transposed(*this); }
+	/// inverse
+	matrix operator ~() { return matrix::inverted(*this); }
+
 	matrix apply(std::function<std::valarray<double>(const std::valarray<double> &)>) const;
 	matrix integrate(const std::vector<std::pair<int, int>> & intervals) const;
 
 
 	// "static"
-	static matrix transpose(const matrix & input);
+	static matrix transposed(const matrix & input);
+	static matrix inverted(const matrix & input);
 	static matrix ident(int dim);
 	static matrix vertCat(const matrix & upper, const matrix & lower);
 	static matrix horzCat(const matrix & left, const matrix & right);
@@ -156,6 +162,7 @@ public:
 	matrix & swapCols(uint i, uint j);
 	matrix & swapRows(uint i, uint j);
 	matrix & zero();
+	matrix & centerRows(int numRows);
 	matrix & one();
 	matrix & eraseRow(uint i);
 	matrix & eraseCol(uint j);

@@ -1804,14 +1804,15 @@ void randomizeValar(std::valarray<double> & valar)
 	smLib::normalize(valar);
 }
 
-void countVectorW(matrix & vectorW,
-                  const matrix & dataICA,
-                  const int ns,
-                  const int dataLen,
-                  const double vectorWTreshold)
+matrix countVectorW(const matrix & dataICA,
+				  const int ns,
+				  const int dataLen,
+				  const double vectorWTreshold)
 {
     QTime myTime;
     myTime.restart();
+
+	matrix res(ns, ns);
 
     double sum1;
     double sum2;
@@ -1822,24 +1823,24 @@ void countVectorW(matrix & vectorW,
 
     int counter;
 
-    const matrix tempMatrix = matrix::transpose(dataICA);
+	const matrix tempMatrix = matrix::transposed(dataICA);
 
 	for(int i = 0; i < ns; ++i) // number of current vectorW
     {
         myTime.restart();
         counter = 0;
-        randomizeValar(vectorW[i]);
+		randomizeValar(res[i]);
 
         while(1)
         {
-            vectorOld = vectorW[i]; // save previous vect
+			vectorOld = res[i]; // save previous vect
 
             /// local, dataICA transposed to tempMatrix
             vector1 = 0.;
             sum1 = 0.;
             for(int j = 0; j < dataLen; ++j)
             {
-				const double temp = tanh(smLib::prod(vectorW[i], tempMatrix[j]));
+				const double temp = tanh(smLib::prod(res[i], tempMatrix[j]));
 
                 vector1 += tempMatrix[j] * temp;
                 sum1 += (1. - temp * temp);
@@ -1847,16 +1848,16 @@ void countVectorW(matrix & vectorW,
             vector1 /= dataLen;
 
             sum1 /= dataLen;
-            vector2 = vectorW[i] * sum1;
+			vector2 = res[i] * sum1;
 
 
-            vectorW[i] = vector1 - vector2;
+			res[i] = vector1 - vector2;
 			// orthogonalization
-			myLib::product3(vectorW, ns, i, vector3);
-            vectorW[i] -= vector3;
-			smLib::normalize(vectorW[i]);
+			myLib::product3(res, ns, i, vector3);
+			res[i] -= vector3;
+			smLib::normalize(res[i]);
 
-			sum2 = smLib::norma(std::valarray<double>(vectorOld - vectorW[i]));
+			sum2 = smLib::norma(std::valarray<double>(vectorOld - res[i]));
 
             ++counter;
             if(sum2 < vectorWTreshold || 2. - sum2 < vectorWTreshold) break;
@@ -1867,147 +1868,167 @@ void countVectorW(matrix & vectorW,
 		std::cout << "error = " << std::abs(sum2 - int(sum2 + 0.5)) << "\t";
 		std::cout << "time = " << smLib::doubleRound(myTime.elapsed() / 1000., 1) << " sec" << std::endl;
     }
+	return res;
 }
 
-void dealWithEyes(matrix & inData,
-                  const int dimension)
+void centerMatrixRows(matrix & inData,
+					  const int howManyRows)
 {
 
     const int dataLen = inData.cols();
+
+	/// count zero columns
     int eyes = 0;
     for(int i = 0; i < dataLen; ++i)
     {
-		const std::valarray<double> temp = inData.getCol(i, dimension);
-		if(std::abs(temp).max() == 0.)
-        {
-            ++eyes;
-        }
+		const std::valarray<double> temp = inData.getCol(i, howManyRows);
+		if((temp == 0.).min() == true) { ++eyes; }
     }
-    const double realSignalFrac =  double(dataLen - eyes) / dataLen; /// deprecate?!! splitZeros
 
-    for(int i = 0; i < dimension; ++i)
+	for(int i = 0; i < howManyRows; ++i)
     {
-		const double temp = - smLib::mean(inData[i]) * realSignalFrac;
+		/// centering
+		const double temp = - smLib::mean(inData[i]) * dataLen / (dataLen - eyes);
 
-        std::for_each(begin(inData[i]),
-                      end(inData[i]),
+		std::for_each(std::begin(inData[i]),
+					  std::end(inData[i]),
                       [temp](double & in)
         {
-            if(in != 0.)
-            {
-                in += temp;
-            }
-        }); // retain zeros
+			if(in != 0.) { in += temp; }
+		});
 	}
 }
 
-void ica(const matrix & initialData,
-         matrix & matrixA,
-         double eigenValuesTreshold,
-         double vectorWTreshold)
+
+
+void icaResult::order(std::function<double(int)> func)
 {
-    const int ns = initialData.rows();
+	std::vector<std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
+	for(int i = 0; i < matrixA.rows(); ++i)
+	{
+		double val = func(i);
+		colsNorms.push_back(std::make_pair(val, i));
+	}
 
-    matrix centeredMatrix = initialData;
-    dealWithEyes(centeredMatrix,
-                 ns);
+	std::sort(std::begin(colsNorms),
+			  std::end(colsNorms),
+			  [](const auto & i, const auto & j)
+	{ return i.first > j.first; });
 
-    matrix eigenVectors;
-	std::valarray<double> eigenValues;
+	for(int i = 0; i < matrixA.cols() - 1; ++i) // the last is already on place
+	{
+		matrixA.swapCols(i, colsNorms[i].second);
+		components.swapRows(i, colsNorms[i].second);
 
-    svd(centeredMatrix,
-        eigenVectors,
-        eigenValues,
-        ns,
-        eigenValuesTreshold);
-
-    matrix D_minus_05(ns, ns, 0.);
-    for(int i = 0; i < ns; ++i)
-    {
-        D_minus_05[i][i] = 1. / sqrt(eigenValues[i]);
-    }
-
-    matrix dataICA = (eigenVectors * (D_minus_05 * matrix::transpose(eigenVectors))) *
-                     centeredMatrix;
-
-    matrix vectorW(ns, ns);
-    countVectorW(vectorW,
-                 dataICA,
-                 ns,
-                 initialData.cols(),
-                 vectorWTreshold);
-    dataICA = vectorW * dataICA;
-
-    matrix D_05(ns, ns, 0.);
-    for(int i = 0; i < ns; ++i)
-    {
-        D_05[i][i] = sqrt(eigenValues[i]);
-    }
-    matrixA = eigenVectors * D_05 * matrix::transpose(eigenVectors) * matrix::transpose(vectorW);
-
-
-    // norm components to 1-length of mapvector, order by dispersion
-    double sum1 {};
-    for(int i = 0; i < ns; ++i)
-    {
-		sum1 = smLib::norma(matrixA.getCol(i)) / 2.;
-
-        for(int k = 0; k < ns; ++k)
-        {
-            matrixA[k][i] /= sum1;
-        }
-        dataICA[i] *= sum1;
-    }
-#if 0
-    // ordering components by dispersion
-    std::vector<std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
-    double sumSquares = 0.; // sum of all dispersions
-
-    for(int i = 0; i < ns; ++i)
-    {
-        sum1 = variance(dataICA[i]);
-        sumSquares += sum1;
-        colsNorms.push_back(std::make_pair(sum1, i));
-    }
-
-    std::sort(colsNorms.begin(),
-              colsNorms.end(),
-              [](std::pair <double, int> i, std::pair <double, int> j)
-    {
-        return i.first > j.first;
-    });
-
-    for(int i = 0; i < ns - 1; ++i) // dont move the last
-    {
-        matrixA.swapCols(i, colsNorms[i].second);
-
-        // swap i and colsNorms[i].second values in colsNorms
-        auto it1 = std::find_if(colsNorms.begin(),
-                                colsNorms.end(),
-                                [i](std::pair <double, int> in)
-        {
-                   return in.second == i;
-    });
-        auto it2 = std::find_if(colsNorms.begin(),
-                                colsNorms.end(),
-                                [colsNorms, i](std::pair <double, int> in)
-        { return in.second == colsNorms[i].second; });
-
-//        std::swap((*it1).second, (*it2).second);
-
-        int tempIndex = (*it1).second;
-        (*it1).second = (*it2).second;
-        (*it2).second = tempIndex;
-    }
-#endif
+		// swap i and colsNorms[i].second values in colsNorms
+		auto it1 = std::find_if(std::begin(colsNorms),
+								std::end(colsNorms),
+								[i](const auto & in)
+		{ return in.second == i; });
+		auto it2 = std::begin(colsNorms) + i;
+		std::swap((*it1).second, (*it2).second);
+	}
 }
 
-void svd(const matrix & initialData,
-         matrix & eigenVectors,
-		 std::valarray<double> & eigenValues,
-         const int dimension, // length of the vectors
-         double threshold,
-		 int eigenVecNum) /// num of eigenVectors to count - add variance
+void icaResult::orderIcaLen()
+{
+	// norm components - to equal dispersion
+	// sort by maps length
+
+	for(int i = 0; i < components.rows(); ++i)
+	{
+		double sgm = smLib::sigma(components[i]) * 0.05; /// it is some coeff
+		components[i] /= sgm;
+
+		for(int j = 0; j < matrixA.rows(); ++j)
+		{
+			matrixA[j][i] *= sgm;
+		}
+	}
+
+	/// ordering components by sum of squares of the matrixA coloumn
+	auto func = [this](int i)->double { return smLib::normaSq(matrixA.getCol(i)); };
+	order(func);
+}
+
+void icaResult::orderIcaDisp()
+{
+	/// cols of matrixA to 1-length, adjust corresponding row
+	for(int j = 0; j < matrixA.cols(); ++j)
+	{
+		double colNorm = smLib::norma(matrixA.getCol(j)); /// here was /2. WHY?
+
+		for(int i = 0; i < matrixA.rows(); ++i)
+		{
+			matrixA[i][j] /= colNorm;
+		}
+		components[j] *= colNorm; /// components.rows() = matrixA.cols()
+	}
+
+	/// ordering itself
+	auto func = [this](int i)->double { return smLib::variance(components[i]); };
+	order(func);
+}
+
+icaResult ica(const matrix & initialData,
+			  double eigenValuesTreshold,
+			  double vectorWTreshold)
+{
+	const int numOfIcs = initialData.rows();
+
+    matrix centeredMatrix = initialData;
+	centeredMatrix.centerRows(numOfIcs);
+
+	/// auto [eigenVectors, eigenValues] =
+    matrix eigenVectors;
+	std::valarray<double> eigenValues;
+	auto a = myLib::svd(centeredMatrix,
+						numOfIcs,
+						eigenValuesTreshold);
+	eigenVectors = a.first;
+	eigenValues = a.second;
+
+	/// write whitenedData to components
+	/// whitenedData = Eig * D^-0.5 * Eig^t * centeredData
+	matrix components = eigenVectors
+						* matrix(std::pow(eigenValues, -0.5))
+						* !eigenVectors
+						* centeredMatrix;
+
+	matrix rotation = myLib::countVectorW(components,
+										  numOfIcs,
+										  initialData.cols(),
+										  vectorWTreshold);
+	/// components = rotation * whitenedData
+	/// components = W * centeredData
+	/// W = rotation * Eig * D^-0.5 * Eig^t
+	components = rotation * components;
+
+	/// A * components = centeredData
+	/// A = inverted( W )
+	/// A = Eig * D^0.5 * Eig^t * rotation^t
+	matrix matrixA = eigenVectors
+					 * matrix(std::pow(eigenValues, +0.5))
+					 * !eigenVectors
+					 * !rotation;
+
+	icaResult res;
+	res.components = components;
+	res.matrixA = matrixA;
+	res.orderIcaDisp();
+	return res;
+}
+
+
+
+
+
+
+std::pair<matrix, std::valarray<double>>
+svd(const matrix & initialData,
+	const int dimension, // length of the vectors
+	double threshold,
+	int eigenVecNum) /// num of eigenVectors to count - add variance
 {
     if(eigenVecNum <= 0)
     {
@@ -2024,8 +2045,9 @@ void svd(const matrix & initialData,
 		trace += smLib::variance(initialData[i]);
     }
 
-    eigenValues.resize(eigenVecNum);
-    eigenVectors.resize(dimension, eigenVecNum);
+	/// results
+	std::valarray<double> eigenValues(eigenVecNum);
+	matrix eigenVectors(dimension, eigenVecNum);
 
 	std::valarray<double> tempA(dimension);
 	std::valarray<double> tempB(dataLen);
@@ -2053,11 +2075,10 @@ void svd(const matrix & initialData,
 #endif
 
     // maybe lines longer than dimension but OK
-
 	// std::valarray<double> tempLine(dataLen); // for debug acceleration
-
     matrix inData = initialData;
-    const matrix inDataTrans = matrix::transpose(initialData);
+	inData.centerRows(dimension);
+	const matrix inDataTrans = matrix::transposed(initialData);
     QTime myTime;
     myTime.start();
 	// counter j - for B, i - for A
@@ -2196,12 +2217,12 @@ void svd(const matrix & initialData,
 #endif
         }
 
-
 		// count eigenVectors && eigenValues
 		sum1 = smLib::normaSq(tempA);
 		sum2 = smLib::normaSq(tempB);
         eigenValues[k] = sum1 * sum2 / double(dataLen - 1.);
-        tempA /= sqrt(sum1);
+		tempA /= sqrt(sum1); /// smLib::normalize(tempA);
+
 
 		sum1 = std::accumulate(std::begin(eigenValues),
 							   std::begin(eigenValues) + k + 1,
@@ -2219,6 +2240,7 @@ void svd(const matrix & initialData,
             eigenVectors[i][k] = tempA[i]; // 1-normalized coloumns
         }
     }
+	return std::make_pair(eigenVectors, eigenValues);
 }
 
 /// replace DEFS.getFreq()

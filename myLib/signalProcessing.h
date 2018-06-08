@@ -4,6 +4,7 @@
 #include <valarray>
 #include <complex>
 #include <fstream>
+#include <functional>
 
 #include <other/matrix.h>
 #include <other/consts.h>
@@ -267,22 +268,33 @@ void product3(const matrix & inMat,
 
 void randomizeValar(std::valarray<double> & valar);
 
-void countVectorW(matrix & vectorW,
-				  const matrix & dataICA,
-				  const int ns,
-				  const int dataLen,
-				  const double vectorWTreshold);
+/// out matrixW: matrixW * dataICA = components ????
+matrix countVectorW(const matrix & dataICA,
+					const int ns,
+					const int dataLen,
+					const double vectorWTreshold);
 
-void ica(const matrix & initialData,
-		 matrix & matrixA,
-		 double eigenValuesTreshold, double vectorWTreshold);
+struct icaResult
+{
+	/// initialData = A * components
+	matrix components;
+	matrix matrixA;
+	/// the difference in the initial norming and colsNorms filling
+	void orderIcaDisp(); /// by dispersion
+	void orderIcaLen();
+	void order(std::function<double(int)> func);
+};
 
-void svd(const matrix & initialData,
-		 matrix & eigenVectors,
-		 std::valarray<double> & eigenValues,
-		 const int dimension,
-		 double threshold = 1e-9,
-		 int eigenVecNum = -1);
+icaResult ica(const matrix & initialData,
+			  double eigenValuesTreshold,
+			  double vectorWTreshold);
+
+
+
+std::pair<matrix, std::valarray<double>> svd(const matrix & initialData,
+											 const int dimension,
+											 double threshold = 1e-9,
+											 int eigenVecNum = -1);
 
 
 
