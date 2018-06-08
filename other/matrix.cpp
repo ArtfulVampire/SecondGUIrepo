@@ -509,6 +509,26 @@ matrix matrix::apply(std::function<std::valarray<double>(const std::valarray<dou
 	return res;
 }
 
+matrix matrix::integrate(const std::vector<std::pair<int, int>> & intervals) const
+{
+	matrix res{};
+	/// add intervals validation
+	for(const auto & row : myData)
+	{
+		std::valarray<double> newRow(intervals.size());
+		int counter = 0;
+		for(const auto & in : intervals)
+		{
+			newRow[counter] = std::accumulate(std::begin(row) + in.first,
+											  std::begin(row) + in.second,
+											  0.);
+			++counter;
+		}
+		res.push_back(newRow);
+	}
+	return res;
+}
+
 
 bool matrix::isEmpty() const
 {
@@ -627,6 +647,26 @@ matrix matrix::subCols(int newCol) const
 	matrix res(*this);
 	if(newCol < 0) { newCol += this->cols(); }
 	return res.resizeCols(newCol);
+}
+
+matrix matrix::subCols(const std::vector<std::pair<int, int>> & intervals) const
+{
+	int newSize = 0;
+	for(const auto & in : intervals) { newSize += in.second - in.first; }
+
+	matrix res(this->rows(), newSize);
+	int colCounter = 0;
+	for(const auto & in : intervals)
+	{
+		for(int i = 0; i < this->rows(); ++i)
+		{
+			std::copy(std::begin(myData[i]) + in.first,
+					  std::begin(myData[i]) + in.second,
+					  std::begin(res[i]) + colCounter);
+		}
+		colCounter += in.second - in.first;
+	}
+	return res;
 }
 
 matrix matrix::subRows(const std::vector<int> & inds) const /// submatrix

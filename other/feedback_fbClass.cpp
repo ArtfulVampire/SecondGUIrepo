@@ -211,7 +211,10 @@ void FeedbackClass::writeBackgroundCompare(taskType typ, ansType howSolved)
 	for(fileNum nn : {fileNum::first, fileNum::second, fileNum::third})
 	{
 		const int fileN = static_cast<int>(nn);
-		matrix diff = this->files[fileN].backgroundCompare(typ, howSolved);
+		matrix diff = this->files[fileN].backgroundCompare(typ, howSolved)
+					  .subCols(this->files[fileN].getLeftLimWind(),
+							   this->files[fileN].getRightLimWind());
+
 		myLib::drw::drawArray(myLib::drw::drawTemplate(true, FBedf::leftFreq, FBedf::rightFreq),
 							  diff).save(def::helpPath + "/"
 										 + this->files[fileN].getExpNameShort()
@@ -226,8 +229,8 @@ void FeedbackClass::writeClass()
 {
 	if(01)
 	{
-		double a = files[static_cast<int>(fileNum::first)].classifyReals().first;
-		double b = files[static_cast<int>(fileNum::third)].classifyReals().first;
+		double a = files[static_cast<int>(fileNum::first)].classifyReals(false).first;
+		double b = files[static_cast<int>(fileNum::third)].classifyReals(false).first;
 		std::cout
 //				<< std::setprecision(3)
 				<< a << "\t"
@@ -238,8 +241,8 @@ void FeedbackClass::writeClass()
 
 	if(01)
 	{
-		double a = files[static_cast<int>(fileNum::first)].classifyWinds().first;
-		double b = files[static_cast<int>(fileNum::third)].classifyWinds().first;
+		double a = files[static_cast<int>(fileNum::first)].classifyWinds(false).first;
+		double b = files[static_cast<int>(fileNum::third)].classifyWinds(false).first;
 		std::cout
 //				<< std::setprecision(3)
 				<< a << "\t"

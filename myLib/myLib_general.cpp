@@ -202,6 +202,7 @@ QString getPicPath(const QString & dataPath,
 	return ExpNameDir + "/" + addName + "/" + fileName + ".jpg";
 }
 
+/// add std::optional
 int getTypeOfFileName(const QString & fileName, const QStringList & markers)
 {
     QStringList leest;
@@ -604,8 +605,6 @@ void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 	}
 	fclose(outFile);
 }
-
-
 
 
 template uint indexOfMax(const std::vector<int> & cont);

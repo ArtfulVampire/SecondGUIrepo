@@ -113,6 +113,7 @@ public:
 		return myData[i];
 
 	}
+
 	const std::valarray<double> & operator [](int i) const
 	{
 		return myData[i];
@@ -136,7 +137,9 @@ public:
 
 	bool operator == (const matrix & other);
 	bool operator != (const matrix & other);
+
 	matrix apply(std::function<std::valarray<double>(const std::valarray<double> &)>) const;
+	matrix integrate(const std::vector<std::pair<int, int>> & intervals) const;
 
 
 	// "static"
@@ -164,9 +167,12 @@ public:
 	matrix & pop_front(uint numOfCols);
 	matrix subCols(int beginCol, int endCol) const;			/// submatrix
 	matrix subCols(int newCol) const;						/// submatrix
+	matrix subCols(const std::vector<std::pair<int, int>> & intervals) const; /// to do
+	matrix subRows(int newRows) const;						/// submatrix
+//	matrix subRows(int begRow, int endRow) const; /// to do
 	matrix subRows(const std::vector<int> & inds) const;	/// submatrix
 	matrix subRows(const std::vector<uint> & inds) const;	/// submatrix
-	matrix subRows(int newRows) const;						/// submatrix
+//	matrix subRows(const std::vector<std::pair<int, int>> & intervals) const; /// to do
 
 
 	std::valarray<double> matrixSystemSolveGauss(const std::valarray<double> & inVec) const;

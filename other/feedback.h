@@ -25,12 +25,17 @@ const int numOfClasses = 3;
 class FBedf : public edfFile
 {
 private:
+	/// really should use structs (matrix data, matrix spectre(full), taskType typ, ansType ans)
+	///
 
 	/// [type][numReal] = realMatrix
 	std::vector<std::vector<matrix>> realsSignals; /// w/o markers
 
+	/// [type][numOfReal] = spectre[channel][freq] (whole frequency range)
+	std::vector<std::vector<matrix>> realsSpectra; /// with empty spectra for short reals
+
 	/// [type][numReal] = length in seconds
-	std::vector<std::valarray<double>> solvTime;
+	std::vector<std::valarray<double>> solvTime; /// compose with spec function
 
 	/// [type][numReal]
 	std::vector<std::vector<ansType>> ans;
@@ -38,10 +43,7 @@ private:
 	/// [numReal]
 	std::vector<ansType> ansInRow;
 
-	/// [type][numOfReal] = spectre[channel][freq]
-	std::vector<std::vector<matrix>> realsSpectra; /// with empty spectra for short reals
-
-	/// [numWind] = spectre by rows
+	/// [numWind] = spectre by rows (already in leftFreq-rightFreq range)
 	matrix windSpectra;
 
 	/// [numWind]
@@ -56,12 +58,24 @@ public:
 	static const int numTasks = 40;
 	static constexpr double solveThres = 40.;			/// 40 sec for a task
 
-	static const int windLen = 1024;
-	static const int windFftLen = smLib::fftL(windLen);
+	static const int windLen = 1024;					/// may be changed to 1000
+	static const int windFftLen = smLib::fftL(windLen);	/// 1024
 	static constexpr double fftLen = 4096.;
 	static constexpr double spStep = 250. / 4096.;
 	static constexpr double leftFreq = 5.;
 	static constexpr double rightFreq = 20.;
+
+	int getLeftLimWind() const { static int leftLim{-1}; return (leftLim == -1)
+				? fftLimit(leftFreq, srate, windFftLen) : leftLim; }
+	int getRightLimWind() const { static int rightLim{-1}; return (rightLim == -1)
+				? fftLimit(rightFreq, srate, windFftLen) : rightLim; }
+	int getSpLenWind() const { return getRightLimWind() - getLeftLimWind(); }
+
+private:
+	static constexpr double leftAlpha = 7.5;
+	static constexpr double rightAlpha = 14;
+	int individualAlphaPeakIndexWind() const;
+	int individualAlphaPeakIndexReal() const;
 
 public:
 	/// solvTime? ans spectre inside
@@ -69,7 +83,7 @@ public:
 	FBedf(const QString & edfPath, const QString & ansPath,
 		  double overlapPart = 0.0,
 		  int numSkipStartWinds = 0);
-	FBedf(const FBedf & other)=default; /// used in Net::innerClassHistogram
+	FBedf(const FBedf & other)=default;			/// used in Net::innerClassHistogram
 	FBedf & operator=(FBedf && other)=default;	/// used in FeedbackClass constructor
 	FBedf & operator=(const FBedf & other)=default;
 
@@ -84,11 +98,12 @@ public:
 	double insightPartOfAll(double thres) const;
 	double insightPartOfSolved(double thres) const;
 
+
 	QPixmap kdeForSolvTime(taskType typ) const;
 	QPixmap verbShortLong(double thres) const;		/// spectra of short and long anagramms
 	QPixmap rightWrongSpec(taskType typ) const;
-	Classifier::avType classifyReals() const;
-	Classifier::avType classifyWinds() const;
+	Classifier::avType classifyReals(bool alphaFlag) const;
+	Classifier::avType classifyWinds(bool alphaFlag) const;
 	matrix backgroundCompare(taskType typ, ansType howSolved) const;
 
 	/// get interface
@@ -104,8 +119,6 @@ public:
 	taskType getWindTypes(int i) const							{ return windTypes[i]; }
 	ansType getWindAns(int i) const								{ return windAns[i]; }
 
-	int getLeftLim() const { return fftLimit(fb::FBedf::leftFreq, srate, fb::FBedf::windFftLen); }
-	int getRightLim() const { return fftLimit(fb::FBedf::rightFreq, srate, fb::FBedf::windFftLen); }
 
 private:
 	bool isGood{false};

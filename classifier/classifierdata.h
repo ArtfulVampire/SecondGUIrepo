@@ -15,7 +15,7 @@
 class ClassifierData
 {
 public:
-	ClassifierData() { numOfCl = 3; }
+	ClassifierData() {}
 	~ClassifierData() {}
 
 	ClassifierData(const QString & inPath, const QStringList & filters = QStringList());

@@ -198,10 +198,12 @@ void ClassifierData::addItem(const std::valarray<double> & inDatum,
 	this->push_back(newDatum, inType, inFileName);
 }
 
+/// std::optional<uint> inType
 void ClassifierData::push_back(const std::valarray<double> & inDatum,
 							   uint inType,
 							   const QString & inFileName)
 {
+	/// remake using general inType and std::map
 	if(inType >= indices.size()) indices.resize(inType + 1);
 	if(inType >= classCount.size()) smLib::valarResize(classCount, inType + 1);
 

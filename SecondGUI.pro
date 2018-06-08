@@ -19,9 +19,9 @@ LIBS += -fopenmp
 CONFIG += c++14
 #CONFIG += c++1z
 #for c++1z
-INCLUDEPATH += /usr/local/include/c++/7.2.0
-INCLUDEPATH += /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.2.0/include
-QMAKE_CXXFLAGS += -D_GLIBCXX_USE_CXX11_ABI=0
+#INCLUDEPATH += /usr/local/include/c++/7.2.0
+#INCLUDEPATH += /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.2.0/include
+#QMAKE_CXXFLAGS += -D_GLIBCXX_USE_CXX11_ABI=0
 
 
 #QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
@@ -82,6 +82,9 @@ other/autos_galya.cpp \
 other/autos.cpp \
 other/edfFile.cpp \
 other/defs.cpp \
+other/feedback_proc.cpp \
+other/feedback_fbClass.cpp \
+other/feedback_fbedf.cpp \
 widgets/net/net.cpp \
 widgets/net/net_classification.cpp \
 widgets/net/net_setsgets.cpp \
@@ -93,10 +96,7 @@ widgets/cut/cut_smartFind.cpp \
 widgets/cut/cut_modify.cpp \
 widgets/cut/cut_navi.cpp \
 widgets/cut/cut_iitp.cpp \
-widgets/cut/cut_files.cpp \
-    other/feedback_proc.cpp \
-    other/feedback_fbClass.cpp \
-    other/feedback_fbedf.cpp
+widgets/cut/cut_files.cpp
 
 HEADERS += \
 myLib/drw.h \

@@ -373,6 +373,55 @@ double FBedf::insightPartOfSolved(double thres) const
 	return this->getNumInsights(thres) / this->getNum(taskType::verb, ansType::answrd);
 }
 
+int FBedf::individualAlphaPeakIndexWind() const
+{
+	/// take only rest?
+	const int pz = findChannel("Pz");
+	const int lef = fftLimit(leftAlpha, srate, windFftLen);
+	const int rig = fftLimit(rightAlpha, srate, windFftLen);
+
+	/// get only Pz alpha range
+	matrix sub = windSpectra.subCols(pz * getSpLenWind() + lef, pz * getSpLenWind() + rig);
+
+	/// get only rest windows
+	std::vector<uint> rowsToErase{};
+	for(int i = 0; i < windTypes.size(); ++i)
+	{
+		if(windTypes[i] != taskType::rest) { rowsToErase.push_back(i); }
+	}
+	sub.eraseRows(rowsToErase);
+
+	return lef + myLib::indexOfMax(sub.averageRow());
+}
+
+int FBedf::individualAlphaPeakIndexReal() const
+{
+	/// take only rest?
+	const int pz = findChannel("Pz");
+	const int lef = fftLimit(leftAlpha, srate, fftLen);
+	const int rig = fftLimit(rightAlpha, srate, fftLen);
+
+	/// get only rest reals, prepare average spec
+	const std::vector<matrix> & spectraRef = realsSpectra[static_cast<int>(taskType::rest)];
+	std::valarray<double> tmp(rig - lef);
+
+	/// average spectra
+	{
+		int counter = 0;
+		for(const auto & in : spectraRef)
+		{
+			if(!in.isEmpty())
+			{
+				tmp += smLib::contSubsec(in[pz], lef, rig); /// only pz alpha
+				++counter;
+			}
+		}
+		tmp /= counter;
+	}
+
+	return lef + myLib::indexOfMax(tmp);
+}
+
 double FBedf::spectreDispersion(taskType typ)
 {
 	/// remake via subRows, subcols, transpose
@@ -382,7 +431,7 @@ double FBedf::spectreDispersion(taskType typ)
 		for(double freq : this->freqs)
 		{
 			auto row = this->spectralRow(typ, chan, freq);
-			res += smLib::sigma(row);
+			res += smLib::sigma(row) / smLib::mean(row);
 		}
 	}
 	return res;
@@ -600,7 +649,7 @@ matrix FBedf::backgroundCompare(taskType typ, ansType howSolved) const
 	return (avTask - avRest);
 }
 
-Classifier::avType FBedf::classifyReals() const
+Classifier::avType FBedf::classifyReals(bool alphaFlag) const
 {
 	DEFS.setFftLen(FBedf::fftLen);
 	ANN * net = new ANN();
@@ -609,8 +658,21 @@ Classifier::avType FBedf::classifyReals() const
 	matrix clData{};			clData.reserve(160);
 
 
-	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), FBedf::fftLen);
-	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), FBedf::fftLen);
+	int leftLim{};
+	int rightLim{};
+
+	if(alphaFlag)
+	{
+		const int alphaIndex = this->individualAlphaPeakIndexWind();
+		const int twoHzRange = fftLimit(2., srate, fftLen);
+		leftLim = alphaIndex - twoHzRange;
+		rightLim = alphaIndex + twoHzRange;
+	}
+	else
+	{
+		leftLim = fftLimit(leftFreq, srate, fftLen);
+		rightLim = fftLimit(rightFreq, srate, fftLen);
+	}
 
 	for(int i = 0; i < realsSpectra.size(); ++i)
 	{
@@ -638,7 +700,7 @@ Classifier::avType FBedf::classifyReals() const
 	return res;
 }
 
-Classifier::avType FBedf::classifyWinds() const
+Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 {
 	DEFS.setFftLen(windFftLen);
 
@@ -650,7 +712,24 @@ Classifier::avType FBedf::classifyWinds() const
 				   std::begin(windTypesUint),
 				   [](taskType in) { return uint(static_cast<int>(in)); });
 
-	ClassifierData dt = ClassifierData(this->windSpectra, windTypesUint);
+	/// class by alpha ?
+	const int alphaIndex = this->individualAlphaPeakIndexWind();
+	const int twoHzRange = fftLimit(2., srate, windFftLen);
+	std::vector<std::pair<int, int>> alphaRange{};
+	for(int i = 0; i < 19; ++i) /// magic const num of channels
+	{
+		alphaRange.push_back({alphaIndex - twoHzRange, alphaIndex + twoHzRange});
+	}
+
+	ClassifierData dt{};
+	if(alphaFlag)
+	{
+		dt = ClassifierData(windSpectra.subCols(alphaRange), windTypesUint);
+	}
+	else
+	{
+		dt = ClassifierData(this->windSpectra, windTypesUint);
+	}
 	/// arguments of wrong size
 	net->setClassifierData(dt);
 
