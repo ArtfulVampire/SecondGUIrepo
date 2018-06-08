@@ -1930,6 +1930,21 @@ void icaResult::order(std::function<double(int)> func)
 	}
 }
 
+
+std::vector<double> icaResult::getExplVar() const
+{
+	std::vector<double> res{};
+	double sum = 0.;
+	for(int i = 0; i < components.rows(); ++i)
+	{
+		double a = smLib::variance(components[i]) * smLib::normaSq(matrixA.getCol(i));
+		res.push_back(a);
+		sum += a;
+	}
+	std::for_each(std::begin(res), std::end(res), [sum](double & in) { in /= sum; });
+	return res;
+}
+
 void icaResult::orderIcaLen()
 {
 	// norm components - to equal dispersion

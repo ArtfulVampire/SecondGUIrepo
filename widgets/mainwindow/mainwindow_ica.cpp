@@ -35,8 +35,6 @@ void MainWindow::ICA() // fastICA
 	const double vectorWTreshold = std::pow(10., - ui->vectwDoubleSpinBox->value());
 	const QString pathForAuxFiles = DEFS.dirPath() + "/Help/ica";
 
-#define NEW_9_3_17 1
-
 	matrix centeredData = globalEdf.getData();
 
 	/// remember all the rest channels (eog, veget, mark, etc)
@@ -44,6 +42,8 @@ void MainWindow::ICA() // fastICA
 							  smLib::range<std::vector<uint>>(ns,
 															  centeredData.rows()));
 	centeredData.resizeRows(ns);
+
+	/// here myLib::ica() can start
 	centeredData.centerRows(ns);
 
 
@@ -116,83 +116,25 @@ void MainWindow::ICA() // fastICA
 					 * !rotation;
 
 
-	/// move to a function
+/// here myLib::ica() can finish
 
-    // norm components to 1-length of mapvector, order by dispersion
-    for(uint i = 0; i < ns; ++i) // for each component
-    {
-		double nrm = smLib::norma(matrixA.getCol(i));
-
-		for(auto & row : matrixA)
-		{
-			row[i] /= nrm;
-		}
-		components[i] *= nrm;
-    }
-
-
-    // ordering components by dispersion
-    std::vector<std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
-    double sumSquares = 0.; // sum of all dispersions
-    std::vector<double> explainedVariance;
-
-    for(uint i = 0; i < ns; ++i)
-    {
-		double var = smLib::variance(components[i]);
-		sumSquares += var;
-		colsNorms.push_back(std::make_pair(var, i));
-    }
-
-	std::sort(std::begin(colsNorms),
-			  std::end(colsNorms),
-              [](std::pair <double, int> i, std::pair <double, int> j)
-    {
-        return i.first > j.first;
-    });
-
-    for(uint i = 0; i < ns - 1; ++i) // dont move the last
-    {
-		// swap matrixA cols
-		matrixA.swapCols(i, colsNorms[i].second);
-
-		// swap components
-		components.swapRows(i, colsNorms[i].second);
-
-        // swap i and colsNorms[i].second values in colsNorms
-		auto it1 = std::find_if(std::begin(colsNorms),
-								std::end(colsNorms),
-                                [i](std::pair <double, int> in)
-		{ return in.second == i; });
-		auto it2 = std::find_if(std::begin(colsNorms),
-								std::end(colsNorms),
-                                [colsNorms, i](std::pair <double, int> in)
-		{ return in.second == colsNorms[i].second; });
-
-		std::swap((*it1).second, (*it2).second);
-    }
-
-
-
-
-
-
-    for(uint i = 0; i < ns; ++i)
-    {
-        explainedVariance.push_back(colsNorms[i].first / sumSquares * 100.);
-		std::cout << "comp = " << i+1 << "\t";
-		std::cout << "explVar = " << smLib::doubleRound(explainedVariance[i], 2) << std::endl;
-    }
+	myLib::icaResult icaRes;
+	icaRes.components = components;
+	icaRes.matrixA = matrixA;
 
 #if 01
 	{
+		auto explainedVariance = icaRes.getExplVar();
+		for(uint i = 0; i < explainedVariance.size(); ++i)
+		{
+			std::cout << "comp = " << i+1 << "\t";
+			std::cout << "explVar = " << smLib::doubleRound(explainedVariance[i], 2) << std::endl;
+		}
 		QString helpString = (pathForAuxFiles
 							  + "/" + globalEdf.getExpName() + "_explainedVariance.txt");
 		myLib::writeFileInLine(helpString, explainedVariance);
 	}
 #endif
-
-
-
 
 
 
@@ -221,11 +163,8 @@ void MainWindow::ICA() // fastICA
 
 
 
-
-
-
-
 	// now should draw amplitude maps OR write to file
+	/// fix here via icaResult
 #if 01
 	{
 		/// write maps to file

@@ -283,6 +283,7 @@ struct icaResult
 	void orderIcaDisp(); /// by dispersion
 	void orderIcaLen();
 	void order(std::function<double(int)> func);
+	std::vector<double> getExplVar() const;
 };
 
 icaResult ica(const matrix & initialData,
@@ -297,7 +298,7 @@ std::pair<matrix, std::valarray<double>> svd(const matrix & initialData,
 											 int eigenVecNum = -1);
 
 
-
+/// chnage to std::vector<matrix> inputData and matrix output
 void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
 						  const std::vector<int> eegChannels = coords::leest19,
 						  const QString & windsDir = DEFS.dirPath()
