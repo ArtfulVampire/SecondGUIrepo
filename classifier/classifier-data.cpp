@@ -3,6 +3,7 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/general.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/ica.h>
 
 using namespace myOut;
 

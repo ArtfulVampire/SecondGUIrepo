@@ -26,6 +26,13 @@ std::valarray<double> makeSine(int numPoints = 4096,
 std::valarray<double> makeNoise(int numPoints = 4096);
 
 
+/// chnage to std::vector<matrix> inputData and matrix output
+void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
+						  const std::vector<int> eegChannels = coords::leest19,
+						  const QString & windsDir = DEFS.dirPath()
+													   + "/winds",
+						  const QString & outFilePath = DEFS.dirPath()
+														+ "/eyes.txt");
 
 
 enum class windowName {Hann, Hamming, Blackman, rect, triang, Parzen, Welch,
@@ -237,6 +244,7 @@ double splineOutput(const std::valarray<double> & inX,
 					double probeX);
 
 
+
 //double fractalDimensionBySpectre(const std::valarray<double> &arr,
 //						const QString & picPath = QString());
 
@@ -246,66 +254,6 @@ double splineOutput(const std::valarray<double> & inX,
 //							  double lowFreq = DEFS.getLeftFreq(),
 //							  double highFreq = DEFS.getRightFreq(),
 //							  QString picPath  = QString());
-
-
-/// ICA
-void product1(const matrix & arr,
-			  const int length,
-			  const int ns,
-			  const std::valarray<double> & vect,
-			  std::valarray<double> & outVector);
-
-void product2(const matrix & arr,
-			  const int length,
-			  const int ns,
-			  const std::valarray<double> & vect,
-			  std::valarray<double> & outVector);
-
-void product3(const matrix & inMat,
-			  const int ns,
-			  const int currNum,
-			  std::valarray<double> & outVector);
-
-void randomizeValar(std::valarray<double> & valar);
-
-/// out matrixW: matrixW * dataICA = components ????
-matrix countVectorW(const matrix & dataICA,
-					const int ns,
-					const int dataLen,
-					const double vectorWTreshold);
-
-struct icaResult
-{
-	/// initialData = A * components
-	matrix components;
-	matrix matrixA;
-	/// the difference in the initial norming and colsNorms filling
-	void orderIcaDisp(); /// by dispersion
-	void orderIcaLen();
-	void order(std::function<double(int)> func);
-	std::vector<double> getExplVar() const;
-};
-
-icaResult ica(const matrix & initialData,
-			  double eigenValuesTreshold,
-			  double vectorWTreshold);
-
-
-
-std::pair<matrix, std::valarray<double>> svd(const matrix & initialData,
-											 const int dimension,
-											 double threshold = 1e-9,
-											 int eigenVecNum = -1);
-
-
-/// chnage to std::vector<matrix> inputData and matrix output
-void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
-						  const std::vector<int> eegChannels = coords::leest19,
-						  const QString & windsDir = DEFS.dirPath()
-													   + "/winds",
-						  const QString & outFilePath = DEFS.dirPath()
-														+ "/eyes.txt");
-
 
 } // namespace myLib
 

@@ -89,7 +89,7 @@ public:
 	FBedf(const FBedf & other)=default;			/// used in Net::innerClassHistogram
 	FBedf & operator=(FBedf && other)=default;	/// used in FeedbackClass constructor
 	FBedf & operator=(const FBedf & other)=default;
-	operator bool() const { return isGood; }
+	operator bool() const	{ return isGood; }
 
 	void remakeWindows(double overlapPart = 0.0, int numSkipStartWinds = 0);
 
@@ -168,7 +168,7 @@ public:
 	void writePartOfCleaned();
 	void writeLearnedPatterns();
 
-	operator bool() { return isGood; }
+	operator bool() const	{ return isGood; }
 
 private:
 	void checkStatTimes(taskType in, ansType howSolved);

@@ -96,7 +96,8 @@ widgets/cut/cut_smartFind.cpp \
 widgets/cut/cut_modify.cpp \
 widgets/cut/cut_navi.cpp \
 widgets/cut/cut_iitp.cpp \
-widgets/cut/cut_files.cpp
+widgets/cut/cut_files.cpp \
+    myLib/myLib_ica.cpp
 
 HEADERS += \
 myLib/drw.h \
@@ -130,7 +131,8 @@ other/edffile.h \
 other/subjects.h \
 other/feedback.h \
 other/defs.h \
-other/consts.h
+other/consts.h \
+    myLib/ica.h
 
 FORMS +=\
 mainwindow.ui \

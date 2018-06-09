@@ -4,6 +4,7 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
 #include <myLib/dataHandlers.h>
+#include <myLib/ica.h>
 
 using namespace myOut;
 
@@ -42,6 +43,7 @@ void MainWindow::ICA() // fastICA
 							  smLib::range<std::vector<uint>>(ns,
 															  centeredData.rows()));
 	centeredData.resizeRows(ns);
+
 
 	/// here myLib::ica() can start
 	centeredData.centerRows(ns);
@@ -118,11 +120,13 @@ void MainWindow::ICA() // fastICA
 
 /// here myLib::ica() can finish
 
-	myLib::icaResult icaRes;
-	icaRes.components = components;
-	icaRes.matrixA = matrixA;
+	myLib::icaResult icaRes(components, matrixA);
+
+
+
 
 #if 01
+	/// cout explainedVariance
 	{
 		auto explainedVariance = icaRes.getExplVar();
 		for(uint i = 0; i < explainedVariance.size(); ++i)
