@@ -67,7 +67,7 @@ void KNN::classifyDatum1(uint vecNum)
 		outputLayer[toSort[i].second] += 1;
 #else
 		/// weighted
-		outputLayer[toSort[i].second] += exp(-pow(toSort[i].first, 2) / (2 * sgm * sgm));
+		outputLayer[toSort[i].second] += std::exp(-std::pow(toSort[i].first, 2) / (2 * sgm * sgm));
 #endif
 	}
 }
