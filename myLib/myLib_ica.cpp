@@ -1,5 +1,8 @@
 #include <myLib/ica.h>
 #include <myLib/output.h>
+#include <myLib/draws.h>
+#include <myLib/dataHandlers.h>
+
 #include <QTime>
 
 #include <iostream>
@@ -247,7 +250,7 @@ eigenValuesSVD(const matrix & initialData,
 }
 
 
-///icaResult
+/// icaResult class
 void icaResult::order(std::function<double(int)> func)
 {
 	std::vector<std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
@@ -278,18 +281,16 @@ void icaResult::order(std::function<double(int)> func)
 }
 
 
-std::vector<double> icaResult::getExplVar() const
+void icaResult::calculateExplVar()
 {
-	std::vector<double> res{};
 	double sum = 0.;
 	for(int i = 0; i < components.rows(); ++i)
 	{
 		double a = smLib::variance(components[i]) * smLib::normaSq(matrixA.getCol(i));
-		res.push_back(a);
+		explVar.push_back(a);
 		sum += a;
 	}
-	std::for_each(std::begin(res), std::end(res), [sum](double & in) { in /= sum; });
-	return res;
+	std::for_each(std::begin(explVar), std::end(explVar), [sum](double & in) { in /= sum; });
 }
 
 void icaResult::orderIcaLen()
@@ -335,19 +336,29 @@ void icaResult::orderIcaDisp()
 
 
 /// ICAclass
-icaResult ICAclass::ica()
+void ICAclass::calculateICA()
 {
 	matrix centeredData(inputData);
 	centeredData.centerRows();
 
-	/// auto [eigenVectors, eigenValues] =
-	matrix eigenVectors;
-	std::valarray<double> eigenValues;
-	auto a = myLib::eigenValuesSVD(centeredData,
-						numIC,
-						eigValThreshold);
-	eigenVectors = a.first;
-	eigenValues = a.second;
+	if(!QFile::exists(eigMatPath) ||
+	   !QFile::exists(eigValPath)
+	   || 1 /// always recalculate
+	   )
+	{
+		/// auto [eigenVectors, eigenValues] =
+		auto a = myLib::eigenValuesSVD(centeredData,
+									   numIC,
+									   eigValThreshold);
+
+		eigenVectors = a.first;
+		eigenValues = a.second;
+	}
+	else
+	{
+		eigenVectors = myLib::readMatrixFile(eigMatPath);
+		eigenValues = myLib::readFileInLine(eigValPath);
+	}
 
 	/// write whitenedData to components
 	/// whitenedData = Eig * D^-0.5 * Eig^t * centeredData
@@ -372,9 +383,72 @@ icaResult ICAclass::ica()
 					 * !eigenVectors
 					 * !rotation;
 
-	icaResult res(components, matrixA);
-	res.orderIcaDisp();
-	return res;
+	this->result = icaResult(components, matrixA);
+	this->result.orderIcaDisp();
+}
+
+void ICAclass::printExplainedVariance() const
+{
+	if(!result || explVarPath.isEmpty()) { return; }
+	myLib::writeFileInLine(explVarPath, this->getExplVar());
+}
+
+void ICAclass::printEigenVectors() const
+{
+	if(eigenVectors.isEmpty() || eigMatPath.isEmpty()) { return; }
+	myLib::writeMatrixFile(eigMatPath, eigenVectors);
+}
+
+void ICAclass::printEigenValues() const
+{
+	if(eigenValues.size() == 0 || eigValPath.isEmpty()) { return; }
+	myLib::writeFileInLine(eigValPath, eigenValues);
+}
+
+void ICAclass::printMapsFile() const
+{
+	if(!result || mapsFilePath.isEmpty()) { return; }
+	myLib::writeMatrixFile(mapsFilePath, this->getMatrixA());
+}
+
+void ICAclass::drawMaps() const
+{
+	matrix matrixA  = this->getMatrixA();
+
+	for(int i = 0; i < matrixA.cols(); ++i)
+	{
+		myLib::drawMapSpline(matrixA,
+							 i,
+							 drawMapsPath,
+							 locExpName,
+							 matrixA.maxAbsVal(),
+							 240,					/// magic const - picture size
+							 myLib::ColorScale::jet);
+	}
+}
+
+int ICAclass::getNumOfErrors(std::ostream & os) const
+{
+	int counter = 0;
+	matrix centeredData(inputData); centeredData.centerRows();
+	matrix diff = result.getMatrixA() * result.getComponents() - centeredData;
+	for(int i = 0; i < diff.rows(); ++i)
+	{
+		for(int j = 0; j < diff.cols(); ++j)
+		{
+			/// magic consts
+			double error = std::abs(diff[i][j]) / centeredData[i][j];
+			if( error > 0.05 && centeredData[i][j] > 0.5)
+			{
+				++counter;
+				os << i << "\t" << j << "\t";
+				os << "err = " << smLib::doubleRound(error, 3) << "\t";
+				os << "initVal = " << smLib::doubleRound(centeredData[i][j], 3) << std::endl;
+			}
+		}
+	}
+	os << "num of errors = " << counter << std::endl;
+	return counter;
 }
 
 } // end namespace myLib

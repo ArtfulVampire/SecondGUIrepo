@@ -10,197 +10,75 @@ using namespace myOut;
 
 void MainWindow::ICA() // fastICA
 {
-	// we have data[ns][ndr*nr], ns, ndr, nr
-	// at first - whiten signals using eigen linear superposition to get E as covMatrix
-	// then count matrixW
-
-	// data = A * comps, comps = W * data
-
-	// count components = matrixW*data and write to FileName_ICA.edf
-	// count inverse matrixA = matrixW^-1 and draw maps of components
-	// write automatization for classification different sets of components, find best set, explain
+	const uint numOfICs = ui->numOfIcSpinBox->value(); /// usually 19
+	const double eigenValuesTreshold = std::pow(10., - ui->svdDoubleSpinBox->value());
+	const double vectorWTreshold = std::pow(10., - ui->vectwDoubleSpinBox->value());
+	const QString pathForAuxFiles = DEFS.dirPath() + "/Help/ica";
+	const int numDataChannels = 19;
+	const QString eigMatPath = pathForAuxFiles
+							   + "/" + globalEdf.getExpName()
+							   + "_eigenMatrix.txt";
+	const QString eigValPath = pathForAuxFiles
+							   + "/" + globalEdf.getExpName()
+							   + "_eigenValues.txt";
+	const QString explVarPath = pathForAuxFiles
+								+ "/" + globalEdf.getExpName()
+								+ "_explainedVariance.txt";
+	const QString mapsFilePath = pathForAuxFiles
+								 + "/" + globalEdf.getExpName()
+								 + "maps.txt";
 
     QTime wholeTime;
     wholeTime.start();
 
     QTime myTime;
     myTime.start();
-	std::cout << "Ica started: " << std::endl;
-
-    readData();
-
-	const uint numOfICs = ui->numOfIcSpinBox->value(); /// usually 19
-	const double eigenValuesTreshold = std::pow(10., - ui->svdDoubleSpinBox->value());
-	const double vectorWTreshold = std::pow(10., - ui->vectwDoubleSpinBox->value());
-
-	const QString pathForAuxFiles = DEFS.dirPath() + "/Help/ica";
 
 	matrix centeredData = globalEdf.getData();
 
 	/// remember all the rest channels (eog, veget, mark, etc)
 	matrix resMatBackup = centeredData.subRows(
-							  smLib::range<std::vector<uint>>(numOfICs,
+							  smLib::range<std::vector<uint>>(numDataChannels,
 															  centeredData.rows()));
-	centeredData.resizeRows(numOfICs);
+	centeredData.resizeRows(numDataChannels);
 
 
-	/// here myLib::ica() can start
-	centeredData.centerRows(numOfICs);
+	myLib::ICAclass icaClassInstance(std::move(centeredData));
+	/// set params
+	icaClassInstance.setNumIC(numOfICs);
+	icaClassInstance.setVectWThreshold(vectorWTreshold);
+	icaClassInstance.setEigValThreshold(eigenValuesTreshold);
+	/// set output paths
+	icaClassInstance.setEigMatPath(eigMatPath);
+	icaClassInstance.setEigValPath(eigValPath);
+	icaClassInstance.setExplVarPath(explVarPath);
+	icaClassInstance.setMapsFilePath(mapsFilePath);
+	icaClassInstance.setDrawMapsPath(pathForAuxFiles + "/maps");
+	/// calculate result
+	icaClassInstance.calculateICA();
+	/// write something to files
+	icaClassInstance.printExplainedVariance();
+	icaClassInstance.printMapsFile();
+	icaClassInstance.drawMaps();
+	std::cout << "number of bad evaluated figures = "
+			  << icaClassInstance.getNumOfErrors(DEVNULL)
+			  << std::endl;
 
 
-    const QString eigMatPath = pathForAuxFiles
-							   + "/" + globalEdf.getExpName()
-							   + "_eigenMatrix.txt";
-    const QString eigValPath = pathForAuxFiles
-							   + "/" + globalEdf.getExpName()
-							   + "_eigenValues.txt";
-
-	/// count eigenvalue decomposition
-	matrix eigenVectors;
-	std::valarray<double> eigenValues;
-
-    /// careful !
-    if(!QFile::exists(eigMatPath) &&
-       !QFile::exists(eigValPath))
-    {
-		/// complicated calculations
-		/// auto [eigenVectors, eigenValues] =
-		auto a = myLib::eigenValuesSVD(centeredData,
-							numOfICs,
-							eigenValuesTreshold);
-		eigenVectors = a.first;
-		eigenValues = a.second;
-
-        // write eigenVectors
-		myLib::writeMatrixFile(eigMatPath, eigenVectors);
-
-        // write eigenValues
-		myLib::writeFileInLine(eigValPath, eigenValues);
-    }
-    else /// read
-    {
-		// read eigenVectors
-		eigenVectors = myLib::readMatrixFile(eigMatPath);
-
-		// read eigenValues
-		eigenValues = myLib::readFileInLine(eigValPath);
-    }
-
-	std::cout << "ICA: svd read = " << myTime.elapsed() / 1000. << " sec" << std::endl;
-	/// end of eigenValue decomposition
-
-
-
-
-
-	myTime.restart();
-	/// write whiteningData to components
-	/// whitenedData = Eig * D^-0.5 * Eig^t * centeredData
-	matrix components = eigenVectors
-						  * matrix(std::pow(eigenValues, -0.5))
-						  * !eigenVectors
-						  * centeredData;
-
-	matrix rotation = myLib::calculateMatrixW(components,
-											  numOfICs,
-											  vectorWTreshold);
-
-	std::cout << "ICA: rotation ready = " << myTime.elapsed() / 1000. << " sec" << std::endl;
-	/// end of additional rotation calculation
-
-
-	myTime.restart();
-	/// components = rotation * whitenedData
-	/// components = W * centeredData
-	/// W = rotation * Eig * D^-0.5 * Eig^t
-	components = rotation * components;
-
-	/// A * components = centeredData
-	/// A = inverted( W )
-	/// A = Eig * D^0.5 * Eig^t * rotation^t
-	matrix matrixA = eigenVectors
-					 * matrix(std::pow(eigenValues, +0.5))
-					 * !eigenVectors
-					 * !rotation;
-
-
-/// here myLib::ica() can finish
-
-	myLib::icaResult icaRes(components, matrixA);
-
-
-#if 01
-	/// cout explainedVariance
-	{
-		auto explainedVariance = icaRes.getExplVar();
-		for(uint i = 0; i < explainedVariance.size(); ++i)
-		{
-			std::cout << "comp = " << i+1 << "\t";
-			std::cout << "explVar = " << smLib::doubleRound(explainedVariance[i], 2) << std::endl;
-		}
-		QString helpString = pathForAuxFiles
-							 + "/" + globalEdf.getExpName() + "_explainedVariance.txt";
-		myLib::writeFileInLine(helpString, explainedVariance);
-	}
-#endif
-
-
-
-#if 1
-	/// test centeredMatrix == A * components;
-	int counter = 0;
-	matrix diff = matrixA * components - centeredData;
-	for(int i = 0; i < diff.rows(); ++i)
-	{
-		for(int j = 0; j < diff.cols(); ++j)
-		{
-			if( std::abs(diff[i][j]) / centeredData[i][j] > 0.05 && centeredData[i][j] > 0.5)
-			{
-				++counter;
-#if 0
-				std::cout << "after norm" << "\t";
-				std::cout << i << "\t" << j << "\t";
-				std::cout << "err = " << doubleRound(sum1, 3) << "\t";
-				std::cout << "init value = " << doubleRound(centeredMatrix[i][j], 4) << std::endl;
-#endif
-			}
-		}
-	}
-	std::cout << "num of errors = " << counter << std::endl;
-#endif
-
-
-
-	/// fix here via icaResult
-	/// write maps (matrixA) to file and draw
-#if 01
-	{
-		/// write maps to file
-		QString helpString = pathForAuxFiles
-							 + "/" + globalEdf.getExpName() + "_maps.txt";
-		myLib::writeMatrixFile(helpString, matrixA);
-		/// draw maps
-		myLib::drawMapsICA(helpString,
-						   DEFS.dirPath() + "/Help/ica",
-						   globalEdf.getExpName());
-	}
-#endif
+	matrix components = icaClassInstance.getComponents();
+//	components.vertCat(resMatBackup); /// comment to drop all non-EEG channels
+	components.push_back(globalEdf.getMarkArr());
 
 	/// save ICA file as a new edf
 	std::vector<int> chanList(numOfICs);
 	std::iota(std::begin(chanList), std::end(chanList), 0);
     chanList.push_back(globalEdf.getMarkChan());
 
-//	components.vertCat(resMatBackup); /// comment to drop all non-EEG channels
-	components.push_back(globalEdf.getMarkArr());
+	/// write new edf
+	QString helpString = DEFS.dirPath()
+						 + "/" + globalEdf.getExpName() + "_ica.edf";
+	globalEdf.writeOtherData(components, helpString, chanList);
 
-#if 01
-	{
-		/// write new edf
-		QString helpString = DEFS.dirPath()
-							 + "/" + globalEdf.getExpName() + "_ica.edf";
-		globalEdf.writeOtherData(components, helpString, chanList);
-	}
-#endif
+
 	std::cout << "ICA ended. time = " << wholeTime.elapsed() / 1000. << " sec" << std::endl;
 }
