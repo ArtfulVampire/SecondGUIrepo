@@ -13,7 +13,6 @@ namespace myLib
 class icaResult;
 
 std::valarray<double> deorthogonal(const matrix & inMat,
-								   int numOfICs,
 								   int currNum);
 
 /// matrixW * dataICA = components ????
@@ -22,15 +21,9 @@ matrix calculateMatrixW(const matrix & dataICA,
 						const double vectorWTreshold);
 
 
-icaResult ica(const matrix & initialData,
-			  double eigenValuesTreshold,
-			  double vectorWTreshold);
-
-
-
 std::pair<matrix, std::valarray<double>> eigenValuesSVD(const matrix & initialData,
-														double threshold = 1e-9,
-														int eigenVecNum = -1);
+														int eigenVecNum = -1,
+														double threshold = 1e-9);
 
 
 
@@ -87,11 +80,17 @@ private:
 	double vectWThreshold{std::pow(10., -12)};
 
 public:
-	ICAclass(const matrix & inData): inputData(inData), numIC(inData.rows()) {}
-	ICAclass(matrix && inData): inputData(inData), numIC(inData.rows()) {}
+	ICAclass() {}
+	ICAclass(const matrix & inData)
+	{
+		 inputData = inData;
+		 numIC = inData.rows();
+	}
+//	ICAclass(matrix && inData): inputData(inData), numIC(inData.rows()) {}
 
 	/// main function
 	void calculateICA();
+	void calculateSVD();
 
 	/// output to files
 	void printExplainedVariance() const;
@@ -106,7 +105,7 @@ public:
 	const matrix & getComponents() const			{ return result.getComponents(); }
 	const matrix & getMatrixA() const				{ return result.getMatrixA(); }
 	const std::vector<double> & getExplVar() const	{ return result.getExplVar(); }
-
+	const matrix & getData() const					{ return inputData; }
 
 	/// sets
 	void setExpName(const QString & in)				{ locExpName = in; }

@@ -14,14 +14,14 @@ namespace myLib
 
 /// functions
 std::valarray<double> deorthogonal(const matrix & inMat,
-								   int numOfICs,
 								   int currNum)
 {
 	/// calculate the sum of projections of currNum vector to previous ones
-	std::valarray<double> outVector(numOfICs);
+	std::valarray<double> outVector(inMat.cols());
+
 	for(int j = 0; j < currNum; ++j)
 	{
-		outVector += inMat[j] * smLib::prod(inMat[currNum], inMat[j]);
+		outVector += inMat[j] * smLib::prod(inMat[j], inMat[currNum]);
 	}
 	return outVector;
 }
@@ -35,111 +35,59 @@ matrix calculateMatrixW(const matrix & dataICA,
 {
 	QTime myTime;
 	myTime.restart();
+	const matrix dataICAtransposed = matrix::transposed(dataICA);
 
-	matrix res{}; /// matrix of row-vectors wt
+	matrix res(numOfICs, dataICA.rows(), 0.); /// matrix of row-vectors wt
 
 	for(int numVec = 0; numVec < numOfICs; ++numVec) // number of current vectorW
 	{
 		myTime.restart();
+
+		std::valarray<double> & wt = res[numVec];
+		wt = smLib::randomValar(wt.size());
+
+		double squareError = 1.;
 		int counter = 0;
-		std::valarray<double> wt(dataICA.rows());
-		wt = smLib::randomValar(wt.size());			/// randomize + normalize wt
-
-		double squareError{};
-		while(1)
+		while((((squareError > vectorWTreshold) && (2. - squareError > vectorWTreshold))
+			  && counter < 100 ) || counter < 3)
 		{
-			std::valarray<double> vecOld = wt; // save previous vect
-			std::valarray<double> vector1 (numOfICs);
-			vector1 = 0.;
+			const std::valarray<double> vecOld = wt;
 
+			std::valarray<double> tmpVec(0., dataICA.rows());
 			double sum1 = 0.;
 			for(int numCol = 0; numCol < dataICA.cols(); ++numCol)
 			{
-				const std::valarray<double> x = dataICA.getCol(numCol);
+				const std::valarray<double> & x = dataICAtransposed[numCol];
 
 				/// first term
-				const double temp = std::tanh( smLib::prod(wt, x) );
-				vector1 += x * temp;
+				const double temp = std::tanh( smLib::prod(vecOld, x) );
+				tmpVec += x * temp;
 
 				/// for second term (vector 2)
 				sum1 += (1. - temp * temp);
 			}
-			vector1 /= dataICA.cols();
-			sum1 /= dataICA.cols();
-
-			wt = smLib::normalized(vector1 - sum1 * wt);
-
+			wt = (tmpVec - sum1 * vecOld) / dataICA.cols();
 			/// orthogonalization
-			wt -= myLib::deorthogonal(res, numOfICs, numVec);
+			auto deort = deorthogonal(res, numVec);
+			wt -= deort;
 			smLib::normalize(wt);
 
 			/// calculate convergence
 			squareError = smLib::norma(std::valarray<double>(vecOld - wt));
 			++counter;
-			if(squareError < vectorWTreshold || 2. - squareError < vectorWTreshold) break;
-			if(counter == 100) break;
 		}
 		std::cout << "vectW num = " << numVec << "\t";
 		std::cout << "iters = " << counter << "\t";
-		std::cout << "error = " << std::fdim(squareError, std::round(squareError)) << "\t";
+		std::cout << "error = " << std::abs(squareError - std::round(squareError)) << "\t";
 		std::cout << "time = " << smLib::doubleRound(myTime.elapsed() / 1000., 1) << " sec" << std::endl;
-		res.push_back(wt);
 	}
 	return res;
 }
 
-icaResult ica(const matrix & initialData,
-			  double eigenValuesTreshold,
-			  double vectorWTreshold)
-{
-	const int numOfIcs = initialData.rows();		/// max of possible ICs
-
-	matrix centeredMatrix(initialData);
-	centeredMatrix.centerRows();
-
-	/// auto [eigenVectors, eigenValues] =
-	matrix eigenVectors;
-	std::valarray<double> eigenValues;
-	auto a = myLib::eigenValuesSVD(centeredMatrix,
-						numOfIcs,
-						eigenValuesTreshold);
-	eigenVectors = a.first;
-	eigenValues = a.second;
-
-	/// write whitenedData to components
-	/// whitenedData = Eig * D^-0.5 * Eig^t * centeredData
-	matrix components = eigenVectors
-						* matrix(std::pow(eigenValues, -0.5))
-						* !eigenVectors
-						* centeredMatrix;
-
-	matrix rotation = myLib::calculateMatrixW(components,
-											  numOfIcs,
-											  vectorWTreshold);
-	/// components = rotation * whitenedData
-	/// components = W * centeredData
-	/// W = rotation * Eig * D^-0.5 * Eig^t
-	components = rotation * components;
-
-	/// A * components = centeredData
-	/// A = inverted( W )
-	/// A = Eig * D^0.5 * Eig^t * rotation^t
-	matrix matrixA = eigenVectors
-					 * matrix(std::pow(eigenValues, +0.5))
-					 * !eigenVectors
-					 * !rotation;
-
-	icaResult res(components, matrixA);
-	res.orderIcaDisp();
-	return res;
-}
-
-
-
 std::pair<matrix, std::valarray<double>>
 eigenValuesSVD(const matrix & initialData,
-	double threshold,
-	int eigenVecNum) /// num of eigenVectors to count - add variance
+			   int eigenVecNum,
+			   double threshold)
 {
 	/// wiki(rus) - Principal Component Analysis -> simple iterative algorithm
 	/// https://ru.wikipedia.org/wiki/%D0%9C%D0%B5%D1%82%D0%BE%D0%B4_%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D1%8B%D1%85_%D0%BA%D0%BE%D0%BC%D0%BF%D0%BE%D0%BD%D0%B5%D0%BD%D1%82#%D0%9F%D1%80%D0%BE%D1%81%D1%82%D0%BE%D0%B9_%D0%B8%D1%82%D0%B5%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D0%B9_%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_%D1%81%D0%B8%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%80%D0%BD%D0%BE%D0%B3%D0%BE_%D1%80%D0%B0%D0%B7%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F
@@ -278,11 +226,14 @@ void icaResult::order(std::function<double(int)> func)
 		auto it2 = std::begin(colsNorms) + i;
 		std::swap((*it1).second, (*it2).second);
 	}
+	/// recalculate after unmixing
+	calculateExplVar();
 }
 
 
 void icaResult::calculateExplVar()
 {
+	explVar.clear();
 	double sum = 0.;
 	for(int i = 0; i < components.rows(); ++i)
 	{
@@ -364,7 +315,7 @@ void ICAclass::calculateICA()
 	/// whitenedData = Eig * D^-0.5 * Eig^t * centeredData
 	matrix components = eigenVectors
 						* matrix(std::pow(eigenValues, -0.5))
-						* !eigenVectors
+						* matrix::transposed(eigenVectors)
 						* centeredData;
 
 	matrix rotation = myLib::calculateMatrixW(components,
@@ -380,11 +331,22 @@ void ICAclass::calculateICA()
 	/// A = Eig * D^0.5 * Eig^t * rotation^t
 	matrix matrixA = eigenVectors
 					 * matrix(std::pow(eigenValues, +0.5))
-					 * !eigenVectors
-					 * !rotation;
+					 * matrix::transposed(eigenVectors)
+					 * matrix::transposed(rotation);
 
 	this->result = icaResult(components, matrixA);
 	this->result.orderIcaDisp();
+}
+
+void ICAclass::calculateSVD()
+{
+
+	auto a = myLib::eigenValuesSVD(inputData,
+								   numIC,
+								   eigValThreshold);
+
+	eigenVectors = a.first;
+	eigenValues = a.second;
 }
 
 void ICAclass::printExplainedVariance() const

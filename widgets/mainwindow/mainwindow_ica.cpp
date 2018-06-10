@@ -43,7 +43,7 @@ void MainWindow::ICA() // fastICA
 	centeredData.resizeRows(numDataChannels);
 
 
-	myLib::ICAclass icaClassInstance(std::move(centeredData));
+	myLib::ICAclass icaClassInstance(centeredData);
 	/// set params
 	icaClassInstance.setNumIC(numOfICs);
 	icaClassInstance.setVectWThreshold(vectorWTreshold);
@@ -54,6 +54,7 @@ void MainWindow::ICA() // fastICA
 	icaClassInstance.setExplVarPath(explVarPath);
 	icaClassInstance.setMapsFilePath(mapsFilePath);
 	icaClassInstance.setDrawMapsPath(pathForAuxFiles + "/maps");
+	icaClassInstance.setExpName(globalEdf.getExpNameShort());
 	/// calculate result
 	icaClassInstance.calculateICA();
 	/// write something to files

@@ -131,7 +131,8 @@ public:
 	matrix operator -= (const matrix & other);
 	matrix operator -= (double val);
 
-	matrix operator *= (const matrix & other);
+	matrix operator *(const matrix & other) const;
+	void operator *= (const matrix & other);
 	matrix operator *= (double val);
 
 	matrix operator /= (double other);
@@ -196,7 +197,7 @@ std::ostream & operator<< (std::ostream & os, const matrix & toOut);
 matrix operator + (const matrix & lhs, const matrix & rhs);
 matrix operator + (const matrix & lhs, double val);
 matrix operator / (const matrix & lhs, double val);
-matrix operator * (const matrix & lhs, const matrix & rhs);
+//matrix operator * (const matrix & lhs, const matrix & rhs);
 matrix operator * (const matrix & lhs, double val);
 std::valarray<double> operator * (const matrix & lhs, const std::valarray<double> & rhs);
 std::valarray<double> operator * (const std::valarray<double> & lhs, const matrix & rhs);
