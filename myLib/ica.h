@@ -10,31 +10,28 @@
 namespace myLib
 {
 
+class icaResult;
 
-void product1(const matrix & arr,
-			  const int length,
-			  const int ns,
-			  const std::valarray<double> & vect,
-			  std::valarray<double> & outVector);
+std::valarray<double> deorthogonal(const matrix & inMat,
+								   int numOfICs,
+								   int currNum);
 
-void product2(const matrix & arr,
-			  const int length,
-			  const int ns,
-			  const std::valarray<double> & vect,
-			  std::valarray<double> & outVector);
+/// matrixW * dataICA = components ????
+matrix calculateMatrixW(const matrix & dataICA,
+						const int numOfICs,
+						const double vectorWTreshold);
 
-void product3(const matrix & inMat,
-			  const int ns,
-			  const int currNum,
-			  std::valarray<double> & outVector);
 
-void randomizeValar(std::valarray<double> & valar);
+icaResult ica(const matrix & initialData,
+			  double eigenValuesTreshold,
+			  double vectorWTreshold);
 
-/// out matrixW: matrixW * dataICA = components ????
-matrix countVectorW(const matrix & dataICA,
-					const int ns,
-					const int dataLen,
-					const double vectorWTreshold);
+
+
+std::pair<matrix, std::valarray<double>> eigenValuesSVD(const matrix & initialData,
+											 double threshold = 1e-9,
+											 int eigenVecNum = -1);
+
 
 
 class icaResult
@@ -94,17 +91,6 @@ public:
 };
 
 
-
-icaResult ica(const matrix & initialData,
-			  double eigenValuesTreshold,
-			  double vectorWTreshold);
-
-
-
-std::pair<matrix, std::valarray<double>> svd(const matrix & initialData,
-											 const int dimension,
-											 double threshold = 1e-9,
-											 int eigenVecNum = -1);
 
 
 

@@ -695,6 +695,8 @@ matrix matrix::subRows(int newRows) const /// submatrix
 
 matrix & matrix::centerRows(int numRows)
 {
+	if(numRows == 0) { numRows = this->rows(); }
+
 	/// count zero columns
 	int zeroCols = 0;
 	for(int i = 0; i < this->cols(); ++i)
@@ -713,6 +715,26 @@ matrix & matrix::centerRows(int numRows)
 		{
 			if(in != 0.) { in -= meanVal; }
 		});
+	}
+	return *this;
+}
+
+
+matrix matrix::covMatRows() const
+{
+	matrix cop(*this);
+	cop.centerRows();
+	return cop * matrix::transposed(cop) / cop.cols();
+}
+
+matrix & matrix::normColsLastRowOne()
+{
+	for(int j = 0; j < this->cols(); ++j)
+	{
+		for(int i = 0; i < this->rows(); ++i)
+		{
+			myData[i][j] /= myData[this->rows() - 1][j];
+		}
 	}
 	return *this;
 }
@@ -890,6 +912,16 @@ double matrix::sum() const
     return res;
 }
 
+double matrix::traceCov() const
+{
+	double res = 0.;
+	for(const auto & row : myData)
+	{
+		res += smLib::variance(row);
+	}
+	return res;
+}
+
 std::vector<double> matrix::toVectorByRows() const
 {
 	std::vector<double> res;
@@ -978,11 +1010,12 @@ std::valarray<double> matrix::averageCol() const
     return res;
 }
 
-std::valarray<double> matrix::getCol(uint i, uint numCols) const
+std::valarray<double> matrix::getCol(uint i, uint numRows) const
 {
-    if(numCols == 0) numCols = this->rows();
-    std::valarray<double> res(numCols);
-    for(uint j = 0; j < numCols; ++j)
+	if(numRows == 0) { numRows = this->rows(); }
+
+	std::valarray<double> res(numRows);
+	for(uint j = 0; j < numRows; ++j)
     {
 		res[j] = myData[j][i];
     }
@@ -1009,6 +1042,27 @@ void matrix::print(uint rows, uint cols) const
 		std::cout << std::endl;
     }
 //    std::cout << std::endl;
+}
+
+void matrix::printWithBraces(uint rows, uint cols) const
+{
+	if(rows == 0) rows = this->rows();
+	if(cols == 0) cols = this->cols();
+
+	std::cout << "{";
+	for(uint i = 0; i < rows; ++i)
+	{
+		std::cout << "{";
+		for(uint j = 0; j < cols; ++j)
+		{
+			std::cout << smLib::doubleRound(myData[i][j], 3);
+			if(j != cols - 1) { std::cout << ","; }
+		}
+		std::cout << "}";
+		if(i != rows - 1) { std::cout << ","; }
+	}
+	std::cout << "}";
+	std::cout << std::endl;
 }
 
 matrix & matrix::push_back(const std::valarray<double> & in)

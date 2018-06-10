@@ -4,6 +4,7 @@
 #include <myLib/drw.h>
 #include <myLib/iitp.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/ica.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/temp.h>
 #include <myLib/statistics.h>
@@ -15,6 +16,21 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
+	edfFile fil;
+	fil.readEdfFile("/media/Files/Data/AAX/AAX_final.edf");
+	matrix inData = fil.getData();
+	inData.resizeRows(5);
+	std::cout << inData.traceCov() << "\t";
+	inData.centerRows();
+	std::cout << inData.traceCov() << std::endl;
+
+	matrix cov = inData.covMatRows();
+	cov.printWithBraces();
+
+	auto res = myLib::eigenValuesSVD(inData, 1e-11);
+	res.first.normColsLastRowOne().print();
+	std::cout << res.second << std::endl;
+	exit(0);
 
 #if 0
 	/// count correctness and average times

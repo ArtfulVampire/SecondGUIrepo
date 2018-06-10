@@ -29,24 +29,23 @@ void MainWindow::ICA() // fastICA
 
     readData();
 
-	const uint ns = ui->numOfIcSpinBox->value(); /// usually 19
-    const int dataLength = globalEdf.getDataLen();
-
+	const uint numOfICs = ui->numOfIcSpinBox->value(); /// usually 19
 	const double eigenValuesTreshold = std::pow(10., - ui->svdDoubleSpinBox->value());
 	const double vectorWTreshold = std::pow(10., - ui->vectwDoubleSpinBox->value());
+
 	const QString pathForAuxFiles = DEFS.dirPath() + "/Help/ica";
 
 	matrix centeredData = globalEdf.getData();
 
 	/// remember all the rest channels (eog, veget, mark, etc)
 	matrix resMatBackup = centeredData.subRows(
-							  smLib::range<std::vector<uint>>(ns,
+							  smLib::range<std::vector<uint>>(numOfICs,
 															  centeredData.rows()));
-	centeredData.resizeRows(ns);
+	centeredData.resizeRows(numOfICs);
 
 
 	/// here myLib::ica() can start
-	centeredData.centerRows(ns);
+	centeredData.centerRows(numOfICs);
 
 
     const QString eigMatPath = pathForAuxFiles
@@ -55,7 +54,8 @@ void MainWindow::ICA() // fastICA
     const QString eigValPath = pathForAuxFiles
 							   + "/" + globalEdf.getExpName()
 							   + "_eigenValues.txt";
-	// count eigenvalue decomposition
+
+	/// count eigenvalue decomposition
 	matrix eigenVectors;
 	std::valarray<double> eigenValues;
 
@@ -65,8 +65,8 @@ void MainWindow::ICA() // fastICA
     {
 		/// complicated calculations
 		/// auto [eigenVectors, eigenValues] =
-		auto a = myLib::svd(centeredData,
-							ns,
+		auto a = myLib::eigenValuesSVD(centeredData,
+							numOfICs,
 							eigenValuesTreshold);
 		eigenVectors = a.first;
 		eigenValues = a.second;
@@ -87,8 +87,13 @@ void MainWindow::ICA() // fastICA
     }
 
 	std::cout << "ICA: svd read = " << myTime.elapsed() / 1000. << " sec" << std::endl;
-    myTime.restart();
+	/// end of eigenValue decomposition
 
+
+
+
+
+	myTime.restart();
 	/// write whiteningData to components
 	/// whitenedData = Eig * D^-0.5 * Eig^t * centeredData
 	matrix components = eigenVectors
@@ -96,14 +101,15 @@ void MainWindow::ICA() // fastICA
 						  * !eigenVectors
 						  * centeredData;
 
-	matrix rotation = myLib::countVectorW(components,
-										  ns,
-										  dataLength,
-										  vectorWTreshold);
+	matrix rotation = myLib::calculateMatrixW(components,
+											  numOfICs,
+											  vectorWTreshold);
 
 	std::cout << "ICA: rotation ready = " << myTime.elapsed() / 1000. << " sec" << std::endl;
-	myTime.restart();
+	/// end of additional rotation calculation
 
+
+	myTime.restart();
 	/// components = rotation * whitenedData
 	/// components = W * centeredData
 	/// W = rotation * Eig * D^-0.5 * Eig^t
@@ -123,8 +129,6 @@ void MainWindow::ICA() // fastICA
 	myLib::icaResult icaRes(components, matrixA);
 
 
-
-
 #if 01
 	/// cout explainedVariance
 	{
@@ -134,8 +138,8 @@ void MainWindow::ICA() // fastICA
 			std::cout << "comp = " << i+1 << "\t";
 			std::cout << "explVar = " << smLib::doubleRound(explainedVariance[i], 2) << std::endl;
 		}
-		QString helpString = (pathForAuxFiles
-							  + "/" + globalEdf.getExpName() + "_explainedVariance.txt");
+		QString helpString = pathForAuxFiles
+							 + "/" + globalEdf.getExpName() + "_explainedVariance.txt";
 		myLib::writeFileInLine(helpString, explainedVariance);
 	}
 #endif
@@ -167,8 +171,8 @@ void MainWindow::ICA() // fastICA
 
 
 
-	// now should draw amplitude maps OR write to file
 	/// fix here via icaResult
+	/// write maps (matrixA) to file and draw
 #if 01
 	{
 		/// write maps to file
@@ -183,7 +187,7 @@ void MainWindow::ICA() // fastICA
 #endif
 
 	/// save ICA file as a new edf
-    std::vector<int> chanList(ns);
+	std::vector<int> chanList(numOfICs);
 	std::iota(std::begin(chanList), std::end(chanList), 0);
     chanList.push_back(globalEdf.getMarkChan());
 

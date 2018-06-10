@@ -10,19 +10,94 @@ namespace myLib
 {
 
 /// functions
+std::valarray<double> deorthogonal(const matrix & inMat,
+								   int numOfICs,
+								   int currNum)
+{
+	/// calculate the sum of projections of currNum vector to previous ones
+	std::valarray<double> outVector(numOfICs);
+	for(int j = 0; j < currNum; ++j)
+	{
+		outVector += inMat[j] * smLib::prod(inMat[currNum], inMat[j]);
+	}
+	return outVector;
+}
+
+
+/// make a class for two functions and derivatives
+
+matrix calculateMatrixW(const matrix & dataICA,
+						const int numOfICs,
+						const double vectorWTreshold)
+{
+	QTime myTime;
+	myTime.restart();
+
+	matrix res{}; /// matrix of row-vectors wt
+
+	for(int numVec = 0; numVec < numOfICs; ++numVec) // number of current vectorW
+	{
+		myTime.restart();
+		int counter = 0;
+		std::valarray<double> wt(dataICA.rows());
+		wt = smLib::randomValar(wt.size());			/// randomize + normalize wt
+
+		double squareError{};
+		while(1)
+		{
+			std::valarray<double> vecOld = wt; // save previous vect
+			std::valarray<double> vector1 (numOfICs);
+			vector1 = 0.;
+
+			double sum1 = 0.;
+			for(int numCol = 0; numCol < dataICA.cols(); ++numCol)
+			{
+				const std::valarray<double> x = dataICA.getCol(numCol);
+
+				/// first term
+				const double temp = std::tanh( smLib::prod(wt, x) );
+				vector1 += x * temp;
+
+				/// for second term (vector 2)
+				sum1 += (1. - temp * temp);
+			}
+			vector1 /= dataICA.cols();
+			sum1 /= dataICA.cols();
+
+			wt = smLib::normalized(vector1 - sum1 * wt);
+
+			/// orthogonalization
+			wt -= myLib::deorthogonal(res, numOfICs, numVec);
+			smLib::normalize(wt);
+
+			/// calculate convergence
+			squareError = smLib::norma(std::valarray<double>(vecOld - wt));
+			++counter;
+			if(squareError < vectorWTreshold || 2. - squareError < vectorWTreshold) break;
+			if(counter == 100) break;
+		}
+		std::cout << "vectW num = " << numVec << "\t";
+		std::cout << "iters = " << counter << "\t";
+		std::cout << "error = " << std::fdim(squareError, std::round(squareError)) << "\t";
+		std::cout << "time = " << smLib::doubleRound(myTime.elapsed() / 1000., 1) << " sec" << std::endl;
+		res.push_back(wt);
+	}
+	return res;
+}
+
 icaResult ica(const matrix & initialData,
 			  double eigenValuesTreshold,
 			  double vectorWTreshold)
 {
-	const int numOfIcs = initialData.rows();
+	const int numOfIcs = initialData.rows();		/// max of possible ICs
 
-	matrix centeredMatrix = initialData;
-	centeredMatrix.centerRows(numOfIcs);
+	matrix centeredMatrix(initialData);
+	centeredMatrix.centerRows();
 
 	/// auto [eigenVectors, eigenValues] =
 	matrix eigenVectors;
 	std::valarray<double> eigenValues;
-	auto a = myLib::svd(centeredMatrix,
+	auto a = myLib::eigenValuesSVD(centeredMatrix,
 						numOfIcs,
 						eigenValuesTreshold);
 	eigenVectors = a.first;
@@ -35,10 +110,9 @@ icaResult ica(const matrix & initialData,
 						* !eigenVectors
 						* centeredMatrix;
 
-	matrix rotation = myLib::countVectorW(components,
-										  numOfIcs,
-										  initialData.cols(),
-										  vectorWTreshold);
+	matrix rotation = myLib::calculateMatrixW(components,
+											  numOfIcs,
+											  vectorWTreshold);
 	/// components = rotation * whitenedData
 	/// components = W * centeredData
 	/// W = rotation * Eig * D^-0.5 * Eig^t
@@ -60,220 +134,114 @@ icaResult ica(const matrix & initialData,
 
 
 std::pair<matrix, std::valarray<double>>
-svd(const matrix & initialData,
-	const int dimension, // length of the vectors
+eigenValuesSVD(const matrix & initialData,
 	double threshold,
 	int eigenVecNum) /// num of eigenVectors to count - add variance
 {
+	/// wiki(rus) - Principal Component Analysis -> simple iterative algorithm
+	/// https://ru.wikipedia.org/wiki/%D0%9C%D0%B5%D1%82%D0%BE%D0%B4_%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D1%8B%D1%85_%D0%BA%D0%BE%D0%BC%D0%BF%D0%BE%D0%BD%D0%B5%D0%BD%D1%82#%D0%9F%D1%80%D0%BE%D1%81%D1%82%D0%BE%D0%B9_%D0%B8%D1%82%D0%B5%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D0%B9_%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_%D1%81%D0%B8%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%80%D0%BD%D0%BE%D0%B3%D0%BE_%D1%80%D0%B0%D0%B7%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F
+
 	if(eigenVecNum <= 0)
 	{
-		eigenVecNum = dimension;
+		eigenVecNum = initialData.rows();
 	}
-	const int dataLen = initialData.cols();
 
 	const int iterationsThreshold = 100;
 	const int errorStep = 5;
 
-	double trace = 0.;
-	for(int i = 0; i < dimension; ++i)
-	{
-		trace += smLib::variance(initialData[i]);
-	}
+	/// auxiliary data
+	matrix inData(initialData);
+	inData.centerRows();
+	const matrix inDataTrans = matrix::transposed(inData);
+
+	const double trace = inData.traceCov();
 
 	/// results
 	std::valarray<double> eigenValues(eigenVecNum);
-	matrix eigenVectors(dimension, eigenVecNum);
-
-	std::valarray<double> tempA(dimension);
-	std::valarray<double> tempB(dataLen);
-
-	double sum1, sum2; // temporary help values
-	double dF, F;
-	int counter;
-
-#if 0
-	/// ICA test short
-
-	const QString pathForAuxFiles = DEFS.dirPath()
-									+ "/Help"
-									+ "/ica";
-	QString helpString = pathForAuxFiles
-						 + "/EigenMatrix.txt";
-	eigenVectors = readMatrixFile(helpString);
+	matrix eigenVectors(initialData.rows(), eigenVecNum);
 
 
-	// write eigenValues
-	helpString = pathForAuxFiles
-				 + "/EigenValues.txt";
-	eigenValues = readFileInLine(helpString);
-	return;
-#endif
+	/// error function
+	auto mse = [](const matrix & mat,
+			   const std::valarray<double> & vecB,
+			   const std::valarray<double> & vecA) -> double
+	{
+		double res = 0.;
+		for(int i = 0; i < mat.rows(); ++i)
+		{
+			res += 0.5 * smLib::normaSq(
+					 std::valarray<double>(mat[i] - vecB[i] * vecA)
+					 );
+		}
+		return res;
+	};
 
-	// maybe lines longer than dimension but OK
-	// std::valarray<double> tempLine(dataLen); // for debug acceleration
-	matrix inData = initialData;
-	inData.centerRows(dimension);
-	const matrix inDataTrans = matrix::transposed(initialData);
 	QTime myTime;
 	myTime.start();
-	// counter j - for B, i - for A
+
+	double currTrace = 0;
 	for(int k = 0; k < eigenVecNum; ++k)
 	{
 		myTime.restart();
 
-		dF = 0.5;
-		F = 1.0;
+		std::valarray<double> tempA = smLib::randomValar(initialData.cols());
+		std::valarray<double> tempB = smLib::randomValar(initialData.rows());
 
-		tempA = 1. / sqrt(dimension);
-		tempB = 1. / sqrt(dataLen);
-
-		// approximate P[i] = tempA x tempB;
-		counter = 0;
-		while(1) // when stop approximate?
+		/// approximate P[i] = tempB x tempA;
+		int counter = 0;
+		double dF = 2 * threshold;	/// relative error
+		while((std::abs(dF) > threshold) && (counter < iterationsThreshold))
 		{
-			if((counter) % errorStep == 0)
+			/// sometimes recalculate F
+			double F{};
+			if(counter % errorStep == 0) { F = mse(inData, tempB, tempA); }
+
+			/// calculate tempA = tempB^t * inData
+			double nB = 1. / smLib::normaSq(tempB);
+			for(int j = 0; j < initialData.cols(); ++j)
 			{
-				// countF - error
-				F = 0.;
-				for(int i = 0; i < dimension; ++i)
-				{
-#if 0
-					F += 0.5 * pow(inData[i] - tempB * tempA[i], 2.).sum();
-#elif 1
-					F += 0.5 * smLib::normaSq(
-							 std::valarray<double>(inData[i] - tempB * tempA[i]));
-#elif 1
-					// much faster in debug
-					const double coef = tempA[i];
-					std::transform(begin(inData[i]),
-								   end(inData[i]),
-								   begin(tempB),
-								   begin(tempLine),
-								   [coef](double in1, double in2)
-					{
-						return in1 - in2 * coef;
-					});
-					F += 0.5 * normaSq(tempLine);
-#else
-					for(int j = 0; j < dataLen; ++j)
-					{
-						F += 0.5 * pow(inData[i][j] - tempB[j] * tempA[i], 2.);
-					}
-
-
-#endif
-				}
+				tempA[j] = nB * smLib::prod(tempB, inDataTrans[j]);
 			}
 
-			// count vector tempB
-			sum2 = 1. / smLib::normaSq(tempA);
-			for(int j = 0; j < dataLen; ++j)
+			/// calculate tempB = inData * tempA
+			double nA = 1. / smLib::normaSq(tempA);
+			for(int i = 0; i < initialData.rows(); ++i)
 			{
-//                tempB[j] = sum2 * (inDataTrans[j] * tempA).sum();
-				// slightly faster
-//                tempB[j] = sum2 * std::inner_product(begin(tempA),
-//                                                     end(tempA), // begin + dimension
-//                                                     begin(inDataTrans[j]),
-//                                                     0.);
-				tempB[j] = sum2 * smLib::prod(tempA, inDataTrans[j]);
+				tempB[i] = nA * smLib::prod(inData[i], tempA);
 			}
 
-			// count vector tempA
-			sum2 = 1. / smLib::normaSq(tempB);
-			for(int i = 0; i < dimension; ++i)
-			{
-//                tempA[i] = sum2 * (tempB * inData[i]).sum();
-				// slightly faster
-//                tempA[i] = sum2 * std::inner_product(begin(tempB),
-//                                                     end(tempB),
-//                                                     begin(inData[i]),
-//                                                     0.);
-				tempA[i] = sum2 * smLib::prod(tempB, inData[i]);
-			}
-
-			if((counter) % errorStep == 0)
-			{
-				dF = 0.;
-				for(int i = 0; i < dimension; ++i)
-				{
-#if 0
-					dF += 0.5 * pow((inData[i] - tempB * tempA[i]), 2.).sum();
-#elif 1
-					dF += 0.5 * smLib::normaSq(std::valarray<double>(inData[i] - tempB * tempA[i]));
-#elif 1
-					// much faster in debug
-					const double coef = tempA[i];
-					std::transform(begin(inData[i]),
-								   end(inData[i]),
-								   begin(tempB),
-								   begin(tempLine),
-								   [coef](double in1, double in2)
-					{
-						return in1 - in2 * coef;
-					});
-					dF += 0.5 * normaSq(tempLine);
-#else
-					for(int j = 0; j < dataLen; ++j)
-					{
-						dF += 0.5 * pow(inData[i][j] - tempB[j] * tempA[i], 2.);
-					}
-#endif
-				}
-				dF = 1. - dF / F;
-
-			}
-
-			if(counter == iterationsThreshold)
-			{
-				break;
-			}
+			/// sometimes recount error after adjust
+			if(counter % errorStep == 0) { dF = 1. - mse(inData, tempB, tempA) / F; }
 			++counter;
-			if(std::abs(dF) < threshold) break; // crucial cap
 		}
 
-		// edit currMatrix
-		/// test!
-		for(int i = 0; i < dimension; ++i)
+		/// edit currMatrix
+		for(int i = 0; i < initialData.rows(); ++i)
 		{
-#if 1
-			// better in release
-			inData[i] -= tempA[i] * tempB;
-#else
-			// better in debug
-			const double coef = tempA[i];
-			std::transform(begin(inData[i]),
-						   end(inData[i]),
-						   begin(tempB),
-						   begin(tempLine),
-						   [coef](double in1, double in2)
-			{
-				return in1 - in2 * coef;
-			});
-#endif
+			inData[i] -= tempB[i] * tempA;
 		}
 
-		// count eigenVectors && eigenValues
-		sum1 = smLib::normaSq(tempA);
-		sum2 = smLib::normaSq(tempB);
-		eigenValues[k] = sum1 * sum2 / double(dataLen - 1.);
-		tempA /= sqrt(sum1); /// smLib::normalize(tempA);
+		/// count eigenVectors && eigenValues
+		/// singular value = narma(tempA) * norma(tempB)
+		/// eigenValue = sqr(singular value);
+		/// look https://en.wikipedia.org/wiki/Singular-value_decomposition
+		eigenValues[k] = smLib::normaSq(tempB) *
+						 smLib::normaSq(tempA)
+						 / double(initialData.cols() - 1.);
+		currTrace += eigenValues[k];
 
-
-		sum1 = std::accumulate(std::begin(eigenValues),
-							   std::begin(eigenValues) + k + 1,
-							   0.);
+		smLib::normalize(tempB);
+		for(int i = 0; i < initialData.rows(); ++i)
+		{
+			eigenVectors[i][k] = tempB[i];
+		}
 
 		std::cout << k << "\t";
 		std::cout << "val = " << smLib::doubleRound(eigenValues[k], 3) << "\t";
 		std::cout << "disp = " << smLib::doubleRound(100. * eigenValues[k] / trace, 2) << "\t";
-		std::cout << "total = " << smLib::doubleRound(100. * sum1 / trace, 2) << "\t";
+		std::cout << "total = " << smLib::doubleRound(100. * currTrace / trace, 2) << "\t";
 		std::cout << "iters = " << counter << "\t";
 		std::cout << smLib::doubleRound(myTime.elapsed() / 1000., 1) << " s" << std::endl;
-
-		for(int i = 0; i < dimension; ++i)
-		{
-			eigenVectors[i][k] = tempA[i]; // 1-normalized coloumns
-		}
 	}
 	return std::make_pair(eigenVectors, eigenValues);
 }
@@ -369,7 +337,44 @@ void icaResult::orderIcaDisp()
 /// ICAclass
 icaResult ICAclass::ica()
 {
-	return {};
+	matrix centeredData(inputData);
+	centeredData.centerRows();
+
+	/// auto [eigenVectors, eigenValues] =
+	matrix eigenVectors;
+	std::valarray<double> eigenValues;
+	auto a = myLib::eigenValuesSVD(centeredData,
+						numIC,
+						eigValThreshold);
+	eigenVectors = a.first;
+	eigenValues = a.second;
+
+	/// write whitenedData to components
+	/// whitenedData = Eig * D^-0.5 * Eig^t * centeredData
+	matrix components = eigenVectors
+						* matrix(std::pow(eigenValues, -0.5))
+						* !eigenVectors
+						* centeredData;
+
+	matrix rotation = myLib::calculateMatrixW(components,
+											  numIC,
+											  vectWThreshold);
+	/// components = rotation * whitenedData
+	/// components = W * centeredData
+	/// W = rotation * Eig * D^-0.5 * Eig^t
+	components = rotation * components;
+
+	/// A * components = centeredData
+	/// A = inverted( W )
+	/// A = Eig * D^0.5 * Eig^t * rotation^t
+	matrix matrixA = eigenVectors
+					 * matrix(std::pow(eigenValues, +0.5))
+					 * !eigenVectors
+					 * !rotation;
+
+	icaResult res(components, matrixA);
+	res.orderIcaDisp();
+	return res;
 }
 
 } // end namespace myLib

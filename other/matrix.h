@@ -63,6 +63,7 @@ public:
 	matrix & resizeCols(int newCols);
 	matrix & fill(double value);
 	void print(uint rows = 0, uint cols = 0) const;
+	void printWithBraces(uint rows = 0, uint cols = 0) const;
 	uint cols() const;
 	uint rows() const;
 	double maxVal() const;
@@ -71,6 +72,7 @@ public:
 	double minAbsVal() const;
 
 	double sum() const;
+	double traceCov() const;
 	matrixType::iterator begin()					{ return std::begin(myData); }
 	matrixType::iterator end()						{ return std::end(myData); }
 	matrixType::const_iterator begin() const		{ return std::begin(myData); }
@@ -88,7 +90,7 @@ public:
 	std::valarray<double> toValarByRows() const;
 	std::valarray<double> toValarByCols() const;
 	std::vector<double> toVectorByRows() const;
-	std::valarray<double> getCol(uint i, uint numCols = 0) const;
+	std::valarray<double> getCol(uint i, uint numRows = 0) const;
 	std::valarray<double> averageRow() const;
 	std::valarray<double> averageCol() const;
 	std::valarray<double> sigmaOfCols() const;
@@ -158,11 +160,13 @@ public:
 	double trace() const;
 	matrix & transpose();
 	matrix & invert(double * det = nullptr);
+	matrix & normColsLastRowOne();
 	matrix covMatCols(std::valarray<double> * avRow = nullptr) const;
+	matrix covMatRows() const;
 	matrix & swapCols(uint i, uint j);
 	matrix & swapRows(uint i, uint j);
 	matrix & zero();
-	matrix & centerRows(int numRows);
+	matrix & centerRows(int numRows = 0);
 	matrix & one();
 	matrix & eraseRow(uint i);
 	matrix & eraseCol(uint j);
