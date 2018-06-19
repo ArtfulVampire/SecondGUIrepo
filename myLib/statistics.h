@@ -92,6 +92,7 @@ long long combination(int n, int k);
 double combinationLog(int n, int k);
 double factorialLog(int n);
 double binomialPvalue(int n, int k, double successRate);
+int binomialLimitOfSignificance(int n, double successRate, double pval);
 
 }
 

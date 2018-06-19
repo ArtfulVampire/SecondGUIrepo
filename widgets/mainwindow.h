@@ -58,7 +58,7 @@ public slots:
 	void cleanDirs();
 	void drawMapsSlot();
 	void reduceChannelsSlot();
-    void reduceChannelsEDFSlot();
+	void reduceChannelsEDFSlot() const;
 	void cleanEdfFromEyesSlot();
 
 	// mati
@@ -97,7 +97,7 @@ public:
 	void readData();
 
 
-	std::vector<int> makeChanList();
+	std::vector<int> makeChanList() const;
 	void cleanDirsCheckAllBoxes(bool);
 
 

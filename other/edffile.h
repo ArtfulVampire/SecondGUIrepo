@@ -232,10 +232,10 @@ public:
 	void setLabel(int i, const QString & inLabel);
 
 	void setChannels(const std::vector<edfChannel> & inChannels);
-	void cleanFromEyes(QString eyesPath = QString(),
-					   bool removeEogChannels = false,
-					   std::vector<uint> eegNums = {},
-					   std::vector<uint> eogNums = {});
+	edfFile & cleanFromEyes(QString eyesPath = QString(),
+							bool removeEogChannels = false,
+							std::vector<uint> eegNums = {},
+							std::vector<uint> eogNums = {});
 
 
 

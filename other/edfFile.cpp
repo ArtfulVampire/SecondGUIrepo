@@ -627,6 +627,12 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 						labels[i].prepend("EEG ");
 						continue;
 					}
+					else if(labels[i].contains(QRegExp(R"((PPG|FPG|SGR|KGR|Resp|RD))"))
+							&& !labels[i].startsWith("POLY "))
+					{
+						labels[i].prepend("POLY ");
+						continue;
+					}
 				}
 			}
 		}
@@ -1897,8 +1903,9 @@ edfFile & edfFile::refilter(double lowFreq,
 		{
 			/// filter only EEG, EOG signals - look labels!!!!
 			/// pewpew IITP - no filter ECG
-			if(this->labels[i].contains(QRegExp("E[OE]G"))
+			if(this->labels[i].contains(QRegExp("E[OE]G "))
 			   || (this->filterIITPflag && this->labels[i].startsWith("IT "))
+			   || this->labels[i].startsWith("POLY ")
 //			   || this->labels[i].startsWith("XX ") // Artefac IITP channel
 			   )
 			{
@@ -2168,10 +2175,10 @@ void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
 						this->srate).save(outPath, 0, 100);
 }
 
-void edfFile::cleanFromEyes(QString eyesPath,
-                            bool removeEogChannels,
-							std::vector<uint> eegNums,
-							std::vector<uint> eogNums)
+edfFile & edfFile::cleanFromEyes(QString eyesPath,
+								 bool removeEogChannels,
+								 std::vector<uint> eegNums,
+								 std::vector<uint> eogNums)
 {
     QTime myTime;
     myTime.start();
@@ -2218,8 +2225,8 @@ void edfFile::cleanFromEyes(QString eyesPath,
     {
         this->removeChannels(eogNums);
 	}
-
 	std::cout << "cleanFromEyes: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	return *this;
 }
 
 edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const // much memory

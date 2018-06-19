@@ -17,6 +17,32 @@ void MainWindow::customFunc()
 {
 
 #if 0
+	/// binomial thresholds Polina
+	std::cout.precision(3);
+	std::cout << " \t";
+
+	for(int N = 80; N >= 30; N-= 5)
+	{
+		std::cout << N << "\t";
+	}
+	std::cout << std::endl;
+
+	std::cout << std::fixed;
+	std::cout.precision(1);
+
+	for(int numClass = 2; numClass <= 6; ++numClass)
+	{
+		std::cout << numClass << "\t";
+		for(int N = 80; N >= 30; N-= 5)
+		{
+			std::cout << myLib::binomialLimitOfSignificance(N, 1. / numClass, 0.05) * 100. / N << "\t";
+		}
+		std::cout << std::endl;
+	}
+	exit(0);
+#endif
+
+#if 0
 	/// count correctness and average times
 #if 01 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
