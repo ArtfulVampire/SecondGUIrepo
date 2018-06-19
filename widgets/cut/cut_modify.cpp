@@ -333,6 +333,31 @@ void Cut::zero(int start, int end)
 
 }
 
+void Cut::zeroChannel(int chanNum, int start, int end)
+{
+	if(chanNum < 0) { return; }
+
+	undoData.push_back(dataCutLocal.subCols(start, end));
+	auto undoAction = [start, this]()
+	{
+		for(int k = 0; k < dataCutLocal.rows() - 1; ++k) /// don't affect markers
+		{
+			std::copy(std::begin(undoData.back()[k]),
+					  std::end(undoData.back()[k]),
+					  std::begin(dataCutLocal[k]) + start);
+		}
+		undoData.pop_back();
+	};
+	undoActions.push_back(undoAction);
+
+	logAction("zeroDataChannel", chanNum, start, end);
+	std::fill(std::begin(dataCutLocal[chanNum]) + start,
+			  std::begin(dataCutLocal[chanNum]) + end,
+			  0.);
+	resetLimits();
+	paint();
+}
+
 
 void Cut::cutPausesSlot()
 {
@@ -493,7 +518,16 @@ void Cut::setMarker(int offset, int newVal)
 
 void Cut::zeroSlot()
 {
-	this->zero(ui->leftLimitSpinBox->value(), ui->rightLimitSpinBox->value());
+	if(edfFil.getExpName().contains("_veget"))
+	{
+		this->zeroChannel(ui->color3SpinBox->value(),
+						  ui->leftLimitSpinBox->value(),
+						  ui->rightLimitSpinBox->value());
+	}
+	else
+	{
+		this->zero(ui->leftLimitSpinBox->value(), ui->rightLimitSpinBox->value());
+	}
 }
 
 void Cut::zeroFromZeroSlot()

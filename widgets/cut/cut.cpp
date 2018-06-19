@@ -233,7 +233,7 @@ Cut::Cut() :
 		{
 			this->paramAbsThreshold.push_back(p->value()); /// CARE ABOUT ORDER
 		}
-		std::cout << "smartFindAbsThrSet: " << this->paramAbsThreshold << std::endl;
+//		std::cout << "smartFindAbsThrSet: " << this->paramAbsThreshold << std::endl;
 	});
 
 	/// IITP
@@ -249,6 +249,7 @@ Cut::Cut() :
 
 	smartFindSetFuncs();
 	ui->smartFindSetAbsThrPushButton->click();
+
 	qtLib::hideLayout(ui->smartFindGrid);		/// for better times
 }
 
@@ -743,7 +744,7 @@ matrix Cut::makeDrawData()
 /// check - works not especially accurate
 int Cut::getDrawedChannel(QMouseEvent * clickEvent)
 {
-	std::cout << 1 << std::endl;
+//	std::cout << 1 << std::endl;
 	auto vals = this->drawData.getCol(clickEvent->x());
 	const double norm = normCoeff();
 	double dist = 1000;

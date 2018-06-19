@@ -13,20 +13,7 @@ void MainWindow::ICA() // fastICA
 	const uint numOfICs = ui->numOfIcSpinBox->value(); /// usually 19
 	const double eigenValuesTreshold = std::pow(10., - ui->svdDoubleSpinBox->value());
 	const double vectorWTreshold = std::pow(10., - ui->vectwDoubleSpinBox->value());
-	const QString pathForAuxFiles = DEFS.dirPath() + "/Help/ica";
 	const int numDataChannels = 19;
-	const QString eigMatPath = pathForAuxFiles
-							   + "/" + globalEdf.getExpName()
-							   + "_eigenMatrix.txt";
-	const QString eigValPath = pathForAuxFiles
-							   + "/" + globalEdf.getExpName()
-							   + "_eigenValues.txt";
-	const QString explVarPath = pathForAuxFiles
-								+ "/" + globalEdf.getExpName()
-								+ "_explainedVariance.txt";
-	const QString mapsFilePath = pathForAuxFiles
-								 + "/" + globalEdf.getExpName()
-								 + "maps.txt";
 
     QTime wholeTime;
     wholeTime.start();
@@ -49,12 +36,8 @@ void MainWindow::ICA() // fastICA
 	icaClassInstance.setVectWThreshold(vectorWTreshold);
 	icaClassInstance.setEigValThreshold(eigenValuesTreshold);
 	/// set output paths
-	icaClassInstance.setEigMatPath(eigMatPath);
-	icaClassInstance.setEigValPath(eigValPath);
-	icaClassInstance.setExplVarPath(explVarPath);
-	icaClassInstance.setMapsFilePath(mapsFilePath);
-	icaClassInstance.setDrawMapsPath(pathForAuxFiles + "/maps");
 	icaClassInstance.setExpName(globalEdf.getExpNameShort());
+	icaClassInstance.setOutPaths(DEFS.dirPath() + "/Help");
 	/// calculate result
 	icaClassInstance.calculateICA();
 	/// write something to files

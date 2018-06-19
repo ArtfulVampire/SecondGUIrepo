@@ -2,6 +2,7 @@
 #include <myLib/output.h>
 #include <myLib/draws.h>
 #include <myLib/dataHandlers.h>
+#include <myLib/signalProcessing.h>
 
 #include <QTime>
 
@@ -389,6 +390,34 @@ void ICAclass::drawMaps() const
 	}
 }
 
+void ICAclass::drawSpectraWithMaps() const
+{
+#if 0
+	matrix centeredData(inputData);
+	centeredData.centerRows();
+
+	/// use placeholders
+	std::bind myLib::spectreWelchRtoR()
+
+	centeredData.apply()
+
+	myLib::drawArrays(myLib::drawTemplate(),
+					  drawMatrix).save(drawMapsWMPath, 0, 100);
+
+	myLib::drawMapsOnSpectra();
+	for(int i = 0; i < matrixA.cols(); ++i)
+	{
+		myLib::drawMapSpline(matrixA,
+							 i,
+							 drawMapsPath,
+							 locExpName,
+							 matrixA.maxAbsVal(),
+							 240,					/// magic const - picture size
+							 myLib::ColorScale::jet);
+	}
+#endif
+}
+
 int ICAclass::getNumOfErrors(std::ostream & os) const
 {
 	int counter = 0;
@@ -411,6 +440,17 @@ int ICAclass::getNumOfErrors(std::ostream & os) const
 	}
 	os << "num of errors = " << counter << std::endl;
 	return counter;
+}
+
+
+void ICAclass::setOutPaths(const QString & inHelpPath)
+{
+	eigMatPath = inHelpPath + "/ica/" + locExpName + "_eigenMatrix.txt";
+	eigValPath = inHelpPath + "/ica/" + locExpName + "_eigenValues.txt";
+	explVarPath = inHelpPath + "/ica/" + locExpName + "_explainedVariance.txt";
+	mapsFilePath = inHelpPath + "/ica/" + locExpName + "_maps.txt";
+	drawMapsPath = inHelpPath + "/maps";
+	drawMapsWMPath = inHelpPath + "/wm/" + locExpName + "_wm.txt";
 }
 
 } // end namespace myLib

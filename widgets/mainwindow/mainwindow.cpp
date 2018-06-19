@@ -26,11 +26,10 @@ MainWindow::MainWindow() :
     group2->addButton(ui->windsButton);
 	group2->addButton(ui->realsButton);
 
+
+	/// draws
 	ui->drawCoeffSpinBox->setValue(1.0);
 	ui->drawCoeffSpinBox->setSingleStep(0.1);
-	ui->sliceCheckBox->setChecked(true);
-	ui->progressBar->setValue(0);
-
 	ui->drawDirBox->addItem("Reals");
     ui->drawDirBox->addItem("cut");
 	ui->drawDirBox->addItem("winds");
@@ -49,6 +48,7 @@ MainWindow::MainWindow() :
     ui->fileMarkersLineEdit->setText(helpString);
 	ui->fileMarkersLineEdit->setText(helpString);
 
+	/// reduce channels
 	ui->reduceChannelsComboBox->addItem("EEG,reref,EOG,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,reref,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,EOG,other,mark");
@@ -59,42 +59,38 @@ MainWindow::MainWindow() :
 	ui->reduceChannelsComboBox->addItem("128to19mark");
 	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
 
-	/// in seconds !!!!!
+	/// slice
+	ui->sliceCheckBox->setChecked(true);
     ui->timeShiftSpinBox->setMinimum(0.1);
     ui->timeShiftSpinBox->setMaximum(32);
     ui->timeShiftSpinBox->setValue(0.5);
     ui->timeShiftSpinBox->setSingleStep(0.1);
-
     ui->windowLengthSpinBox->setMaximum(32);
     ui->windowLengthSpinBox->setMinimum(1);
     ui->windowLengthSpinBox->setSingleStep(0.1);
     ui->windowLengthSpinBox->setValue(4);
     ui->realsButton->setChecked(true);
 
-
-	ui->highFreqFilterDoubleSpinBox->setMaximum(500);
-	ui->lowFreqFilterDoubleSpinBox->setMaximum(500);
-
 	ui->numOfIcSpinBox->setMaximum(19); // generality
     ui->numOfIcSpinBox->setMinimum(2);
     ui->numOfIcSpinBox->setValue(19);
 
+	/// ICA
     ui->numComponentsSpinBox->setMaximum(19);
     ui->numComponentsSpinBox->setValue(10);
-
     ui->svdDoubleSpinBox->setDecimals(1);
     ui->svdDoubleSpinBox->setMaximum(15);
     ui->svdDoubleSpinBox->setMinimum(2);
     ui->svdDoubleSpinBox->setValue(4.0);
     ui->svdDoubleSpinBox->setValue(9.0);
     ui->svdDoubleSpinBox->setSingleStep(0.5);
-
     ui->vectwDoubleSpinBox->setDecimals(1);
     ui->vectwDoubleSpinBox->setMaximum(15.0);
     ui->vectwDoubleSpinBox->setMinimum(1.5);
     ui->vectwDoubleSpinBox->setValue(12.0);
     ui->vectwDoubleSpinBox->setSingleStep(0.5);
 
+	/// clean dirs
 	ui->cleanRealsCheckBox->setChecked(false);
 	ui->cleanWindsCheckBox->setChecked(true);
 	ui->cleanRealsSpectraCheckBox->setChecked(false);
@@ -105,11 +101,17 @@ MainWindow::MainWindow() :
 	ui->cleanMarkersCheckBox->setChecked(false);
 	ui->cleanSpectraImgCheckBox->setChecked(false);
 
+	/// filtering
+	ui->highFreqFilterDoubleSpinBox->setMaximum(500);
+	ui->highFreqFilterDoubleSpinBox->setMinimum(3);
     ui->highFreqFilterDoubleSpinBox->setValue(40.);
     ui->highFreqFilterDoubleSpinBox->setSingleStep(1.0);
+	ui->lowFreqFilterDoubleSpinBox->setMaximum(500);
+	ui->lowFreqFilterDoubleSpinBox->setMinimum(0.01);
     ui->lowFreqFilterDoubleSpinBox->setValue(3.5);
     ui->lowFreqFilterDoubleSpinBox->setSingleStep(0.1);
 
+	/// reref
     ui->rereferenceDataComboBox->addItem("A1");
     ui->rereferenceDataComboBox->addItem("A2");
     ui->rereferenceDataComboBox->addItem("Ar");
@@ -117,6 +119,7 @@ MainWindow::MainWindow() :
 	ui->rereferenceDataComboBox->addItem("Base");
     ui->rereferenceDataComboBox->setCurrentText("Ar");
 
+	/// mati
     ui->matiPieceLengthSpinBox->setMaximum(64);
     ui->matiPieceLengthSpinBox->setMinimum(4);
     ui->matiPieceLengthSpinBox->setValue(16);
@@ -124,6 +127,7 @@ MainWindow::MainWindow() :
 	ui->markerSecTimeDoubleSpinBox->setMaximum(60 * 60 * 2); // 2 hours
 
 	ui->eogBipolarCheckBox->setChecked(false);
+	ui->progressBar->setValue(0);
 
 	/// user-dependent
 	ui->matiCheckBox->setChecked(DEFS.isUser(username::Mati));

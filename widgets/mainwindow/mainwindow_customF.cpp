@@ -18,6 +18,22 @@ void MainWindow::customFunc()
 {
 
 #if 0
+	/// ICA
+#if 0 /// new (~10 people)
+	const QString dear = "FeedbackNewMark";
+	const auto & guysList = subj::guysFBnew;
+	const QString postfix = "_good";
+#else /// final (~16 people)
+	const QString dear = "FeedbackFinalMark";
+	const QString postfix = "_fin";
+//	const QString postfix = "";
+	const auto & guysList = subj::guysFBfinal;
+#endif
+	fb::calculateICA(dear, guysList, postfix);
+	exit(0);
+#endif
+
+#if 0
 	/// binomial thresholds Polina
 	std::cout.precision(3);
 	std::cout << " \t";

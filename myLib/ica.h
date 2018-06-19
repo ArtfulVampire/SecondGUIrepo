@@ -70,11 +70,14 @@ private:
 	std::valarray<double> eigenValues;
 	QString locExpName{};
 
+	QString helpPath{};
+
 	QString eigMatPath{};
 	QString eigValPath{};
 	QString explVarPath{};
 	QString mapsFilePath{};
 	QString drawMapsPath{};
+	QString drawMapsWMPath{};
 
 	double eigValThreshold{std::pow(10., -10)};
 	double vectWThreshold{std::pow(10., -12)};
@@ -98,6 +101,7 @@ public:
 	void printEigenValues() const;
 	void printMapsFile() const;
 	void drawMaps() const;
+	void drawSpectraWithMaps() const;
 	int getNumOfErrors(std::ostream & os = std::cout) const;
 
 	/// gets
@@ -109,14 +113,19 @@ public:
 
 	/// sets
 	void setExpName(const QString & in)				{ locExpName = in; }
-	void setEigMatPath(const QString & in)			{ eigMatPath = in; }
-	void setEigValPath(const QString & in)			{ eigValPath = in; }
-	void setExplVarPath(const QString & in)			{ explVarPath = in; }
-	void setMapsFilePath(const QString & in)		{ mapsFilePath = in; }
-	void setDrawMapsPath(const QString & in)		{ drawMapsPath = in; }
 	void setEigValThreshold(double in)				{ eigValThreshold = in; }
 	void setVectWThreshold(double in)				{ vectWThreshold = in; }
 	void setNumIC(int in)							{ numIC = in; }
+
+	void setOutPaths(const QString & inHelpPath);
+	/// all inside
+//	void setEigMatPath(const QString & in)			{ eigMatPath = in; }
+//	void setEigValPath(const QString & in)			{ eigValPath = in; }
+//	void setExplVarPath(const QString & in)			{ explVarPath = in; }
+//	void setMapsFilePath(const QString & in)		{ mapsFilePath = in; }
+//	void setDrawMapsPath(const QString & in)		{ drawMapsPath = in; }
+//	void setDrawMapsWMPath(const QString & in)		{ drawMapsWMPath = in; }
+
 };
 
 

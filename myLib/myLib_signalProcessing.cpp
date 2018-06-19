@@ -2413,10 +2413,10 @@ double PPGrange(const std::valarray<double> & inSignal)
 	};
 	int start{0};
 
-	/// maybe not needed
+	/// start with negative sign
 	for(int i = 0; i < PPGdata.size() - 1; ++i)
 	{
-		if(sign(PPGdata[i]) == +1) { start = i; break; } /// +1 for max, -1 for min
+		if(sign(PPGdata[i]) == -1) { start = i; break; } /// +1 for max, -1 for min
 	}
 	int currSign = sign(PPGdata[start]);
 

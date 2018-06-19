@@ -43,6 +43,7 @@ private:
 
 	/// read or modify data3
 	void zero(int start, int end);
+	void zeroChannel(int chanNum, int start, int end);
 	void splitSemiSlot(int start, int end, bool addUndo = true);
 	void split(int start, int end);
 	void linearApprox(int lef, int rig, std::vector<int> chanList = std::vector<int>{});

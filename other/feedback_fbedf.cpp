@@ -8,6 +8,7 @@
 #include <myLib/highlevel.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/drw.h>
+#include <myLib/ica.h>
 
 /// for successive preclean and imitation feedback
 #include <widgets/net.h>
@@ -385,6 +386,24 @@ double FBedf::insightPartOfAll(double thres) const
 double FBedf::insightPartOfSolved(double thres) const
 {
 	return this->getNumInsights(thres) / this->getNum(taskType::verb, ansType::answrd);
+}
+
+
+void FBedf::calculateICA() const
+{
+	myLib::ICAclass icaItem(this->getData().subRows(19));		/// magic const
+	icaItem.setNumIC(19);										/// magic const
+	icaItem.setEigValThreshold(1e-10);
+	icaItem.setVectWThreshold(1e-12);
+	/// set output paths
+	icaItem.setExpName(this->getExpName());
+	icaItem.setOutPaths(this->getDirPath() + "/Help");
+	/// calculate result
+	icaItem.calculateICA();
+	/// write something to files
+	icaItem.printExplainedVariance();
+	icaItem.printMapsFile();
+	icaItem.drawMaps();
 }
 
 int FBedf::individualAlphaPeakIndexWind() const

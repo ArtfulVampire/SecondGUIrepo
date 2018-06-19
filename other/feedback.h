@@ -107,6 +107,7 @@ public:
 	matrix backgroundCompare(taskType typ, ansType howSolved) const;
 	double insightPartOfAll(double thres) const;
 	double insightPartOfSolved(double thres) const;
+	void calculateICA() const;
 
 
 	/// get interface
@@ -163,10 +164,12 @@ public:
 
 	void remakeWindows(fileNum num, double overlapPart);
 	ClassifierData prepareClDataWinds(fileNum num, bool reduce);
+	void calculateICAs();
 
 	void writeSuccessive3();
 	void writePartOfCleaned();
 	void writeLearnedPatterns();
+
 
 	operator bool() const	{ return isGood; }
 
@@ -192,6 +195,9 @@ private:
 void coutAllFeatures(const QString & dear,
 					 const std::vector<std::pair<QString, QString>> & guysList,
 					 const QString & postfix);
+void calculateICA(const QString & dear,
+				  const std::vector<std::pair<QString, QString>> & guysList,
+				  const QString & postfix);
 
 void createAnsFiles(const QString & guyPath, QString guyName);
 void checkMarkFBfinal(const QString & filePath);

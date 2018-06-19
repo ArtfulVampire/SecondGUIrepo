@@ -17,7 +17,7 @@ void coutAllFeatures(const QString & dear,
 		if(!QDir(guyPath).exists()) { continue; }
 
 
-		fb::FeedbackClass fb(guyPath, in.second, postfix); if(!fb) { continue; }
+		fb::FeedbackClass fbItem(guyPath, in.second, postfix); if(!fbItem) { continue; }
 
 		/// ExpName
 		std::cout << in.second << "\t";
@@ -30,17 +30,17 @@ void coutAllFeatures(const QString & dear,
 //		}
 
 		/// stats of solving and times
-		fb.writeStat();											std::cout.flush(); /// 23
-//		fb.writeDists();										std::cout.flush(); /// 6
-//		fb.writeDispersions();									std::cout.flush(); /// 9
-//		fb.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
-//		fb.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
-//		fb.writeRightWrong(guyPath + "/" + in.second + "_");	std::cout.flush();
-//		fb.writeClass();										std::cout.flush(); /// 6
-//		fb.writeSuccessive();									std::cout.flush();
-//		fb.writeLearnedPatterns();								std::cout.flush();
-//		fb.writeSuccessive3();									std::cout.flush();
-//		fb.writePartOfCleaned();								std::cout.flush();
+		fbItem.writeStat();											std::cout.flush(); /// 23
+//		fbItem.writeDists();										std::cout.flush(); /// 6
+//		fbItem.writeDispersions();									std::cout.flush(); /// 9
+//		fbItem.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
+//		fbItem.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
+//		fbItem.writeRightWrong(guyPath + "/" + in.second + "_");	std::cout.flush();
+//		fbItem.writeClass();										std::cout.flush(); /// 6
+//		fbItem.writeSuccessive();									std::cout.flush();
+//		fbItem.writeLearnedPatterns();								std::cout.flush();
+//		fbItem.writeSuccessive3();									std::cout.flush();
+//		fbItem.writePartOfCleaned();								std::cout.flush();
 
 //		exit(0);
 
@@ -49,7 +49,26 @@ void coutAllFeatures(const QString & dear,
 
 
 		/// write solving stats into txt file
-//		fb.writeFile();
+//		fbItem.writeFile();
+	}
+}
+
+void calculateICA(const QString & dear,
+				  const std::vector<std::pair<QString, QString>> & guysList,
+				  const QString & postfix)
+{
+	const QString guysPath = DEFS.dirPath() + "/" + dear;
+	for(const auto & in : guysList)
+	{
+		const QString guyPath = guysPath + "/" + in.first;
+		if(!QDir(guyPath).exists()) { continue; }
+
+		fb::FeedbackClass fbItem(guyPath, in.second, postfix); if(!fbItem) { continue; }
+
+		/// ExpName
+		std::cout << in.second << "\t";
+
+		fbItem.calculateICAs();
 	}
 }
 

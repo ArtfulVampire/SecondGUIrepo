@@ -262,6 +262,14 @@ ClassifierData FeedbackClass::prepareClDataWinds(fileNum num, bool reduce)
 	return this->files[static_cast<int>(num)].prepareClDataWinds(reduce);
 }
 
+void FeedbackClass::calculateICAs()
+{
+	for(const auto & in : this->files)
+	{
+		in.calculateICA();
+	}
+}
+
 
 void FeedbackClass::writeLearnedPatterns()
 {
