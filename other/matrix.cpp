@@ -163,7 +163,7 @@ matrix::matrix(const std::valarray<double> & vect) // diagonal
     this->resize(vect.size(), vect.size());
     this->fill(0.);
     int count = 0;
-    for(int item : vect)
+	for(auto item : vect)
     {
 		myData[count][count] = item;
         ++count;
@@ -334,7 +334,7 @@ matrix matrix::operator -()
 }
 
 
-
+/*
 matrix operator * (const matrix & lhs, const matrix & rhs)
 {
     if(lhs.cols() != rhs.rows())
@@ -386,6 +386,8 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
 #endif
     return result;
 }
+*/
+
 
 matrix operator * (const matrix & lhs, double val)
 {
@@ -407,11 +409,33 @@ matrix matrix::operator *= (double other)
     return *this;
 }
 
-matrix matrix::operator *= (const matrix & other)
+void matrix::operator *=(const matrix & other)
 {
-    /// OMG
-    (*this) = std::move((*this) * other);
-    return (*this);
+	(*this) = this->operator*(other);
+}
+
+matrix matrix::operator *(const matrix & other) const
+{
+	if(this->cols() != other.rows())
+	{
+		std::cout << "matrix::operator*: matrices are not productable" << std::endl;
+		return *this;
+	}
+
+	const uint dim1 = this->rows();
+	const uint dim2 = other.cols();
+
+	matrix result(dim1, dim2, 0.);
+
+	/// 15-20% faster than with currCol
+	for(uint i = 0; i < dim1; ++i)
+	{
+		for(uint j = 0; j < this->cols(); ++j)
+		{
+			result[i] += myData[i][j] * other[j];
+		}
+	}
+	return result;
 }
 
 std::valarray<double> operator * (const matrix & lhs, const std::valarray<double> & rhs)
@@ -695,6 +719,8 @@ matrix matrix::subRows(int newRows) const /// submatrix
 
 matrix & matrix::centerRows(int numRows)
 {
+	if(numRows == 0) { numRows = this->rows(); }
+
 	/// count zero columns
 	int zeroCols = 0;
 	for(int i = 0; i < this->cols(); ++i)
@@ -713,6 +739,26 @@ matrix & matrix::centerRows(int numRows)
 		{
 			if(in != 0.) { in -= meanVal; }
 		});
+	}
+	return *this;
+}
+
+
+matrix matrix::covMatRows() const
+{
+	matrix cop(*this);
+	cop.centerRows();
+	return cop * matrix::transposed(cop) / cop.cols();
+}
+
+matrix & matrix::normColsLastRowOne()
+{
+	for(int j = 0; j < this->cols(); ++j)
+	{
+		for(int i = 0; i < this->rows(); ++i)
+		{
+			myData[i][j] /= myData[this->rows() - 1][j];
+		}
 	}
 	return *this;
 }
@@ -890,6 +936,16 @@ double matrix::sum() const
     return res;
 }
 
+double matrix::traceCov() const
+{
+	double res = 0.;
+	for(const auto & row : myData)
+	{
+		res += smLib::variance(row);
+	}
+	return res;
+}
+
 std::vector<double> matrix::toVectorByRows() const
 {
 	std::vector<double> res;
@@ -978,11 +1034,12 @@ std::valarray<double> matrix::averageCol() const
     return res;
 }
 
-std::valarray<double> matrix::getCol(uint i, uint numCols) const
+std::valarray<double> matrix::getCol(uint i, uint numRows) const
 {
-    if(numCols == 0) numCols = this->rows();
-    std::valarray<double> res(numCols);
-    for(uint j = 0; j < numCols; ++j)
+	if(numRows == 0) { numRows = this->rows(); }
+
+	std::valarray<double> res(numRows);
+	for(uint j = 0; j < numRows; ++j)
     {
 		res[j] = myData[j][i];
     }
@@ -1011,6 +1068,27 @@ void matrix::print(uint rows, uint cols) const
 //    std::cout << std::endl;
 }
 
+void matrix::printWithBraces(uint rows, uint cols) const
+{
+	if(rows == 0) rows = this->rows();
+	if(cols == 0) cols = this->cols();
+
+	std::cout << "{";
+	for(uint i = 0; i < rows; ++i)
+	{
+		std::cout << "{";
+		for(uint j = 0; j < cols; ++j)
+		{
+			std::cout << smLib::doubleRound(myData[i][j], 3);
+			if(j != cols - 1) { std::cout << ","; }
+		}
+		std::cout << "}";
+		if(i != rows - 1) { std::cout << ","; }
+	}
+	std::cout << "}";
+	std::cout << std::endl;
+}
+
 matrix & matrix::push_back(const std::valarray<double> & in)
 {
 	myData.push_back(in);
@@ -1031,7 +1109,6 @@ uint matrix::cols() const
 
 matrix matrix::transposed(const matrix &input)
 {
-#if 1
     matrix res(input.cols(), input.rows());
     for(uint i = 0; i < input.rows(); ++i)
     {
@@ -1040,15 +1117,7 @@ matrix matrix::transposed(const matrix &input)
             res[j][i] = input[i][j];
         }
     }
-    return res;
-#else
-    matrix res;
-    for(uint i = 0; i < input.cols(); ++i)
-    {
-        res.push_back(input.getCol(i));
-    }
-    return res;
-#endif
+	return res;
 }
 
 matrix & matrix::transpose()

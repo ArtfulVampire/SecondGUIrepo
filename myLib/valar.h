@@ -113,6 +113,7 @@ inline std::valarray<double> logistic(const std::valarray<double> & in)
 	return 1. / (1. + exp(-in / temp));
 }
 
+
 std::valarray<double> softmax(const std::valarray<double> & in);
 
 inline std::valarray<double> abs(const std::valarray<std::complex<double>> & in)
@@ -145,6 +146,20 @@ inline void normalize(std::valarray<double> & in)
 inline std::valarray<double> normalized(const std::valarray<double> & in)
 {
 	return in / norma(in);
+}
+
+inline std::valarray<double> randomValar(int size)
+{
+	std::valarray<double> res(size);
+	std::uniform_real_distribution<double> dist(-25., 25.);
+	std::default_random_engine eng{};
+
+	for(auto & in : res)
+	{
+		in = dist(eng);
+	}
+	smLib::normalize(res);
+	return res;
 }
 
 inline double distance(const std::valarray<double> & in1,

@@ -382,7 +382,6 @@ void drawMapSpline(const matrix & matrixA,
                         / (2 * maxAbs) * drawRange; // if common maxAbs
             }
 
-
             switch(colorTheme)
             {
 			case ColorScale::jet:

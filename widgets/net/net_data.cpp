@@ -78,10 +78,9 @@ void Net::pca()
 	/// auto [eigenVectors, eigenValues] =
 	matrix eigenVectors;
 	std::valarray<double> eigenValues;
-	auto a = myLib::svd(centeredMatrix,
-						centeredMatrix.rows(),
-						eigenValuesTreshold,
-						numOfPc);
+	auto a = myLib::eigenValuesSVD(centeredMatrix,
+								   numOfPc,
+								   eigenValuesTreshold);
 	eigenVectors = a.first;
 	eigenValues = a.second;
 

@@ -358,10 +358,9 @@ ClassifierData ClassifierData::toPca(int numOfPca, double var) const
 	/// auto [eigenVectors, eigenValues] =
 	matrix eigenVectors;
 	std::valarray<double> eigenValues;
-	auto a = myLib::svd(centeredMatrix,
-						centeredMatrix.rows(),
-						eigenValuesTreshold,
-						numOfPca);
+	auto a = myLib::eigenValuesSVD(centeredMatrix,
+								   numOfPca,
+								   eigenValuesTreshold);
 	eigenVectors = a.first;
 	eigenValues = a.second;
 

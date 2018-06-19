@@ -4,6 +4,7 @@
 #include <myLib/drw.h>
 #include <myLib/iitp.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/ica.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/temp.h>
 #include <myLib/statistics.h>
