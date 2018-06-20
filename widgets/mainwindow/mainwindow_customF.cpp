@@ -17,7 +17,7 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 
-#if 0
+#if 01
 	/// ICA
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";

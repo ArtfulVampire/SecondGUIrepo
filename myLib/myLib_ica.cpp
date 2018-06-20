@@ -293,8 +293,8 @@ void ICAclass::calculateICA()
 	matrix centeredData(inputData);
 	centeredData.centerRows();
 
-	if(!QFile::exists(eigMatPath) ||
-	   !QFile::exists(eigValPath)
+	if(!QFile::exists(eigMatPath)
+	   || !QFile::exists(eigValPath)
 	   || 1 /// always recalculate
 	   )
 	{
@@ -319,9 +319,21 @@ void ICAclass::calculateICA()
 						* matrix::transposed(eigenVectors)
 						* centeredData;
 
-	matrix rotation = myLib::calculateMatrixW(components,
-											  numIC,
-											  vectWThreshold);
+	/// question about numIC
+	if(!QFile::exists(rotationPath)
+	   || 1
+	   )
+	{
+		rotation = myLib::calculateMatrixW(components,
+										   numIC,
+										   vectWThreshold);
+	}
+	else
+	{
+		rotation = myLib::readMatrixFile(rotationPath);
+		/// if rotation.cols() < numIC - recalculate
+	}
+
 	/// components = rotation * whitenedData
 	/// components = W * centeredData
 	/// W = rotation * Eig * D^-0.5 * Eig^t
@@ -337,6 +349,11 @@ void ICAclass::calculateICA()
 
 	this->result = icaResult(components, matrixA);
 	this->result.orderIcaDisp();
+}
+
+void ICAclass::writeNewEDF(const QString & outPath)
+{
+
 }
 
 void ICAclass::calculateSVD()
@@ -368,15 +385,30 @@ void ICAclass::printEigenValues() const
 	myLib::writeFileInLine(eigValPath, eigenValues);
 }
 
+void ICAclass::printRotation() const
+{
+	if(rotation.isEmpty() || rotationPath.isEmpty()) { return; }
+	myLib::writeMatrixFile(rotationPath, rotation);
+}
+
 void ICAclass::printMapsFile() const
 {
 	if(!result || mapsFilePath.isEmpty()) { return; }
 	myLib::writeMatrixFile(mapsFilePath, this->getMatrixA());
 }
 
+void ICAclass::printTxts() const
+{
+	printEigenValues();
+	printEigenVectors();
+	printRotation();
+	printExplainedVariance();
+	printMapsFile();
+}
+
 void ICAclass::drawMaps() const
 {
-	matrix matrixA  = this->getMatrixA();
+	const matrix & matrixA  = this->getMatrixA();
 
 	for(int i = 0; i < matrixA.cols(); ++i)
 	{
@@ -392,30 +424,33 @@ void ICAclass::drawMaps() const
 
 void ICAclass::drawSpectraWithMaps() const
 {
-#if 0
-	matrix centeredData(inputData);
-	centeredData.centerRows();
+	const int fftLenLoc = 4096;
+	std::function<std::valarray<double>(const std::valarray<double>&)> spectreWelch
+			= std::bind(myLib::spectreWelchRtoR,
+						std::placeholders::_1,
+						0.5,		/// overlapPart
+						250,		/// srate
+						myLib::windowName::Hamming,
+						fftLenLoc	/// fftLen
+						);
+	const double lf = fb::FBedf::leftFreq;
+	const double rf = fb::FBedf::rightFreq;
+//	const double lf = 5.;
+//	const double rf = 20.;
 
-	/// use placeholders
-	std::bind myLib::spectreWelchRtoR()
+	/// magic const
+	const int lef = fftLimit(lf, 250., fftLenLoc);
+	const int rig = fftLimit(rf, 250., fftLenLoc) + 1;
 
-	centeredData.apply()
+	matrix drawMatrix = this->getComponents().apply(spectreWelch).subCols(lef, rig);
 
-	myLib::drawArrays(myLib::drawTemplate(),
-					  drawMatrix).save(drawMapsWMPath, 0, 100);
+	myLib::drw::drawArray(myLib::drawTemplate(),
+						  drawMatrix).save(drawMapsWMPath, 0, 100);
 
-	myLib::drawMapsOnSpectra();
-	for(int i = 0; i < matrixA.cols(); ++i)
-	{
-		myLib::drawMapSpline(matrixA,
-							 i,
+	myLib::drawMapsOnSpectra(drawMapsWMPath,
+							 drawMapsWMPath,
 							 drawMapsPath,
-							 locExpName,
-							 matrixA.maxAbsVal(),
-							 240,					/// magic const - picture size
-							 myLib::ColorScale::jet);
-	}
-#endif
+							 locExpName);
 }
 
 int ICAclass::getNumOfErrors(std::ostream & os) const
@@ -447,10 +482,11 @@ void ICAclass::setOutPaths(const QString & inHelpPath)
 {
 	eigMatPath = inHelpPath + "/ica/" + locExpName + "_eigenMatrix.txt";
 	eigValPath = inHelpPath + "/ica/" + locExpName + "_eigenValues.txt";
+	rotationPath = inHelpPath + "/ica/" + locExpName + "_rotation.txt";
 	explVarPath = inHelpPath + "/ica/" + locExpName + "_explainedVariance.txt";
 	mapsFilePath = inHelpPath + "/ica/" + locExpName + "_maps.txt";
 	drawMapsPath = inHelpPath + "/maps";
-	drawMapsWMPath = inHelpPath + "/wm/" + locExpName + "_wm.txt";
+	drawMapsWMPath = inHelpPath + "/wm/" + locExpName + "_wm.jpg";
 }
 
 } // end namespace myLib

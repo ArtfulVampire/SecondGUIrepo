@@ -2,6 +2,7 @@
 #define ICA_H
 
 #include <other/matrix.h>
+#include <other/feedback.h>
 #include <utility>
 #include <vector>
 #include <valarray>
@@ -62,18 +63,22 @@ public:
 class ICAclass
 {
 private:
+
+	int numIC{};
+	matrix inputData{}; /// not centered
+
+	std::valarray<double> eigenValues;
+	matrix eigenVectors{};
+	matrix rotation{};
+
 	icaResult result{};
 
-	matrix inputData{}; /// not centered
-	int numIC{};
-	matrix eigenVectors;
-	std::valarray<double> eigenValues;
 	QString locExpName{};
-
 	QString helpPath{};
 
 	QString eigMatPath{};
 	QString eigValPath{};
+	QString rotationPath{};
 	QString explVarPath{};
 	QString mapsFilePath{};
 	QString drawMapsPath{};
@@ -93,12 +98,15 @@ public:
 
 	/// main function
 	void calculateICA();
-	void calculateSVD();
+	void calculateSVD(); /// unused
+	void writeNewEDF(const QString & outPath); /// to do
 
 	/// output to files
+	void printTxts() const;
 	void printExplainedVariance() const;
 	void printEigenVectors() const;
 	void printEigenValues() const;
+	void printRotation() const;
 	void printMapsFile() const;
 	void drawMaps() const;
 	void drawSpectraWithMaps() const;

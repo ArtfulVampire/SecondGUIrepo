@@ -178,7 +178,7 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath,
 
     const double offsetX = 0.7;
     const int earSize = 8; // generality
-    const double shitCoeff = 1.05; // smth about width of map on spectra pic
+	const double someCoeff = 1.05; // smth about width of map on spectra pic
 
     const double graphHeight = paint.device()->height() * coords::scale;
     const double graphWidth = paint.device()->width() * coords::scale;
@@ -210,35 +210,35 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath,
 
         paint.drawPixmap(QRect(X + offsetX * graphWidth,
                                Y - graphHeight,
-                               (shitCoeff - offsetX) * graphWidth,
-                               (shitCoeff - offsetX) * graphHeight),
+							   (someCoeff - offsetX) * graphWidth,
+							   (someCoeff - offsetX) * graphHeight),
                          pic1);
 
         paint.setPen(QPen(QBrush("black"), 2));
 
         // draw the nose
                        // left side
-        paint.drawLine(X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2 - 4,
+		paint.drawLine(X + offsetX * graphWidth + (someCoeff - offsetX) * graphWidth/2 - 4,
                        Y - graphHeight + 2,
-                       X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2,
+					   X + offsetX * graphWidth + (someCoeff - offsetX) * graphWidth/2,
                        Y - graphHeight - 6);
                        // right side
-        paint.drawLine(X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2 + 4,
+		paint.drawLine(X + offsetX * graphWidth + (someCoeff - offsetX) * graphWidth/2 + 4,
                        Y - graphHeight + 2,
-                       X + offsetX * graphWidth + (shitCoeff - offsetX) * graphWidth/2,
+					   X + offsetX * graphWidth + (someCoeff - offsetX) * graphWidth/2,
                        Y - graphHeight - 6);
 
 
                        // left ear
         earRect = QRect(X + offsetX * graphWidth - 0.5 * earSize,
-                        Y - graphHeight + (shitCoeff - offsetX) * graphHeight/2 - earSize,
+						Y - graphHeight + (someCoeff - offsetX) * graphHeight/2 - earSize,
                         earSize, 2*earSize);
         paint.drawArc(earRect, 60*16, 240*16);
 
 
         earRect = QRect(X + offsetX * graphWidth
-                        + (shitCoeff - offsetX) * graphWidth - 0.5 * earSize,
-                        Y - graphHeight + (shitCoeff - offsetX) * graphHeight/2 - earSize,
+						+ (someCoeff - offsetX) * graphWidth - 0.5 * earSize,
+						Y - graphHeight + (someCoeff - offsetX) * graphHeight/2 - earSize,
                         earSize, 2*earSize);
         paint.drawArc(earRect, 240*16, 240*16);
 

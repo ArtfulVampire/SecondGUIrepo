@@ -264,7 +264,7 @@ ClassifierData FeedbackClass::prepareClDataWinds(fileNum num, bool reduce)
 
 void FeedbackClass::calculateICAs()
 {
-	for(const auto & in : this->files)
+	for(const FBedf & in : files)
 	{
 		in.calculateICA();
 	}

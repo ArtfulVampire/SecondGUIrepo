@@ -9,6 +9,7 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/drw.h>
 #include <myLib/ica.h>
+#include <myLib/valar.h>
 
 /// for successive preclean and imitation feedback
 #include <widgets/net.h>
@@ -395,15 +396,24 @@ void FBedf::calculateICA() const
 	icaItem.setNumIC(19);										/// magic const
 	icaItem.setEigValThreshold(1e-10);
 	icaItem.setVectWThreshold(1e-12);
+
 	/// set output paths
 	icaItem.setExpName(this->getExpName());
 	icaItem.setOutPaths(this->getDirPath() + "/Help");
+
 	/// calculate result
 	icaItem.calculateICA();
+	QString outICA = this->getFilePath();	outICA.replace(".edf", "_ica.edf");
+	matrix comps = icaItem.getComponents();	comps.push_back(this->getMarkArr());
+	this->writeOtherData(comps, outICA);
+
 	/// write something to files
-	icaItem.printExplainedVariance();
-	icaItem.printMapsFile();
+	icaItem.printTxts();
+
+	/// draw
 	icaItem.drawMaps();
+	icaItem.drawSpectraWithMaps();
+//	exit(0);
 }
 
 int FBedf::individualAlphaPeakIndexWind() const
