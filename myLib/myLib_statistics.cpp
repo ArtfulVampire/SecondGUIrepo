@@ -104,17 +104,17 @@ void histogram(const std::valarray<double> & arr,
 		xMax = xMinMax.second;
 	}
 
-	int denom = floor(log10(xMax - xMin));
+	int denom = std::floor(log10(xMax - xMin));
 
 	xMin = smLib::doubleRoundFraq(xMin, denom);
 	xMax = smLib::doubleRoundFraq(xMax, denom);
-	std::cout << denom  << "\t" << xMin << "\t" << xMax << std::endl;
+//	std::cout << denom  << "\t" << xMin << "\t" << xMax << std::endl;
 
 	std::for_each(std::begin(arr),
 				  std::end(arr),
-				  [=, &values](double in)
+				  [xMin, xMax, numSteps, &values](double in)
 	{
-		int a = int(floor((in - xMin) / ((xMax-xMin) / numSteps)));
+		int a = int(std::floor((in - xMin) / ((xMax-xMin) / numSteps)));
 		if(a >= 0 && a < numSteps)
 		{
 			values[ a ] += 1.;
@@ -128,7 +128,7 @@ void histogram(const std::valarray<double> & arr,
 	}
 
 
-	QPixmap pic(numSteps * 30, 400);
+	QPixmap pic(numSteps * 60, 400);
 	QPainter pnt;
 	pic.fill();
 	pnt.begin(&pic);
@@ -268,12 +268,10 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 
 QPixmap kernelEst(const std::valarray<double> & arr)
 {
-	double sigma = 0.;
 	int length = arr.size();
 
-	sigma = smLib::variance(arr);
-	sigma = sqrt(sigma);
-	double h = 1.06 * sigma * pow(length, -0.2);
+	const double sigma = smLib::sigma(arr);
+	const double h = 1.06 * sigma * std::pow(length, -0.2);
 
 	QPixmap pic(1000, 400);
 	QPainter pnt;
@@ -281,17 +279,13 @@ QPixmap kernelEst(const std::valarray<double> & arr)
 	pnt.begin(&pic);
 	pnt.setPen("black");
 
-	std::vector<double> values(pic.width(), 0.);
+	double xMin = *std::min_element(std::begin(arr),
+									std::end(arr));
+	double xMax = *std::max_element(std::begin(arr),
+									std::end(arr));
 
-	double xMin, xMax;
-
-	xMin = *std::min_element(std::begin(arr),
-							 std::end(arr));
-	xMax = *std::max_element(std::begin(arr),
-							 std::end(arr));
-
-	xMin = floor(xMin);
-	xMax = ceil(xMax);
+	xMin = std::floor(xMin);
+	xMax = std::ceil(xMax);
 
 	//    sigma = (xMax - xMin);
 	//    xMin -= 0.1 * sigma;
@@ -305,18 +299,18 @@ QPixmap kernelEst(const std::valarray<double> & arr)
 	//    xMax = 100;
 
 
+	std::vector<double> values(pic.width(), 0.);
 	for(int i = 0; i < pic.width(); ++i)
 	{
 		for(int j = 0; j < length; ++j)
 		{
-			values[i] += 1 / (length * h)
+			values[i] += 1. / (length * h)
 						 * smLib::gaussian((xMin + (xMax - xMin) / double(pic.width()) * i - arr[j]) / h);
 		}
 	}
 
-	double valueMax;
-	valueMax = *std::max_element(std::begin(values),
-								 std::end(values));
+	double valueMax = *std::max_element(std::begin(values),
+										std::end(values));
 
 	for(int i = 0; i < pic.width() - 1; ++i)
 	{
@@ -332,7 +326,7 @@ QPixmap kernelEst(const std::valarray<double> & arr)
 				 pic.height() * 0.9);
 
 	// x markers - 10 items
-	for(int i = xMin; i <= xMax; i += (xMax - xMin) / 10)
+	for(double i = xMin; i <= xMax; i += (xMax - xMin) / 10.)
 	{
 		pnt.drawLine((i - xMin) / (xMax - xMin) * pic.width(),
 					 pic.height() * 0.9,

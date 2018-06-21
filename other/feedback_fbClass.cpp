@@ -212,8 +212,8 @@ void FeedbackClass::writeBackgroundCompare(taskType typ, ansType howSolved)
 	{
 		const int fileN = static_cast<int>(nn);
 		matrix diff = this->files[fileN].backgroundCompare(typ, howSolved)
-					  .subCols(this->files[fileN].getLeftLimWind(),
-							   this->files[fileN].getRightLimWind());
+					  .subCols(this->files[fileN].getLeftLim(),
+							   this->files[fileN].getRightLim());
 
 		myLib::drw::drawArray(myLib::drw::drawTemplate(true, FBedf::leftFreq, FBedf::rightFreq),
 							  diff).save(def::helpPath + "/"

@@ -11,6 +11,8 @@ void coutAllFeatures(const QString & dear,
 {
 	const QString guysPath = DEFS.dirPath() + "/" + dear;
 
+	Net * net = new Net();
+
 	for(const auto & in : guysList)
 	{
 		const QString guyPath = guysPath + "/" + in.first;
@@ -30,7 +32,7 @@ void coutAllFeatures(const QString & dear,
 //		}
 
 		/// stats of solving and times
-		fbItem.writeStat();											std::cout.flush(); /// 23
+//		fbItem.writeStat();											std::cout.flush(); /// 23
 //		fbItem.writeDists();										std::cout.flush(); /// 6
 //		fbItem.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
 //		fbItem.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
@@ -47,17 +49,29 @@ void coutAllFeatures(const QString & dear,
 		fbItem.writeBackgroundCompare(fb::taskType::verb, fb::ansType::correct);		/// 3 pics
 
 		/// normalized dispersions
-		fbItem.writeDispersions(ansType::correct);		std::cout.flush();	/// 9 vals
+//		fbItem.writeDispersions(ansType::correct);		std::cout.flush();	/// 9 vals
 
 		/// classify winds/reals by alpha
-		fbItem.writeClass(true);						std::cout.flush();	/// 6 vals
+//		fbItem.writeClass(false);						std::cout.flush();	/// 6 vals
+//		fbItem.writeClass(true);						std::cout.flush();	/// 6 vals
 
 		/// distances only for correctly solved
-		fbItem.writeDists(ansType::correct);			std::cout.flush();	/// 9 vals
+//		fbItem.writeDists(ansType::correct);			std::cout.flush();	/// 9 vals
 
+		for(fb::fileNum fileN : {fb::fileNum::first, fb::fileNum::second, fb::fileNum::third} )
+		{
+			for(fb::taskType taskT : {fb::taskType::spat, fb::taskType::verb} )
+			{
+				for(fb::ansType ansT : {fb::ansType::correct, fb::ansType::all} )
+				{
+//					net->innerClassHistogram(fbItem.getFile(static_cast<int>(fileN)),
+//											 taskT,
+//											 ansT);
+				}
+			}
+		}
 
-
-//		exit(0);
+		exit(0);
 
 		///
 		std::cout << std::endl;

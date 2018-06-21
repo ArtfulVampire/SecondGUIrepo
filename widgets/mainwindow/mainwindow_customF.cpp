@@ -19,7 +19,7 @@ void MainWindow::customFunc()
 
 #if 01
 	/// count correctness, average times, ICA
-#if 01 /// new (~10 people)
+#if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
 	const QString postfix = "_good";

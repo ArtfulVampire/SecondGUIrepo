@@ -452,10 +452,12 @@ void Classifier::cleaningNfold(int num)
 	{
 		pred = [&counter, num](){ return counter < num; };
 	}
+	else
 	{
 		pred = [&hazWrong](){ return hazWrong; };
 	}
 
+//	int co = 1;
 	do
 	{
 		hazWrong = false;
@@ -479,32 +481,36 @@ void Classifier::cleaningNfold(int num)
 				exclude.push_back(i);
 				hazWrong = true;
 			}
-
 		}
 		this->myClassData->erase(exclude);
-
+		std::cout << counter << "\t";
+		++counter;
 	} while (pred());
+	std::cout << std::endl;
 }
 
 void Classifier::cleaningKfold(int num, int fold)
 {
-	const int numOfCl = this->myClassData->getNumOfCl();
+	int counter = 0;
+	bool hazWrong = false;
 
-	std::vector<std::vector<uint>> arr; // [class][index]
-	arr.resize(numOfCl);
-
-	for(int i = 0; i < num; ++i)
+	std::function<bool(void)> pred;
+	if(num > 0)
 	{
+		pred = [&counter, num](){ return counter < num; };
+	}
+	else
+	{
+		pred = [&hazWrong](){ return hazWrong; };
+	}
+
+	do
+	{
+		hazWrong = false;
 		/// fill arr
-		for(auto & inArr : arr) { inArr.clear(); }
-		for(uint i = 0; i < this->myClassData->size(); ++i)
-		{
-			arr[ this->myClassData->getTypes()[i] ].push_back(i);
-		}
-		/// mix arr
+		auto arr = this->myClassData->getIndices();
 		for(auto & inArr : arr) { smLib::mix(inArr); }
 
-		/// make indices
 		auto sets = this->makeIndicesSetsCross(arr, fold, 0);
 		this->learn(sets.first);
 
@@ -518,13 +524,19 @@ void Classifier::cleaningKfold(int num, int fold)
 				exclude.push_back(i);
 			}
 		}
-		this->myClassData->erase(exclude);
-	}
+		if(!exclude.empty())
+		{
+			this->myClassData->erase(exclude);
+			hazWrong = true;
+		}
+//		std::cout << counter << std::endl;
+		++counter;
+	} while(pred());
 
 	/// reset params
-	confusionMatrix = matrix(numOfCl, numOfCl, 0);
-	outputLayer = std::valarray<double>(0., numOfCl);
+	confusionMatrix.fill(0.);
+	outputLayer = 0.;
 
-	/// classify
-	this->crossClassification(2, fold, DEVNULL);
+	/// classify - what for?
+//	this->crossClassification(3, fold, DEVNULL);
 }

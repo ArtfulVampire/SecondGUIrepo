@@ -268,7 +268,10 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ans
 	myANN->setCritError(0.05);
 	myANN->setLrate(0.001);
 	myANN->adjustLearnRate(DEVNULL);
-	myANN->cleaningNfold(-1);			/// until all are true
+	////////////////// aksjdajksdjansdalsdnjkasdvn
+	myANN->cleaningKfold(60, 5);
+//	myANN->cleaningNfold(-1);			/// until all are true
+
 //	myClassifierData.z_transform(); /// repeat z-transform?
 
 	/// fill myClassifierData with z-transformed winds
@@ -293,15 +296,19 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ans
 			res.push_back( myANN->getOutputLayer(taskNum) );
 		}
 	}
+
 	/// draw histogram and/or KDE
 	QString savePath = file1.getFilePath();
 
+
 	savePath.replace(".edf", "_kde.jpg", Qt::CaseInsensitive);
-	myLib::kernelEst(smLib::vecToValar(res)).save(savePath);
+	myLib::kernelEst(smLib::vecToValar(res)).save(savePath, 0, 100);
+
 
 	savePath.replace("_kde.jpg", "_hist.jpg", Qt::CaseInsensitive);
 	myLib::histogram(smLib::vecToValar(res),
-					 res.size() / 30); /// magic const
+					 res.size() / 30,
+					 savePath); /// magic const
 }
 
 Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QString & ansPath1,

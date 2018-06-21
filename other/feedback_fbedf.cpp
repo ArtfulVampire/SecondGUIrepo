@@ -645,8 +645,8 @@ matrix FBedf::backgroundCompare(taskType typ, ansType howSolved) const
 	/// compose average spectre for the task
 	matrix avTask{};
 	{
-		const int taskNum = static_cast<int>(typ);
 		int counter = 1;
+		const int taskNum = static_cast<int>(typ);
 		for(int i = 0; i < realsSpectra[taskNum].size(); ++i)
 		{
 			if(!realsSpectra[taskNum][i].isEmpty()
@@ -671,18 +671,18 @@ matrix FBedf::backgroundCompare(taskType typ, ansType howSolved) const
 	matrix avRest{};
 	{
 		int counter = 1;
-		const int numRest = static_cast<int>(taskType::rest);
-		for(int i = 0; i < realsSpectra[numRest].size(); ++i)
+		const int restNum = static_cast<int>(taskType::rest);
+		for(int i = 0; i < realsSpectra[restNum].size(); ++i)
 		{
-			if( !realsSpectra[numRest][i].isEmpty() )
+			if( !realsSpectra[restNum][i].isEmpty() )
 			{
 				if( avRest.isEmpty() )
 				{
-					avRest = realsSpectra[numRest][i];
+					avRest = realsSpectra[restNum][i];
 				}
 				else
 				{
-					avRest += realsSpectra[numRest][i];
+					avRest += realsSpectra[restNum][i];
 					++counter;
 				}
 			}

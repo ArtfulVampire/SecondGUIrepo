@@ -71,6 +71,12 @@ public:
 				? fftLimit(rightFreq, srate, windFftLen) + 1 : rightLim; }
 	int getSpLenWind() const { return getRightLimWind() - getLeftLimWind(); }
 
+	int getLeftLim() const { static int leftLim{-1}; return (leftLim == -1)
+				? fftLimit(leftFreq, srate, fftLen) : leftLim; }
+	int getRightLim() const { static int rightLim{-1}; return (rightLim == -1)
+				? fftLimit(rightFreq, srate, fftLen) + 1 : rightLim; }
+	int getSpLen() const { return getRightLim() - getLeftLim(); }
+
 private:
 	static constexpr double leftAlpha = 7.5;
 	static constexpr double rightAlpha = 14;
@@ -172,8 +178,9 @@ public:
 	void writePartOfCleaned();
 	void writeLearnedPatterns();
 
-
 	operator bool() const	{ return isGood; }
+
+	const FBedf & getFile(int num) const				{ return files[num]; }
 
 private:
 	void checkStatTimes(taskType in, ansType howSolved);
@@ -184,7 +191,6 @@ private:
 private:
 	FBedf files[3];
 
-private:
 	QString guyPath;
 	QString guyName;
 	QString postfix;
