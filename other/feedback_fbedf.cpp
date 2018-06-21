@@ -205,7 +205,6 @@ ClassifierData FBedf::prepareClDataWinds(bool reduce)
 					"L " + nm(i));
 	}
 	if(reduce) { clData.reduceSize(suc::learnSetStay); }
-	clData.setApriori(clData.getClassCount());
 	clData.z_transform();
 	clData.adjust();
 	return clData;

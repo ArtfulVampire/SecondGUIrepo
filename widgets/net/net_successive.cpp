@@ -57,7 +57,6 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 		myClassifierData.push_back(spec.toValarByRows(), int(typ), "L " + nm(i));
 	}
 	myClassifierData.reduceSize(suc::learnSetStay);
-	myClassifierData.setApriori(myClassifierData.getClassCount());
 	myClassifierData.z_transform();
 	myClassifierData.adjust(); /// sets numOfClasses and stuff
 
@@ -145,7 +144,6 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 								   "L " + nm(i));
 	}
 	myClassifierData.reduceSize(suc::learnSetStay);
-	myClassifierData.setApriori(myClassifierData.getClassCount());
 	myClassifierData.z_transform();
 	myClassifierData.adjust(); /// sets numOfClasses and stuff
 
@@ -255,7 +253,6 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ans
 									   "L " + nm(i));
 		}
 	}
-	myClassifierData.setApriori(myClassifierData.getClassCount());
 	myClassifierData.z_transform();
 	myClassifierData.adjust(); /// sets numOfClasses and stuff
 

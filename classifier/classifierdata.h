@@ -36,9 +36,10 @@ public:
 	const std::vector<uint> & getTypes() const					{ return types; }
 	const std::vector<std::vector<uint>> & getIndices() const	{ return indices; }
 	const std::vector<QString> & getFileNames() const			{ return fileNames; }
-	const std::valarray<double> & getClassCount() const			{ return classCount; }
 	const std::valarray<double> & getApriori() const			{ return apriori; }
 	const QString & getFilesPath() const						{ return filesPath; }
+//	const std::valarray<double> & getClassCount() const			{ return classCount; }
+	int getClassCount(uint i) const;
 
 	/// sets
 	void setApriori(const std::valarray<double> & inApriori)
@@ -63,8 +64,8 @@ public:
 	void pop_front();
 //	void insert(const std::valarray<double> & inDatum, uint inType, uint index); // unused
 //	void push_front(const std::valarray<double> & inDatum, uint inType); // unused - insert(0)
-	void resize(int rows, int cols, double val);
-	void resizeRows(int newRows);
+//	void resize(int rows, int cols, double val);
+//	void resizeRows(int newRows);
 //	void resizeCols(int newCols);
 	void reduceSize(uint oneClass);
 	void clean(uint size, const QString & filter = QString());
@@ -86,7 +87,7 @@ private:
 	uint numOfCl{};
 	matrix dataMatrix{};						// the data, biases for Net are imaginary
 	std::map<uint, uint> classMarkers{};		// key - input marker, value - number from zero
-	std::vector<uint> types{};					// vector of object types
+	std::vector<uint> types{};					// vector of object types (may be any uints)
 	std::vector<std::vector<uint>> indices{};	// arrays of indices for each class used WHERE ???
 	std::vector<QString> fileNames{};			// used in Classifier::peopleClassification
 	std::valarray<double> classCount{};			// number of objects of each class

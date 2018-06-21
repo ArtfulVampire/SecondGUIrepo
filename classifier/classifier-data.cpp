@@ -7,13 +7,30 @@
 
 using namespace myOut;
 
+#define MAP 01
+
 void ClassifierData::adjust()
 {	
-	/// generalize and move everywhere from uint to std::map<uint, uint>
-	/// get the number of a class by its marker
+
+#if MAP
+	/// fill the map
+	std::set<int> typesSet{};
+	for(auto in : this->types) { typesSet.emplace(in); }
+	int clCounter = 0;
+	for(auto in : typesSet)
+	{
+		this->classMarkers[in] = clCounter;
+		++clCounter;
+	}
+#endif
+
+#if MAP
+	numOfCl = classMarkers.size();
+#else
 	std::set<int> typesSet{};
 	for(auto in : types) { typesSet.emplace(in); }
 	numOfCl = typesSet.size();
+#endif
 
 	recountIndices();
 
@@ -30,7 +47,11 @@ void ClassifierData::recountIndices()
 	this->indices.resize(numOfCl, std::vector<uint>{});
 	for(uint i = 0; i < this->types.size(); ++i)
 	{
+#if MAP
+		this->indices[ this->classMarkers[ this->types[i] ] ].push_back(i);
+#else
 		this->indices[this->types[i]].push_back(i);
+#endif
 	}
 }
 
@@ -47,24 +68,35 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 	this->fileNames.resize(this->types.size(), QString()); /// empty names
 
 	adjust();
-
 	this->z_transform();
 }
 
 
 ClassifierData::ClassifierData(const QString & inPath, const QStringList & filters)
 {
-	QStringList lst = myLib::makeFullFileList(inPath, filters);
 
-	this->numOfCl = DEFS.numOfClasses();
 	this->dataMatrix = matrix();
 	this->types.clear();
 	this->fileNames.clear();
 	this->filesPath = inPath;
+
+
+#if MAP
+	/// construct types vector, dataMatrix and fileNames, then adjust
+	for(const QString & fileName : myLib::makeFullFileList(inPath, filters))
+	{
+		auto tempArr = myLib::readFileInLine(inPath + "/" + fileName);
+		dataMatrix.push_back(tempArr);
+		types.push_back(myLib::getTypeOfFileName(fileName, DEFS.getFileMarks()));
+		fileNames.push_back(fileName);
+	}
+	adjust();
+#else
+	this->numOfCl = DEFS.numOfClasses();
 	this->indices.resize(numOfCl);
 	this->classCount.resize(this->numOfCl, 0.);
 
-	for(const QString & fileName : lst)
+	for(const QString & fileName : myLib::makeFullFileList(inPath, filters))
 	{
 		auto tempArr = myLib::readFileInLine(inPath + "/" + fileName);
 		this->push_back(tempArr,
@@ -72,6 +104,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 						fileName);
 	}
 	this->apriori = smLib::normalized(classCount);
+#endif
 
 	this->z_transform();
 }
@@ -79,10 +112,18 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 void ClassifierData::erase(const uint index)
 {
 	dataMatrix.eraseRow(index);
+#if MAP
+	classCount[ classMarkers[ types[index] ] ] -= 1.;
+#else
 	classCount[ types[index] ] -= 1.;
+#endif
 
 	/// check empty classes?
-	auto & al = indices[types[index]];
+#if MAP
+	auto & al = indices[ classMarkers[ types[index] ] ];
+#else
+	auto & al = indices[ types[index] ];
+#endif
 	al.erase(std::find(std::begin(al), std::end(al), index));
 
 	for(auto & ind : indices)
@@ -94,7 +135,7 @@ void ClassifierData::erase(const uint index)
 	}
 
 	types.erase(std::begin(types) + index);
-	fileNames.erase(fileNames.begin() + index);
+	fileNames.erase(std::begin(fileNames) + index);
 }
 
 void ClassifierData::print()
@@ -103,6 +144,13 @@ void ClassifierData::print()
 	std::cout << "data rows = " << dataMatrix.rows() << std::endl;
 	std::cout << "types size = " << types.size() << std::endl;
 	std::cout << "classCount = " << classCount << std::endl;
+
+#if MAP
+	for(auto in : classMarkers)
+	{
+		std::cout << in.first << " -> " << in.second << std::endl;
+	}
+#endif
 	std::cout << "indices sizes = ";
 	for(const auto & in : indices)
 	{
@@ -121,7 +169,11 @@ void ClassifierData::erase(const std::vector<uint> & eraseIndices)
 
 	for(int index : eraseIndices)
 	{
+#if MAP
+		classCount[ classMarkers[ types[index] ] ] -= 1.;
+#else
 		classCount[ types[index] ] -= 1.;
+#endif
 	}
 	smLib::eraseItems(types, eraseIndices);
 
@@ -129,12 +181,32 @@ void ClassifierData::erase(const std::vector<uint> & eraseIndices)
 	recountIndices();
 }
 
+/// is it type from zero or random marker
+
+int ClassifierData::getClassCount(uint i) const
+{
+#if MAP
+	return indices[ classMarkers.at(i) ].size();
+#else
+	return indices[i].size();
+#endif
+}
+
+/// is it type from zero or random marker
 void ClassifierData::removeFirstItemOfType(uint type)
 {
+	/// check if such type exists ???
+
+#if MAP
+	/////////////////////////// WARNING!
+	uint num = *std::min_element(std::begin(indices[ classMarkers[type] ]),
+								 std::end(indices[ classMarkers[type] ]));
+
+#else
 	uint num = *std::min_element(std::begin(indices[type]),
 								 std::end(indices[type]));
+#endif
 	this->erase(num);
-
 }
 
 void ClassifierData::reduceSize(uint oneClass)
@@ -143,29 +215,42 @@ void ClassifierData::reduceSize(uint oneClass)
 	std::valarray<double> localCount = classCount;
 	for(uint i = 0; i < dataMatrix.rows(); ++i)
 	{
-		if(localCount[ types[i] ] > oneClass)
+#if MAP
+		int typeIndex = classMarkers[ types[i] ];
+#else
+		int typeIndex = types[i];
+#endif
+
+		if(localCount[ typeIndex ] > oneClass)
 		{
 			eraseIndices.push_back(i);
-			localCount[ types[i] ] -= 1.;
+			localCount[ typeIndex ] -= 1.;
 		}
 	}
 	this->erase(eraseIndices);
 }
 
+/// retain last 'size' vectors of each class, whose names contain 'filter'
+/// is used once in Net::customF
 void ClassifierData::clean(uint size, const QString & filter)
 {
 	std::vector<uint> eraseIndices{};
 	std::vector<uint> tmpClCo(this->getNumOfCl());
-	std::vector<uint> tmpTypes;
-	std::vector<uint> inds;
+	std::vector<uint> tmpTypes{};
+	std::vector<uint> inds{};
 
 	for(uint i = 0; i < fileNames.size(); ++i)
 	{
+#if MAP
+		int typeIndex = classMarkers[ types[i] ];
+#else
+		int typeIndex = types[i];
+#endif
 		if(fileNames[i].contains(filter))
 		{
-			++tmpClCo[types[i]];
+			++tmpClCo[typeIndex];
 			inds.push_back(i);
-			tmpTypes.push_back(types[i]);
+			tmpTypes.push_back(typeIndex);
 		}
 	}
 
@@ -204,49 +289,68 @@ void ClassifierData::push_back(const std::valarray<double> & inDatum,
 							   uint inType,
 							   const QString & inFileName)
 {
-	/// remake using general inType and std::map
-	if(inType >= indices.size()) indices.resize(inType + 1);
-	if(inType >= classCount.size()) smLib::valarResize(classCount, inType + 1);
-
-	indices[inType].push_back(dataMatrix.rows()); // index of a new
 	dataMatrix.push_back(inDatum);
-	classCount[inType] += 1.;
 	types.push_back(inType);
 	fileNames.push_back(inFileName);
+
+	/// process if it is a new class
+#if MAP
+	if(classMarkers.count(inType) == 0) /// this is a new type
+	{
+		adjust(); /// can rearrange the sequence of classes
+	}
+	else
+	{
+		indices[ classMarkers[inType] ].push_back(dataMatrix.rows() - 1); // index of a new
+		classCount[ classMarkers[inType] ] += 1.;
+	}
+#else
+	if(inType >= indices.size()) { indices.resize(inType + 1); }
+	indices[inType].push_back(dataMatrix.rows() - 1);
+
+	if(inType >= classCount.size()) { smLib::valarResize(classCount, inType + 1); }
+	classCount[inType] += 1.;
+#endif
 }
 
 void ClassifierData::pop_back()
 {
 #if 0
+	/// costs more, but works
 	this->erase(dataMatrix.rows() - 1);
 #else
 	const int index = dataMatrix.rows() - 1;
+
+#if MAP
+	const int type = classMarkers[ types[index] ];
+#else
 	const int type = types[index];
+#endif
 
 	/// inversed push_back
-	indices[type].pop_back();
 	dataMatrix.pop_back();
-	classCount[ type ] -= 1.;
 	types.pop_back();
 	fileNames.pop_back();
+
+	indices[type].pop_back();
+	classCount[type] -= 1.;
 #endif
 }
-
 
 void ClassifierData::pop_front()
 {
 	this->erase(0);
 }
 
-void ClassifierData::resize(int rows, int cols, double val)
-{
-	this->dataMatrix.resize(rows, cols, val);
-}
+//void ClassifierData::resize(int rows, int cols, double val)
+//{
+//	this->dataMatrix.resize(rows, cols, val);
+//}
 
-void ClassifierData::resizeRows(int newRows)
-{
-	this->dataMatrix.resizeRows(newRows);
-}
+//void ClassifierData::resizeRows(int newRows)
+//{
+//	this->dataMatrix.resizeRows(newRows);
+//}
 
 
 ///// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

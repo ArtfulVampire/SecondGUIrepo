@@ -255,7 +255,6 @@ std::vector<uint>> Classifier::makeIndicesSetsCross(
 		int numOfFolds,
 		const int currentFold)
 {
-	const std::valarray<double> & classCount = this->myClassData->getClassCount();
 	const double numOfClasses = this->myClassData->getNumOfCl();
 
 	std::vector<uint> learnInd;
@@ -263,10 +262,11 @@ std::vector<uint>> Classifier::makeIndicesSetsCross(
 
 	for(int i = 0; i < numOfClasses; ++i)
 	{
-		for(int j = 0; j < classCount[i]; ++j)
+		const int clSize = this->myClassData->getClassCount(i);
+		for(int j = 0; j < clSize; ++j)
 		{
-			if(j >= (classCount[i] * currentFold / numOfFolds) &&
-			   j < (classCount[i] * (currentFold + 1) / numOfFolds))
+			if(j >= (clSize * currentFold / numOfFolds) &&
+			   j < (clSize * (currentFold + 1) / numOfFolds))
 			{
 				tallInd.push_back(arr[i][j]);
 			}

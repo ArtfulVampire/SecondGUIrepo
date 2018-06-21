@@ -149,7 +149,6 @@ std::vector<uint>> Net::makeIndicesSetsCross(
                        const std::vector<std::vector<uint> > & arr,
                        const int numOfFold)
 {
-	const std::valarray<double> & classCount = myModel->getClassifierData()->getClassCount();
 	const double numOfClasses = myModel->getClassifierData()->getNumOfCl();
 
     std::vector<uint> learnInd;
@@ -159,10 +158,11 @@ std::vector<uint>> Net::makeIndicesSetsCross(
 
 	for(int i = 0; i < numOfClasses; ++i)
     {
-        for(int j = 0; j < classCount[i]; ++j)
+		const int clSize = myModel->getClassifierData()->getClassCount(i);
+		for(int j = 0; j < clSize; ++j)
         {
-            if(j >= (classCount[i] * numOfFold / fold) &&
-               j < (classCount[i] * (numOfFold + 1) / fold))
+			if(j >= (clSize * numOfFold / fold) &&
+			   j < (clSize * (numOfFold + 1) / fold))
             {
                 tallInd.push_back(arr[i][j]);
             }
@@ -172,7 +172,7 @@ std::vector<uint>> Net::makeIndicesSetsCross(
             }
         }
     }
-    return make_pair(learnInd, tallInd);
+	return std::make_pair(learnInd, tallInd);
 }
 
 void Net::halfHalfClassification()
