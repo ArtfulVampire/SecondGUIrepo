@@ -148,6 +148,11 @@ inline std::valarray<double> normalized(const std::valarray<double> & in)
 	return in / norma(in);
 }
 
+inline std::valarray<double> normalized(std::valarray<double> && in)
+{
+	return in / norma(in);
+}
+
 inline std::valarray<double> randomValar(int size)
 {
 	std::valarray<double> res(size);

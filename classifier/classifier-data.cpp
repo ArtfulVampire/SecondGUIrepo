@@ -12,34 +12,38 @@ using namespace myOut;
 void ClassifierData::adjust()
 {	
 
-#if MAP
-	/// fill the map
 	std::set<int> typesSet{};
 	for(auto in : this->types) { typesSet.emplace(in); }
+#if MAP
+	/// fill the map
 	int clCounter = 0;
 	for(auto in : typesSet)
 	{
 		this->classMarkers[in] = clCounter;
 		++clCounter;
 	}
-#endif
-
-#if MAP
 	numOfCl = classMarkers.size();
 #else
-	std::set<int> typesSet{};
-	for(auto in : types) { typesSet.emplace(in); }
 	numOfCl = typesSet.size();
 #endif
-
 	recountIndices();
+	calculateApriori();
+}
 
-	classCount.resize(numOfCl);
-	for(uint i = 0; i < numOfCl; ++i)
+std::valarray<double> ClassifierData::getClassCount() const
+{
+	std::valarray<double> res(numOfCl);
+	int co = 0;
+	for(const auto & in : indices)
 	{
-		classCount[i] = indices[i].size();
+		res[co++] = in.size();
 	}
-	apriori = smLib::normalized(classCount);
+	return res;
+}
+
+void ClassifierData::calculateApriori()
+{
+	apriori = smLib::normalized(getClassCount());
 }
 
 void ClassifierData::recountIndices()
@@ -94,7 +98,6 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 #else
 	this->numOfCl = DEFS.numOfClasses();
 	this->indices.resize(numOfCl);
-	this->classCount.resize(this->numOfCl, 0.);
 
 	for(const QString & fileName : myLib::makeFullFileList(inPath, filters))
 	{
@@ -103,7 +106,7 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 						myLib::getTypeOfFileName(fileName, DEFS.getFileMarks()),
 						fileName);
 	}
-	this->apriori = smLib::normalized(classCount);
+	calculateApriori();
 #endif
 
 	this->z_transform();
@@ -112,11 +115,6 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 void ClassifierData::erase(const uint index)
 {
 	dataMatrix.eraseRow(index);
-#if MAP
-	classCount[ classMarkers[ types[index] ] ] -= 1.;
-#else
-	classCount[ types[index] ] -= 1.;
-#endif
 
 	/// check empty classes?
 #if MAP
@@ -143,7 +141,6 @@ void ClassifierData::print()
 	std::cout << "numOfClasses = " << numOfCl << std::endl;
 	std::cout << "data rows = " << dataMatrix.rows() << std::endl;
 	std::cout << "types size = " << types.size() << std::endl;
-	std::cout << "classCount = " << classCount << std::endl;
 
 #if MAP
 	for(auto in : classMarkers)
@@ -166,15 +163,6 @@ void ClassifierData::erase(const std::vector<uint> & eraseIndices)
 
 	dataMatrix.eraseRows(eraseIndices);
 	smLib::eraseItems(fileNames, eraseIndices);
-
-	for(int index : eraseIndices)
-	{
-#if MAP
-		classCount[ classMarkers[ types[index] ] ] -= 1.;
-#else
-		classCount[ types[index] ] -= 1.;
-#endif
-	}
 	smLib::eraseItems(types, eraseIndices);
 
 	/// indices - just recount from scratch
@@ -212,7 +200,7 @@ void ClassifierData::removeFirstItemOfType(uint type)
 void ClassifierData::reduceSize(uint oneClass)
 {
 	std::vector<uint> eraseIndices{};
-	std::valarray<double> localCount = classCount;
+	std::valarray<double> localCount = getClassCount();
 	for(uint i = 0; i < dataMatrix.rows(); ++i)
 	{
 #if MAP
@@ -302,14 +290,10 @@ void ClassifierData::push_back(const std::valarray<double> & inDatum,
 	else
 	{
 		indices[ classMarkers[inType] ].push_back(dataMatrix.rows() - 1); // index of a new
-		classCount[ classMarkers[inType] ] += 1.;
 	}
 #else
 	if(inType >= indices.size()) { indices.resize(inType + 1); }
 	indices[inType].push_back(dataMatrix.rows() - 1);
-
-	if(inType >= classCount.size()) { smLib::valarResize(classCount, inType + 1); }
-	classCount[inType] += 1.;
 #endif
 }
 
@@ -333,7 +317,6 @@ void ClassifierData::pop_back()
 	fileNames.pop_back();
 
 	indices[type].pop_back();
-	classCount[type] -= 1.;
 #endif
 }
 

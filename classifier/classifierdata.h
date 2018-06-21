@@ -28,6 +28,7 @@ public:
 
 	void adjust();	/// sets proper numCl, indices, classCount
 	void recountIndices();
+	void calculateApriori();
 
 	/// gets
 	const matrix & getData() const								{ return dataMatrix; }
@@ -38,7 +39,6 @@ public:
 	const std::vector<QString> & getFileNames() const			{ return fileNames; }
 	const std::valarray<double> & getApriori() const			{ return apriori; }
 	const QString & getFilesPath() const						{ return filesPath; }
-//	const std::valarray<double> & getClassCount() const			{ return classCount; }
 	int getClassCount(uint i) const;
 
 	/// sets
@@ -84,13 +84,16 @@ public:
 	ClassifierData productLeft(const matrix & coeffs = matrix()) const;
 
 private:
+	std::valarray<double> getClassCount() const;
+
+private:
 	uint numOfCl{};
 	matrix dataMatrix{};						// the data, biases for Net are imaginary
 	std::map<uint, uint> classMarkers{};		// key - input marker, value - number from zero
 	std::vector<uint> types{};					// vector of object types (may be any uints)
 	std::vector<std::vector<uint>> indices{};	// arrays of indices for each class used WHERE ???
 	std::vector<QString> fileNames{};			// used in Classifier::peopleClassification
-	std::valarray<double> classCount{};			// number of objects of each class
+//	std::valarray<double> classCount{};			// number of objects of each class
 	std::valarray<double> apriori{};			// for some classifiers like NBC
 	QString filesPath{};
 
