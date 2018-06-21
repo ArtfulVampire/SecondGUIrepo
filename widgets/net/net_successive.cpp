@@ -233,23 +233,21 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 	return myANN->averageClassification(nullStr);
 }
 
-void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ)
+void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ansType howSolved)
 {
 	DEFS.setFftLen(fb::FBedf::windFftLen);
-//	const QString localExpName = file1.getExpNameShort();
 
 	/// load windows spectra (2 or 3 classes), (from all or correct only)
-	/// which class to discard in case of 2 classes
+	/// which class to discard in case of 2 classes? rest?
 //	fb::taskType dropType = (typ == fb::taskType::spat) ? fb::taskType::verb : fb::taskType::spat;
 
-	/// not via ClassifierData constructor because of norming and stuff
+	/// not via ClassifierData constructor because of special norming and stuff
 	myClassifierData = ClassifierData();
 	for(int i = 0; i < file1.getWindTypes().size(); ++i)
 	{
-		if((file1.getWindAns(i) == fb::ansType::correct
-//		   || 1 /// uncomment to add all winds, comment for only correct
-		   )
-//		   && file1.getWindTypes(i) != dropType /// uncomment for 2 classes
+		if(fb::isGoodAns(file1.getWindAns(i), howSolved)
+//		   && file1.getWindTypes(i) != dropType					/// uncomment for 2 classes
+//		   && file1.getWindTypes(i) != fb::taskType::rest		/// uncomment to drop rest
 		   )
 		{
 			myClassifierData.push_back(file1.getWindSpectra(i),
@@ -285,8 +283,7 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ)
 	for(int i = 0; i < file2.getWindTypes().size(); ++i)
 	{
 		if(file2.getWindTypes(i) == typ
-		   && file2.getWindAns(i) == fb::ansType::correct /// comment to add all winds, uncomment for only correct
-		   )
+		   && fb::isGoodAns(file1.getWindAns(i), howSolved))
 		{
 			myClassifierData.addItem(file2.getWindSpectra(i),
 									 uint(taskNum),
@@ -301,9 +298,11 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ)
 	}
 	/// draw histogram and/or KDE
 	QString savePath = file1.getFilePath();
+
 	savePath.replace(".edf", "_kde.jpg", Qt::CaseInsensitive);
 	myLib::kernelEst(smLib::vecToValar(res)).save(savePath);
-	savePath.replace("_kde.edf", "_hist.jpg", Qt::CaseInsensitive);
+
+	savePath.replace("_kde.jpg", "_hist.jpg", Qt::CaseInsensitive);
 	myLib::histogram(smLib::vecToValar(res),
 					 res.size() / 30); /// magic const
 }

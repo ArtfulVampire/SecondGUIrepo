@@ -38,7 +38,7 @@ private:
 	std::vector<std::valarray<double>> solvTime; /// compose with spec function
 
 	/// [type][numReal]
-	std::vector<std::vector<ansType>> ans;
+	std::vector<std::vector<ansType>> ans;		/// rest always correct
 
 	/// [numReal]
 	std::vector<ansType> ansInRow;
@@ -68,7 +68,7 @@ public:
 	int getLeftLimWind() const { static int leftLim{-1}; return (leftLim == -1)
 				? fftLimit(leftFreq, srate, windFftLen) : leftLim; }
 	int getRightLimWind() const { static int rightLim{-1}; return (rightLim == -1)
-				? fftLimit(rightFreq, srate, windFftLen) : rightLim; }
+				? fftLimit(rightFreq, srate, windFftLen) + 1 : rightLim; }
 	int getSpLenWind() const { return getRightLimWind() - getLeftLimWind(); }
 
 private:
@@ -77,7 +77,6 @@ private:
 	int individualAlphaPeakIndexWind() const;
 	int individualAlphaPeakIndexReal() const;
 
-	bool isGoodAns(ansType real, ansType expected) const;
 	bool isGoodAns(taskType typ, int numReal, ansType expected) const;
 
 public:
@@ -131,6 +130,9 @@ private:
 };
 
 
+bool isGoodAns(ansType real, ansType expected);
+
+
 
 
 /// feedback
@@ -152,12 +154,12 @@ public:
 	void writeFile();
 
 	/// to make
-	void writeDists();				/// 1st: 0-1, 0-2, 1-2, 2nd: 0-1, 0-2, 1-2
-	void writeDispersions();		/// 1st: 0, 1, 2, 2nd: 0, 1, 2
+	void writeDists(ansType howSolved = ansType::all);				/// 1st: 0-1, 0-2, 1-2, 2nd: 0-1, 0-2, 1-2
+	void writeDispersions(ansType howSolved = ansType::all);		/// 1st: 0, 1, 2, 2nd: 0, 1, 2
 	void writeKDEs(const QString & prePath);
 	void writeShortLongs(const QString & prePath);
 	void writeRightWrong(const QString & prePath);
-	void writeClass();
+	void writeClass(bool aplhaOnly = false);
 	void writeSuccessive();
 	void writeBackgroundCompare(taskType typ, ansType howSolved);
 

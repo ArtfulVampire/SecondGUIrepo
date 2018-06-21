@@ -18,49 +18,7 @@ void MainWindow::customFunc()
 {
 
 #if 01
-	/// ICA
-#if 0 /// new (~10 people)
-	const QString dear = "FeedbackNewMark";
-	const auto & guysList = subj::guysFBnew;
-	const QString postfix = "_good";
-#else /// final (~16 people)
-	const QString dear = "FeedbackFinalMark";
-	const QString postfix = "_fin";
-//	const QString postfix = "";
-	const auto & guysList = subj::guysFBfinal;
-#endif
-	fb::calculateICA(dear, guysList, postfix);
-	exit(0);
-#endif
-
-#if 0
-	/// binomial thresholds Polina
-	std::cout.precision(3);
-	std::cout << " \t";
-
-	for(int N = 80; N >= 30; N-= 5)
-	{
-		std::cout << N << "\t";
-	}
-	std::cout << std::endl;
-
-	std::cout << std::fixed;
-	std::cout.precision(1);
-
-	for(int numClass = 2; numClass <= 6; ++numClass)
-	{
-		std::cout << numClass << "\t";
-		for(int N = 80; N >= 30; N-= 5)
-		{
-			std::cout << myLib::binomialLimitOfSignificance(N, 1. / numClass, 0.05) * 100. / N << "\t";
-		}
-		std::cout << std::endl;
-	}
-	exit(0);
-#endif
-
-#if 0
-	/// count correctness and average times
+	/// count correctness, average times, ICA
 #if 01 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
@@ -72,11 +30,12 @@ void MainWindow::customFunc()
 	const auto & guysList = subj::guysFBfinal;
 #endif
 	fb::coutAllFeatures(dear, guysList, postfix);
-//	fb::coutAllFeatures(dear, {subj::guysFBfinal[9]}, postfix);
+//	fb::calculateICA(dear, guysList, postfix);
 	exit(0);
 #endif
 
 #if 0
+	/// reref to Cz
 	edfFile fil;
 	fil.readEdfFile("/media/Files/Data/Geodesics/MPI_20/MPI.edf");
 	int cz = fil.findChannel("Cz");
@@ -2113,6 +2072,32 @@ exit(0);
 //        exit(0);
     }
     exit(3);
+#endif
+
+#if 0
+	/// binomial thresholds Polina
+	std::cout.precision(3);
+	std::cout << " \t";
+
+	for(int N = 80; N >= 30; N-= 5)
+	{
+		std::cout << N << "\t";
+	}
+	std::cout << std::endl;
+
+	std::cout << std::fixed;
+	std::cout.precision(1);
+
+	for(int numClass = 2; numClass <= 6; ++numClass)
+	{
+		std::cout << numClass << "\t";
+		for(int N = 80; N >= 30; N-= 5)
+		{
+			std::cout << myLib::binomialLimitOfSignificance(N, 1. / numClass, 0.05) * 100. / N << "\t";
+		}
+		std::cout << std::endl;
+	}
+	exit(0);
 #endif
 
 #if 0

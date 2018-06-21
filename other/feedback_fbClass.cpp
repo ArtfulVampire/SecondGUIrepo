@@ -137,7 +137,7 @@ void FeedbackClass::writeStat()
 	for(auto typ : {taskType::spat, taskType::verb})
 	{
 		checkStatSolving(typ, ansType::correct);	/// cout 5 values
-		checkStatTimes(typ, ansType::correct);	/// cout 2 values
+		checkStatTimes(typ, ansType::correct);		/// cout 2 values
 	}
 	checkStatInsight(4.);	/// cout 8 values
 	checkStatInsight(6.);	/// cout 8 values
@@ -145,14 +145,14 @@ void FeedbackClass::writeStat()
 	std::cout << std::defaultfloat;
 }
 
-void FeedbackClass::writeDists()
+void FeedbackClass::writeDists(ansType howSolved)
 {
 	for(int i = 0; i < fb::numOfClasses; ++i)
 	{
 		for(int j = i + 1; j < fb::numOfClasses; ++j)
 		{
-			double a = files[static_cast<int>(fileNum::first)].distSpec(taskType(i), taskType(j), ansType::all);
-			double b = files[static_cast<int>(fileNum::third)].distSpec(taskType(i), taskType(j), ansType::all);
+			double a = files[static_cast<int>(fileNum::first)].distSpec(taskType(i), taskType(j), howSolved);
+			double b = files[static_cast<int>(fileNum::third)].distSpec(taskType(i), taskType(j), howSolved);
 			std::cout
 //					<< std::setprecision(4)
 					<< a << "\t"
@@ -162,12 +162,12 @@ void FeedbackClass::writeDists()
 	}
 }
 
-void FeedbackClass::writeDispersions()
+void FeedbackClass::writeDispersions(ansType howSolved)
 {
-	for(int i = 0; i < fb::numOfClasses; ++i)
+	for(taskType typ : {taskType::spat, taskType::verb, taskType::rest})
 	{
-		double a = files[static_cast<int>(fileNum::first)].spectreDispersion(taskType(i), ansType::all);
-		double b = files[static_cast<int>(fileNum::third)].spectreDispersion(taskType(i), ansType::all);
+		double a = files[static_cast<int>(fileNum::first)].spectreDispersion(typ, howSolved);
+		double b = files[static_cast<int>(fileNum::third)].spectreDispersion(typ, howSolved);
 		std::cout
 //				<< std::setprecision(4)
 				<< a << "\t"
@@ -225,12 +225,12 @@ void FeedbackClass::writeBackgroundCompare(taskType typ, ansType howSolved)
 	}
 }
 
-void FeedbackClass::writeClass()
+void FeedbackClass::writeClass(bool aplhaOnly)
 {
 	if(01)
 	{
-		double a = files[static_cast<int>(fileNum::first)].classifyReals(false).first;
-		double b = files[static_cast<int>(fileNum::third)].classifyReals(false).first;
+		double a = files[static_cast<int>(fileNum::first)].classifyReals(aplhaOnly).first;
+		double b = files[static_cast<int>(fileNum::third)].classifyReals(aplhaOnly).first;
 		std::cout
 //				<< std::setprecision(3)
 				<< a << "\t"
@@ -241,8 +241,8 @@ void FeedbackClass::writeClass()
 
 	if(01)
 	{
-		double a = files[static_cast<int>(fileNum::first)].classifyWinds(false).first;
-		double b = files[static_cast<int>(fileNum::third)].classifyWinds(false).first;
+		double a = files[static_cast<int>(fileNum::first)].classifyWinds(aplhaOnly).first;
+		double b = files[static_cast<int>(fileNum::third)].classifyWinds(aplhaOnly).first;
 		std::cout
 //				<< std::setprecision(3)
 				<< a << "\t"

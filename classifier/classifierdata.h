@@ -85,6 +85,7 @@ public:
 private:
 	uint numOfCl{};
 	matrix dataMatrix{};						// the data, biases for Net are imaginary
+	std::map<uint, uint> classMarkers{};		// key - input marker, value - number from zero
 	std::vector<uint> types{};					// vector of object types
 	std::vector<std::vector<uint>> indices{};	// arrays of indices for each class used WHERE ???
 	std::vector<QString> fileNames{};			// used in Classifier::peopleClassification

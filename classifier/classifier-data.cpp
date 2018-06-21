@@ -199,7 +199,7 @@ void ClassifierData::addItem(const std::valarray<double> & inDatum,
 	this->push_back(newDatum, inType, inFileName);
 }
 
-/// std::optional<uint> inType
+/// std::optional<uint> inType for?
 void ClassifierData::push_back(const std::valarray<double> & inDatum,
 							   uint inType,
 							   const QString & inFileName)

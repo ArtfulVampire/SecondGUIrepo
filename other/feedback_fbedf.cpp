@@ -55,13 +55,14 @@ FBedf::FBedf(const QString & edfPath,
 
 	/// arrange ans
 	this->ansInRow = this->readAns(ansPath);
-	this->ans.resize(2);	/// magic const 2 task classes
+	this->ans.resize(numOfClasses);
 	int c = 0;
 	for(auto mrk : this->markers)
 	{
 		if(mrk.second == 241)		{ this->ans[0].push_back(this->ansInRow[c++]); }
 		else if(mrk.second == 247)	{ this->ans[1].push_back(this->ansInRow[c++]); }
 	}
+	this->ans[2] = std::vector<ansType>(80, ansType::correct);
 
 	/// divide to reals w/o markers
 	this->realsSignals = myLib::sliceData(this->getData().subRows(-1), /// drop markers
@@ -330,14 +331,14 @@ std::vector<ansType> FBedf::readAns(const QString & ansPath)
 	return res;
 }
 
-bool FBedf::isGoodAns(ansType real, ansType expected) const
+bool isGoodAns(ansType real, ansType expected)
 {
 	return (static_cast<int>(real) & static_cast<int>(expected));
 }
 
 bool FBedf::isGoodAns(taskType typ, int numReal, ansType expected) const
 {
-	return isGoodAns(ans[static_cast<int>(typ)][numReal], expected);
+	return fb::isGoodAns(ans[static_cast<int>(typ)][numReal], expected);
 }
 
 std::valarray<double> FBedf::spectralRow(taskType typ, ansType howSolved, int chan, double freq)
@@ -512,7 +513,7 @@ int FBedf::getNum(taskType typ, ansType howSolved) const
 	int num = 0;
 	for(auto in : ans[taskNum])
 	{
-		if(isGoodAns(in, howSolved)) { ++num; }
+		if(fb::isGoodAns(in, howSolved)) { ++num; }
 	}
 	return num;
 }

@@ -32,7 +32,6 @@ void coutAllFeatures(const QString & dear,
 		/// stats of solving and times
 		fbItem.writeStat();											std::cout.flush(); /// 23
 //		fbItem.writeDists();										std::cout.flush(); /// 6
-//		fbItem.writeDispersions();									std::cout.flush(); /// 9
 //		fbItem.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
 //		fbItem.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
 //		fbItem.writeRightWrong(guyPath + "/" + in.second + "_");	std::cout.flush();
@@ -41,6 +40,22 @@ void coutAllFeatures(const QString & dear,
 //		fbItem.writeLearnedPatterns();								std::cout.flush();
 //		fbItem.writeSuccessive3();									std::cout.flush();
 //		fbItem.writePartOfCleaned();								std::cout.flush();
+
+		/// new things
+		/// compare with background
+		fbItem.writeBackgroundCompare(fb::taskType::spat, fb::ansType::correct);		/// 3 pics
+		fbItem.writeBackgroundCompare(fb::taskType::verb, fb::ansType::correct);		/// 3 pics
+
+		/// normalized dispersions
+		fbItem.writeDispersions(ansType::correct);		std::cout.flush();	/// 9 vals
+
+		/// classify winds/reals by alpha
+		fbItem.writeClass(true);						std::cout.flush();	/// 6 vals
+
+		/// distances only for correctly solved
+		fbItem.writeDists(ansType::correct);			std::cout.flush();	/// 9 vals
+
+
 
 //		exit(0);
 
