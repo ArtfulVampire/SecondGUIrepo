@@ -540,243 +540,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>1</x>
-     <y>30</y>
-     <width>483</width>
-     <height>190</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="0" colspan="3">
-     <widget class="QPushButton" name="findPrevMarkPushButton">
-      <property name="text">
-       <string>prev mark</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3" colspan="2">
-     <widget class="QPushButton" name="findNextMarkPushButton">
-      <property name="text">
-       <string>next mark</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="5" colspan="3">
-     <widget class="QPushButton" name="setMarkLeftPushButton">
-      <property name="text">
-       <string>set mark left</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="8" colspan="2">
-     <widget class="QPushButton" name="setMarkRightPushButton">
-      <property name="text">
-       <string>set mark right</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QSpinBox" name="findPrevMarkSpinBox"/>
-    </item>
-    <item row="1" column="1" colspan="2">
-     <spacer name="horizontalSpacer_5">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>18</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="1" column="3">
-     <widget class="QSpinBox" name="findNextMarkSpinBox"/>
-    </item>
-    <item row="1" column="4">
-     <spacer name="horizontalSpacer_4">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>18</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="1" column="5">
-     <widget class="QSpinBox" name="setMarkLeftSpinBox"/>
-    </item>
-    <item row="1" column="6" colspan="2">
-     <spacer name="horizontalSpacer_3">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>18</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="1" column="8">
-     <widget class="QSpinBox" name="setMarkRightSpinBox"/>
-    </item>
-    <item row="1" column="9">
-     <spacer name="horizontalSpacer_6">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>18</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="2" column="0" colspan="3">
-     <widget class="QPushButton" name="findPrevNonzeroMarkPushButton">
-      <property name="text">
-       <string>prev nonzero</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="3" colspan="2">
-     <widget class="QPushButton" name="findNextNonzeroMarkPushButton">
-      <property name="text">
-       <string>next nonzero</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="5" colspan="3">
-     <widget class="QPushButton" name="prevButton">
-      <property name="text">
-       <string>Prev</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="8" colspan="2">
-     <widget class="QPushButton" name="nextButton">
-      <property name="text">
-       <string>Next</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0" colspan="3">
-     <widget class="QPushButton" name="backwardStepButton">
-      <property name="text">
-       <string>&lt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="3" colspan="2">
-     <widget class="QPushButton" name="forwardStepButton">
-      <property name="text">
-       <string>&gt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="5" colspan="3">
-     <widget class="QPushButton" name="rewriteButton">
-      <property name="text">
-       <string>Rewrite</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="8" colspan="2">
-     <widget class="QPushButton" name="saveButton">
-      <property name="text">
-       <string>Save</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0" colspan="3">
-     <widget class="QPushButton" name="backwardFrameButton">
-      <property name="text">
-       <string>&lt;&lt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="3" colspan="2">
-     <widget class="QPushButton" name="forwardFrameButton">
-      <property name="text">
-       <string>&gt;&gt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="5" colspan="3">
-     <widget class="QPushButton" name="saveSubsecPushButton">
-      <property name="text">
-       <string>Save subsec</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="8" colspan="2">
-     <widget class="QLineEdit" name="saveSubsecAddNameLineEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0" colspan="2">
-     <widget class="QDoubleSpinBox" name="paintStartDoubleSpinBox"/>
-    </item>
-    <item row="5" column="2">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>18</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="5" column="3" colspan="2">
-     <widget class="QLabel" name="paintStartLabel">
-      <property name="text">
-       <string>paint start</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="5" colspan="2">
-     <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox"/>
-    </item>
-    <item row="5" column="7">
-     <spacer name="horizontalSpacer_2">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>18</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="5" column="8" colspan="2">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>paint length</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
   <widget class="QLabel" name="spectreLabel">
    <property name="geometry">
     <rect>
@@ -1008,6 +771,254 @@
     </item>
    </layout>
   </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>1</x>
+     <y>31</y>
+     <width>461</width>
+     <height>186</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0" colspan="3">
+     <widget class="QPushButton" name="findPrevMarkPushButton">
+      <property name="text">
+       <string>prev mark</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3" colspan="2">
+     <widget class="QPushButton" name="findNextMarkPushButton">
+      <property name="text">
+       <string>next mark</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="5" colspan="2">
+     <widget class="QPushButton" name="setMarkLeftPushButton">
+      <property name="text">
+       <string>set mark left</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="7" colspan="2">
+     <widget class="QPushButton" name="setMarkRightPushButton">
+      <property name="text">
+       <string>set mark right</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QSpinBox" name="findPrevMarkSpinBox"/>
+    </item>
+    <item row="1" column="1" colspan="2">
+     <spacer name="horizontalSpacer_5">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>38</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="1" column="3">
+     <widget class="QSpinBox" name="findNextMarkSpinBox"/>
+    </item>
+    <item row="1" column="4">
+     <spacer name="horizontalSpacer_4">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>18</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="1" column="5">
+     <widget class="QSpinBox" name="setMarkLeftSpinBox"/>
+    </item>
+    <item row="1" column="6">
+     <spacer name="horizontalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>28</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="1" column="7">
+     <widget class="QSpinBox" name="setMarkRightSpinBox"/>
+    </item>
+    <item row="1" column="8">
+     <spacer name="horizontalSpacer_6">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>48</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="2" column="0" colspan="3">
+     <widget class="QPushButton" name="findPrevNonzeroMarkPushButton">
+      <property name="text">
+       <string>prev nonzero</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3" colspan="2">
+     <widget class="QPushButton" name="findNextNonzeroMarkPushButton">
+      <property name="text">
+       <string>next nonzero</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="5" colspan="2">
+     <widget class="QPushButton" name="prevButton">
+      <property name="text">
+       <string>Prev</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="7" colspan="2">
+     <widget class="QPushButton" name="nextButton">
+      <property name="text">
+       <string>Next</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="3">
+     <widget class="QPushButton" name="backwardStepButton">
+      <property name="text">
+       <string>&lt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="3" colspan="2">
+     <widget class="QPushButton" name="forwardStepButton">
+      <property name="text">
+       <string>&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="5" colspan="2">
+     <widget class="QPushButton" name="savePicPushButton">
+      <property name="text">
+       <string>Save pic</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="7" colspan="2">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="saveButton">
+        <property name="text">
+         <string>Save</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="rewriteButton">
+        <property name="text">
+         <string>Rewrite</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="4" column="0" colspan="3">
+     <widget class="QPushButton" name="backwardFrameButton">
+      <property name="text">
+       <string>&lt;&lt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="3" colspan="2">
+     <widget class="QPushButton" name="forwardFrameButton">
+      <property name="text">
+       <string>&gt;&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="5" colspan="2">
+     <widget class="QPushButton" name="saveSubsecPushButton">
+      <property name="text">
+       <string>Save subsec</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="7" colspan="2">
+     <widget class="QLineEdit" name="saveSubsecAddNameLineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0" colspan="2">
+     <widget class="QDoubleSpinBox" name="paintStartDoubleSpinBox"/>
+    </item>
+    <item row="5" column="2">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>18</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="5" column="3" colspan="2">
+     <widget class="QLabel" name="paintStartLabel">
+      <property name="text">
+       <string>paint start</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="5">
+     <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox"/>
+    </item>
+    <item row="5" column="6">
+     <spacer name="horizontalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>28</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="5" column="7" colspan="2">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>paint length</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <zorder>layoutWidget</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>picLabel</zorder>
@@ -1021,6 +1032,7 @@
   <zorder>layoutWidget</zorder>
   <zorder>spectreLabel</zorder>
   <zorder>drawSpectrumPushButton</zorder>
+  <zorder>savePicPushButton</zorder>
  </widget>
  <resources/>
  <connections/>

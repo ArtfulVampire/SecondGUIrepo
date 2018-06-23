@@ -207,7 +207,9 @@ Cut::Cut() :
 					 this, SLOT(subtractMeanFrameSlot()));
 	QObject::connect(ui->drawSpectrumPushButton, SIGNAL(clicked(bool)),
 					 this, SLOT(drawSpectre()));
-
+	QObject::connect(ui->savePicPushButton, &QPushButton::clicked,
+			[this](){ currentPic.save(edfFil.getDirPath() + "/"
+									  + ui->saveSubsecAddNameLineEdit->text() + ".jpg"); });
 
 
 	/// smartFind

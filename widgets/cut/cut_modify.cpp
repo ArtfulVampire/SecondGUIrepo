@@ -16,9 +16,7 @@ void Cut::refilterFrameSlot()
 								  false,
 								  edfFil.getFreq(),
 								  true);
-
 	paintData(drawData);
-
 }
 
 void Cut::refilterAllSlot()

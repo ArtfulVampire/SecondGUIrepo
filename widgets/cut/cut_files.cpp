@@ -87,12 +87,14 @@ void Cut::saveSubsecSlot()
 {
 	if( !fileOpened ) { return; }
 
-	if(!checkBadRange(ui->leftLimitSpinBox->value(),
-					  ui->rightLimitSpinBox->value(),
-					  "saveSubsec"))
+//	if(!checkBadRange(ui->leftLimitSpinBox->value(),
+//					  ui->rightLimitSpinBox->value(),
+//					  "saveSubsec"))
 	{
 
-		if(myFileType == fileType::real || 1) /// write plain windows (eyes)
+		if(myFileType == fileType::real
+//		   || 1 /// write plain windows (eyes)
+		   )
 		{
 
 			QString helpString;
@@ -107,8 +109,6 @@ void Cut::saveSubsecSlot()
 		}
 		else if(myFileType == fileType::edf)
 		{
-
-
 			QString newPath = currentFile;
 			QString ad = ui->saveSubsecAddNameLineEdit->text();
 			if( !ad.isEmpty())
