@@ -35,6 +35,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow();
     ~MainWindow();
+	void keyPressEvent(QKeyEvent *event) override;
 
 public slots:
 	// other widgets

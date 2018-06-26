@@ -11,7 +11,7 @@ void coutAllFeatures(const QString & dear,
 {
 	const QString guysPath = DEFS.dirPath() + "/" + dear;
 
-	Net * net = new Net();
+//	Net * net = new Net();
 
 	for(const auto & in : guysList)
 	{

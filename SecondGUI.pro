@@ -15,6 +15,7 @@ QMAKE_CXXFLAGS += -Wno-sign-compare
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
+QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
 
 CONFIG += c++14
 #CONFIG += c++1z
@@ -24,7 +25,6 @@ CONFIG += c++14
 #QMAKE_CXXFLAGS += -D_GLIBCXX_USE_CXX11_ABI=0
 
 
-#QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
 
 #cwt
 #INCLUDEPATH += ./matlab/for_testing

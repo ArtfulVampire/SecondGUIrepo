@@ -93,7 +93,7 @@ void Cut::saveSubsecSlot()
 	{
 
 		if(myFileType == fileType::real
-//		   || 1 /// write plain windows (eyes)
+		   || 1 /// write plain windows (eyes)
 		   )
 		{
 

@@ -59,7 +59,7 @@ public:
 	static constexpr double solveThres = 40.;			/// 40 sec for a task
 
 	static const int windLen = 1024;					/// may be changed to 1000
-	static const int windFftLen = smLib::fftL(windLen);	/// 1024
+	static const int windFftLen = 1024;	/// smLib::fftL(windLen)
 	static constexpr double fftLen = 4096.;
 	static constexpr double spStep = 250. / 4096.;
 	static constexpr double leftFreq = 5.;
