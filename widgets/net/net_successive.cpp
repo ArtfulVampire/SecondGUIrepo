@@ -227,12 +227,16 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 	myANN->drawWeight(def::helpPath + "/" + localExpName + "_last.wts",
 					  def::helpPath + "/" + localExpName + "_last.jpg");
 
-	std::ofstream nullStr("dev/null/");
-	return myANN->averageClassification(nullStr);
+	return myANN->averageClassification(DEVNULL);
 }
 
 void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ansType howSolved)
 {
+	std::cout << file1.getFileNam()
+			  << " " << fb::toStr(typ)
+			  << " " << fb::toStr(howSolved)
+			  << std::endl;
+
 	DEFS.setFftLen(fb::FBedf::windFftLen);
 
 	/// load windows spectra (2 or 3 classes), (from all or correct only)
@@ -253,10 +257,14 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ans
 									   "L " + nm(i));
 		}
 	}
+	if(myClassifierData.isEmpty())
+	{
+		std::cout << " empty data, return" << std::endl << std::endl;
+		return;
+	}
 	myClassifierData.z_transform();
 	myClassifierData.adjust(); /// sets numOfClasses and stuff
 
-	/// clean the set, learn classifier
 	this->setClassifier(ModelType::NBC);
 	this->setClassifier(ModelType::ANN);
 	ANN * myANN = dynamic_cast<ANN *>(myModel);
@@ -267,23 +275,32 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ans
 	}
 	myANN->setCritError(0.05);
 	myANN->setLrate(0.001);
-	myANN->adjustLearnRate(DEVNULL);
-	////////////////// aksjdajksdjansdalsdnjkasdvn
-	myANN->cleaningKfold(60, 5);
-//	myANN->cleaningNfold(-1);			/// until all are true
+	myANN->adjustLearnRate(/*DEVNULL*/);
 
+
+	std::cout << "start clean: size = " << myClassifierData.size() << std::endl;
+	/// clean the set - VERY TIME CONSUMING
+	(myANN->cleaningKfold(20, 5));
+	myANN->learnAll();
+
+//	std::cout << "end clean" << std::endl;
+
+//	myANN->cleaningNfold(-1);			/// until all are true
 //	myClassifierData.z_transform(); /// repeat z-transform?
 
+	/// CAN AVOID COPYING
 	/// fill myClassifierData with z-transformed winds
 	fb::FBedf file2(file1);
 	file2.remakeWindows(3.5 / 4.0, 0); /// magic consts
+
+	std::cout << "winds remade" << std::endl;
 
 	std::vector<double> res{};
 	const int taskNum = static_cast<int>(typ);
 	for(int i = 0; i < file2.getWindTypes().size(); ++i)
 	{
 		if(file2.getWindTypes(i) == typ
-		   && fb::isGoodAns(file1.getWindAns(i), howSolved))
+		   && fb::isGoodAns(file2.getWindAns(i), howSolved))
 		{
 			myClassifierData.addItem(file2.getWindSpectra(i),
 									 uint(taskNum),
@@ -296,19 +313,28 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ans
 			res.push_back( myANN->getOutputLayer(taskNum) );
 		}
 	}
+	if(res.empty())
+	{
+		std::cout << " empty res, return" << std::endl << std::endl;
+		return;
+	}
+
+	std::cout << "res ready: size = " << res.size() << std::endl;
 
 	/// draw histogram and/or KDE
 	QString savePath = file1.getFilePath();
+	savePath.chop(4); /// chop .edf
+	savePath += "_" + fb::toStr(typ)
+				+ "_" + fb::toStr(howSolved);
 
+	myLib::writeFileInLine(savePath + "_data.txt", smLib::vecToValar(res));
 
-	savePath.replace(".edf", "_kde.jpg", Qt::CaseInsensitive);
-	myLib::kernelEst(smLib::vecToValar(res)).save(savePath, 0, 100);
+	myLib::kernelEst(smLib::vecToValar(res)).save(savePath + "_kde.jpg", 0, 100);
 
-
-	savePath.replace("_kde.jpg", "_hist.jpg", Qt::CaseInsensitive);
-	myLib::histogram(smLib::vecToValar(res),
-					 res.size() / 30,
-					 savePath); /// magic const
+	std::cout << "kde ready" << std::endl;
+	/// magic const
+	myLib::histogram(smLib::vecToValar(res), 50).save(savePath + "_hist.jpg", 0, 100);
+	std::cout << "hist ready" << std::endl << std::endl;
 }
 
 Classifier::avType Net::successiveByEDFfinal(const QString & edfPath1, const QString & ansPath1,

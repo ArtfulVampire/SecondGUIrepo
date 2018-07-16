@@ -1,29 +1,95 @@
 #include <other/feedback.h>
 #include <widgets/net.h>
+#include <sstream>
 
 namespace fb
 {
 
-/// other functions and autos
-void coutAllFeatures(const QString & dear,
-					 const std::vector<std::pair<QString, QString> > & guysList,
-					 const QString & postfix)
+taskType & operator ++(taskType & in) /// prefix
+{
+	return in = (in == taskType::rest)
+				? taskType::spat
+				: static_cast<taskType>(static_cast<int>(in) + 1);
+}
+
+taskType operator ++(taskType & in, int) /// postfix
+{
+	auto res = in;
+	++in;
+	return res;
+}
+
+QString toStr(taskType in)
+{
+	static const std::map<taskType, QString> res
+	{
+		{taskType::spat, "spat"},
+		{taskType::verb, "verb"},
+		{taskType::rest, "rest"},
+	};
+	return res.at(in);
+}
+QString toStr(fileNum in)
+{
+	static const std::map<fileNum, QString> res
+	{
+		{fileNum::first, "1"},
+		{fileNum::second, "2"},
+		{fileNum::third, "3"},
+	};
+	return res.at(in);
+}
+QString toStr(ansType in)
+{
+	{
+		static const std::map<ansType, QString> res
+		{
+			{ansType::skip,		"skip"},
+			{ansType::correct,	"correct"},
+			{ansType::notwrong,	"notwrong"},
+			{ansType::wrong,	"wrong"},
+			{ansType::bad,		"bad"},
+			{ansType::answrd,	"answrd"},
+			{ansType::all,		"all"},
+		};
+		return res.at(in);
+	}
+}
+
+/// make return
+std::map<QString, QString>
+coutAllFeatures(const QString & dear,
+				const std::vector<std::pair<QString, QString>> & guysList,
+				const QString & postfix)
 {
 	const QString guysPath = DEFS.dirPath() + "/" + dear;
 
-//	Net * net = new Net();
+	std::map<QString, QString> results{};
 
+	Net * net = new Net();
+
+	bool pass = true;
 	for(const auto & in : guysList)
 	{
 		const QString guyPath = guysPath + "/" + in.first;
 		if(!QDir(guyPath).exists()) { continue; }
 
+		if(in.second == "BDA") { pass = false; }
+		if(pass) { continue; }
+
+//		if(in.second = "AKV") { continue; }
+
 
 		fb::FeedbackClass fbItem(guyPath, in.second, postfix); if(!fbItem) { continue; }
 
-		/// ExpName
-		std::cout << in.second << "\t";
+		std::ostringstream oss{};
+		oss.precision(4);
+		fbItem.setOstream(oss);
 
+		/// ExpName
+		std::cout << in.second << "\t"; std::cout.flush();
+
+		/// insights with different thresholds
 //		FBedf fil(guyPath + "/" + in.second + "_1.edf",
 //				  guyPath + "/" + in.second + "_ans1.txt");
 //		for(double time = 3.; time <= 6.; time += 0.5)
@@ -32,21 +98,21 @@ void coutAllFeatures(const QString & dear,
 //		}
 
 		/// stats of solving and times
-//		fbItem.writeStat();											std::cout.flush(); /// 23
-//		fbItem.writeDists();										std::cout.flush(); /// 6
-//		fbItem.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush();
-//		fbItem.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush();
-//		fbItem.writeRightWrong(guyPath + "/" + in.second + "_");	std::cout.flush();
-//		fbItem.writeClass();										std::cout.flush(); /// 6
-//		fbItem.writeSuccessive();									std::cout.flush();
-//		fbItem.writeLearnedPatterns();								std::cout.flush();
-//		fbItem.writeSuccessive3();									std::cout.flush();
-//		fbItem.writePartOfCleaned();								std::cout.flush();
+//		fbItem.writeStat();											std::cout.flush(); /// 23 vals
+//		fbItem.writeDists();										std::cout.flush(); /// 6 vals
+//		fbItem.writeClass();										std::cout.flush(); /// 6 vals
+//		fbItem.writeSuccessive();									std::cout.flush(); /// 1 val
+//		fbItem.writeLearnedPatterns();								std::cout.flush(); /// 2 vals
+//		fbItem.writeSuccessive3();									std::cout.flush(); /// 1 val
+//		fbItem.writePartOfCleaned();								std::cout.flush(); /// 1 val
+//		fbItem.writeKDEs(guyPath + "/" + in.second + "_");			std::cout.flush(); /// 4 pics
+//		fbItem.writeShortLongs(guyPath + "/" + in.second + "_");	std::cout.flush(); /// 6 pics
+//		fbItem.writeRightWrong(guyPath + "/" + in.second + "_");	std::cout.flush(); /// 6 pics
 
 		/// new things
 		/// compare with background
-		fbItem.writeBackgroundCompare(fb::taskType::spat, fb::ansType::correct);		/// 3 pics
-		fbItem.writeBackgroundCompare(fb::taskType::verb, fb::ansType::correct);		/// 3 pics
+//		fbItem.writeBackgroundCompare(fb::taskType::spat, fb::ansType::correct);		/// 3 pics
+//		fbItem.writeBackgroundCompare(fb::taskType::verb, fb::ansType::correct);		/// 3 pics
 
 		/// normalized dispersions
 //		fbItem.writeDispersions(ansType::correct);		std::cout.flush();	/// 9 vals
@@ -58,28 +124,30 @@ void coutAllFeatures(const QString & dear,
 		/// distances only for correctly solved
 //		fbItem.writeDists(ansType::correct);			std::cout.flush();	/// 9 vals
 
+
+//		net->innerClassHistogram(fbItem.getFile(fb::fileNum::second), taskType::verb, ansType::correct);
+
+
 		for(fb::fileNum fileN : {fb::fileNum::first, fb::fileNum::second, fb::fileNum::third} )
 		{
 			for(fb::taskType taskT : {fb::taskType::spat, fb::taskType::verb} )
 			{
 				for(fb::ansType ansT : {fb::ansType::correct, fb::ansType::all} )
 				{
-//					net->innerClassHistogram(fbItem.getFile(static_cast<int>(fileN)),
-//											 taskT,
-//											 ansT);
+//					continue; /// dont do histograms
+
+					if(fbItem.getFile(fileN).getNum(taskT, ansT) == 0) { continue; }
+
+					net->innerClassHistogram(fbItem.getFile(fileN), taskT, ansT);
 				}
 			}
 		}
-
-		exit(0);
-
-		///
-		std::cout << std::endl;
-
-
-		/// write solving stats into txt file
-//		fbItem.writeFile();
+		results[in.second] = QString(oss.str().c_str());
+//		break;
 	}
+	std::cout << std::endl;
+	delete net;
+	return results;
 }
 
 void calculateICA(const QString & dear,

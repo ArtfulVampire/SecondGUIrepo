@@ -15,14 +15,15 @@ namespace myLib
 std::string funcName(std::string in);
 #define TIME(arg)\
 	do{\
-		auto t0 = std::chrono::high_resolution_clock::now();\
-		arg;\
-		auto t1 = std::chrono::high_resolution_clock::now();\
-		std::cout << myLib::funcName(#arg) \
-		<< ": time elapsed = "\
-		<< std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0).count() / 1000.\
-		<< " nsec" << std::endl;\
-	}while(false)
+	auto t0 = std::chrono::high_resolution_clock::now();\
+	arg;\
+	auto t1 = std::chrono::high_resolution_clock::now();\
+	std::cout \
+	<< myLib::funcName(#arg) \
+	<< ": time elapsed = "\
+	<< std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count() \
+	<< " msec" << std::endl;\
+}while(false)
 
 
 

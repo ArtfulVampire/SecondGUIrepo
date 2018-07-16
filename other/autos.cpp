@@ -269,7 +269,7 @@ return;
 //    helpString = "/media/Files/Data/Mati/clust.jpg";
 //    kernelEst(newD.data(), newD.size(), helpString);
 //    helpString = "/media/Files/Data/Mati/clustH.jpg";
-//    histogram(newD.data(), newD.size(), 40, helpString);
+//    histogram(newD.data(), newD.size(), 40).save(helpString, 0, 100);
 #endif
 }
 

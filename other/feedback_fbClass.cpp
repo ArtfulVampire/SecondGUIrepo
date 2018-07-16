@@ -49,23 +49,16 @@ void FeedbackClass::checkStatTimes(taskType typ, ansType howSolved)
 	std::valarray<double> vals1 = files[static_cast<int>(fileNum::first)].getTimes(typ, howSolved);
 	std::valarray<double> vals2 = files[static_cast<int>(fileNum::third)].getTimes(typ, howSolved);
 
-	if(0)
-	{
-		if(typ == taskType::spat)		{ std::cout << "spatTime:" << "\n"; }
-		else if(typ == taskType::verb)	{ std::cout << "verbTime:" << "\n"; }
-	}
-
 	switch(myLib::MannWhitney(vals1, vals2, 0.05))
 	{
-	case 0: { std::cout << "0"; break; }
-	case 1: { std::cout << "1"; break; }
-	case 2: { std::cout << "-1"; break; }
+	case 0: { (*ostr) << "0"; break; }
+	case 1: { (*ostr) << "1"; break; }
+	case 2: { (*ostr) << "-1"; break; }
 	default: { break; }
 	}
-	std::cout << "\t";
+	(*ostr) << "\t";
 
-
-	std::cout
+	(*ostr)
 //			  << "av.acceleration = "
 			  << (smLib::mean(vals1) - smLib::mean(vals2)) / smLib::mean(vals1) << "\t"
 //			  << std::endl
@@ -74,17 +67,11 @@ void FeedbackClass::checkStatTimes(taskType typ, ansType howSolved)
 
 void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 {
-	int num1 = files[static_cast<int>(fileNum::first)].getNum(typ, howSolved); /// solved in the  first file
-	int num2 = files[static_cast<int>(fileNum::third)].getNum(typ, howSolved); /// solved in the second file
-
-	if(0)
-	{
-		if(typ == taskType::spat)		{ std::cout << "spatNum:" << "\n"; }
-		else if(typ == taskType::verb)	{ std::cout << "verbNum:" << "\n"; }
-	}
+	int num1 = files[static_cast<int>(fileNum::first)].getNum(typ, howSolved);
+	int num2 = files[static_cast<int>(fileNum::third)].getNum(typ, howSolved);
 
 	auto a = myLib::binomialOneTailed(num1, num2, FBedf::numTasks);
-	std::cout
+	(*ostr)
 			<< num1 << "\t"
 			<< num2 << "\t"
 //			<< "p-value = "
@@ -107,7 +94,7 @@ void FeedbackClass::checkStatInsight(double thres)
 
 	/// of all
 	auto a = myLib::binomialOneTailed(num1, num2, FBedf::numTasks);
-	std::cout
+	(*ostr)
 			<< num1 << "\t"
 			<< num2 << "\t"
 //			<< "p-value = "
@@ -119,7 +106,7 @@ void FeedbackClass::checkStatInsight(double thres)
 
 	/// of solved
 	auto b = myLib::binomialOneTailed(num1, num2, numAll1, numAll2);
-	std::cout
+	(*ostr)
 			<< num1 / double(numAll1) << "\t"
 			<< num2 / double(numAll2) << "\t"
 //			<< "p-value = "
@@ -132,28 +119,29 @@ void FeedbackClass::checkStatInsight(double thres)
 
 void FeedbackClass::writeStat()
 {
-	std::cout << std::fixed;
-	std::cout.precision(2);
+	(*ostr) << std::fixed;
+	(*ostr).precision(2);
 	for(auto typ : {taskType::spat, taskType::verb})
 	{
-		checkStatSolving(typ, ansType::correct);	/// cout 5 values
-		checkStatTimes(typ, ansType::correct);		/// cout 2 values
+		checkStatSolving(typ, ansType::correct);	/// 5 values
+		checkStatTimes(typ, ansType::correct);		/// 2 values
 	}
-	checkStatInsight(4.);	/// cout 8 values
-	checkStatInsight(6.);	/// cout 8 values
+	checkStatInsight(4.);	/// 8 values
+	checkStatInsight(6.);	/// 8 values
 
-	std::cout << std::defaultfloat;
+	(*ostr) << std::defaultfloat;
 }
 
 void FeedbackClass::writeDists(ansType howSolved)
 {
+	/// remake with taskType operator++
 	for(int i = 0; i < fb::numOfClasses; ++i)
 	{
 		for(int j = i + 1; j < fb::numOfClasses; ++j)
 		{
 			double a = files[static_cast<int>(fileNum::first)].distSpec(taskType(i), taskType(j), howSolved);
 			double b = files[static_cast<int>(fileNum::third)].distSpec(taskType(i), taskType(j), howSolved);
-			std::cout
+			(*ostr)
 //					<< std::setprecision(4)
 					<< a << "\t"
 					<< b << "\t"
@@ -168,7 +156,7 @@ void FeedbackClass::writeDispersions(ansType howSolved)
 	{
 		double a = files[static_cast<int>(fileNum::first)].spectreDispersion(typ, howSolved);
 		double b = files[static_cast<int>(fileNum::third)].spectreDispersion(typ, howSolved);
-		std::cout
+		(*ostr)
 //				<< std::setprecision(4)
 				<< a << "\t"
 				<< b << "\t"
@@ -231,7 +219,7 @@ void FeedbackClass::writeClass(bool aplhaOnly)
 	{
 		double a = files[static_cast<int>(fileNum::first)].classifyReals(aplhaOnly).first;
 		double b = files[static_cast<int>(fileNum::third)].classifyReals(aplhaOnly).first;
-		std::cout
+		(*ostr)
 //				<< std::setprecision(3)
 				<< a << "\t"
 				<< b << "\t"
@@ -243,7 +231,7 @@ void FeedbackClass::writeClass(bool aplhaOnly)
 	{
 		double a = files[static_cast<int>(fileNum::first)].classifyWinds(aplhaOnly).first;
 		double b = files[static_cast<int>(fileNum::third)].classifyWinds(aplhaOnly).first;
-		std::cout
+		(*ostr)
 //				<< std::setprecision(3)
 				<< a << "\t"
 				<< b << "\t"
@@ -270,7 +258,7 @@ void FeedbackClass::calculateICAs()
 	}
 }
 
-
+/// ???
 void FeedbackClass::writeLearnedPatterns()
 {
 
@@ -303,7 +291,7 @@ void FeedbackClass::writeLearnedPatterns()
 	ann->testAll();
 	auto res2 = ann->averageClassification(DEVNULL);
 
-	std::cout
+	(*ostr)
 			<< res1.first << "\t"
 			<< res2.first << "\t"
 			   ;
@@ -314,13 +302,11 @@ void FeedbackClass::writeLearnedPatterns()
 void FeedbackClass::writeSuccessive()
 {
 	Net * net = new Net();
-
-
-	std::cout
+	(*ostr)
 			<< net->successiveByEDFfinal(
 					files[static_cast<int>(fileNum::first)],
 					files[static_cast<int>(fileNum::second)]).first
-			<< "\t"; std::cout.flush();
+			<< "\t"; (*ostr).flush();
 	delete net;
 }
 
@@ -336,7 +322,7 @@ void FeedbackClass::writeSuccessive3()
 			+ "_last.wts");
 	ann->testAll();
 	auto res2 = ann->averageClassification(DEVNULL);
-	std::cout << res2.first << "\t";
+	(*ostr) << res2.first << "\t";
 }
 
 
@@ -344,7 +330,8 @@ void FeedbackClass::writePartOfCleaned()
 {
 	for(fileNum num : {fileNum::first, fileNum::second, fileNum::third})
 	{
-		std::cout << this->files[static_cast<int>(num)].partOfCleanedWinds() << "\t";
+		/// not getFile(...) because of non const
+		(*ostr) << files[static_cast<int>(num)].partOfCleanedWinds() << "\t";
 	}
 }
 

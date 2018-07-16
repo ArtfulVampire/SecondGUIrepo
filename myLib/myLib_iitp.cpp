@@ -900,8 +900,7 @@ iitpData & iitpData::staging(const QString & chanName,
 
 	myLib::histogram(firstDeriv,
 					 50,
-					 "/media/Files/Data/deriv.jpg",
-	{-25, 25});
+	{-25, 25}).save("/media/Files/Data/deriv.jpg", 0, 100);
 
 	firstDeriv *= 10;
 	secondDeriv *= 30;

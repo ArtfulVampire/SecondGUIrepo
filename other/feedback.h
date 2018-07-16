@@ -7,7 +7,11 @@ namespace fb
 {
 
 enum class taskType : int {spat = 0, verb = 1, rest = 2};
+taskType & operator ++(taskType & in); /// prefix
+taskType operator ++(taskType & in, int); /// postfix
+
 enum class fileNum  : int {first = 0, third = 1, second = 2};
+
 
 /// bit structure is used in FBedf::isGoodAns
 enum class ansType : int {skip		= 0b0001,					/// 1
@@ -18,6 +22,12 @@ enum class ansType : int {skip		= 0b0001,					/// 1
 						  answrd	= correct | wrong,			/// 6
 						  all		= correct | wrong | skip	/// 7
 						 };
+QString toStr(taskType in);
+QString toStr(fileNum in);
+QString toStr(ansType in);
+
+
+
 
 /// omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg
 const int numOfClasses = 3;
@@ -60,7 +70,7 @@ public:
 
 	static const int windLen = 1024;					/// may be changed to 1000
 	static const int windFftLen = 1024;	/// smLib::fftL(windLen)
-	static constexpr double fftLen = 4096.;
+	static constexpr double realFftLen = 4096.;
 	static constexpr double spStep = 250. / 4096.;
 	static constexpr double leftFreq = 5.;
 	static constexpr double rightFreq = 20.;
@@ -72,9 +82,9 @@ public:
 	int getSpLenWind() const { return getRightLimWind() - getLeftLimWind(); }
 
 	int getLeftLim() const { static int leftLim{-1}; return (leftLim == -1)
-				? fftLimit(leftFreq, srate, fftLen) : leftLim; }
+				? fftLimit(leftFreq, srate, realFftLen) : leftLim; }
 	int getRightLim() const { static int rightLim{-1}; return (rightLim == -1)
-				? fftLimit(rightFreq, srate, fftLen) + 1 : rightLim; }
+				? fftLimit(rightFreq, srate, realFftLen) + 1 : rightLim; }
 	int getSpLen() const { return getRightLim() - getLeftLim(); }
 
 private:
@@ -129,6 +139,7 @@ public:
 
 
 private:
+//	std::ostream & ostr = std::cout;
 	bool isGood{false};
 	std::vector<double> freqs;
 	std::vector<ansType> readAns(const QString & ansPath);
@@ -142,7 +153,7 @@ bool isGoodAns(ansType real, ansType expected);
 
 
 /// feedback
-/// includes both 1st and 3rd files
+/// includes all sessions FBedf files
 class FeedbackClass
 {
 public:
@@ -154,6 +165,7 @@ public:
 				  const QString & postfix_);
 
 	~FeedbackClass() {}
+	void setOstream(std::ostream & in) { ostr = &in; }
 
 
 	void writeStat();
@@ -181,8 +193,10 @@ public:
 	operator bool() const	{ return isGood; }
 
 	const FBedf & getFile(int num) const				{ return files[num]; }
+	const FBedf & getFile(fb::fileNum fNum) const		{ return files[static_cast<int>(fNum)]; }
 
 private:
+	std::ostream * ostr = &std::cout;
 	void checkStatTimes(taskType in, ansType howSolved);
 	void checkStatSolving(taskType typ, ansType howSolved);
 	void checkStatInsight(double thres); /// onle verb but of solved and of all
@@ -200,7 +214,7 @@ private:
 
 
 
-void coutAllFeatures(const QString & dear,
+std::map<QString, QString> coutAllFeatures(const QString & dear,
 					 const std::vector<std::pair<QString, QString>> & guysList,
 					 const QString & postfix);
 void calculateICA(const QString & dear,

@@ -48,7 +48,7 @@ inline double doubleRound(double in)
 
 inline double doubleRoundFraq(double in, int denom)
 {
-	return std::ceil(in * denom - 0.5) / denom;
+	return std::round(in * denom) / double(denom);
 }
 
 inline double gaussian(double x, double sigma = 1.) // N(0,1)

@@ -355,7 +355,6 @@ std::valarray<double> FBedf::spectralRow(taskType typ, ansType howSolved, int ch
 		}
 		/// else
 		res.push_back(realsSpectra[taskNum][i][chan][ std::floor(freq / FBedf::spStep) ]);
-
 	}
 	return smLib::vecToValar(res);
 }
@@ -441,8 +440,8 @@ int FBedf::individualAlphaPeakIndexReal() const
 {
 	/// take only rest?
 	const int pz = findChannel("Pz");
-	const int lef = fftLimit(leftAlpha, srate, fftLen);
-	const int rig = fftLimit(rightAlpha, srate, fftLen);
+	const int lef = fftLimit(leftAlpha, srate, realFftLen);
+	const int rig = fftLimit(rightAlpha, srate, realFftLen);
 
 	/// get only rest reals, prepare average spec
 	const std::vector<matrix> & spectraRef = realsSpectra[static_cast<int>(taskType::rest)];
@@ -574,13 +573,10 @@ QPixmap FBedf::verbShortLong(double thres) const
 	}
 	shrt /= shrts.size();
 
-	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), FBedf::fftLen);
-	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), FBedf::fftLen);
-
 	/// magic consts
 	matrix both(2, 1);
-	both[0] = shrt.subCols(leftLim, rightLim).toValarByRows();
-	both[1] = lng.subCols(leftLim, rightLim).toValarByRows();
+	both[0] = shrt.subCols(getLeftLim(), getRightLim()).toValarByRows();
+	both[1] = lng.subCols(getLeftLim(), getRightLim()).toValarByRows();
 
 	auto tmplt = myLib::drw::drawTemplate(true, FBedf::leftFreq, FBedf::rightFreq, 19);
 	return myLib::drw::drawArrays(tmplt, both);
@@ -628,13 +624,10 @@ QPixmap FBedf::rightWrongSpec(taskType typ) const
 	}
 	rght /= rights.size();
 
-	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), FBedf::fftLen);
-	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), FBedf::fftLen);
-
 	/// magic consts
 	matrix both(2, 1);
-	both[0] = rght.subCols(leftLim, rightLim).toValarByRows();
-	both[1] = wrng.subCols(leftLim, rightLim).toValarByRows();
+	both[0] = rght.subCols(getLeftLim(), getRightLim()).toValarByRows();
+	both[1] = wrng.subCols(getLeftLim(), getRightLim()).toValarByRows();
 
 	auto tmplt = myLib::drw::drawTemplate(true, FBedf::leftFreq, FBedf::rightFreq, 19);
 	return myLib::drw::drawArrays(tmplt, both);
@@ -694,7 +687,7 @@ matrix FBedf::backgroundCompare(taskType typ, ansType howSolved) const
 
 Classifier::avType FBedf::classifyReals(bool alphaFlag) const
 {
-	DEFS.setFftLen(FBedf::fftLen);
+	DEFS.setFftLen(FBedf::realFftLen);
 	ANN * net = new ANN();
 
 	std::vector<uint> types{};	types.reserve(160);
@@ -706,15 +699,15 @@ Classifier::avType FBedf::classifyReals(bool alphaFlag) const
 
 	if(alphaFlag)
 	{
-		const int alphaIndex = this->individualAlphaPeakIndexWind();
-		const int twoHzRange = fftLimit(2., srate, fftLen);
+		const int alphaIndex = this->individualAlphaPeakIndexReal();
+		const int twoHzRange = fftLimit(2., srate, realFftLen);
 		leftLim = alphaIndex - twoHzRange;
 		rightLim = alphaIndex + twoHzRange;
 	}
 	else
 	{
-		leftLim = fftLimit(leftFreq, srate, fftLen);
-		rightLim = fftLimit(rightFreq, srate, fftLen);
+		leftLim = getLeftLim();
+		rightLim = getRightLim();
 	}
 
 	for(int i = 0; i < realsSpectra.size(); ++i)
@@ -758,10 +751,12 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 	/// class by alpha ?
 	const int alphaIndex = this->individualAlphaPeakIndexWind();
 	const int twoHzRange = fftLimit(2., srate, windFftLen);
+
 	std::vector<std::pair<int, int>> alphaRange{};
 	for(int i = 0; i < 19; ++i) /// magic const num of channels
 	{
-		alphaRange.push_back({alphaIndex - twoHzRange, alphaIndex + twoHzRange});
+		alphaRange.push_back({i * getSpLenWind() + alphaIndex - twoHzRange,
+							  i * getSpLenWind() + alphaIndex + twoHzRange});
 	}
 
 	ClassifierData dt{};
@@ -773,6 +768,7 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 	{
 		dt = ClassifierData(this->windSpectra, windTypesUint);
 	}
+
 	/// arguments of wrong size
 	net->setClassifierData(dt);
 

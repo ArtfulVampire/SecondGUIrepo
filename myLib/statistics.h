@@ -21,12 +21,11 @@ void kernelEst(const std::valarray<double> & arr, QString picPath);
 void kernelEst(QString filePath, QString picPath);
 QPixmap kernelEst(const std::valarray<double> & arr);
 
-void histogram(const std::valarray<double> & arr,
-			   int numSteps,
-			   const QString & picPath = QString(),
-			   std::pair<double, double> xMinMax = {},
-			   const QString & color = "drakgray",
-			   int valueMax = 0);
+QPixmap histogram(const std::valarray<double> & arr,
+				  int numSteps,
+				  std::pair<double, double> xMinMax = {},
+				  const QString & color = "darkgray",
+				  int valueMax = 0);
 
 
 double quantile(double alpha);

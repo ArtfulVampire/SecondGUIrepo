@@ -304,11 +304,11 @@ void countHilbert(const matrix & inData,
 	std::valarray<double> envSpec;
 
 	std::vector<std::pair<double, double>> filters{
-				std::make_pair(0.5, 70),	/// [0] i.e. no filter
-				std::make_pair(4, 6),		/// [1]
-				std::make_pair(8, 13),		/// [2]
-				std::make_pair(8, 10),		/// [3]
-				std::make_pair(10, 13)		/// [4]
+				std::make_pair(0.5, 70),	/// [0] no filter
+				std::make_pair(4, 6),		/// [1] theta
+				std::make_pair(8, 13),		/// [2] alpha
+				std::make_pair(8, 10),		/// [3] low_alpha
+				std::make_pair(10, 13)		/// [4] high_alpha
 	};
 
 	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); // [filter][chan][0-carr, 1-SD]
@@ -384,7 +384,7 @@ void countHilbert(const matrix & inData,
 	{
 		for(int ch = 0; ch < inData.rows(); ++ch)
 		{
-			for(int filt : {0, 1, 2}) /// whole, theta, alpha
+			for(int filt : {0, 1, 2, 3, 4}) /// whole, theta, alpha, low-alpha, high-alpha
 //			for(int filt : {3, 4}) /// 8-10, 10-13
 			{
 				for(int func : {0, 1})  /// carr or SD
@@ -1106,7 +1106,7 @@ void Xenia_TBI_finalest(const QString & finalPath,
 //			myLib::cleanDir(outPath);
 
 			/// process?
-			if(01)
+			if(0)
 			{
 				autos::calculateFeatures(guyPath, 19, outPath);
 			}
@@ -1117,10 +1117,10 @@ void Xenia_TBI_finalest(const QString & finalPath,
 	{
 		/// make full matrices for each type of feature
 
-		/// read guys_finalest.txt
+		/// read guys_finalest.txt to guys
+		std::vector<QString> guys{};
 		QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
 		fil.open(QIODevice::ReadOnly);
-		std::vector<QString> guys{};
 		while(1)
 		{
 			QString guy = fil.readLine();

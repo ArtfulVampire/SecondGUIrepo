@@ -15,7 +15,7 @@ QMAKE_CXXFLAGS += -Wno-sign-compare
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 LIBS += -fopenmp
-QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
+#QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
 
 CONFIG += c++14
 #CONFIG += c++1z

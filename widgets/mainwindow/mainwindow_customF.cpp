@@ -17,7 +17,7 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 
-#if 0
+#if 01
 	/// count correctness, average times, ICA
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
@@ -27,9 +27,25 @@ void MainWindow::customFunc()
 	const QString dear = "FeedbackFinalMark";
 	const QString postfix = "_fin";
 //	const QString postfix = "";
-	const auto & guysList = subj::guysFBfinal;
+	const auto & guysList = subj::guysFBfinal.at(subj::fbGroup::all);
 #endif
-	fb::coutAllFeatures(dear, guysList, postfix);
+	auto results = fb::coutAllFeatures(dear, guysList, postfix);
+
+	for(const subj::fbGroup & group :
+	{
+		subj::fbGroup::experiment,
+		subj::fbGroup::control,
+		subj::fbGroup::improved,
+		subj::fbGroup::not_improved}
+		)
+	{
+		for(const auto & in : subj::guysFBfinal.at(group))
+		{
+			std::cout << in.second << "\t" << results[in.second] << std::endl;
+		}
+		std::cout << std::endl << std::endl;
+	}
+
 //	fb::calculateICA(dear, guysList, postfix);
 	exit(0);
 #endif
@@ -460,7 +476,12 @@ void MainWindow::customFunc()
 	{
 		DEFS.setAutosUser(autosUser::XeniaFinalest);
 		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-		DEFS.setAutosMask(featuresMask::Hilbert);
+		DEFS.setAutosMask(0
+						  | featuresMask::alpha
+						  | featuresMask::fracDim
+						  | featuresMask::Hilbert
+						  | featuresMask::spectre
+						  );
 		autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
 	}
 
@@ -942,9 +963,9 @@ void MainWindow::customFunc()
 
 	std::cout << std::valarray<double>(c1 / m1) << std::endl;
 
-//	myLib::histogram(c1 / m1, 50, "/media/Files/Data/hist.jpg"
+//	myLib::histogram(c1 / m1, 50
 ////					 , std::make_pair(0, 35)
-//					 );
+//					 ).save("/media/Files/Data/hist.jpg", 0, 100);
 	exit(0);
 #endif
 
@@ -994,9 +1015,9 @@ void MainWindow::customFunc()
 
 //	std::valarray<double> rat = usualDraw / fromMatlab;
 //	std::cout << rat << std::endl;
-//	myLib::histogram(rat, 20, "/media/Files/Data/rat.jpg"
+//	myLib::histogram(rat, 20
 //					 , std::make_pair(5,20)
-//					 );
+//					 ).save("/media/Files/Data/rat.jpg", 0, 100);
 //	autos::IITPdrawCoh(fromMatlab, m, confidence).
 //			save("/media/Files/Data/mCoh.jpg", 0, 100);
 
@@ -1785,12 +1806,11 @@ void MainWindow::customFunc()
 	res2 = readFileInLineRaw(DEFS.dirPath() + "/Baklushev/ill.txt");
 	for(int steps = 12; steps <= 30; steps += 2)
 	{
-		myLib::histogram(res1, steps,
-						 DEFS.dirPath() + "/Baklushev/healthy_" + nm(steps) + ".jpg",
-		{50., 94.}, "blue", norm);
-		myLib::histogram(res2, steps,
-						 DEFS.dirPath() + "/Baklushev/ill_" + nm(steps) + ".jpg",
-		{50., 94.}, "red", norm);
+		myLib::histogram(res1, steps, {50., 94.}, "blue", norm)
+				.save(DEFS.dirPath() + "/Baklushev/healthy_" + nm(steps) + ".jpg", 0, 100);
+		myLib::histogram(res2, steps, {50., 94.}, "red", norm)
+				.save(DEFS.dirPath() + "/Baklushev/ill_" + nm(steps) + ".jpg", 0, 100);
+
 	}
 	exit(0);
 #endif

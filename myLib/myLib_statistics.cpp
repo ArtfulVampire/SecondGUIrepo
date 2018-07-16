@@ -81,17 +81,16 @@ double binomialOneTailed(int num1, int num2, int numAll1, int numAll2)
 	return sum;
 }
 
-void histogram(const std::valarray<double> & arr,
-			   int numSteps,
-			   const QString & picPath,
-			   std::pair<double, double> xMinMax,
-			   const QString & color,
-			   int valueMax)
+QPixmap histogram(const std::valarray<double> & arr,
+				  int numSteps,
+				  std::pair<double, double> xMinMax,
+				  const QString & color,
+				  int valueMax)
 {
 	std::vector<double> values(numSteps, 0.);
 
 	double xMin, xMax;
-	if(xMinMax == std::pair<double, double>()) /// if(xMinMax == isEmpty())
+	if(xMinMax == decltype(xMinMax)()) /// if(xMinMax.isEmpty())
 	{
 		xMin = *std::min_element(std::begin(arr),
 								 std::end(arr));
@@ -104,10 +103,10 @@ void histogram(const std::valarray<double> & arr,
 		xMax = xMinMax.second;
 	}
 
-	int denom = std::floor(log10(xMax - xMin));
-
-	xMin = smLib::doubleRoundFraq(xMin, denom);
-	xMax = smLib::doubleRoundFraq(xMax, denom);
+	/// complex sheet
+	const double denom = std::pow(10, -std::floor(log10(xMax - xMin)));
+	xMin = std::floor(xMin * denom) / denom;
+	xMax = std::ceil(xMax * denom) / denom;
 //	std::cout << denom  << "\t" << xMin << "\t" << xMax << std::endl;
 
 	std::for_each(std::begin(arr),
@@ -128,7 +127,7 @@ void histogram(const std::valarray<double> & arr,
 	}
 
 
-	QPixmap pic(numSteps * 60, 400);
+	QPixmap pic(numSteps * 15, 400);
 	QPainter pnt;
 	pic.fill();
 	pnt.begin(&pic);
@@ -172,11 +171,8 @@ void histogram(const std::valarray<double> & arr,
 		pnt.drawText(13, Y + 5,
 					 nm(i));
 	}
-
-	if(!picPath.isEmpty())
-	{
-		pic.save(picPath, 0, 100);
-	}
+	pnt.end();
+	return pic;
 }
 
 

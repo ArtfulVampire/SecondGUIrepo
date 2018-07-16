@@ -191,7 +191,8 @@ Cut::Cut() :
 		paint(); this->setFocus(); });
 	for(auto p : colouredWidgets)
 	{
-		QObject::connect(std::get<0>(p), static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+		QObject::connect(std::get<0>(p),
+						 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 						 [this, p](){ this->colorSpinSlot(std::get<0>(p), std::get<1>(p)); } );
 		QObject::connect(std::get<2>(p), SIGNAL(returnPressed()), this, SLOT(paint()));
 	}
@@ -215,7 +216,8 @@ Cut::Cut() :
 	/// smartFind
 	QObject::connect(ui->smartFindShowPushButton, &QPushButton::clicked,
 					 [this](){ this->smartFindShowValues(); });
-	QObject::connect(ui->smartFindLearnPushButton, SIGNAL(clicked()), this, SLOT(smartFindLearnSlot()));
+	QObject::connect(ui->smartFindLearnPushButton, SIGNAL(clicked()),
+					 this, SLOT(smartFindLearnSlot()));
 	QObject::connect(ui->smartFindNextPushButton, &QPushButton::clicked,
 					 [this](){ this->smartFindFind(true);});
 	QObject::connect(ui->smartFindPrevPushButton, &QPushButton::clicked,

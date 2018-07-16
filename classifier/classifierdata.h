@@ -33,6 +33,7 @@ public:
 	/// gets
 	const matrix & getData() const								{ return dataMatrix; }
 	int size() const											{ return dataMatrix.rows(); }
+	bool isEmpty() const										{ return dataMatrix.isEmpty(); }
 	uint getNumOfCl() const										{ return numOfCl; }
 	const std::vector<uint> & getTypes() const					{ return types; }
 	const std::vector<std::vector<uint>> & getIndices() const	{ return indices; }

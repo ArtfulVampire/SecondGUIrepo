@@ -494,14 +494,14 @@ void Classifier::cleaningKfold(int num, int fold)
 	int counter = 0;
 	bool hazWrong = false;
 
-	std::function<bool(void)> pred;
+	std::function<bool(void)> continueIf;
 	if(num > 0)
 	{
-		pred = [&counter, num](){ return counter < num; };
+		continueIf = [&counter, &hazWrong, num](){ return (counter < num) ? hazWrong : false; };
 	}
 	else
 	{
-		pred = [&hazWrong](){ return hazWrong; };
+		continueIf = [&hazWrong](){ return hazWrong; };
 	}
 
 	do
@@ -524,14 +524,14 @@ void Classifier::cleaningKfold(int num, int fold)
 				exclude.push_back(i);
 			}
 		}
+//		std::cout << exclude.size() << std::endl;
 		if(!exclude.empty())
 		{
 			this->myClassData->erase(exclude);
 			hazWrong = true;
 		}
-//		std::cout << counter << std::endl;
 		++counter;
-	} while(pred());
+	} while(continueIf());
 
 	/// reset params
 	confusionMatrix.fill(0.);
