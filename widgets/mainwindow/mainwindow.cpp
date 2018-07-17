@@ -18,14 +18,14 @@ MainWindow::MainWindow() :
     setWindowTitle("Main");
     setlocale(LC_NUMERIC, "C");
 
-	stdOutBuf = std::cout.rdbuf();
-    stopFlag = 0;
+	outStream.setTextEdit(ui->textEdit);
+	outStream.setFile(DEFS.getDirPath() + "/log.txt", std::ios_base::app);
+	outStream.setOutputType(qtLib::outputType::textEdit);
 
 	QButtonGroup * group2;
 	group2 = new QButtonGroup(this);
     group2->addButton(ui->windsButton);
 	group2->addButton(ui->realsButton);
-
 
 	/// draws
 	ui->drawCoeffSpinBox->setValue(1.0);
@@ -239,7 +239,7 @@ void MainWindow::changeRedNsLine(int a)
 {
 	if(!QFile::exists(ui->filePathLineEdit->text()))
 	{
-		std::cout << "changeRedNsLine: file doesn't exist" << std::endl;
+		outStream << "changeRedNsLine: file doesn't exist" << std::endl;
 		return;
 	}
 	if(globalEdf.isEmpty())
@@ -365,26 +365,6 @@ void MainWindow::setEdfFile(const QString & filePath)
 	helpString.resize(helpString.lastIndexOf("/"));
 	DEFS.setDir(helpString);
 
-	if(def::redirectStdOutFlag)
-    {
-		// redirect std::cout to logfile
-        if(generalLogStream.is_open())
-        {
-            generalLogStream.close();
-        }
-		helpString +=  "/generalLog.txt";
-
-		generalLogStream.open(helpString.toStdString(), std::ios_base::app);
-		generalLogStream << std::endl << std::endl << std::endl;
-
-		std::cout.rdbuf(generalLogStream.rdbuf());
-    }
-    else
-    {
-		std::cout.rdbuf(stdOutBuf);
-    }
-
-
 	DEFS.dirMkdir("Reals");
 	DEFS.dirMkdir("Reals/BC");
 	DEFS.dirMkdir("winds");
@@ -407,7 +387,11 @@ void MainWindow::setEdfFile(const QString & filePath)
 //	DEFS.dirMkdir("auxEdfs");
 
 	readData();
-	ui->textEdit->append("EDF file read successfull\nns equals to " + nm(globalEdf.getNs()));
+}
+
+void MainWindow::setOutputStream(qtLib::outputType in)
+{
+	outStream.setOutputType(in);
 }
 
 
@@ -421,16 +405,13 @@ void MainWindow::readData()
 	helpString = ui->filePathLineEdit->text();
     if(!QFile::exists(helpString))
     {
-		std::cout << "readData: edf file doent exist\n" << helpString << std::endl;
+		outStream << "readData: edf file doent exist\n" << helpString << std::endl;
         return;
     }
 	globalEdf.readEdfFile(helpString);
-
-	helpString = "data have been read\nns equals to " + nm(globalEdf.getNs());
-    ui->textEdit->append(helpString);
+	outStream << "EDF data read successful" << std::endl;
 
 	ui->reduceChannelsComboBox->currentIndexChanged(ui->reduceChannelsComboBox->currentIndex());
-
 	ui->markerSecTimeDoubleSpinBox->setMaximum(globalEdf.getDataLen() / DEFS.getFreq());
     ui->markerBinTimeSpinBox->setMaximum(globalEdf.getDataLen());
 }
@@ -484,7 +465,7 @@ void MainWindow::drawSpectra(const QString & prePath,
         }
     }
     ui->progressBar->setValue(0);
-	std::cout << "drawSpectra: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	outStream << "drawSpectra: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::drawReals()
@@ -508,7 +489,6 @@ void MainWindow::drawReals()
 	int i = 0;
 	for(const auto & fileName : lst)
 	{
-		std::cout << fileName << std::endl;
 		const QString inPath = prePath + "/" + fileName;
 		matrix dataD = myLib::readPlainData(inPath);
 		if(dataD.cols() > 15000) { continue; }
@@ -523,10 +503,10 @@ void MainWindow::drawReals()
 		if(stopFlag) { break; }
     }
     ui->progressBar->setValue(0);
-	ui->textEdit->append("signals are drawn\nns equals to " + nm(fil.getNs()));
+	outStream << "signals draw completed" << std::endl;
 
     stopFlag = 0;
-	std::cout << "drawReals: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	outStream << "drawReals: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::cleanDirsCheckAllBoxes(bool fl)
@@ -539,11 +519,9 @@ void MainWindow::cleanDirsCheckAllBoxes(bool fl)
 
 void MainWindow::cleanDirs()
 {
-    QString helpString;
-
 	if(DEFS.dirIsRoot())
 	{
-		std::cout << "cleanDirs: global dir is root, return" << std::endl;
+		outStream << "cleanDirs: global dir is root, return" << std::endl;
         return;
     }
 
@@ -557,12 +535,8 @@ void MainWindow::cleanDirs()
 			{ myLib::cleanDir(DEFS.dirPath() + "/" + item->text()); }
 		}
 	}
-	helpString = "dirs cleaned\nns equals to " + nm(globalEdf.getNs());
-    ui->textEdit->append(helpString);
+	outStream << "directories cleaned" << std::endl;
 }
-
-
-
 
 void MainWindow::drawMapsSlot()
 {
@@ -598,5 +572,5 @@ void MainWindow::setFileMarkers()
 {
 	DEFS.setFileMarks(ui->fileMarkersLineEdit->text().split(QRegExp(R"([,;])"),
 															QString::SkipEmptyParts));
-    ui->textEdit->append(R"(fileMarkers renewed)");
+	outStream << "fileMarkers updated" << std::endl;
 }

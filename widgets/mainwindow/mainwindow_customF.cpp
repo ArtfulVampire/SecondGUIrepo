@@ -17,7 +17,7 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 
-#if 01
+#if 0
 	/// count correctness, average times, ICA
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
@@ -41,9 +41,9 @@ void MainWindow::customFunc()
 	{
 		for(const auto & in : subj::guysFBfinal.at(group))
 		{
-			std::cout << in.second << "\t" << results[in.second] << std::endl;
+			outStream << in.second << "\t" << results[in.second] << std::endl;
 		}
-		std::cout << std::endl << std::endl;
+		outStream << std::endl << std::endl;
 	}
 
 //	fb::calculateICA(dear, guysList, postfix);

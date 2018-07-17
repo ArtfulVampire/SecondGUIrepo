@@ -44,7 +44,7 @@ void MainWindow::rereferenceDataSlot()
 	{
 		/// do nothing
 	}
-	std::cout << "rereferenceData: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	outStream << "rereferenceDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 
@@ -136,7 +136,7 @@ void MainWindow::rereferenceCARSlot()
 	{
 		/// do nothing
 	}
-	std::cout << "rereferenceDataCAR: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	outStream << "rereferenceDataCAR: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 
@@ -157,7 +157,6 @@ void MainWindow::rereferenceData(const QString & newRef)
 	int eog2 = -1;			// EOG2
 
 	auto label = globalEdf.getLabels();
-//	std::cout << label << std::endl;
 	for(int i = 0; i < globalEdf.getNs(); ++i)
     {
 		if(label[i].contains("A1-N"))		{ groundChan = i; }
@@ -168,7 +167,7 @@ void MainWindow::rereferenceData(const QString & newRef)
     }
     if(groundChan == -1 || (earsChan1 == -1 && earsChan2 == -1))
     {
-		std::cout << "rereferenceData: some of ref channels are absent" << std::endl;
+		outStream << "rereferenceData: some of ref channels are absent" << std::endl;
         return;
     }
 
@@ -292,8 +291,7 @@ void MainWindow::rereferenceData(const QString & newRef)
 								 [](const QString & in)
 		{ return in.contains("EOG2-"); }));
 	}
-    ui->reduceChannelsLineEdit->setText(helpString);
-//	std::cout << helpString << std::endl;
+	ui->reduceChannelsLineEdit->setText(helpString);
 
 	/// the very processing
 	edfFile fil = globalEdf.reduceChannels(ui->reduceChannelsLineEdit->text());
@@ -307,7 +305,7 @@ void MainWindow::rereferenceData(const QString & newRef)
 	}
 	else
 	{
-		std::cout << "rereferenceData: no bipolar EOG" << std::endl;
+		outStream << "rereferenceData: no bipolar EOG" << std::endl;
 	}
 
 	// set back channels string
@@ -355,7 +353,7 @@ void MainWindow::refilterDataSlot()
 	{
 		/// do nothing
 	}
-	std::cout << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	outStream << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::reduceChannelsEDFSlot() const
@@ -386,7 +384,10 @@ void MainWindow::reduceChannelsEDFSlot() const
 		/// do nothing
 	}
 
-	std::cout << "reduceChannelsEDF: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	/// why is there error here ???????????????????????
+	/// "string literal doesn't decay into pointer"
+//	outStream << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+//	outStream << "reduceChannelsEDF: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 /// Ossadtchi only ?
@@ -412,12 +413,12 @@ void MainWindow::reduceChannelsSlot()
                                     excludeList.end(),
                                     chanStr.toInt() - 1));
     }
-	std::cout << "reduceChannelsSlot: excludeList = ";
-    for(int in : excludeList)
+	outStream << "reduceChannelsSlot: excludeList = ";
+	for(int in : excludeList)
     {
-		std::cout << in << "  ";
+		outStream << in << "  ";
     }
-	std::cout << std::endl;
+	outStream << std::endl;
 
 	QDir localDir(DEFS.dirPath());
 	localDir.cd("Reals");
@@ -441,14 +442,6 @@ void MainWindow::reduceChannelsSlot()
     }
 
 	DEFS.setNs(DEFS.getNs() - excludeList.size());
-
-    helpString = "channels reduced ";
-    ui->textEdit->append(helpString);
-
-    helpString = "ns equals to ";
-	helpString += nm(DEFS.getNs());
-    ui->textEdit->append(helpString);
-
-	std::cout << "reduceChannelsSlot: finished";
+	outStream << "channels reduced" << std::endl;
 #endif
 }

@@ -140,12 +140,10 @@ void MainWindow::matiPreprocessingSlot()
 			ui->progressBar->setValue(0.);
 			QTime myTime;
 			myTime.start();
-			std::cout << "comma->dot replace start" << std::endl;
+			outStream << "comma->dot replace start" << std::endl;
 
 			char ch;
-			QString helpString;
-
-			helpString = DEFS.dirPath() + "/" + dirList[dirNum] + "/amod";
+			QString helpString = DEFS.dirPath() + "/" + dirList[dirNum] + "/amod";
 			DEFS.setDir(helpString);
 			QStringList lst = DEFS.dirEntryList(QStringList("*.txt"));
 			FILE * fil;
@@ -173,7 +171,7 @@ void MainWindow::matiPreprocessingSlot()
 				ui->progressBar->setValue(i * 100. / lst.length());
 			}
 
-			std::cout << "comma->dot replace finish: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+			outStream << "comma->dot replace: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 			ui->progressBar->setValue(0.);
 		}
 
@@ -182,7 +180,7 @@ void MainWindow::matiPreprocessingSlot()
 			ui->progressBar->setValue(0.);
 			QTime myTime;
 			myTime.start();
-			std::cout << "amod.txt -> amod.edf start" << std::endl;
+			outStream << "amod.txt -> amod.edf start" << std::endl;
 			QString helpString = DEFS.dirPath() + "/" + dirList[dirNum] + "/amod";
 			DEFS.setDir(helpString);
 			QStringList lst = DEFS.dirEntryList(QStringList("*.txt_")); // _ for corrected logs
@@ -205,7 +203,7 @@ void MainWindow::matiPreprocessingSlot()
 
 				ui->progressBar->setValue(i * 100. / lst.length());
 			}
-			std::cout << "amod.txt -> amod.edf: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+			outStream << "amod.txt -> amod.edf: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 			ui->progressBar->setValue(0);
 		}
 
@@ -213,7 +211,7 @@ void MainWindow::matiPreprocessingSlot()
 		{
 			QTime myTime;
 			myTime.start();
-			std::cout << "slice edf by sessions start" << std::endl;
+			outStream << "slice edf by sessions start" << std::endl;
 
 			QString helpString;
 			helpString = DEFS.dirPath()
@@ -222,13 +220,13 @@ void MainWindow::matiPreprocessingSlot()
 					+ ".edf";
 			if(!QFile(helpString).exists())
 			{
-				std::cout << "cant open ExpName_fileSuffix.edf (flagSliceEdfBySessions)" << std::endl;
+				outStream << "cant open ExpName_fileSuffix.edf (flagSliceEdfBySessions)" << std::endl;
 				break;
 			}
 			setEdfFile(helpString);
 			sliceMati();
 
-			std::cout << "slice edf by sessions: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+			outStream << "slice edf by sessions: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 		}
 
 
@@ -236,7 +234,7 @@ void MainWindow::matiPreprocessingSlot()
 		{
 			QTime myTime;
 			myTime.start();
-			std::cout << "append amod.edf to eeg.edf start" << std::endl;
+			outStream << "append amod.edf to eeg.edf start" << std::endl;
 
 
 			QString outPath;
@@ -258,7 +256,7 @@ void MainWindow::matiPreprocessingSlot()
 
 					if(!QFile(helpString).exists())
 					{
-						std::cout << "cant open session.edf (flagAppendAmodToEeg)" << std::endl;
+						outStream << "cant open session.edf (flagAppendAmodToEeg)" << std::endl;
 						continue;
 					}
 
@@ -303,14 +301,14 @@ void MainWindow::matiPreprocessingSlot()
 
 				}
 			}
-			std::cout << "append amod.edf to eeg.edf: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+			outStream << "append amod.edf to eeg.edf: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 		}
 
 		if(flagMakeDiffMark) // make files of markers differences
 		{
 			QTime myTime;
 			myTime.start();
-			std::cout << "make diffMark files start" << std::endl;
+			outStream << "make diffMark files start" << std::endl;
 
 			edfFile fil;
 			QString diffMark;
@@ -359,7 +357,7 @@ void MainWindow::matiPreprocessingSlot()
 				}
 			}
 
-			std::cout << "make diffMark files: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+			outStream << "make diffMark files: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 		}
 
 		if(flagSliceSessionsToPieces) // slice constructed eeg+amod files for small pieces
@@ -367,7 +365,7 @@ void MainWindow::matiPreprocessingSlot()
 			// not finished
 			QTime myTime;
 			myTime.start();
-			std::cout << "slice sessions to pieces start" << std::endl;
+			outStream << "slice sessions to pieces start" << std::endl;
 
 			QString outPath;
 			QString helpString;
@@ -393,7 +391,7 @@ void MainWindow::matiPreprocessingSlot()
 
 			sliceMatiPieces(true);
 
-			std::cout << "slice sessions to pieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+			outStream << "slice sessions to pieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 		}
 	}
 }

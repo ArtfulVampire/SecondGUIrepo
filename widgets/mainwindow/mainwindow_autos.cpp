@@ -123,7 +123,7 @@ void MainWindow::testSuccessive2()
 					.first);
 		delete net;
 	}
-	std::cout << "average by people = "
+	outStream << "average by people = "
 			  << std::accumulate(std::begin(res), std::end(res), 0.) / res.size() << std::endl;
 }
 

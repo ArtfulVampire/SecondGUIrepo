@@ -182,7 +182,6 @@ namespace def
 	/// consts
 	const bool withMarkersFlag{true};			/// remove everywhere as true
 	const bool writeLongStartEnd{true};			/// don't know, do I need it?
-	const bool redirectStdOutFlag{false};		/// check how to operator<< to NotificationArea
 
 	const QString plainDataExtension			{"scg"};
 	const QStringList plainFilters				{"*.scg"};

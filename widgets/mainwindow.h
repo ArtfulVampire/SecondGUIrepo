@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <sstream>
 
 #include <widgets/cut.h>
 #include <widgets/net.h>
@@ -14,6 +15,7 @@
 #include <other/autos.h>
 #include <other/consts.h>
 #include <other/defs.h>
+#include <myLib/qtlib.h>
 
 #include <QMainWindow>
 #include <QWidget>
@@ -131,16 +133,13 @@ public:
 
 private:
     Ui::MainWindow *ui;
+	bool stopFlag{false};
 
-    std::ofstream generalLogStream;
-	std::streambuf * stdOutBuf;
+	/// for different outputs
+	qtLib::MyTextStream outStream{qtLib::outputType::cout};
 
-//	edfFile globalEdf;
+	void setOutputStream(qtLib::outputType in);
 
-    matrix spocMixMatrix;
-	std::valarray<double> spocWVector;
-
-    bool stopFlag;
 };
 
 #endif // MAINWINDOW_H

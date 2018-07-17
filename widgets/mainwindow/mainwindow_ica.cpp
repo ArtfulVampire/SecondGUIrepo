@@ -44,7 +44,7 @@ void MainWindow::ICA() // fastICA
 	icaClassInstance.printExplainedVariance();
 	icaClassInstance.printMapsFile();
 	icaClassInstance.drawMaps();
-	std::cout << "number of bad evaluated figures = "
+	outStream << "number of bad evaluated figures = "
 			  << icaClassInstance.getNumOfErrors(DEVNULL)
 			  << std::endl;
 
@@ -64,5 +64,5 @@ void MainWindow::ICA() // fastICA
 	globalEdf.writeOtherData(components, helpString, chanList);
 
 
-	std::cout << "ICA ended. time = " << wholeTime.elapsed() / 1000. << " sec" << std::endl;
+	outStream << "ICA: time = " << wholeTime.elapsed() / 1000. << " sec" << std::endl;
 }

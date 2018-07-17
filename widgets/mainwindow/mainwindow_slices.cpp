@@ -63,11 +63,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 		}
 	}
 	ui->progressBar->setValue(0);
-
-	QString helpString = "data sliced\nns equals to " + nm(globalEdf.getNs());
-	ui->textEdit->append(helpString);
-
-	std::cout << "sliceAll: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	outStream << "sliceAll: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 void MainWindow::sliceJustWinds()
@@ -301,7 +297,7 @@ void MainWindow::sliceElena()
 
 	if(RDnum == -1 || PPGnum == -1 || EDAnum == -1)
 	{
-		std::cout << "sliceElena: some of vegetative channels is absent" << std::endl;
+		outStream << "sliceElena: some of vegetative channels is absent" << std::endl;
 	}
 
 	bool writePoly = ui->elenaPolyCheckBox->isChecked();
@@ -330,7 +326,7 @@ void MainWindow::sliceElena()
 		/// check bad file
 		if(spec.isEmpty() || edaBase.size() < fil.getFreq())
 		{
-//			std::cout << "sliceElena: too short file " << pieceNumber << std::endl;
+//			outStream << "sliceElena: too short file " << pieceNumber << std::endl;
 			return;
 		}
 
@@ -544,7 +540,7 @@ void MainWindow::sliceElena()
 			}
 			else if(markChanArr[i] != 0 && markChanArr[i] != 255)
 			{
-				std::cout << "sliceElena: startFlag == false, "
+				outStream << "sliceElena: startFlag == false, "
 						  << "bad marker " << markChanArr[i] << ", "
 						  << "time = " << i / fil.getFreq() << " sec" << std::endl;
 			}
@@ -592,14 +588,14 @@ void MainWindow::sliceElena()
 					}
 					else
 					{
-						std::cout << "sliceElena: too long piece, "
+						outStream << "sliceElena: too long piece, "
 								  << "start time = " << start / fil.getFreq() << " sec, "
 								  << "end time = " << i / fil.getFreq() << " sec" << std::endl;
 					}
 				}
 				else
 				{
-					std::cout << "sliceElena: startFlag == true, "
+					outStream << "sliceElena: startFlag == true, "
 							  << "end mark = " << markChanArr[i] << ", "
 							  << "start == -1, "
 							  << "end time = " << i / fil.getFreq() << " sec" << std::endl;
@@ -642,12 +638,12 @@ void MainWindow::sliceElena()
 
 	if(!allNumbers.empty())
 	{
-		std::cout << "sliceElena: not detected reals:" << std::endl;
+		outStream << "sliceElena: not detected reals:" << std::endl;
 		for(auto each : allNumbers)
 		{
-			std::cout << each << " "; std::cout.flush();
+			outStream << each << " ";
 		}
-		std::cout << std::endl;
+		outStream << std::endl;
 	}
 }
 
@@ -883,7 +879,7 @@ void MainWindow::sliceOneByOneNew()
 						 + "/Reals"
 						 + "/" + fil.getExpName()
 						 + "." + rn(number++, 4);
-//            std::cout << helpString << std::endl;
+//			outStream << helpString << std::endl;
             if(i > j)
             {
 				if(i - j <= DEFS.getFreq() * 60) /// const generality limit
@@ -1062,7 +1058,7 @@ void MainWindow::sliceMatiSimple()
     }
     ui->progressBar->setValue(0);
 
-	std::cout << "sliceMatiSimple: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	outStream << "sliceMatiSimple: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
     stopFlag = 0;
 #endif
 }
@@ -1164,7 +1160,7 @@ void MainWindow::sliceMati()
         }
     }
     ui->progressBar->setValue(0);
-	std::cout << "sliceMati: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	outStream << "sliceMati: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
     stopFlag = 0;
 }
 
@@ -1285,7 +1281,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
             }
         }
     }
-	std::cout << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	outStream << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 //void MainWindow::pausePieces(bool in)
