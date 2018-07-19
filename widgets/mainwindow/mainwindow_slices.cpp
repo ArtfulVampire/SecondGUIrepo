@@ -347,10 +347,10 @@ void MainWindow::sliceElena()
 		if(EDAnum != -1) { EDAval = myLib::EDAmax(subData[EDAnum], edaBase); }
 
 
-
+		/// temporarily turn off poly to file
 		if(0)
 		{
-			/// temporarily turn off poly to file
+
 			outVector.push_back(RDfr);
 			outVector.push_back(PPGampl);
 			outVector.push_back(PPGfreq);

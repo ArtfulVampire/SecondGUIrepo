@@ -275,38 +275,6 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 									 double highFreq);
 } // namespace btr
 
-
-
-#if 0
-namespace myDsp
-{
-std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
-									 double cutoffFreq,
-									 double srate);
-std::valarray<double> lowPass(const std::valarray<double> & inputSignal,
-							  double cutoffFreq,
-							  double srate);
-
-
-/// bandPass/bandStop
-std::valarray<double> refilter(const std::valarray<double> & inputSignal,
-							   double lowFreq,
-							   double highFreq,
-							   bool isNotch,
-							   double srate);
-matrix refilter(const matrix & inputMatrix,
-				double lowFreq,
-				double highFreq,
-				bool isNotch,
-				double srate);
-std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
-									  double lowFreq,
-									  double highFreq,
-									  bool isNotch,
-									  double srate);
-} // namespace myDsp
-#endif
-
 namespace butter
 {
 constexpr int ORDER_band = 48;
@@ -366,6 +334,7 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 
 } // namespace butter
 
+
 namespace myLib
 {
 
@@ -379,7 +348,6 @@ std::valarray<double> (* const lowPass)(const std::valarray<double> & inputSigna
 								  double cutoffFreq,
 								  double srate) =
 		&butter::butterworthLowPassTwoSided;
-//		&myDsp::lowPass;
 
 std::valarray<double> (* const highPass)(const std::valarray<double> & inputSignal,
 								  double cutoffFreq,

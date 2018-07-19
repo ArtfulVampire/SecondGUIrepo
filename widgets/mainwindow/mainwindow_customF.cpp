@@ -17,6 +17,27 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 
+
+#if 0
+	const QString dr = "/media/Files/Data/Xenia/FINAL_res";
+	auto lst = QDir(dr).entryList({"Nemirov*_spectre.txt"});
+	int cc = 0;
+	for(auto fn : lst)
+	{
+		std::ifstream in;
+		in.open((dr + "/" + fn).toStdString());
+		double tmp;
+		while(in >> tmp)
+		{
+			if(tmp <= 0.0001) { ++cc; }
+//			{ std::cout << fn << std::endl; break; }
+		}
+		in.close();
+	}
+	std::cout << cc << std::endl;
+	exit(0);
+#endif
+
 #if 0
 	/// count correctness, average times, ICA
 #if 0 /// new (~10 people)
@@ -30,6 +51,8 @@ void MainWindow::customFunc()
 	const auto & guysList = subj::guysFBfinal.at(subj::fbGroup::all);
 #endif
 	auto results = fb::coutAllFeatures(dear, guysList, postfix);
+	fb::calculateICA(dear, guysList, postfix);
+
 
 	for(const subj::fbGroup & group :
 	{
@@ -46,7 +69,6 @@ void MainWindow::customFunc()
 		outStream << std::endl << std::endl;
 	}
 
-//	fb::calculateICA(dear, guysList, postfix);
 	exit(0);
 #endif
 
@@ -383,6 +405,73 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+#if 0
+	/// Xenia pretable
+	std::vector<std::vector<int>> groupIds
+	{
+		smLib::range<std::vector<int>>(1, 13 + 1),
+				smLib::range<std::vector<int>>(14, 26 + 1),
+				smLib::range<std::vector<int>>(27, 41 + 1),
+	};
+
+	struct chann
+	{
+		int spssNum;
+		int loc;
+		int hemisph;
+		chann(int num_, int loc_, int hemi_) : spssNum{num_}, loc{loc_}, hemisph{hemi_} {}
+	};
+
+	std::vector<chann> chanVec
+	{
+		{101, 1, 1},	/// Fp1
+		{102, 1, 2},	/// Fp2
+		{103, 2, 1},	/// F7
+		{104, 3, 1},	/// F3
+//		{105, 1, 3},	/// Fz
+		{106, 3, 2},	/// F4
+		{107, 2, 2},	/// F8
+		{108, 4, 1},	/// T3
+		{109, 5, 1},	/// C3
+//		{110, 1, 3},	/// Cz
+		{111, 5, 2},	/// C4
+		{112, 4, 2},	/// T4
+		{113, 6, 1},	/// T5
+		{114, 7, 1},	/// P3
+//		{115, 1, 3},	/// Pz
+		{116, 7, 2},	/// P4
+		{117, 6, 2},	/// T6
+		{118, 8, 1},	/// O1
+		{119, 8, 2},	/// O2
+
+	};
+
+	std::ofstream fil;
+	fil.open("/media/Files/Data/Xenia/FINAL_res/table_pre.txt");
+
+	for(int group : {1, 2, 3})
+	{
+		for(int stim : {1, 2, 3, 4, 5, 6, 7})
+		{
+			for(int id : groupIds[group - 1])
+			{
+				for(chann chan :  chanVec)
+				{
+					fil
+							<< group << "\t"
+							<< stim << "\t"
+							<< id << "\t"
+							<< chan.spssNum << "\t"
+							<< chan.loc << "\t"
+							<< chan.hemisph << "\t"
+							<< std::endl;
+				}
+			}
+		}
+	}
+	fil.close();
+	exit(0);
+#endif
 
 #if 0
 	/// Xenia finalest
@@ -481,6 +570,7 @@ void MainWindow::customFunc()
 						  | featuresMask::fracDim
 						  | featuresMask::Hilbert
 						  | featuresMask::spectre
+						  | featuresMask::logFFT
 						  );
 		autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
 	}

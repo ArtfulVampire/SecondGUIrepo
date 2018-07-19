@@ -2652,8 +2652,6 @@ std::valarray<double> (* refilter)(const std::valarray<double> & inputSignal,
 								  double highFreq,
 								  bool isNotch,
 								  double srate) =
-//		&myDsp::refilter;
 		&butter::refilter;
-//		&myLib::refilterFFT;
 
 }// namespace myLib

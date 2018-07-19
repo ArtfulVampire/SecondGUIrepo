@@ -113,7 +113,8 @@ void calculateFeatures(const QString & pathWithEdfs,
 		}
 		case autosUser::XeniaFinalest:
 		{
-			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq()); /// not resizeCols
+			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq());	/// not resizeCols
+			tmpData.eraseRows({4, 9, 14});							/// skip Fz, Cz, Pz
 			break;
 		}
 		default:
@@ -172,6 +173,7 @@ void countFFT(const matrix & inData,
 											 srate);
 	}
 
+
 	switch(DEFS.getAutosUser())
 	{
 	case autosUser::XeniaFinalest:
@@ -219,12 +221,30 @@ void countLogFFT(const matrix & inData,
 											 srate);
 	}
 
-	for(int j = 0; j < spectra[0].size(); ++j)
+	switch(DEFS.getAutosUser())
 	{
-		for(int i = 0; i < inData.rows(); ++i)
+	case autosUser::XeniaFinalest:
+	{
+		for(int i = 0; i < spectra.size(); ++i)
 		{
-			outStr << std::log(spectra[i][j]) << "\t";
+			for(int j = 0; j < spectra[i].size(); ++j)
+			{
+				outStr << std::log10(spectra[i][j]) << "\t";
+			}
+			outStr << "\r\n";
 		}
+		break;
+	}
+	default:
+	{
+		for(int j = 0; j < spectra[0].size(); ++j)
+		{
+			for(int i = 0; i < inData.rows(); ++i)
+			{
+				outStr << std::log(spectra[i][j]) << "\t";
+			}
+		}
+	}
 	}
 }
 
@@ -1108,10 +1128,12 @@ void Xenia_TBI_finalest(const QString & finalPath,
 			/// process?
 			if(0)
 			{
+//				DEFS.setAutosMask(featuresMask::logFFT);
 				autos::calculateFeatures(guyPath, 19, outPath);
 			}
 		}
 	}
+//	exit(0);
 
 	if(01)
 	{

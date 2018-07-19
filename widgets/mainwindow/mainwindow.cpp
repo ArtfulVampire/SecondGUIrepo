@@ -20,7 +20,7 @@ MainWindow::MainWindow() :
 
 	outStream.setTextEdit(ui->textEdit);
 	outStream.setFile(DEFS.getDirPath() + "/log.txt", std::ios_base::app);
-	outStream.setOutputType(qtLib::outputType::textEdit);
+	outStream.setOutputType(qtLib::outputType::cout);
 
 	QButtonGroup * group2;
 	group2 = new QButtonGroup(this);

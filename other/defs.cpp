@@ -53,6 +53,7 @@ void defs::setAutosUser(autosUser in)
 		autosMask = featuresMask::alpha |
 					featuresMask::spectre |
 					featuresMask::Hilbert |
+					featuresMask::logFFT |
 //					featuresMask::wavelet |
 					featuresMask::fracDim
 					;
