@@ -340,7 +340,7 @@ bool FBedf::isGoodAns(taskType typ, int numReal, ansType expected) const
 	return fb::isGoodAns(ans[static_cast<int>(typ)][numReal], expected);
 }
 
-std::valarray<double> FBedf::spectralRow(taskType typ, ansType howSolved, int chan, double freq)
+std::valarray<double> FBedf::spectralRow(taskType typ, ansType howSolved, int chan, double freq) const
 {
 	const int taskNum = static_cast<int>(typ);
 	std::vector<double> res;	res.reserve(realsSpectra[taskNum].size());
@@ -464,7 +464,7 @@ int FBedf::individualAlphaPeakIndexReal() const
 	return lef + myLib::indexOfMax(tmp);
 }
 
-double FBedf::spectreDispersion(taskType typ, ansType howSolved)
+double FBedf::spectreDispersion(taskType typ, ansType howSolved) const
 {
 	/// remake via subRows, subcols, transpose
 	double res = 0.;
@@ -477,6 +477,32 @@ double FBedf::spectreDispersion(taskType typ, ansType howSolved)
 		}
 	}
 	return res;
+}
+
+double FBedf::spectreDispersionWinds(taskType typ, ansType howSolved) const
+{
+	/// remake via subRows, subcols, transpose
+	int counter = 0;
+	std::vector<int> goodRows{};
+	for(auto in : this->windTypes)
+	{
+		if(in == typ && fb::isGoodAns(howSolved, windAns[counter]))
+		{
+			goodRows.push_back(counter);
+		}
+
+		++counter;
+	}
+	matrix windSpectraGood = windSpectra.subRows(goodRows);
+	std::vector<std::pair<int, int>> goodCols{};
+
+	for(int chan : FBedf::chansToProcess)
+	{
+		goodCols.push_back({chan * this->getSpLenWind(), (chan + 1) * this->getSpLenWind()});
+	}
+	windSpectraGood = windSpectraGood.subCols(goodCols);
+
+	return (windSpectraGood.sigmaOfCols() / windSpectraGood.averageRow()).sum();
 }
 
 std::valarray<double> FBedf::getTimes(taskType typ, ansType howSolved) const

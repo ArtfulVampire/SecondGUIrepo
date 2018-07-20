@@ -54,6 +54,7 @@ private:
 	std::vector<ansType> ansInRow;
 
 	/// [numWind] = spectre by rows (already in leftFreq-rightFreq range)
+	/// no empty spectra (look remakeWindows)
 	matrix windSpectra;
 
 	/// [numWind]
@@ -112,7 +113,8 @@ public:
 	double partOfCleanedWinds();
 
 	/// complex calculations
-	double spectreDispersion(taskType typ, ansType howSolved);
+	double spectreDispersion(taskType typ, ansType howSolved) const;
+	double spectreDispersionWinds(taskType typ, ansType howSolved) const;
 	double distSpec(taskType type1, taskType type2, ansType howSolved);
 	QPixmap kdeForSolvTime(taskType typ) const;
 	QPixmap verbShortLong(double thres) const;		/// spectra of short and long anagramms
@@ -143,7 +145,8 @@ private:
 	bool isGood{false};
 	std::vector<double> freqs;
 	std::vector<ansType> readAns(const QString & ansPath);
-	std::valarray<double> spectralRow(taskType typ, ansType howSolved, int chan, double freq); /// remake and deprecate
+	/// remake and deprecate ??
+	std::valarray<double> spectralRow(taskType typ, ansType howSolved, int chan, double freq) const;
 };
 
 

@@ -115,7 +115,7 @@ coutAllFeatures(const QString & dear,
 //		fbItem.writeBackgroundCompare(fb::taskType::verb, fb::ansType::correct);		/// 3 pics
 
 		/// normalized dispersions
-//		fbItem.writeDispersions(ansType::correct);		std::cout.flush();	/// 9 vals
+		fbItem.writeDispersions(ansType::correct);		std::cout.flush();	/// 9 vals
 
 		/// classify winds/reals by alpha
 //		fbItem.writeClass(false);						std::cout.flush();	/// 6 vals

@@ -18,27 +18,7 @@ void MainWindow::customFunc()
 {
 
 
-#if 0
-	const QString dr = "/media/Files/Data/Xenia/FINAL_res";
-	auto lst = QDir(dr).entryList({"Nemirov*_spectre.txt"});
-	int cc = 0;
-	for(auto fn : lst)
-	{
-		std::ifstream in;
-		in.open((dr + "/" + fn).toStdString());
-		double tmp;
-		while(in >> tmp)
-		{
-			if(tmp <= 0.0001) { ++cc; }
-//			{ std::cout << fn << std::endl; break; }
-		}
-		in.close();
-	}
-	std::cout << cc << std::endl;
-	exit(0);
-#endif
-
-#if 0
+#if 01
 	/// count correctness, average times, ICA
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
@@ -51,7 +31,7 @@ void MainWindow::customFunc()
 	const auto & guysList = subj::guysFBfinal.at(subj::fbGroup::all);
 #endif
 	auto results = fb::coutAllFeatures(dear, guysList, postfix);
-	fb::calculateICA(dear, guysList, postfix);
+//	fb::calculateICA(dear, guysList, postfix);
 
 
 	for(const subj::fbGroup & group :
@@ -405,6 +385,28 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
+
+
+#if 0
+	/// check zeros in Xenia FINAL
+	const QString dr = "/media/Files/Data/Xenia/FINAL_res";
+	auto lst = QDir(dr).entryList({"Nemirov*_spectre.txt"});
+	int cc = 0;
+	for(auto fn : lst)
+	{
+		std::ifstream in;
+		in.open((dr + "/" + fn).toStdString());
+		double tmp;
+		while(in >> tmp)
+		{
+			if(tmp <= 0.0001) { ++cc; }
+//			{ std::cout << fn << std::endl; break; }
+		}
+		in.close();
+	}
+	std::cout << cc << std::endl;
+	exit(0);
+#endif
 #if 0
 	/// Xenia pretable
 	std::vector<std::vector<int>> groupIds
