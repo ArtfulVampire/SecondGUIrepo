@@ -201,7 +201,7 @@ void ClassifierData::reduceSize(uint oneClass)
 {
 	std::vector<uint> eraseIndices{};
 	std::valarray<double> localCount = getClassCount();
-	for(uint i = 0; i < dataMatrix.rows(); ++i)
+	for(int i = 0; i < dataMatrix.rows(); ++i)
 	{
 #if MAP
 		int typeIndex = classMarkers[ types[i] ];
@@ -365,7 +365,7 @@ void ClassifierData::variancingSubset(const std::vector<uint> & rows, double var
 	tmp.transpose();
 
 	std::valarray<double> sgmVec(tmp.rows());
-	for(uint i = 0; i < tmp.rows(); ++i)
+	for(int i = 0; i < tmp.rows(); ++i)
 	{
 		sgmVec[i] = smLib::sigma(tmp[i]);
 		if(sgmVec[i] != 0.)
@@ -375,7 +375,7 @@ void ClassifierData::variancingSubset(const std::vector<uint> & rows, double var
 	}
 	tmp.transpose();
 
-	for(int i = 0; i < rows.size(); ++i)
+	for(uint i = 0; i < rows.size(); ++i)
 	{
 		dataMatrix[rows[i]] = tmp[i];
 	}
@@ -390,7 +390,7 @@ void ClassifierData::z_transformSubset(const std::vector<uint> & rows, double va
 void ClassifierData::centering()
 {
 	averageDatum = dataMatrix.averageRow();
-	for(uint i = 0; i < dataMatrix.rows(); ++i)
+	for(int i = 0; i < dataMatrix.rows(); ++i)
 	{
 		dataMatrix[i] -= averageDatum;
 	}
@@ -403,7 +403,7 @@ void ClassifierData::variancing(double var)
 	tmp.transpose();
 
 	sigmaVector.resize(tmp.rows());
-	for(uint i = 0; i < tmp.rows(); ++i)
+	for(int i = 0; i < tmp.rows(); ++i)
 	{
 		sigmaVector[i] = smLib::sigma(tmp[i]);
 		if(sigmaVector[i] != 0.)

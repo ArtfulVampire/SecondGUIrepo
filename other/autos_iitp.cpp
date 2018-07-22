@@ -195,7 +195,7 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 	const int en  = std::floor(maxFreq / spStep);
 
 	std::valarray<double> drawData(en - beg);
-	for(int i = 0; i < drawData.size(); ++i)
+	for(uint i = 0; i < drawData.size(); ++i)
 	{
 		drawData[i] = std::abs(inData[beg + i]);
 	}
@@ -212,7 +212,7 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 	pic.fill();
 	QPainter pnt;
 	pnt.begin(&pic);
-	for(int i = 0; i < drawData.size() - 1; ++i)
+	for(uint i = 0; i < drawData.size() - 1; ++i)
 	{
 //		std::cout << i << "\t" << arr[i] << std::endl;
 		pnt.drawLine( pic.width() * (leftGap + i / double(drawData.size()) * (1. - (leftGap +  rightGap))),
@@ -419,7 +419,7 @@ void IITPtestCoh2(const QString & guyName)
 			return direct + guyName + "_" + rn(i, 2) + postfix + ".edf";
 		};
 
-		for(int i = 0; i < nums.size(); ++i)
+		for(uint i = 0; i < nums.size(); ++i)
 		{
 			if(!QFile::exists(filePath(nums[i])))
 			{
@@ -1261,7 +1261,7 @@ void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums)
 	auto res = myLib::drw::drawArraysSameScale(templ, paths);
 
 	QString outPath;
-	for(int i = 0; i < res.size(); ++i)
+	for(uint i = 0; i < res.size(); ++i)
 	{
 		outPath = paths[i];
 		outPath.replace("/sp/", "/pic/");
@@ -1677,7 +1677,7 @@ void IITPdrawSpectralMaps(const QString & guyName,
 		{
 			std::valarray<double> spec = myLib::readFileInLine(inPath + fileName);
 
-			matrix specMat(spec, uint(19));
+			matrix specMat(spec, 19);
 			std::valarray<double> drawSpec(19);
 			for(std::pair<int, int> a : {
 				std::make_pair(4, 8),

@@ -206,6 +206,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 							   int Kmax,
 							   const QString & picPath);
 
+/// what is the band of the signal - to do
 std::pair<double, double> signalBand(const std::valarray<double> & inSignal);
 
 double alphaPeakFreq(const std::valarray<double> & spectreR,

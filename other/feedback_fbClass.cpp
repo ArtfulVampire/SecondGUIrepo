@@ -152,6 +152,7 @@ void FeedbackClass::writeDists(ansType howSolved)
 
 void FeedbackClass::writeDispersions(ansType howSolved)
 {
+	/// reals
 	for(taskType typ : {taskType::spat, taskType::verb, taskType::rest})
 	{
 		double a = files[static_cast<int>(fileNum::first)].spectreDispersion(typ, howSolved);
@@ -161,6 +162,20 @@ void FeedbackClass::writeDispersions(ansType howSolved)
 				<< a << "\t"
 				<< b << "\t"
 				<< (b - a) / a << "\t";
+	}
+
+	/// winds
+	for(taskType typ : {taskType::spat, taskType::verb, taskType::rest})
+	{
+
+		double a = files[static_cast<int>(fileNum::first)].spectreDispersionWinds(typ, howSolved);
+		double b = files[static_cast<int>(fileNum::third)].spectreDispersionWinds(typ, howSolved);
+		(*ostr)
+//				<< std::setprecision(4)
+				<< a << "\t"
+				<< b << "\t"
+				<< (b - a) / a << "\t";
+
 	}
 }
 

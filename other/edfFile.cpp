@@ -130,7 +130,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		int currTimeIndex;
 
 		//    this->headerInitialInfo = myLib::fitString("Edf for AMOD Data", 184);
-		this->headerInitialInfo = myLib::fitString("Edf for AMOD Data", 184).toStdString();
+		this->headerInitialInfo = myLib::fitString("Edf for AMOD Data", 184);
 		this->headerReservedField = myLib::fitString("headerReservedField", 44);
 		this->headerRest = QString();
 
@@ -234,7 +234,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 
 		int numOfParams = iitpData.rows();
 
-		this->headerInitialInfo = myLib::fitString("Edf for IITP EMG Data", 184).toStdString();
+		this->headerInitialInfo = myLib::fitString("Edf for IITP EMG Data", 184);
 		this->headerReservedField = myLib::fitString("headerReservedField", 44);
 		this->headerRest = QString();
 
@@ -821,7 +821,7 @@ void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
 	/// experimental annotations - just delete
     if(this->edfPlusFlag)
     {
-		this->removeChannels(std::vector<uint>{this->markerChannel});
+		this->removeChannel(this->markerChannel);
         this->edfPlusFlag = false;
         this->markerChannel = -1;
     }
@@ -1560,7 +1560,7 @@ edfFile & edfFile::divideChannels(std::vector<uint> chanNums, double denom)
 	if(chanNums.empty())
 	{
 		std::cout << "edfFile::divideChannels: chanList is empty, divide all" << std::endl;
-		for(uint i = 0; i < this->getNs(); ++i)
+		for(int i = 0; i < this->getNs(); ++i)
 		{
 			if(i != this->markerChannel)
 			{
@@ -2213,9 +2213,9 @@ edfFile & edfFile::cleanFromEyes(QString eyesPath,
             }
         }
     }
-    for(uint i = 0; i < coefs.rows(); ++i)
+	for(int i = 0; i < coefs.rows(); ++i)
     {
-        for(uint k = 0; k < coefs.cols(); ++k)
+		for(int k = 0; k < coefs.cols(); ++k)
         {
 
 			this->edfData[ eegNums[i] ] -= this->edfData [ eogNums[k] ] * coefs[i][k];
@@ -2514,7 +2514,7 @@ void edfFile::writeOtherData(const matrix & newData,
 
     if(chanList.empty())
     {
-        chanList.resize(newData.size());
+		chanList.resize(newData.rows());
         std::iota(std::begin(chanList),
                   std::end(chanList),
                   0);

@@ -67,9 +67,9 @@ inline double distance(double const x1, double const y1,
 	return std::sqrt(std::pow((x1 - x2), 2) + std::pow((y1 - y2), 2));
 }
 
-template <typename T>
+template <typename T, typename Ind>
 void eraseItems(std::vector<T> & inVect,
-				const std::vector<uint> & indices)
+				const std::vector<Ind> & indices)
 {
 	const int initSize = inVect.size();
 	std::set<int, std::less<int>> excludeSet; // less first
@@ -94,6 +94,7 @@ void eraseItems(std::vector<T> & inVect,
 	inVect.resize(initSize - excludeSet.size());
 }
 template void eraseItems(std::vector<std::valarray<double>> & inVect, const std::vector<uint> & indices);
+template void eraseItems(std::vector<std::valarray<double>> & inVect, const std::vector<int> & indices);
 template void eraseItems(std::vector<int> & inVect, const std::vector<uint> & indices);
 template void eraseItems(std::vector<double> & inVect, const std::vector<uint> & indices);
 

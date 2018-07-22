@@ -186,7 +186,7 @@ FBedf::FBedf(const QString & edfPath,
 		{
 			for(const auto & in2 : in)
 			{
-				std::cout << in2.size() << "\t"; /// how many rows in reals;
+				std::cout << in2.rows() << "\t"; /// how many rows in reals;
 			}
 			std::cout << std::endl;
 		}

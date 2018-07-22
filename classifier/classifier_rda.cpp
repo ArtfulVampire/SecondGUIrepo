@@ -30,7 +30,7 @@ void RDA::setLambda(double in)
 
 void RDA::printParams()
 {
-	for(int i = 0; i < myClassData->getNumOfCl(); ++i)
+	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
 	{
 //		std::cout << centers[i] << std::endl;
 	}
@@ -67,7 +67,7 @@ void RDA::learn(std::vector<uint> & indices)
         double tmpTrace = covMat[i].trace();
         covMat[i] *= (1. - gamma);
 // #pragma omp parallel for
-        for(uint j = 0; j < covMat[i].rows(); ++j)
+		for(int j = 0; j < covMat[i].rows(); ++j)
         {
             covMat[i][j][j] += gamma * tmpTrace / covMat[i].rows();
         }

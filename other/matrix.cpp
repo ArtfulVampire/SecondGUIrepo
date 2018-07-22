@@ -91,7 +91,7 @@ matrix::matrix(const std::valarray<double> & vect, bool orientH)
     else
     {
         this->resize(vect.size(), 1);
-        for(uint i = 0; i < vect.size(); ++i)
+		for(uint i = 0; i < vect.size(); ++i)
         {
 			myData[i][0] = vect[i];
         }
@@ -107,7 +107,7 @@ matrix::matrix(const std::valarray<double> & vect, char orient)
     else if(orient == 'v' || orient == 'V' || orient == 'c' || orient == 'C')
     {
         this->resize(vect.size(), 1);
-        for(uint i = 0; i < vect.size(); ++i)
+		for(uint i = 0; i < vect.size(); ++i)
         {
 			myData[i][0] = vect[i];
         }
@@ -118,7 +118,7 @@ matrix::matrix(const std::valarray<double> & vect, char orient)
     }
 }
 
-matrix::matrix(const std::valarray<double> & vect, uint inRows)
+matrix::matrix(const std::valarray<double> & vect, int inRows)
 {
     if(vect.size() % inRows != 0)
     {
@@ -128,7 +128,7 @@ matrix::matrix(const std::valarray<double> & vect, uint inRows)
     int newCols = vect.size() / inRows;
 
     this->resize(inRows, newCols);
-    for(uint i = 0; i < inRows; ++i)
+	for(int i = 0; i < inRows; ++i)
     {
         std::copy(std::begin(vect) + i * newCols,
                   std::begin(vect) + (i + 1) * newCols,
@@ -139,7 +139,7 @@ matrix::matrix(const std::valarray<double> & vect, uint inRows)
 matrix::matrix(const std::valarray<double> & vect1, const std::valarray<double> & vect2)
 {
 	myData.clear();
-    for(uint i = 0; i < vect1.size(); ++i)
+	for(uint i = 0; i < vect1.size(); ++i)
     {
 		myData.push_back(vect1[i] * vect2);
     }
@@ -230,7 +230,7 @@ matrix operator + (const matrix & lhs, const matrix & rhs)
         return lhs;
     }
     matrix result(lhs.rows(), lhs.cols());
-    for(uint i = 0; i < lhs.rows(); ++i)
+	for(int i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] + rhs[i];
     }
@@ -240,7 +240,7 @@ matrix operator + (const matrix & lhs, const matrix & rhs)
 matrix operator + (const matrix & lhs, double val)
 {
     matrix result;
-    for(uint i = 0; i < lhs.rows(); ++i)
+	for(int i = 0; i < lhs.rows(); ++i)
     {
         result.push_back(lhs[i] + val);
     }
@@ -255,7 +255,7 @@ matrix matrix::operator += (const matrix & other)
 		std::cout << "matrix sum failed" << std::endl;
         return *this;
     }
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
         (*this)[i] += other[i];
     }
@@ -264,7 +264,7 @@ matrix matrix::operator += (const matrix & other)
 
 matrix matrix::operator += (double val)
 {
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
         (*this)[i] += val;
     }
@@ -282,7 +282,7 @@ matrix operator - (const matrix & lhs, const matrix & rhs)
         return lhs;
     }
     matrix result(lhs.rows(), lhs.cols());
-    for(uint i = 0; i < lhs.rows(); ++i)
+	for(int i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] - rhs[i];
     }
@@ -292,7 +292,7 @@ matrix operator - (const matrix & lhs, const matrix & rhs)
 matrix operator - (const matrix & lhs, double val)
 {
     matrix result;
-    for(uint i = 0; i < lhs.rows(); ++i)
+	for(int i = 0; i < lhs.rows(); ++i)
     {
         result.push_back(lhs[i] - val);
     }
@@ -307,7 +307,7 @@ matrix matrix::operator -= (const matrix & other)
 		std::cout << "matrix sum failed" << std::endl;
         return *this;
     }
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
         (*this)[i] -= other[i];
     }
@@ -316,7 +316,7 @@ matrix matrix::operator -= (const matrix & other)
 
 matrix matrix::operator -= (double val)
 {
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
         (*this)[i] -= val;
     }
@@ -326,7 +326,7 @@ matrix matrix::operator -()
 {
     matrix res(this->rows(), this->cols());
 
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
 		res[i] = -myData[i];
     }
@@ -334,66 +334,12 @@ matrix matrix::operator -()
 }
 
 
-/*
-matrix operator * (const matrix & lhs, const matrix & rhs)
-{
-    if(lhs.cols() != rhs.rows())
-    {
-		std::cout << "matrixProduct (operator *): input matrices are not productable" << std::endl;
-        return lhs;
-    }
-
-    const uint dim1 = lhs.rows();
-    const uint dim2 = rhs.cols();
-
-
-    matrix result(dim1, dim2, 0.);
-#if 0
-    for(uint j = 0; j < dim2; ++j)
-    {
-        std::valarray<double> currCol = rhs.getCol(j);
-        for(uint i = 0; i < dim1; ++i)
-        {
-            result[i][j] = std::inner_product(begin(lhs[i]),
-                                              end(lhs[i]),
-                                              begin(currCol),
-                                              0.);
-        }
-    }
-#elif 1
-
-#if MATRIX_OMP
-#pragma omp parallel for
-    for(uint i = 0; i < dim1; ++i)
-    {
-        for(uint j = 0; j < lhs.cols(); ++j)
-        {
-            result[i] += lhs[i][j] * rhs[j];
-        }
-    }
-#else
-    /// 15-20% faster than with currCol
-    for(uint i = 0; i < dim1; ++i)
-    {
-        for(uint j = 0; j < lhs.cols(); ++j)
-        {
-            result[i] += lhs[i][j] * rhs[j];
-        }
-    }
-#endif // omp
-
-
-#endif
-    return result;
-}
-*/
-
 
 matrix operator * (const matrix & lhs, double val)
 {
     matrix result(lhs.rows(), lhs.cols());
 // #pragma omp parallel for
-    for(uint i = 0; i < lhs.rows(); ++i)
+	for(int i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] * val;
     }
@@ -402,7 +348,7 @@ matrix operator * (const matrix & lhs, double val)
 
 matrix matrix::operator *= (double other)
 {
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
 		myData[i] *= other;
     }
@@ -422,15 +368,15 @@ matrix matrix::operator *(const matrix & other) const
 		return *this;
 	}
 
-	const uint dim1 = this->rows();
-	const uint dim2 = other.cols();
+	const int dim1 = this->rows();
+	const int dim2 = other.cols();
 
 	matrix result(dim1, dim2, 0.);
 
 	/// 15-20% faster than with currCol
-	for(uint i = 0; i < dim1; ++i)
+	for(int i = 0; i < dim1; ++i)
 	{
-		for(uint j = 0; j < this->cols(); ++j)
+		for(int j = 0; j < this->cols(); ++j)
 		{
 			result[i] += myData[i][j] * other[j];
 		}
@@ -449,7 +395,7 @@ std::valarray<double> operator * (const matrix & lhs, const std::valarray<double
 #if MATRIX_OMP
 #pragma omp parallel for
 #endif
-    for(uint i = 0; i < res.size(); ++i)
+	for(uint i = 0; i < res.size(); ++i)
     {
 		res[i] = smLib::prod(lhs[i], rhs);
     }
@@ -465,7 +411,7 @@ std::valarray<double> operator * (const std::valarray<double> & lhs, const matri
     }
 
     std::valarray<double> res = rhs[0];
-    for(uint i = 1; i < lhs.size(); ++i)
+	for(uint i = 1; i < lhs.size(); ++i)
     {
         res += lhs[i] * rhs[i];
     }
@@ -479,7 +425,7 @@ matrix operator / (const matrix & lhs, double val)
 {
     matrix result(lhs.rows(), lhs.cols());
 // #pragma omp parallel for
-    for(uint i = 0; i < lhs.rows(); ++i)
+	for(int i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] / val;
     }
@@ -499,9 +445,9 @@ bool matrix::operator == (const matrix & other)
         return false;
     }
 
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
-        for(uint j = 0; j < this->cols(); ++j)
+		for(int j = 0; j < this->cols(); ++j)
         {
             if((*this)[i][j] != other[i][j])
             {
@@ -559,7 +505,7 @@ bool matrix::isEmpty() const
 
 matrix matrix::operator /= (double other)
 {
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
 		myData[i] /= other;
 
@@ -591,7 +537,7 @@ matrix & matrix::vertCat(matrix && other)
 		std::cout << "matrix::vertCat(): wrong dimensionality" << std::endl;
         return *this;
     }
-    for(uint i = 0; i < other.rows(); ++i)
+	for(int i = 0; i < other.rows(); ++i)
     {
         this->push_back(std::move(other[i]));
     }
@@ -608,7 +554,7 @@ matrix & matrix::horzCat(const matrix & other)
 	const int startCopy = this->cols();
 	this->resizeCols(this->cols() + other.cols());
 
-	for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
 	{
 		std::copy(std::begin(other[i]),
 				  std::end(other[i]),
@@ -637,7 +583,7 @@ matrix & matrix::random(double low, double high)
     return *this;
 }
 
-matrix & matrix::pop_front(uint numOfCols)
+matrix & matrix::pop_front(int numOfCols)
 {
 	for(std::valarray<double> & row : myData)
 	{
@@ -780,7 +726,7 @@ matrix matrix::covMatCols(std::valarray<double> * avRowIn) const
         avRow = &avRowVal;
     }
 
-    for(uint j = 0; j < cop.rows(); ++j)
+	for(int j = 0; j < cop.rows(); ++j)
     {
 		cop.myData[j] -= *avRow;
     }
@@ -851,11 +797,6 @@ matrix & matrix::resizeCols(int newCols)
     return *this;
 }
 
-uint matrix::rows() const
-{
-   return myData.size();
-}
-
 double matrix::maxVal() const
 {
 	double res = myData[0][0];
@@ -906,7 +847,7 @@ double matrix::minAbsVal() const
 std::valarray<double> matrix::maxOfRows() const
 {
 	std::valarray<double> res(this->rows(), 0);
-	for(int i = 0; i < res.size(); ++i)
+	for(uint i = 0; i < res.size(); ++i)
 	{
 		res[i] = myData[i].max();
 	}
@@ -916,7 +857,7 @@ std::valarray<double> matrix::maxOfRows() const
 std::valarray<double> matrix::maxOfCols() const
 {
 	std::valarray<double> res(this->cols(), 0);
-	for(int i = 0; i < res.size(); ++i)
+	for(uint i = 0; i < res.size(); ++i)
 	{
 		std::valarray<double> t = this->getCol(i);
 		res[i] = t.max();
@@ -951,7 +892,7 @@ std::vector<double> matrix::toVectorByRows() const
 	std::vector<double> res;
 	res.reserve(this->rows() * this->cols() + 100);
 	res.resize(this->rows() * this->cols());
-	for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
 	{
 		std::copy(std::begin(myData[i]),
 				  std::end(myData[i]),
@@ -963,7 +904,7 @@ std::vector<double> matrix::toVectorByRows() const
 std::valarray<double> matrix::toValarByRows() const
 {
     std::valarray<double> res(this->rows() * this->cols());
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
 		std::copy(std::begin(myData[i]),
 				  std::end(myData[i]),
@@ -976,9 +917,9 @@ std::valarray<double> matrix::toValarByCols() const
 {
     std::valarray<double> res(this->rows() * this->cols());
     int count = 0;
-    for(uint i = 0; i < this->cols(); ++i)
+	for(int i = 0; i < this->cols(); ++i)
     {
-        for(uint j = 0; j < this->rows(); ++j)
+		for(int j = 0; j < this->rows(); ++j)
         {
 			res[count++] = myData[j][i];
         }
@@ -990,7 +931,7 @@ std::valarray<double> matrix::sigmaOfCols() const
 {
     std::valarray<double> res(this->cols());
 #if 1
-    for(uint i = 0; i < this->cols(); ++i)
+	for(int i = 0; i < this->cols(); ++i)
     {
         std::valarray<double> W = this->getCol(i);
         res[i] = smLib::sigma(W);
@@ -1016,7 +957,7 @@ std::valarray<double> matrix::sigmaOfCols() const
 std::valarray<double> matrix::averageRow() const
 {
     std::valarray<double> res(0., this->cols());
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
 		res += myData[i];
     }
@@ -1027,19 +968,19 @@ std::valarray<double> matrix::averageRow() const
 std::valarray<double> matrix::averageCol() const
 {
     std::valarray<double> res(this->rows());
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
 		res[i] = myData[i].sum() / myData[i].size();
     }
     return res;
 }
 
-std::valarray<double> matrix::getCol(uint i, uint numRows) const
+std::valarray<double> matrix::getCol(int i, int numRows) const
 {
 	if(numRows == 0) { numRows = this->rows(); }
 
 	std::valarray<double> res(numRows);
-	for(uint j = 0; j < numRows; ++j)
+	for(int j = 0; j < numRows; ++j)
     {
 		res[j] = myData[j][i];
     }
@@ -1052,14 +993,14 @@ matrix & matrix::pop_back()
 	return *this;
 }
 
-void matrix::print(uint rows, uint cols) const
+void matrix::print(int rows, int cols) const
 {
     if(rows == 0) rows = this->rows();
     if(cols == 0) cols = this->cols();
 
-    for(uint i = 0; i < rows; ++i)
+	for(int i = 0; i < rows; ++i)
     {
-        for(uint j = 0; j < cols; ++j)
+		for(int j = 0; j < cols; ++j)
         {
 			std::cout << smLib::doubleRound(myData[i][j], 3) << "\t";
         }
@@ -1068,16 +1009,16 @@ void matrix::print(uint rows, uint cols) const
 //    std::cout << std::endl;
 }
 
-void matrix::printWithBraces(uint rows, uint cols) const
+void matrix::printWithBraces(int rows, int cols) const
 {
 	if(rows == 0) rows = this->rows();
 	if(cols == 0) cols = this->cols();
 
 	std::cout << "{";
-	for(uint i = 0; i < rows; ++i)
+	for(int i = 0; i < rows; ++i)
 	{
 		std::cout << "{";
-		for(uint j = 0; j < cols; ++j)
+		for(int j = 0; j < cols; ++j)
 		{
 			std::cout << smLib::doubleRound(myData[i][j], 3);
 			if(j != cols - 1) { std::cout << ","; }
@@ -1102,17 +1043,12 @@ matrix & matrix::push_back(const std::vector<double> & in)
 	return *this;
 }
 
-uint matrix::cols() const
-{
-	return myData[0].size();
-}
-
 matrix matrix::transposed(const matrix &input)
 {
     matrix res(input.cols(), input.rows());
-    for(uint i = 0; i < input.rows(); ++i)
+	for(int i = 0; i < input.rows(); ++i)
     {
-        for(uint j = 0; j < input.cols(); ++j)
+		for(int j = 0; j < input.cols(); ++j)
         {
             res[j][i] = input[i][j];
         }
@@ -1130,7 +1066,7 @@ matrix & matrix::transpose()
     this->resize(max(oldRows, oldCols),
                  max(oldRows, oldCols)); // make square
 
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
         for(int j = i + 1; j < this->cols(); ++j)
         {
@@ -1147,7 +1083,7 @@ double matrix::trace() const
 {
     if(this->rows() != this->cols()) return 0.;
     double res = 0.;
-    for(uint i = 0; i < this->rows(); ++i)
+	for(int i = 0; i < this->rows(); ++i)
     {
         res += (*this)[i][i];
     }
@@ -1170,11 +1106,11 @@ matrix & matrix::invert(double * det)
         return *this;
     }
 
-    const uint size = this->rows();
+	const int size = this->rows();
 	matrix initMat(*this);
 
     matrix tempMat(size, size, 0.);
-    for(uint i = 0; i < size; ++i)
+	for(int i = 0; i < size; ++i)
     {
         tempMat[i][i] = 1.;
     }
@@ -1183,9 +1119,9 @@ matrix & matrix::invert(double * det)
 //    std::cout << "start first cycle" << std::endl;
 
     // 1) make higher-triangular
-    for(uint i = 0; i < size - 1; ++i) // which line to substract
+	for(int i = 0; i < size - 1; ++i) // which line to substract
     {
-        for(uint j = i + 1; j < size; ++j) // FROM which line to substract
+		for(int j = i + 1; j < size; ++j) // FROM which line to substract
         {
             coeff = initMat[j][i] / initMat[i][i]; // coefficient
 
@@ -1213,14 +1149,14 @@ matrix & matrix::invert(double * det)
     if(det != nullptr)
     {
         (*det) = 1.;
-        for(uint i = 0; i < size; ++i)
+		for(int i = 0; i < size; ++i)
         {
             (*det) *= initMat[i][i];
         }
     }
 
     // 3) divide on diagonal elements
-    for(uint i = 0; i < size; ++i) // which line to divide
+	for(int i = 0; i < size; ++i) // which line to divide
     {
         tempMat[i] /= initMat[i][i];
     }
@@ -1229,21 +1165,21 @@ matrix & matrix::invert(double * det)
     return *this;
 }
 
-matrix & matrix::swapCols(uint i, uint j)
+matrix & matrix::swapCols(int i, int j)
 {
-    for(uint k = 0; k < this->rows(); ++k)
+	for(int k = 0; k < this->rows(); ++k)
     {
 		std::swap(myData[k][i], myData[k][j]);
     }
     return *this;
 }
-matrix & matrix::swapRows(uint i, uint j)
+matrix & matrix::swapRows(int i, int j)
 {
 	std::swap(myData[i], myData[j]);
     return *this;
 }
 
-matrix & matrix::eraseRow(uint i)
+matrix & matrix::eraseRow(int i)
 {
     if(i < this->rows())
     {
@@ -1253,7 +1189,7 @@ matrix & matrix::eraseRow(uint i)
 }
 
 
-matrix & matrix::eraseCol(uint j)
+matrix & matrix::eraseCol(int j)
 {
     if(j < this->cols())
     {
@@ -1265,82 +1201,10 @@ matrix & matrix::eraseCol(uint j)
     return *this;
 }
 
-
-/// looks like okay
-matrix & matrix::eraseRows(const std::vector<uint> & indices)
-{
-	smLib::eraseItems(myData, indices);
-    return *this;
-}
-
-// template <typename matType1, typename matType2>
-void matrixProduct(const matrix & in1,
-                   const matrix & in2,
-                   matrix & result,
-                   uint dim,
-                   uint rows1,
-                   uint cols2)
-{
-    uint dim1 = 0;
-    uint dim2 = 0;
-    uint Size = 0;
-
-    if(rows1 != 0)
-    {
-        dim1 = rows1;
-    }
-    else
-    {
-        dim1 = in1.rows();
-    }
-
-    if(cols2 != 0)
-    {
-        dim2 = cols2;
-    }
-    else
-    {
-        dim2 = in2.cols();
-    }
-
-    if(dim != 0)
-    {
-        Size = dim;
-    }
-    else if(in1.cols() != in2.rows())
-    {
-		std::cout << "matrixProduct: input matrices are not productable" << std::endl;
-        result = matrix();
-        return;
-    }
-    else
-    {
-        Size = in1.cols();
-    }
-
-//    result.resize(max(dim1, result.rows()),
-//                  max(dim2, result.cols()));
-    result.resize(dim1, dim2);
-
-
-    std::valarray<double> temp{};
-    for(uint j = 0; j < dim2; ++j)
-    {
-        temp = in2.getCol(j, Size); // size for prod()
-        for(uint i = 0; i < dim1; ++i)
-        {
-            result[i][j] = std::inner_product(std::begin(temp),
-                                              std::end(temp),
-                                              std::begin(in1[i]),
-                                              0.);
-        }
-    }
-}
-
 std::valarray<double> matrix::matrixSystemSolveGauss(const std::valarray<double> & inVec) const
 {
     const matrix & inMat = (*this);
-    const uint size = inMat.rows();
+	const int size = inMat.rows();
 
     matrix initMat(inMat);
     initMat.invert();
@@ -1349,4 +1213,59 @@ std::valarray<double> matrix::matrixSystemSolveGauss(const std::valarray<double>
     res = initMat * inVec;
     return res;
 }
+
+
+/*
+matrix operator * (const matrix & lhs, const matrix & rhs)
+{
+	if(lhs.cols() != rhs.rows())
+	{
+		std::cout << "matrixProduct (operator *): input matrices are not productable" << std::endl;
+		return lhs;
+	}
+
+	const uint dim1 = lhs.rows();
+	const uint dim2 = rhs.cols();
+
+
+	matrix result(dim1, dim2, 0.);
+#if 0
+	for(uint j = 0; j < dim2; ++j)
+	{
+		std::valarray<double> currCol = rhs.getCol(j);
+		for(uint i = 0; i < dim1; ++i)
+		{
+			result[i][j] = std::inner_product(begin(lhs[i]),
+											  end(lhs[i]),
+											  begin(currCol),
+											  0.);
+		}
+	}
+#elif 1
+
+#if MATRIX_OMP
+#pragma omp parallel for
+	for(uint i = 0; i < dim1; ++i)
+	{
+		for(uint j = 0; j < lhs.cols(); ++j)
+		{
+			result[i] += lhs[i][j] * rhs[j];
+		}
+	}
+#else
+	/// 15-20% faster than with currCol
+	for(uint i = 0; i < dim1; ++i)
+	{
+		for(uint j = 0; j < lhs.cols(); ++j)
+		{
+			result[i] += lhs[i][j] * rhs[j];
+		}
+	}
+#endif // omp
+
+
+#endif
+	return result;
+}
+*/
 

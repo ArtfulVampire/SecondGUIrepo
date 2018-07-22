@@ -32,7 +32,7 @@ std::pair<uint, uint> WARD::findNearest()
 {
     std::pair<uint, uint> res{0, 1};
     double tmp = dists[0][1];
-    for(uint i = 0; i < dists.size(); ++i)
+	for(int i = 0; i < dists.rows(); ++i)
     {
         for(uint j = i + 1; j < dists[i].size(); ++j)
         {

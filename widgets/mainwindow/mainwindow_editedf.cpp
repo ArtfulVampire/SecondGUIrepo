@@ -62,8 +62,8 @@ void MainWindow::rereferenceCARSlot()
 	const auto & rerefChannels = coords::lbl21;	/// list to reref (with EOG)
 #else
 	/// Geodesics
-	const auto & usedChannels = smLib::range(0, globalEdf.getNs() - 2);	/// to build reref array
-	const auto & rerefChannels = smLib::range(0, globalEdf.getNs() - 2);	/// list to reref (with EOG)
+	auto usedChannels = smLib::range<std::vector<int>>(0, globalEdf.getNs() - 2);	/// to build reref array
+	auto rerefChannels = smLib::range<std::vector<int>>(0, globalEdf.getNs() - 2);	/// list to reref (with EOG)
 #endif
 
 	/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - N
@@ -105,7 +105,7 @@ void MainWindow::rereferenceCARSlot()
 	}
 #else
 	/// new 20-Apr-18
-	for(int i = 0; i < rerefChannels.size(); ++i)
+	for(uint i = 0; i < rerefChannels.size(); ++i)
 	{
 		int chan = globalEdf.findChannel(rerefChannels[i]);
 

@@ -453,9 +453,9 @@ void drawMapSpline(const matrix & matrixA,
 
 
     double sum = 0.;
-    for(uint i = 0; i < helpMatrix.rows(); ++i)
+	for(auto i = 0; i < helpMatrix.rows(); ++i)
     {
-        for(uint j = 0; j < helpMatrix.cols(); ++j)
+		for(auto j = 0; j < helpMatrix.cols(); ++j)
         {
             sum += helpMatrix[i][j];
         }
@@ -845,7 +845,7 @@ void drawArray(const QString & templPath,
         }
     }
 
-    if(dataS.size() <= 0)
+	if(dataS.rows() <= 0)
     {
         return;
     }
@@ -1010,7 +1010,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 	int numOfChan = inMatrix.cols() / DEFS.spLength();
 
 	// test size
-	int shouldSize = numOfChan * DEFS.spLength();
+	uint shouldSize = numOfChan * DEFS.spLength();
 
 	for(const auto & inData : inMatrix)
 	{
@@ -1071,9 +1071,9 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 		{
 			// norm each channel by max peak
 			norm = 0;
-			for(uint i = 0; i < inMatrix.size(); ++i)
+			for(auto i = 0; i < inMatrix.rows(); ++i)
 			{
-				for(int j = 0; j < DEFS.spLength(); ++j)
+				for(auto j = 0; j < DEFS.spLength(); ++j)
 				{
 					norm = fmax(norm,
 								std::abs(inMatrix[i][DEFS.spLength() * c2 + j])
@@ -1097,7 +1097,7 @@ QPixmap drawArrays(const QPixmap & templPixmap,
 
 
 		const int offset = c2 * DEFS.spLength();
-		for(uint numVec = 0; numVec < inMatrix.size(); ++numVec)
+		for(auto numVec = 0; numVec < inMatrix.rows(); ++numVec)
 		{
 			const std::valarray<double> & inData = inMatrix[numVec];
 			// draw spectra
@@ -1177,7 +1177,7 @@ double drawArrays(const QString & templPath,
 	paint.begin(&pic);
 
     // test size
-    int shouldSize = numOfChan * DEFS.spLength();
+	uint shouldSize = numOfChan * DEFS.spLength();
 //	std::cout << "numOfChan = " << numOfChan << "\t"
 //			  << "spLength = " << DEFS.spLength() << std::endl;
 
@@ -1235,7 +1235,7 @@ double drawArrays(const QString & templPath,
         {
             // norm each channel by max peak
             norm = 0;
-            for(uint i = 0; i < inMatrix.size(); ++i)
+			for(auto i = 0; i < inMatrix.rows(); ++i)
             {
                 for(int j = 0; j < DEFS.spLength(); ++j)
                 {
@@ -1260,7 +1260,7 @@ double drawArrays(const QString & templPath,
         }
 
 
-        for(uint numVec = 0; numVec < inMatrix.size(); ++numVec)
+		for(auto numVec = 0; numVec < inMatrix.rows(); ++numVec)
         {
 			std::valarray<double> inData = inMatrix[numVec];
             // draw spectra
@@ -1342,7 +1342,7 @@ void drawArraysInLine(const QString & picPath,
     const double offsetY = 1 - 0.1;
     const double norm = inMatrix.maxVal() * scaling * offsetY; /// check scaling * or /
 
-    for(uint k = 0; k < inMatrix.rows(); ++k)
+	for(auto k = 0; k < inMatrix.rows(); ++k)
     {
 		pnt.setPen(QPen(QBrush(colors[k]), lineWidth));
         for(int i = 0; i < pic.width() - 1; ++i)

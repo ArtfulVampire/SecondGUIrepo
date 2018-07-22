@@ -38,7 +38,7 @@ void KNN::classifyDatum1(uint vecNum)
 	std::vector<std::pair<double, int>> toSort; // [otherVecNum][distance, otherVecType]
 
 	/// fill toSort
-	for(uint i = 0; i < myClassData->getData().rows(); ++i)
+	for(int i = 0; i < myClassData->getData().rows(); ++i)
 	{
 		if(i == vecNum) continue;
 		toSort.push_back(std::make_pair(

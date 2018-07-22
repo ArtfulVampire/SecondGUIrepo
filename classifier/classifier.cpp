@@ -230,7 +230,7 @@ void Classifier::leaveOneOutClassification(std::ostream & os)
 	const auto & dataMatrix = this->myClassData->getData();
 	std::vector<uint> learnIndices;
 	os << "LOO: max = " << dataMatrix.rows() << std::endl;
-	for(uint i = 0; i < dataMatrix.rows(); ++i)
+	for(int i = 0; i < dataMatrix.rows(); ++i)
 	{
 		if((i + 1) % 10 == 0) { os << i + 1 << " "; os.flush(); }
 
@@ -244,7 +244,7 @@ void Classifier::leaveOneOutClassification(std::ostream & os)
 				  i + 1);
 
 		this->learn(learnIndices);
-		this->test({i});
+		this->test(uint(i));
 	}
 }
 
@@ -329,7 +329,7 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 	{
 		learnSet.clear();
 		testSet.clear();
-		for(uint i = 0; i < size; ++i)
+		for(int i = 0; i < size; ++i)
 		{
 			if(this->myClassData->getFileNames()[i].startsWith(guy))
 			{
@@ -370,7 +370,7 @@ void Classifier::crossClassification(int numOfPairs, int fold, std::ostream & os
 
 	std::vector<std::vector<uint>> arr; // [class][index]
 	arr.resize(this->myClassData->getNumOfCl());
-	for(uint i = 0; i < dataMatrix.rows(); ++i)
+	for(int i = 0; i < dataMatrix.rows(); ++i)
 	{
 		arr[ types[i] ].push_back(i);
 	}
@@ -380,7 +380,7 @@ void Classifier::crossClassification(int numOfPairs, int fold, std::ostream & os
 	{
 		os << i + 1 << ":  "; std::cout.flush();
 
-		for(int i = 0; i < this->myClassData->getNumOfCl(); ++i)
+		for(uint i = 0; i < this->myClassData->getNumOfCl(); ++i)
 		{
 			smLib::mix(arr[i]);
 		}
@@ -403,7 +403,7 @@ void Classifier::trainTestClassification(const QString & trainTemplate,
 
 	std::vector<uint> learnIndices;
 	std::vector<uint> tallIndices;
-	for(uint i = 0; i < dataMatrix.rows(); ++i)
+	for(int i = 0; i < dataMatrix.rows(); ++i)
 	{
 		if(fileNames[i].contains(trainTemplate))
 		{
@@ -428,7 +428,7 @@ void Classifier::halfHalfClassification()
 	std::vector<uint> learnIndices;
 	std::vector<uint> tallIndices;
 
-	for(uint i = 0; i < dataMatrix.rows() / 2; ++i)
+	for(int i = 0; i < dataMatrix.rows() / 2; ++i)
 	{
 		learnIndices.push_back(i);
 		tallIndices.push_back(i + dataMatrix.rows() / 2);
@@ -463,7 +463,7 @@ void Classifier::cleaningNfold(int num)
 		hazWrong = false;
 		std::vector<uint> learnIndices{};
 		std::vector<uint> exclude{};
-		for(uint i = 0; i < this->myClassData->size(); ++i)
+		for(int i = 0; i < this->myClassData->size(); ++i)
 		{
 			learnIndices.clear();
 			learnIndices.resize(this->myClassData->size() - 1);

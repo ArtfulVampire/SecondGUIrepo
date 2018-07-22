@@ -83,7 +83,7 @@ std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double>
 	const int windStep = fftLen * (1. - overlapRatio);
 	const std::valarray<double> wnd = myLib::fftWindow(fftLen, myLib::windowName::Hamming);
 
-	for(int windStart = 0;
+	for(uint windStart = 0;
 		windStart < sig1.size() - fftLen;
 		windStart += windStep)
 	{
@@ -193,7 +193,7 @@ void iitpData::countCrossSpectrum(int chan1, int chan2)
 	spec2 = myLib::spectreRtoC2(this->piecesData[0][chan2], fftLen, this->srate);
 	std::valarray<std::complex<double>> res = spec1 * spec2.apply(std::conj);
 
-	for(int i = 1; i < this->piecesData.size(); ++i)
+	for(uint i = 1; i < this->piecesData.size(); ++i)
 	{
 		spec1 = myLib::spectreRtoC2(this->piecesData[i][chan1], fftLen, this->srate);
 		spec2 = myLib::spectreRtoC2(this->piecesData[i][chan2], fftLen, this->srate);
@@ -223,7 +223,7 @@ void iitpData::countCrossSpectrumW(int chan1, int chan2, double overlap)
 	   ||fileType == iitp::trialType::passive )
 	{
 
-		for(int i = 0; i < this->piecesData.size(); ++i)
+		for(uint i = 0; i < this->piecesData.size(); ++i)
 		{
 			this->crossSpectra[chan1][chan2] += myLib::spectreCross(this->piecesData[i][chan1],
 																	this->piecesData[i][chan2],
@@ -246,7 +246,7 @@ void iitpData::countCrossSpectrumW(int chan1, int chan2, double overlap)
 
 void iitpData::countPiecesFFT()
 {
-	for(int i = 0; i < this->piecesData.size(); ++i)
+	for(uint i = 0; i < this->piecesData.size(); ++i)
 	{
 		for(int j = 0; j < this->ns; ++j)
 		{
@@ -261,21 +261,21 @@ void iitpData::clearCrossSpectra()
 {
 	this->crossSpectra.clear();
 	this->crossSpectra.resize(this->ns);
-	for(int i = 0; i < this->crossSpectra.size(); ++i)
+	for(uint i = 0; i < this->crossSpectra.size(); ++i)
 	{
 		this->crossSpectra[i].resize(this->ns, {});
 	}
 
 	this->coherencies.clear();
 	this->coherencies.resize(this->ns);
-	for(int i = 0; i < this->coherencies.size(); ++i)
+	for(uint i = 0; i < this->coherencies.size(); ++i)
 	{
 		this->coherencies[i].resize(this->ns, {});
 	}
 
 	this->mscoherencies.clear();
 	this->mscoherencies.resize(this->ns);
-	for(int i = 0; i < this->mscoherencies.size(); ++i)
+	for(uint i = 0; i < this->mscoherencies.size(); ++i)
 	{
 		this->mscoherencies[i].resize(this->ns, {});
 	}
@@ -283,7 +283,7 @@ void iitpData::clearCrossSpectra()
 
 	this->piecesFFT.clear();
 	this->piecesFFT.resize(this->piecesData.size());
-	for(int i = 0; i < this->piecesFFT.size(); ++i)
+	for(uint i = 0; i < this->piecesFFT.size(); ++i)
 	{
 		this->piecesFFT[i].resize(this->ns, {});
 	}
@@ -433,7 +433,7 @@ void iitpData::countContiniousTaskSpectra()
 	for(int i = 0; i < numCh; ++i)
 	{
 		spec = 0.;
-		for(int j = 0; j < this->piecesData.size(); ++j)
+		for(uint j = 0; j < this->piecesData.size(); ++j)
 		{
 			spec += std::pow(smLib::abs(this->piecesFFT[j][i]), 2.);
 		}
@@ -523,7 +523,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 	for(int i = 0; i < numCh; ++i)
 	{
 		spec = 0.;
-		for(int j = 0; j < this->piecesData.size(); ++j)
+		for(uint j = 0; j < this->piecesData.size(); ++j)
 		{
 			spec += std::pow(smLib::abs(this->piecesFFT[j][i]), 2.);
 		}
@@ -546,7 +546,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 	for(int i = 0; i < numCh; ++i)
 	{
 		spec = 0.;
-		for(int j = 0; j < this->piecesData.size(); ++j)
+		for(uint j = 0; j < this->piecesData.size(); ++j)
 		{
 			spec += std::pow(smLib::abs(this->piecesFFT[j][i]), 2.);
 		}
@@ -593,7 +593,7 @@ void iitpData::countFlexExtSpectraW(const QString & resPath, int mark1, int mark
 	for(int i = 0; i < numCh; ++i)
 	{
 		spec = 0.;
-		for(int j = 0; j < this->getPieces().size(); ++j)
+		for(uint j = 0; j < this->getPieces().size(); ++j)
 		{
 			spec += std::pow(smLib::abs(myLib::spectreRtoC2(this->piecesData[j][i] * wnd,
 															this->fftLenW,
@@ -619,7 +619,7 @@ void iitpData::countFlexExtSpectraW(const QString & resPath, int mark1, int mark
 	for(int i = 0; i < numCh; ++i)
 	{
 		spec = 0.;
-		for(int j = 0; j < this->getPieces().size(); ++j)
+		for(uint j = 0; j < this->getPieces().size(); ++j)
 		{
 			spec += std::pow(smLib::abs(myLib::spectreRtoC2(this->piecesData[j][i] * wnd,
 															this->fftLenW,
@@ -700,7 +700,7 @@ std::vector<int> suspectGoodThreshold(const std::valarray<double> & piece, doubl
 	double maxVal = *std::max_element(std::begin(piece), std::end(piece));
 	double threshold = (1. - alpha) * maxVal;
 
-	for(int j = 0; j < piece.size() - 1; ++j)
+	for(uint j = 0; j < piece.size() - 1; ++j)
 	{
 		if((piece[j] - threshold) * (piece[j + 1] - threshold) <= 0.)
 		{
@@ -721,7 +721,7 @@ std::vector<int> suspectGoodSecDeriv(const std::valarray<double> & piece)
 #if 1
 	/// zero secondDeriv somewhere
 	std::valarray<double> pieceAbs = piece.apply(std::abs);
-	for(int i = 0; i < pieceAbs.size(); ++i)
+	for(uint i = 0; i < pieceAbs.size(); ++i)
 	{
 		if(pieceAbs[i] < 0.7 * pieceAbs.max()) /// magic const
 		{
@@ -736,7 +736,7 @@ std::vector<int> suspectGoodSecDeriv(const std::valarray<double> & piece)
 		secondDeriv[secondDeriv.size() - 1 - k] = 0.;
 	}
 
-	for (int k = 2 * st; k < secondDeriv.size() - 2 * st; ++k)
+	for (uint k = 2 * st; k < secondDeriv.size() - 2 * st; ++k)
 	{
 		bool tmp = true;
 		if(secondDeriv[k] == 0.) { continue; } /// magic const
@@ -795,7 +795,7 @@ iitpData & iitpData::staging(const QString & chanName,
 	int start = 0;
 
 	std::ofstream of("/media/Files/Data/iitp/out.txt", std::ios_base::app);
-	for(int i = 0; i < chan.size() - 1; ++i) // -1 for stability
+	for(uint i = 0; i < chan.size() - 1; ++i) // -1 for stability
 	{
 
 		if(sign(chan[i]) != currSign)
@@ -970,7 +970,7 @@ forMap::forMap(const iitp::iitpData::mscohsType & in,
 	/// new 28.11.17 - EXPERIMENTAL
 //		std::cout << fmChans << std::endl;
 	forMapRanges.resize(iitp::forMapEmgNames.size());
-	for(int i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
+	for(uint i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
 	{
 		if(isBad(i)) { continue; }
 
@@ -1016,7 +1016,7 @@ forMap::forMap(const iitp::iitpData::mscohsType & in,
 		std::cout << fileType << std::endl;
 		std::cout << std::fixed;
 		std::cout.precision(3);
-		for(int i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
+		for(uint i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
 		{
 			for(int j = 0; j < forMapRanges[i].size(); ++j) /// j ~ alpha/beta/gamma
 			{

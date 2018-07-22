@@ -276,7 +276,7 @@ void holesFile(const QString & inFilePath,
     {
         std::valarray<double> & col = *it;
         int count = 0;
-		for(uint i = 0; i < numChan; ++i)
+		for(int i = 0; i < numChan; ++i)
 		{
 			auto highLim = (1. - thr) * fil.getPhysMax()[i] + thr * fil.getPhysMin()[i];
 			if(std::abs(col[i]) > highLim)
@@ -401,7 +401,7 @@ void testArtifacts(const QString & dirPath, const QStringList & filters)
 			std::valarray<double> betaPart(siz);
 			std::valarray<double> betaAbs(siz);
 
-			for(int windStart = 0;
+			for(uint windStart = 0;
 				windStart < fil.getData(i).size() - fftLen;
 				windStart += windStep, ++num)
 			{

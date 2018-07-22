@@ -516,7 +516,7 @@ std::pair<double, whichGreater> MannWhitney(const std::valarray<double> & arr1,
 
 	/// count sums
 	int sum1 = 0;
-	for(int i = 0; i < arr.size(); ++i)
+	for(uint i = 0; i < arr.size(); ++i)
 	{
 		if(arr[i].second == 1)
 		{
@@ -578,9 +578,9 @@ void writeMannWhitney(const trivector<Typ> & MW,
 	const int numChans = MW[0][1].size() / DEFS.spLength();
 
 	/// 0-1, 0-2, 0-3, ... 0-N, 1-2, 1-3, 1-4, ... 1-N, ... (N-1)-N
-	for(int i = 0; i < MW.size(); ++i)
+	for(uint i = 0; i < MW.size(); ++i)
 	{
-		for(int j = i + 1; j < MW.size(); ++j)
+		for(uint j = i + 1; j < MW.size(); ++j)
 		{
 #if 1
 			/// each channel in a row
@@ -623,10 +623,10 @@ trivector<int> countMannWhitney(const QString & spectraPath,
 	matrix distances(spectra.size(), spectra.size(), 0);
 
 	res.resize(spectra.size());
-	for(int i = 0; i < spectra.size(); ++i) /// first class
+	for(uint i = 0; i < spectra.size(); ++i) /// first class
 	{
 		res[i].resize(spectra.size());
-		for(int j = i + 1; j < spectra.size(); ++j) /// second class
+		for(uint j = i + 1; j < spectra.size(); ++j) /// second class
 		{
 			res[i][j - i].resize(NetLength);
 			int dist1 = 0;
@@ -666,10 +666,10 @@ trivector<double> countMannWhitneyD(const QString & spectraPath)
 	for(matrix & in : spectra) { in.transpose(); }
 
 	res.resize(spectra.size());
-	for(int i = 0; i < spectra.size(); ++i) /// first class
+	for(uint i = 0; i < spectra.size(); ++i) /// first class
 	{
 		res[i].resize(spectra.size());
-		for(int j = i + 1; j < spectra.size(); ++j) /// second class
+		for(uint j = i + 1; j < spectra.size(); ++j) /// second class
 		{
 			res[i][j - i].resize(NetLength);
 			for(int k = 0; k < NetLength; ++k)

@@ -61,7 +61,7 @@ matrix makeTestData(const QString & outPath)
 	double sum1, sum2;
 	// normalize by dispersion = coeff
 	double coeff = 10.;
-	for(uint i = 0; i < testSignals.rows(); ++i)
+	for(int i = 0; i < testSignals.rows(); ++i)
 	{
 		sum1 = smLib::mean(testSignals[i]);
 		sum2 = smLib::variance(testSignals[i]);

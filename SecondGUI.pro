@@ -14,14 +14,16 @@ QMAKE_CXXFLAGS += -fopenmp
 QMAKE_CXXFLAGS += -Wno-sign-compare
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
+QMAKE_CXXFLAGS += -Wno-unused-function
+#QMAKE_CXXFLAGS += -Wabi-tag
 LIBS += -fopenmp
 #QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
 
 CONFIG += c++14
 #CONFIG += c++1z
 #for c++1z
-#INCLUDEPATH += /usr/local/include/c++/7.2.0
-#INCLUDEPATH += /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.2.0/include
+INCLUDEPATH += /usr/local/include/c++/7.2.0
+INCLUDEPATH += /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.2.0/include
 #QMAKE_CXXFLAGS += -D_GLIBCXX_USE_CXX11_ABI=0
 
 

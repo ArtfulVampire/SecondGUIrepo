@@ -214,7 +214,7 @@ void writePlainData(const QString outPath,
 
 	for(int i = 0; i < data.cols(); ++i)
     {
-        for(uint j = 0; j < data.rows(); ++j)
+		for(int j = 0; j < data.rows(); ++j)
         {
 			outStr << data[j][i] << '\t';
         }
@@ -341,8 +341,8 @@ matrix readIITPfile(const QString & filePath)
 	inStr.ignore(64, '\n'); /// Hellow
 	inStr.ignore(64, '\n'); /// Dolly
 	inStr.ignore(64, '\n'); /// Frames Values Tstart Interval (ms)
-	uint numOfRows;
-	uint numOfCols;
+	int numOfRows;
+	int numOfCols;
 	inStr >> numOfRows >> numOfCols; inStr.ignore(128, '\n'); /// no need Tstart and inerval
 
 	inStr.ignore(512, '\n'); /// names of values
@@ -387,7 +387,7 @@ void readIITPfile(const QString & filePath,
 	std::string tmp;
 	outLabels.resize(numOfCols);
 	inStr >> tmp; /// Time
-	for(int i = 0; i < outLabels.size(); ++i)
+	for(uint i = 0; i < outLabels.size(); ++i)
 	{
 		inStr >> tmp;
 		outLabels[i] = QString(tmp.c_str());

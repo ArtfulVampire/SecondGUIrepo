@@ -280,7 +280,7 @@ protected:
 	QString dirPath = QString();
 
 	int bytes = 256;
-	std::string headerInitialInfo{};	/// why not QString or QByteArray ???
+	QString headerInitialInfo{};	/// why not QString or QByteArray ???
 	QString headerReservedField{};
 	QString headerRest{};
 
@@ -316,7 +316,7 @@ protected:
 
 	// fast access for slicing (time-bin, marker)
 	std::vector<std::pair<int, int>> markers{};
-	uint markerChannel = -1;
+	int markerChannel = -1;
 
     std::vector<edfChannel> channels;
 
@@ -330,8 +330,7 @@ protected:
 	bool writeHeaderFlag = false;
 
 public:
-//    const QString & getHeaderInit() const { return headerInitialInfo; }
-	const std::string & getHeaderInit() const					{ return headerInitialInfo; }
+	const QString & getHeaderInit() const						{ return headerInitialInfo; }
 	const QString & getHeaderReserved() const					{ return headerReservedField; }
 	int getBytes() const										{ return bytes; }
 	int getNdr() const											{ return ndr; }
@@ -381,7 +380,7 @@ public:
 	const std::valarray<double> & getData(int i) const	{ return edfData[i]; }
 	const std::valarray<double> & getMarkArr() const	{ return edfData[markerChannel]; }
 	int getDataLen() const								{ return edfData.cols(); }
-	uint getMarkChan() const							{ return markerChannel; }
+	int getMarkChan() const								{ return markerChannel; }
 	const std::valarray<double> & getData(const QString & ch) const;
 
 	/// make edfFile &

@@ -135,7 +135,7 @@ std::valarray<double> butterworthBandPass(const std::valarray<double> & in,
 	}
 
 	std::valarray<double> res(in.size());
-	for(int num = 0; num < in.size(); ++num)
+	for(uint num = 0; num < in.size(); ++num)
 	{
 		double x = in[num];
 
@@ -362,7 +362,7 @@ std::valarray<double> butterworth(const std::valarray<double> & in,
 		G[i] = std::complex<double>(0., 0.);
 	}
 
-	for(int i = 1; i <= in.size(); ++i)
+	for(uint i = 1; i <= in.size(); ++i)
 	{
 		G[1] = U1 * in[i - 1] + B[1] * G[1];
 
@@ -637,7 +637,7 @@ std::valarray<std::complex<double>> spectreWelchRtoC(const std::valarray<double>
 
 	specType res;
 	int num = 0;
-	for(int windStart = 0;
+	for(uint windStart = 0;
 		windStart < inputSignal.size() - fftLen;
 		windStart += windStep, ++num)
 	{
@@ -704,7 +704,7 @@ std::valarray<std::complex<double>> spectreWelchCross(const std::valarray<double
 
 	specType res;
 	int num = 0;
-	for(int windStart = 0;
+	for(uint windStart = 0;
 		windStart < inputSignal1.size() - fftLen;
 		windStart += windStep, ++num)
 	{
@@ -777,7 +777,7 @@ std::valarray<std::complex<double>> spectreRtoC2(const std::valarray<double> & i
 													 srate));
 
 	std::valarray<std::complex<double>> res(fftLen);
-	for(int i = 0; i < res.size(); ++i)
+	for(uint i = 0; i < res.size(); ++i)
 	{
 		res[i] = std::complex<double>(pew[2 * i], pew[2 * i + 1]);
 	}
@@ -803,7 +803,7 @@ std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
 	double * pew = new double [2 * fftLen];
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
-	for(int i = 0; i < inputSignal.size(); ++i)
+	for(uint i = 0; i < inputSignal.size(); ++i)
 	{
 		pew[i] = inputSignal[i];
 	}
@@ -837,7 +837,7 @@ std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 	double * pew = new double [2 * fftLen];
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
-	for(int i = 0; i < inputSignal.size(); ++i)
+	for(uint i = 0; i < inputSignal.size(); ++i)
 	{
 		pew[i] = inputSignal[i];
 	}
@@ -886,7 +886,7 @@ std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre)
 	four1(pew - 1, fftLen, -1);
 
 	std::valarray<double> res(fftLen);
-	for(int i = 0; i < res.size(); ++i)
+	for(uint i = 0; i < res.size(); ++i)
 	{
 		res[i] = pew[2 * i];
 	}
@@ -902,7 +902,7 @@ std::valarray<double> spectreCtoRrev(const std::valarray<std::complex<double>> &
 	int fftLen = inputSpectre.size();
 
 	double * pew = new double [inputSpectre.size() * 2];
-	for(int i = 0; i < inputSpectre.size(); ++i)
+	for(uint i = 0; i < inputSpectre.size(); ++i)
 	{
 		pew[2 * i] = inputSpectre[i].real();
 		pew[2 * i + 1] = inputSpectre[i].imag();
@@ -911,7 +911,7 @@ std::valarray<double> spectreCtoRrev(const std::valarray<std::complex<double>> &
 	four1(pew - 1, fftLen, -1);
 
 	std::valarray<double> res(fftLen);
-	for(int i = 0; i < res.size(); ++i)
+	for(uint i = 0; i < res.size(); ++i)
 	{
 		res[i] = pew[2 * i];
 	}
@@ -1007,7 +1007,7 @@ std::valarray<double> upsample(const std::valarray<double> & inSignal,
 {
 	int rat = newFreq / oldFreq;
 	std::valarray<double> res(inSignal.size() * rat);
-	for(int i = 0; i < inSignal.size(); ++i)
+	for(uint i = 0; i < inSignal.size(); ++i)
 	{
 		res[i * rat] = inSignal[i];
 	}
@@ -1027,7 +1027,7 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 	int rat = oldFreq / newFreq;
 	std::valarray<double> res = myLib::lowPass(inSignal, newFreq / 2, oldFreq);
 
-	for(int i = 0; i < inSignal.size() / rat; ++i)
+	for(uint i = 0; i < inSignal.size() / rat; ++i)
 	{
 		res[i] = res[i * rat];
 	}
@@ -1038,7 +1038,7 @@ std::valarray<double> downsample(const std::valarray<double> & inSignal,
 int findJump(const std::valarray<double> & inSignal, int startSearch, double numOfSigmas)
 {
 	const int lenForSigma = 100;
-	for(int i = startSearch; i < inSignal.size() - 1; ++i)
+	for(uint i = startSearch; i < inSignal.size() - 1; ++i)
 	{
 		if(std::abs(inSignal[i + 1] - inSignal[i]) >
 		   numOfSigmas * smLib::sigma(std::valarray<double>(
@@ -1288,7 +1288,7 @@ double fractalDimension(const std::valarray<double> & arr,
 		/// draw squares
 		int frame = 10;
 		int rectSize = 3;
-		for(int h = 0; h < timeShifts.size(); ++h) // drawK, drawL [last] is bottom-left
+		for(uint h = 0; h < timeShifts.size(); ++h) // drawK, drawL [last] is bottom-left
 		{
 			drawX = frame + std::abs(drawK[h] - minX) / lenX
 					* (pic.width() - 2 * frame) - rectSize;
@@ -1434,7 +1434,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 
 		/// draw squares
 		int rectSize = 3;
-		for(int h = 0; h < timeShifts.size(); ++h) // drawK, drawL [last] is bottom-left
+		for(uint h = 0; h < timeShifts.size(); ++h) // drawK, drawL [last] is bottom-left
 		{
 			drawX = pic.width() * gap + std::abs(drawK[h] - minX) / lenX
 					* (pic.width() * (1. - gap) - frame) - rectSize;
@@ -2151,13 +2151,13 @@ std::valarray<double> derivative(const std::valarray<double> & inSignal)
 		res[i] = (inSignal[i + step] - inSignal[i]) / step;
 	}
 
-	for(int i = step; i < inSignal.size() - step; ++i)
+	for(uint i = step; i < inSignal.size() - step; ++i)
 	{
 		res[i] = (inSignal[i + step] - inSignal[i - step]) / (2. * step);
 	}
 
 	/// last some points - one-sided deriv
-	for(int i = inSignal.size() - step; i < inSignal.size(); ++i)
+	for(auto i = inSignal.size() - step; i < inSignal.size(); ++i)
 	{
 		res[i] = (inSignal[i] - inSignal[i - step]) / step;
 	}
@@ -2414,7 +2414,7 @@ double PPGrange(const std::valarray<double> & inSignal)
 	int start{0};
 
 	/// start with negative sign
-	for(int i = 0; i < PPGdata.size() - 1; ++i)
+	for(uint i = 0; i < PPGdata.size() - 1; ++i)
 	{
 		if(sign(PPGdata[i]) == -1) { start = i; break; } /// +1 for max, -1 for min
 	}
@@ -2424,7 +2424,7 @@ double PPGrange(const std::valarray<double> & inSignal)
 	std::vector<double> mins{};	mins.reserve(200);
 
 //	int counter = 0;
-	for(int i = start; i < PPGdata.size() - 1; ++i)
+	for(uint i = start; i < PPGdata.size() - 1; ++i)
 	{
 		if(sign(PPGdata[i]) != currSign)
 		{
@@ -2535,7 +2535,7 @@ matrix countSpectre(const matrix & inData,
 	}
 
 	matrix res(data2.rows(), 1);
-	for(uint i = 0; i < data2.rows(); ++i)
+	for(auto i = 0; i < data2.rows(); ++i)
 	{
 		res[i] = myLib::calcSpectre(data2[i],
 									fftLen,

@@ -33,7 +33,7 @@ public:
 
 
 	/// std::endl
-	MyTextStream & operator<< (stdEndlType in)
+	MyTextStream & operator<< (stdEndlType)
 	{
 		switch(typ)
 		{

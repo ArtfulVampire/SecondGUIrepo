@@ -30,12 +30,12 @@ void Cut::smartFindLearnSlot()
 		for(int ch = 0; ch < smartFindNumCh; ++ch)
 		{
 			smartFindThresholds[ch].resize(smartFindFuncs.size());
-			for(int numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
+			for(uint numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
 			{
 				thrParam param;
 
 				std::valarray<double> vals(smartFindLearnData.size());
-				for(int windNum = 0; windNum < smartFindLearnData.size(); ++windNum)
+				for(uint windNum = 0; windNum < smartFindLearnData.size(); ++windNum)
 				{
 					vals[windNum] = smartFindFuncs[numFunc] (smartFindLearnData[windNum][ch]);
 				}
@@ -67,7 +67,7 @@ void Cut::smartFindCountParams()
 	if( !fileOpened ) { return; }
 
 	smartFindWindParams.resize(dataCutLocal.cols() / smartFindWindLen); // each window
-	for(int windNum = 0; windNum < smartFindWindParams.size(); ++windNum)
+	for(uint windNum = 0; windNum < smartFindWindParams.size(); ++windNum)
 	{
 		smartFindWindParams[windNum].resize(smartFindNumCh);
 
@@ -76,7 +76,7 @@ void Cut::smartFindCountParams()
 		for(int ch = 0; ch < smartFindNumCh; ++ch)
 		{
 			smartFindWindParams[windNum][ch].resize(smartFindFuncs.size());
-			for(int numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
+			for(uint numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
 			{
 				smartFindWindParams[windNum][ch][numFunc] = smartFindFuncs[numFunc] (localData[ch]);
 			}
@@ -250,7 +250,7 @@ void Cut::smartFindShowValues()
 	std::cout.precision(2);
 
 	std::cout << "         " << "\t";
-	for(int numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
+	for(uint numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
 	{
 		std::cout << paramNames[numFunc] << "\t";
 		std::cout << paramNames[numFunc] << "\t";
@@ -261,7 +261,7 @@ void Cut::smartFindShowValues()
 	for(int ch = 0; ch < smartFindNumCh; ++ch)
 	{
 		std::cout << edfFil.getLabels(ch);
-		for(int numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
+		for(uint numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
 		{
 			double abs_ = smartFindWindParams[windNum][ch][numFunc];
 			double sgm_ = std::abs(smartFindWindParams[windNum][ch][numFunc]
@@ -296,7 +296,7 @@ void Cut::smartFindFind(bool forward)
 	{
 		for(int ch = 0; ch < smartFindNumCh; ++ch)
 		{
-			for(int numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
+			for(uint numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
 			{
 //				std::cout << "numFunc = " << numFunc << std::endl;
 //				std::cout << "mean = " << thrParams[ch][numFunc].mean << std::endl;
@@ -373,7 +373,7 @@ void Cut::smartFindNextSlot()
 	{
 		for(int ch = 0; ch < smartFindNumCh; ++ch)
 		{
-			for(int numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
+			for(uint numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
 			{
 //				std::cout << "numFunc = " << numFunc << std::endl;
 //				std::cout << "mean = " << thrParams[ch][numFunc].mean << std::endl;

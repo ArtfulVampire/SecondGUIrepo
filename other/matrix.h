@@ -50,7 +50,7 @@ public:
 	matrix(const std::valarray<double> & vect1, const std::valarray<double> & vect2);
 	matrix(const std::valarray<double> & vect, bool orientH);
 	matrix(const std::valarray<double> & vect, char orient);
-	matrix(const std::valarray<double> & vect, uint rows);
+	matrix(const std::valarray<double> & vect, int rows);
 
 	matrix(const std::valarray<double> & vect); // diagonal
 	matrix(std::initializer_list<double> lst); // diagonal
@@ -62,10 +62,10 @@ public:
 	matrix & resizeRows(int rows);
 	matrix & resizeCols(int newCols);
 	matrix & fill(double value);
-	void print(uint rows = 0, uint cols = 0) const;
-	void printWithBraces(uint rows = 0, uint cols = 0) const;
-	uint cols() const;
-	uint rows() const;
+	void print(int rows = 0, int cols = 0) const;
+	void printWithBraces(int rows = 0, int cols = 0) const;
+	int cols() const	{ return myData[0].size(); }
+	int rows() const	{ return myData.size(); }
 	double maxVal() const;
 	double minVal() const;
 	double maxAbsVal() const;
@@ -90,7 +90,7 @@ public:
 	std::valarray<double> toValarByRows() const;
 	std::valarray<double> toValarByCols() const;
 	std::vector<double> toVectorByRows() const;
-	std::valarray<double> getCol(uint i, uint numRows = 0) const;
+	std::valarray<double> getCol(int i, int numRows = 0) const;
 	std::valarray<double> averageRow() const;
 	std::valarray<double> averageCol() const;
 	std::valarray<double> sigmaOfCols() const;
@@ -102,7 +102,6 @@ public:
 
 	// for compability with vector< std::vector<Type> >
 	void clear() { this->myData.clear(); }
-	uint size() const { return myData.size(); }
 
 	matrix & resize(int rows, int cols, double val);
 	matrix & resize(int rows, int cols);
@@ -142,7 +141,7 @@ public:
 	bool operator != (const matrix & other);
 
 	/// transpose
-	matrix operator !() { return matrix::transposed(*this); }
+	matrix operator !() { return matrix::transposed(*this); } /// DANGER
 	/// inverse
 	matrix operator ~() { return matrix::inverted(*this); }
 
@@ -161,30 +160,47 @@ public:
 	double trace() const;
 	matrix & transpose();
 	matrix & invert(double * det = nullptr);
-	matrix & normColsLastRowOne();
-	matrix covMatCols(std::valarray<double> * avRow = nullptr) const;
-	matrix covMatRows() const;
-	matrix & swapCols(uint i, uint j);
-	matrix & swapRows(uint i, uint j);
-	matrix & zero();
-	matrix & centerRows(int numRows = 0);
-	matrix & one();
-	matrix & eraseRow(uint i);
-	matrix & eraseCol(uint j);
-//	matrix & eraseRows(const std::vector<int> & indices);
-	matrix & eraseRows(const std::vector<uint> & indices);
+	matrix & normColsLastRowOne(); /// what is that?
+
+//	matrix & zero();
+//	matrix & one();
 	matrix & random(double low = 0., double high = 1.);
 	matrix & vertCat(matrix && other);
 	matrix & horzCat(const matrix & other);
-	matrix & pop_front(uint numOfCols);
+	matrix & pop_front(int numOfCols);
+
+	/// cols operations
+	matrix & swapCols(int i, int j);
+	matrix covMatCols(std::valarray<double> * avRow = nullptr) const;
+	matrix & eraseCol(int j);
 	matrix subCols(int beginCol, int endCol) const;			/// submatrix
 	matrix subCols(int newCol) const;						/// submatrix
 	matrix subCols(const std::vector<std::pair<int, int>> & intervals) const; /// to do
+
+	/// rows operations
+	matrix & swapRows(int i, int j);
+	matrix covMatRows() const;
+	matrix & centerRows(int numRows = 0);
+	matrix & eraseRow(int i);
 	matrix subRows(int newRows) const;						/// submatrix
 //	matrix subRows(int begRow, int endRow) const; /// to do
 	matrix subRows(const std::vector<int> & inds) const;	/// submatrix
 	matrix subRows(const std::vector<uint> & inds) const;	/// submatrix
 //	matrix subRows(const std::vector<std::pair<int, int>> & intervals) const; /// to do
+
+	template <typename Typ>
+	matrix & eraseRows(const std::vector<Typ> & indices)
+	{
+		smLib::eraseItems(myData, indices);
+		return *this;
+	}
+
+	template <typename Typ>
+	matrix & eraseRows(const std::initializer_list<Typ> & indices)
+	{
+		smLib::eraseItems(myData, std::vector<Typ>(indices));
+		return *this;
+	}
 
 
 	std::valarray<double> matrixSystemSolveGauss(const std::valarray<double> & inVec) const;
@@ -204,11 +220,4 @@ std::valarray<double> operator * (const std::valarray<double> & lhs, const matri
 matrix operator - (const matrix & lhs, const matrix & rhs);
 matrix operator - (const matrix & lhs, double val);
 
-// template <typename matType1, typename matType2>
-void matrixProduct(const matrix & in1,
-				   const matrix & in2,
-				   matrix & result,
-				   uint dim = 0,
-				   uint rows1 = 0,
-				   uint cols2 = 0);
 #endif // MATRIX_H

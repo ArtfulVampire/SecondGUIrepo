@@ -130,7 +130,7 @@ void countFeatures(const matrix & inData,
 				   const QString & preOutPath)
 {
 	/// spectre will be count twice for alpha and FFT but I dont care
-	for(int num = 0; num < FEATURES.size(); ++num)
+	for(uint num = 0; num < FEATURES.size(); ++num)
 	{
 		if(Mask & std::get<0>(FEATURES[num]))
 		{
@@ -178,9 +178,9 @@ void countFFT(const matrix & inData,
 	{
 	case autosUser::XeniaFinalest:
 	{
-		for(int i = 0; i < spectra.size(); ++i)
+		for(uint i = 0; i < spectra.size(); ++i)
 		{
-			for(int j = 0; j < spectra[i].size(); ++j)
+			for(uint j = 0; j < spectra[i].size(); ++j)
 			{
 				outStr << spectra[i][j] << "\t";
 			}
@@ -190,7 +190,7 @@ void countFFT(const matrix & inData,
 	}
 	default: /// Xenia and Galya
 	{
-		for(int j = 0; j < spectra[0].size(); ++j) /// 18 freqs
+		for(uint j = 0; j < spectra[0].size(); ++j) /// 18 freqs
 		{
 			for(int i = 0; i < inData.rows(); ++i) /// 19 channels
 			{
@@ -225,9 +225,9 @@ void countLogFFT(const matrix & inData,
 	{
 	case autosUser::XeniaFinalest:
 	{
-		for(int i = 0; i < spectra.size(); ++i)
+		for(uint i = 0; i < spectra.size(); ++i)
 		{
-			for(int j = 0; j < spectra[i].size(); ++j)
+			for(uint j = 0; j < spectra[i].size(); ++j)
 			{
 				outStr << std::log10(spectra[i][j]) << "\t";
 			}
@@ -237,7 +237,7 @@ void countLogFFT(const matrix & inData,
 	}
 	default:
 	{
-		for(int j = 0; j < spectra[0].size(); ++j)
+		for(uint j = 0; j < spectra[0].size(); ++j)
 		{
 			for(int i = 0; i < inData.rows(); ++i)
 			{
@@ -333,7 +333,7 @@ void countHilbert(const matrix & inData,
 
 	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); // [filter][chan][0-carr, 1-SD]
 
-	for(int numFilt = 0; numFilt < filters.size(); ++numFilt)
+	for(uint numFilt = 0; numFilt < filters.size(); ++numFilt)
 	{
 		std::pair<double, double> filterLims = filters[numFilt];
 
@@ -551,7 +551,7 @@ void rhythmAdoption(const QString & filesPath,
 	restEdf.readEdfFile(filesPath + "/" + restFileName);
 	const matrix restData = restEdf.getData();
 
-	for(int j = 0; j < freqs.size(); ++j)
+	for(uint j = 0; j < freqs.size(); ++j)
 	{
 		edfFile currFile;
 		currFile.readEdfFile(filesPath + "/"
