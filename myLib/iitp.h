@@ -132,7 +132,7 @@ public:
 
 
 /// EXPERIMENTAL
-class fmRange // ~fmValue
+class fmRange /// ~fmValue
 {
 private:
 	double leftLim{};
@@ -208,6 +208,6 @@ struct forMap
 
 
 
-} // namespace iitp
+} /// namespace iitp
 
-#endif // MYLIB_IITP_H
+#endif /// MYLIB_IITP_H

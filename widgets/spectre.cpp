@@ -102,11 +102,13 @@ Spectre::Spectre() :
 	QObject::connect(ui->leftSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLeft()));
 	QObject::connect(ui->rightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setRight()));
 
+#if 0
 	/// already inside this->setLeft() and this->setRight()
-//	QObject::connect(ui->leftSpinBox, &QSpinBox::editingFinished,
-//					 [this](){ DEFS.setLeftFreq(ui->leftSpinBox->value() * DEFS.spStep()); });
-//	QObject::connect(ui->RightSpinBox, &QSpinBox::editingFinished,
-//					 [this](){ DEFS.setRightFreq(ui->leftSpinBox->value() * DEFS.spStep()); });
+	QObject::connect(ui->leftSpinBox, &QSpinBox::editingFinished,
+					 [this](){ DEFS.setLeftFreq(ui->leftSpinBox->value() * DEFS.spStep()); });
+	QObject::connect(ui->RightSpinBox, &QSpinBox::editingFinished,
+					 [this](){ DEFS.setRightFreq(ui->leftSpinBox->value() * DEFS.spStep()); });
+#endif
 
     ui->specLabel->installEventFilter(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
@@ -124,22 +126,22 @@ void Spectre::defaultState()
 	ui->inputDirLineEdit->setText(defaultInPath);
 	ui->outputDirLineEdit->setText(defaultOutPath);
 
-    if(ui->fftComboBox->currentIndex() == 0) // 1024
+	if(ui->fftComboBox->currentIndex() == 0) /// 1024
     {
         /// shit with external spectra counting
 		ui->inputDirLineEdit->setText(defaultInPathW);
 		ui->outputDirLineEdit->setText(defaultOutPathW);
         ui->smoothBox->setValue(5);
     }
-    else if(ui->fftComboBox->currentIndex() == 1) // 2048
+	else if(ui->fftComboBox->currentIndex() == 1) /// 2048
     {
         ui->smoothBox->setValue(10);
     }
-    else if(ui->fftComboBox->currentIndex() == 2) // 4096
+	else if(ui->fftComboBox->currentIndex() == 2) /// 4096
     {
         ui->smoothBox->setValue(15);
     }
-    else if(ui->fftComboBox->currentIndex() == 3) // 8192
+	else if(ui->fftComboBox->currentIndex() == 3) /// 8192
     {
         ui->smoothBox->setValue(20);
     }
@@ -159,6 +161,7 @@ void Spectre::setPow(double a)
 
 int findChannel(int x, int y, QSize siz)
 {
+	/// magic consts
 	const int a = std::floor(16. / 3. * x / siz.width());	/// look coords::x
 	const int b = std::floor(16. / 3. * y / siz.height());	/// look coords::y
 
@@ -171,9 +174,6 @@ int findChannel(int x, int y, QSize siz)
 		else if(a == 3) return 1;
 		break;
     }
-//	case 1: { num += 2; break; }
-//	case 2: { num += 7; break; }
-//	case 3: { num += 12; break; }
 	/// O1, O2
     case 4:
     {
@@ -181,6 +181,12 @@ int findChannel(int x, int y, QSize siz)
 		else if(a == 3) return 18;
 		break;
 	}
+#if 0
+		///  inside default
+	case 1: { num += 2; break; }
+	case 2: { num += 7; break; }
+	case 3: { num += 12; break; }
+#endif
 	/// (Fp1, Fp2) + some lines of 5 + number in a line
 	default:
 	{
@@ -193,7 +199,7 @@ int findChannel(int x, int y, QSize siz)
 
 bool Spectre::eventFilter(QObject *obj, QEvent *event)
 {
-    if (obj == ui->specLabel) // this is magic
+	if (obj == ui->specLabel) /// this is magic
     {
 		if(event->type() == QEvent::MouseButtonPress)
 		{
@@ -352,12 +358,6 @@ void Spectre::integrate() /// to deprecate
         {
             for(uint j = 0; j < dataOut.cols(); ++j)
             {
-				/// accumulate old
-//                for(int k = begins[j]; k < ends[j]; ++k)
-//                {
-//                    dataOut[h][j] += dataInt[h][k];
-//                }
-				/// accumulate new
 				dataOut[h][j] += std::accumulate(std::begin(dataInt[h]) + begins[j],
 												 std::begin(dataInt[h]) + ends[j],
 												 0.);
@@ -496,7 +496,7 @@ void Spectre::compare()
         }
 		meanVec /= lst.size();
 
-		// maybe make as spectraFile?
+		/// maybe make as spectraFile?
 		myLib::writeFileInLine(savePath
 							   + "/" + DEFS.getExpName()
 							   + "_class_" + nm(i + 1)
@@ -578,7 +578,6 @@ void Spectre::setRight()
 	ui->rightHzEdit->setText(nm(ui->rightSpinBox->value() * DEFS.spStep()));
 	for(auto & in : rangeLimits)
 	{
-//        in.first = 0;
 		in.second = DEFS.spLength();
 	}
 }
@@ -589,7 +588,6 @@ void Spectre::setLeft()
 	for(auto & in : rangeLimits)
 	{
 		in.first = 0;
-//		in.second = DEFS.spLength();
 	}
 }
 
@@ -603,7 +601,6 @@ void Spectre::writeSpectra(const std::vector<int> & chanList,
     myTime.start();
 
 	const QString outDirPath = ui->outputDirLineEdit->text();
-//	const QString outDirPath = "/media/Files/Data/FeedbackTest/GA/SpectraSmooth";
 
     if(!QDir(outDirPath).exists())
     {
@@ -620,7 +617,7 @@ void Spectre::writeSpectra(const std::vector<int> & chanList,
 
 	for(const QString & str : lst)
     {
-        rangeLimits[str.toInt() - 1] = {0, 0}; // to fill with zeros
+		rangeLimits[str.toInt() - 1] = {0, 0}; /// to fill with zeros
     }
 
 	int dataFFTcounter = 0;
@@ -675,7 +672,7 @@ void Spectre::writeSpectra(const std::vector<int> & chanList,
 }
 void Spectre::countSpectraSlot()
 {
-//    defaultState(); /// why was it here? 4-Mar-18
+//	defaultState(); /// why was it here? 4-Mar-18
 
 	std::vector<int> chanList = coords::leest19;
 
@@ -690,7 +687,7 @@ void Spectre::countSpectraSlot()
 
 #if 0
     /// if clean
-    cleanSpectra(); // using mann-whitney
+	cleanSpectra(); /// using mann-whitney
 #endif
 
 	ui->inputDirLineEdit->setText(ui->outputDirLineEdit->text());
@@ -703,7 +700,7 @@ void Spectre::cleanSpectra()
 	myTime.start();
 
     trivector<int> MW;
-	MW = myLib::countMannWhitney(ui->outputDirLineEdit->text(),  // SpectraSmooth
+	MW = myLib::countMannWhitney(ui->outputDirLineEdit->text(),  /// SpectraSmooth
 								 nullptr,
 								 nullptr);
     int cnt = 0;
@@ -776,7 +773,7 @@ std::vector<int> Spectre::countSpectra(std::vector<int> chanList)
 //		   fileName.contains("_300") ||
 		   fileName.contains("_sht")) continue;
 
-		// read data file
+		/// read data file
 		QString helpString = inDirPath + "/" + fileName;
 		matrix dataIn = myLib::readPlainData(helpString).subRows(chanList);
 
@@ -825,7 +822,7 @@ std::vector<int> Spectre::countSpectra(std::vector<int> chanList)
 
 	ui->progressBar->setValue(0);
 
-	// generality
+	/// generality
 	std::cout << "countSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 	return chanList;
 }
@@ -846,14 +843,14 @@ void Spectre::drawWavelets() /// unused
 	helpString = DEFS.dirPath() + "/visualisation/wavelets";
     localDir.cd(helpString);
 
-	// make dirs
+	/// make dirs
 	for(int i = 0; i < DEFS.nsWOM(); ++i)
     {
 		localDir.mkdir(nm(i));
 
         if(ui->phaseWaveletButton->isChecked())
         {
-			// for phase
+			/// for phase
 			localDir.cd(nm(i));
 			for(int j = 0; j < DEFS.getNs(); ++j)
             {
@@ -872,7 +869,7 @@ void Spectre::drawWavelets() /// unused
 
 	std::set<double, std::greater<double>> tempVec;
 
-	// count maxValue
+	/// count maxValue
     for(const QString & fileName : lst)
     {
 		filePath = ui->inputDirLineEdit->text()
@@ -891,21 +888,24 @@ void Spectre::drawWavelets() /// unused
 						 + "/" + nm(chanNum) + ".txt";
 
 			outStr << coefs.maxVal() << std::endl;
-        }
-    }
+		}
+	}
 	outStr.close();
 
-//    for(int chanNum = 0; chanNum < DEFS.nsWOM(); ++chanNum)
-//    {
-//        helpString = (DEFS.dirPath()
-//                                              + "/visualisation"
-//                                              + "/wavelets"
-//                                              + "/" + nm(chanNum) + ".txt");
-//        tempVec = readFileInLine(helpString);
-//        std::sort(tempVec.begin(), tempVec.end());
-//        std::cout << tempVec.front() << "\t" << tempVec.back() << std::endl;
-//    }
-    return;
+#if 0
+	/// cout min and max by each channel
+	for(int chanNum = 0; chanNum < DEFS.nsWOM(); ++chanNum)
+	{
+		helpString = DEFS.dirPath()
+					 + "/visualisation"
+					 + "/wavelets"
+					 + "/" + nm(chanNum) + ".txt";
+		tempVec = readFileInLine(helpString);
+		std::sort(std::begin(tempVec), std::end(tempVec));
+		std::cout << tempVec.front() << "\t" << tempVec.back() << std::endl;
+	}
+#endif
+	return;
 
 
     for(auto it = lst.begin(); it != lst.end(); ++it)
@@ -914,45 +914,46 @@ void Spectre::drawWavelets() /// unused
 		filePath = DEFS.dirPath()
 				   + "/" + fileName;
         if(ui->amplitudeWaveletButton->isChecked())
-        {
+		{
 			for(int channel = 0; channel < DEFS.nsWOM(); ++channel)
-            {
-                helpString = fileName;
-                helpString.replace('.', '_');
-                helpString = (backupDirPath
-													  + "/visualisation"
-													  + "/wavelets"
-													  + "/" + nm(channel)
-													  + "/" + helpString
-													  + "_wavelet_" + nm(channel)
-                                                      + ".jpg");
+			{
+				helpString = fileName;
+				helpString.replace('.', '_');
+				helpString = backupDirPath
+							 + "/visualisation"
+							 + "/wavelets"
+							 + "/" + nm(channel)
+							 + "/" + helpString
+							 + "_wavelet_" + nm(channel)
+							 + ".jpg";
 				std::cout << helpString.toStdString() << std::endl;
 				wvlt::wavelet(filePath, helpString, channel, DEFS.getNs());
-            }
-        }
-        if(ui->phaseWaveletButton->isChecked())
-        {
+			}
+		}
+		if(ui->phaseWaveletButton->isChecked())
+		{
 			for(int channel1 = 0; channel1 < DEFS.nsWOM(); ++channel1)
-            {
+			{
 				for(int channel2 = channel1+1; channel2 < DEFS.nsWOM(); ++channel2)
-                {
-                    helpString = fileName;
-                    helpString.replace('.', '_');
-                    helpString = (backupDirPath
-														  + "/visualisation"
-														  + "/wavelets"
-														  + "/" + nm(channel1)
-														  + "/" + nm(channel2)
-														  + "/" + helpString
-														  + "_wavelet_" + nm(channel1)
-														  + "_" + nm(channel2)
-                                                          + ".jpg");
+				{
+					helpString = fileName;
+					helpString.replace('.', '_');
+					helpString = backupDirPath
+								 + "/visualisation"
+								 + "/wavelets"
+								 + "/" + nm(channel1)
+								 + "/" + nm(channel2)
+								 + "/" + helpString
+								 + "_wavelet_" + nm(channel1)
+								 + "_" + nm(channel2)
+								 + ".jpg";
 					std::cout << helpString.toStdString() << std::endl;
-                    /// remake waveletPhase
-//                    waveletPhase(helpString, file1, ns, channel1, channel2, 20., 5., 0.95, 32);
-//                    if(channel2 == 2) return;
-                }
-            }
+#if 0
+					/// remake waveletPhase
+					waveletPhase(helpString, file1, ns, channel1, channel2, 20., 5., 0.95, 32);
+#endif
+				}
+			}
         }
         ui->progressBar->setValue((std::distance(lst.begin(), it) + 1)
                                   * 100. / lst.length());

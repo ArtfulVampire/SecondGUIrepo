@@ -1,26 +1,5 @@
 #include <other/defs.h>
 /// begin defs Singleton
-/// define static consts
-//const QString		def::plainDataExtension = QString("scg");
-//const QString		def::spectraDataExtension = QString("psd");
-//const QStringList	def::edfFilters = QStringList{"*.edf", "*.EDF"};
-//const QStringList	def::plainFilters = QStringList{"*.scg"};
-//const std::vector<QColor> def::colours { QColor("blue"),
-//			   QColor("red"),
-//			   QColor("green"),
-//			   QColor("black"),
-//			   QColor("gray")};
-//const QString def::XeniaFolder			{"/media/Files/Data/Xenia"};
-//const QString def::mriFolder			{"/media/Files/Data/MRI"};
-//const QString def::GalyaFolder			{"/media/Files/Data/Galya"};
-//const QString def::DashaFolder			{"/media/Files/Data/Dasha/AUDIO"};
-//const QString def::uciFolder			{"/media/Files/Data/UCI"};
-//const QString def::helpPath			{"/media/Files/Data/FeedbackFinalMark/Help"};
-
-//const QString def::iitpFolder			{"/media/Files/Data/iitp"};
-//const QString def::iitpSyncFolder		{"/media/Files/Data/iitp/SYNCED"};
-//const QString def::iitpResFolder		{"/media/Files/Data/iitp/Results"};
-//const QString def::matiFolder			{"/media/Files/Data/Mati"};
 
 void defs::setAutosUser(autosUser in)
 {
@@ -129,9 +108,9 @@ void defs::setUser(username in)
 	}
 	case username::Ossadtchi:
 	{
-		fileMarkers = QStringList{"_241", "_242", "_245", "_246"}; // Ossadtchi
-//		fileMarkers = QStringList{"_241 _242", "_245 _246"}; // Ossadtchi
-//		fileMarkers = QStringList{"_242", "_245"}; // Ossadtchi
+		fileMarkers = QStringList{"_241", "_242", "_245", "_246"}; /// Ossadtchi
+//		fileMarkers = QStringList{"_241 _242", "_245 _246"}; /// Ossadtchi
+//		fileMarkers = QStringList{"_242", "_245"}; /// Ossadtchi
 		this->dir->cd("/media/Files/Data/Ossadtchi");
 		break;
 	}

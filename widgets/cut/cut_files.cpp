@@ -71,13 +71,15 @@ void Cut::saveSlot()
 							 + "/cut"
 							 + "/" + myLib::getFileName(currentFile);
 
-		// new
+		/// new
 		myLib::writePlainData(helpString, dataCutLocal);
 	}
 	else if(myFileType == fileType::edf)
 	{
 		this->saveAs("_new");
-//		logAction("saveAs", "_new"); // problem with template function definition
+		/// problem with template function definition
+		/// "string literal doesn't decay into pointer"
+//		logAction("saveAs", "_new");
 		std::cout << "Cut::save: edfFile saved" << std::endl;
 	}
 
@@ -87,9 +89,13 @@ void Cut::saveSubsecSlot()
 {
 	if( !fileOpened ) { return; }
 
-//	if(!checkBadRange(ui->leftLimitSpinBox->value(),
-//					  ui->rightLimitSpinBox->value(),
-//					  "saveSubsec"))
+#if 01
+	/// check subsec if too long
+	/// turned off for SummerPractice2018 to make 30 min edfs
+	if(!checkBadRange(ui->leftLimitSpinBox->value(),
+					  ui->rightLimitSpinBox->value(),
+					  "saveSubsec"))
+#endif
 	{
 
 		if(myFileType == fileType::real
@@ -214,7 +220,7 @@ void Cut::setValuesByEdf()
 	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
 	{
 		a->setMaximum(localLimit);
-		a->setValue(localLimit); // markers
+		a->setValue(localLimit); /// markers
 	}
 
 
@@ -239,17 +245,17 @@ void Cut::setValuesByEdf()
 	ui->diffTimeSpinBox->setDecimals(1);
 
 
-	ui->paintStartDoubleSpinBox->setMaximum(floor(dataCutLocal.cols() / edfFil.getFreq()));
+	ui->paintStartDoubleSpinBox->setMaximum(std::floor(dataCutLocal.cols() / edfFil.getFreq()));
 	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed? -> paint
-	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / edfFil.getFreq())) + ")");
+	ui->paintStartLabel->setText("start (max " + nm(std::floor(dataCutLocal.cols() / edfFil.getFreq())) + ")");
 	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - scrollAreaGapX) / edfFil.getFreq());
 	ui->paintLengthDoubleSpinBox->setValue((this->width() - scrollAreaGapX) / edfFil.getFreq()); /// -> paint
 
 
 
 	/// set coloured channels
-	QString redStr = "EOG1";	// ~horizontal
-	QString blueStr = "EOG2";	// ~vertical
+	QString redStr = "EOG1";	/// ~horizontal
+	QString blueStr = "EOG2";	/// ~vertical
 
 	/// iitp
 	if(iitpFlag)

@@ -44,7 +44,6 @@ std::valarray<double> butterworthBandStop(const std::valarray<double> & in,
 	std::valarray<double> w2(n);
 	std::valarray<double> w3(n);
 	std::valarray<double> w4(n);
-//	std::valarray<double> r(n);
 	double r;
 
 	for(int i = 0; i < n; ++i)
@@ -88,11 +87,11 @@ std::valarray<double> butterworthBandPass(const std::valarray<double> & in,
 										  double srate,
 										  int n)
 {
-//	Butterworth bandpass filter
-//	n = filter order 4,8,12
-//	s = sampling frequency
-//	f1 = upper half power frequency
-//	fLow = lower half power frequency
+	///	Butterworth bandpass filter
+	///	n = filter order 4,8,12
+	///	s = sampling frequency
+	///	f1 = upper half power frequency
+	///	fLow = lower half power frequency
 
 	if(n % 4 != 0)
 	{
@@ -159,10 +158,10 @@ std::valarray<double> butterworthHighPass(const std::valarray<double> & in,
 										  double srate,
 										  int n)
 {
-//	Butterworth highpass filter
-//	n = filter order 2,4,6
-//	srate = sampling frequency
-//	cutoff = half power frequency
+	///	Butterworth highpass filter
+	///	n = filter order 2,4,6
+	///	srate = sampling frequency
+	///	cutoff = half power frequency
 
 	if(n % 2 != 0)
 	{
@@ -173,7 +172,6 @@ std::valarray<double> butterworthHighPass(const std::valarray<double> & in,
 	double a = std::tan(M_PI * cutoff / srate);
 	double a2 = std::pow(a, 2);
 
-
 	n /= 2;
 	std::valarray<double> A(n);
 	std::valarray<double> d1(n);
@@ -181,7 +179,6 @@ std::valarray<double> butterworthHighPass(const std::valarray<double> & in,
 	std::valarray<double> w0(n);
 	std::valarray<double> w1(n);
 	std::valarray<double> w2(n);
-//	std::valarray<double> r(n);
 	double r;
 
 	for(int i = 0; i < n; ++i)
@@ -215,10 +212,10 @@ std::valarray<double> butterworthLowPass(const std::valarray<double> & in,
 										 double srate,
 										 int n)
 {
-	//	Butterworth lowpass filter
-	//	n = filter order 2,4,6
-	//	srate = sampling frequency
-	//	cutoff = half power frequency
+	///	Butterworth lowpass filter
+	///	n = filter order 2,4,6
+	///	srate = sampling frequency
+	///	cutoff = half power frequency
 
 	if(n % 2 != 0)
 	{
@@ -237,7 +234,6 @@ std::valarray<double> butterworthLowPass(const std::valarray<double> & in,
 	std::valarray<double> w0(n);
 	std::valarray<double> w1(n);
 	std::valarray<double> w2(n);
-//	std::valarray<double> r(n);
 	double r;
 
 	for(int i = 0; i < n; ++i)
@@ -330,7 +326,7 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 	}
 }
 
-} // namespace butter
+} /// namespace butter
 
 namespace btr
 {
@@ -388,7 +384,7 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 	res = smLib::contReverse(res);
 	return res;
 }
-} // namespace btr
+} /// namespace btr
 
 #if 0
 namespace myDsp
@@ -417,9 +413,9 @@ std::valarray<double> lowPassOneSide(const std::valarray<double> & inputSignal,
 
 
 	Dsp::Params params;
-	params[0] = srate; // sample rate
-	params[1] = order; // order
-	params[2] = cutoffFreq; // cutoff
+	params[0] = srate; /// sample rate
+	params[1] = order; /// order
+	params[2] = cutoffFreq; /// cutoff
 
 
 	Dsp::Filter * f;
@@ -462,7 +458,7 @@ std::valarray<double> lowPass(const std::valarray<double> & inputSignal,
 						 cutoffFreq,
 						 srate);
 
-	// reverse back
+	/// reverse back
 	tmp = smLib::reverseArray(tmp);
 	return tmp;
 }
@@ -479,10 +475,10 @@ std::valarray<double> refilterOneSide(const std::valarray<double> & inputSignal,
 	std::copy(std::begin(inputSignal), std::end(inputSignal), tempArr);
 
 	Dsp::Params params;
-	params[0] = srate; // sample rate
-	params[1] = order; // order
-	params[2] = (lowFreq + highFreq) / 2; // center frequency
-	params[3] = highFreq - lowFreq; // band width
+	params[0] = srate; /// sample rate
+	params[1] = order; /// order
+	params[2] = (lowFreq + highFreq) / 2; /// center frequency
+	params[3] = highFreq - lowFreq; /// band width
 
 	Dsp::Filter * f;
 	if(isNotch)
@@ -524,12 +520,12 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 						  highFreq,
 						  isNotch,
 						  srate);
-	// reverse back
+	/// reverse back
 	tmp = smLib::reverseArray(tmp);
 	return tmp;
 }
 
-} // end namespace myDsp
+} /// end namespace myDsp
 #endif
 
 namespace myLib
@@ -541,7 +537,7 @@ void four1(double * dataF, int nn, int isign)
     double wtemp,wr,wpr,wpi,wi,theta;
     double tempr,tempi;
 
-	n = nn << 1; // n = 2 * fftLength
+	n = nn << 1; /// n = 2 * fftLength
     j = 1;
     for (i = 1; i < n; i += 2)
     {
@@ -550,18 +546,18 @@ void four1(double * dataF, int nn, int isign)
             std::swap(dataF[j], dataF[i]);
 			std::swap(dataF[j+1], dataF[i+1]);
         }
-        m = n >> 1; // m = n / 2;
+        m = n >> 1; /// m = n / 2;
         while (m >= 2 && j > m)
         {
             j -= m;
-			m >>= 1; // m /= 2;
+			m >>= 1; /// m /= 2;
         }
         j += m;
     }
     mmax = 2;
     while (n > mmax)
     {
-		istep = mmax << 1; // istep = mmax * 2;
+		istep = mmax << 1; /// istep = mmax * 2;
         theta = isign * (2 * pi / mmax);
         wtemp = sin(0.5 * theta);
 
@@ -576,15 +572,15 @@ void four1(double * dataF, int nn, int isign)
             {
                 j = i + mmax;
 
-                // tempCompl = wCompl * dataFCompl[j/2]
+                /// tempCompl = wCompl * dataFCompl[j/2]
                 tempr = wr * dataF[j] - wi * dataF[j + 1];
                 tempi = wr * dataF[j + 1] + wi * dataF[j];
 
-                // dataFCompl[j/2] = dataFCompl[i/2] - tempCompl
+                /// dataFCompl[j/2] = dataFCompl[i/2] - tempCompl
                 dataF[j] = dataF[i] - tempr;
                 dataF[j + 1] = dataF[i + 1] - tempi;
 
-                // dataFCompl[i/2] += tempCompl
+                /// dataFCompl[i/2] += tempCompl
                 dataF[i] += tempr;
                 dataF[i + 1] += tempi;
             }
@@ -824,11 +820,6 @@ std::valarray<double> spectreCtoR(const std::valarray<double> & inputSignal,
 std::valarray<double> spectreCtoC(const std::valarray<double> & inputSignal,
 								  int fftLen) /// what is fftLen here?
 {
-//	{
-//		std::cout << "spectreCtoC: should deal with fftLen, return" <<std::endl;
-//		return {};
-//	}
-
 	if(fftLen <= 0)
 	{
 		fftLen = smLib::fftL(inputSignal.size() / 2);
@@ -898,7 +889,7 @@ std::valarray<double> spectreCtoRrev(const std::valarray<double> & inputSpectre)
 
 std::valarray<double> spectreCtoRrev(const std::valarray<std::complex<double>> & inputSpectre)
 {
-	/// check size == pow(2, N) ?
+	/// check size == std::pow(2, N) ?
 	int fftLen = inputSpectre.size();
 
 	double * pew = new double [inputSpectre.size() * 2];
@@ -942,7 +933,6 @@ std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre)
 
 double spectreNorm(int fftLen, int realSig, double srate)
 {
-//	return 1.;
 	return 2. / (double(std::min(realSig, fftLen)) * srate);
 }
 
@@ -957,8 +947,8 @@ std::valarray<double> refilterFFT(const std::valarray<double> & inputSignal,
 	std::valarray<double> spectr = spectreRtoC(inputSignal, fftLen);
 	const double spStep = srate / fftLen;
 	/// 2 because complex values
-	const int lowLim = 2. * floor( lowFreq / spStep);
-	const int highLim = 2. * ceil( highFreq / spStep);
+	const int lowLim = 2. * std::floor( lowFreq / spStep);
+	const int highLim = 2. * std::ceil( highFreq / spStep);
 
 	refilterSpectre(spectr, lowLim, highLim, isNotch);
 
@@ -1060,7 +1050,7 @@ void refilterSpectre(std::valarray<double> & spectr,
 	/// generality
 	int fftLen = spectr.size() / 2;
 
-	// both lowLim and highLim are in/ex
+	/// both lowLim and highLim are in/ex
 	if(!isNotch)
 	{
 		std::fill(std::begin(spectr),
@@ -1128,13 +1118,11 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
 				  std::begin(res));
 	}
 
-
-
 	/// apply window
 //	res *= smLib::toComplex(myLib::fftWindow(fftLen, myLib::windowName::Blackman));
 
 
-	// DFT
+	/// DFT
 	unsigned int N = res.size();
     unsigned int k = N;
     unsigned int n;
@@ -1160,12 +1148,12 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
         }
     }
 
-    // Decimate
+    /// Decimate
     unsigned int m = (unsigned int)log2(N);
     for (unsigned int a = 0; a < N; ++a)
     {
         unsigned int b = a;
-        // Reverse bits
+        /// Reverse bits
         b = (((b & 0xaaaaaaaa) >> 1) | ((b & 0x55555555) << 1));
         b = (((b & 0xcccccccc) >> 2) | ((b & 0x33333333) << 2));
         b = (((b & 0xf0f0f0f0) >> 4) | ((b & 0x0f0f0f0f) << 4));
@@ -1203,11 +1191,6 @@ std::valarray<double> spectreRtoRcomplex(
 	return smLib::abs(spectreRtoCcomplex(inputArray, fftLen));
 }
 
-
-
-
-
-
 double fractalDimension(const std::valarray<double> & arr,
 						int Kmax,
 						const QString & picPath)
@@ -1220,51 +1203,46 @@ double fractalDimension(const std::valarray<double> & arr,
 
 	/// make collection of timeShifts
 	std::vector<int> timeShifts = smLib::range<std::vector<int>>(1, Kmax);
-//	std::cout << timeShifts << std::endl;
 
+#if 0
 	/// for long scale signals
-//	std::vector<int> timeShifts;
-//	timeShifts = {1, 2, 3, 4}; // initialize
-//	for(int i = 11; i < log2(N / 4) * 4 + 1 ; ++i)
-//	{
-//		timeShifts.push_back(floor(pow(2, (i - 1)/4.)));
-//	}
+	std::vector<int> timeShifts;
+	timeShifts = {1, 2, 3, 4}; /// initialize
+	for(int i = 11; i < log2(N / 4) * 4 + 1 ; ++i)
+	{
+		timeShifts.push_back(std::floor(std::pow(2, (i - 1)/4.)));
+	}
+#endif
 
 	for(int timeShift : timeShifts)
 	{
 		double L = 0.;
 
-        for(int m = 0; m < timeShift; ++m) // m = startShift
+        for(int m = 0; m < timeShift; ++m) /// m = startShift
         {
 			const double coeff = (N - 1) / double(timeShift)
-						   / floor( (N - m) / timeShift )
+						   / std::floor( (N - m) / timeShift )
 						   ; /// ~1
 
 			double Lm = 0.;
-			for(int i = 1; i < floor( (N - m) / timeShift); ++i)
+			for(int i = 1; i < std::floor( (N - m) / timeShift); ++i)
             {
 				Lm += std::abs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]);
 			}
 			L += Lm * coeff;
         }
-		L /= timeShift; // big "/ k"
-		L /= timeShift; // average Lm
+		L /= timeShift; /// big "/ k"
+		L /= timeShift; /// average Lm
 
-		drawK_.push_back(log(timeShift));
-		drawL_.push_back(log(L));
+		drawK_.push_back(std::log(timeShift));
+		drawL_.push_back(std::log(L));
     }
 
 	const std::valarray<double> drawK = smLib::vecToValar(drawK_);
 	const std::valarray<double> drawL = smLib::vecToValar(drawL_);
 
-	// least square approximation
+	/// least square approximation
 	const double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
-
-//	std::cout << "kMax = " << Kmax << "\t"
-//			  << "R^2 = " << smLib::doubleRound(pow(smLib::correlation(drawL, drawK), 2), 3)
-//			  << std::endl;
-
-
 
     double drawX = 0.;
     double drawY = 0.;
@@ -1288,7 +1266,7 @@ double fractalDimension(const std::valarray<double> & arr,
 		/// draw squares
 		int frame = 10;
 		int rectSize = 3;
-		for(uint h = 0; h < timeShifts.size(); ++h) // drawK, drawL [last] is bottom-left
+		for(uint h = 0; h < timeShifts.size(); ++h) /// drawK, drawL [last] is bottom-left
 		{
 			drawX = frame + std::abs(drawK[h] - minX) / lenX
 					* (pic.width() - 2 * frame) - rectSize;
@@ -1322,7 +1300,7 @@ double fractalDimension(const std::valarray<double> & arr,
 		pnt.drawText(pic.width() * 0.7,
 					 pic.height() * 0.2 + 25,
 					 QString("R^2 = " + nm(smLib::doubleRound(
-											   pow(smLib::correlation(drawL, drawK), 2), 3
+											   std::pow(smLib::correlation(drawL, drawK), 2), 3
 											   )
 										   )
 							 )
@@ -1349,33 +1327,33 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 
 	/// for long scale signals
 	std::vector<int> timeShifts;
-	timeShifts = {1, 2, 3, 4}; // initialize
+	timeShifts = {1, 2, 3, 4}; /// initialize
 	for(int i = 11; i < log2(N / 4) * 4 + 1 ; ++i)
 	{
-		timeShifts.push_back(floor(pow(2, (i - 1)/4.)));
+		timeShifts.push_back(std::floor(std::pow(2, (i - 1)/4.)));
 	}
 
 	for(int timeShift : timeShifts)
 	{
 		double L = 0.;
-		for(int m = 0; m < timeShift; ++m) // m = startShift
+		for(int m = 0; m < timeShift; ++m) /// m = startShift
 		{
 			const double coeff = (N - 1) / double(timeShift)
-						   / floor( (N - m) / timeShift )
+						   / std::floor( (N - m) / timeShift )
 						   ; /// ~1
 
 			double Lm = 0.;
-			for(int i = 1; i < floor( (N - m) / timeShift); ++i)
+			for(int i = 1; i < std::floor( (N - m) / timeShift); ++i)
 			{
 				Lm += std::abs(arr[m + i * timeShift] - arr[m + (i - 1) * timeShift]);
 			}
 			L += Lm * coeff;
 		}
-		L /= timeShift; // big "/ k"
-		L /= timeShift; // average Lm
+		L /= timeShift; /// big "/ k"
+		L /= timeShift; /// average Lm
 
-		drawK_.push_back(log(timeShift));
-		drawL_.push_back(log(L));
+		drawK_.push_back(std::log(timeShift));
+		drawL_.push_back(std::log(L));
 	}
 
 	const std::valarray<double> drawK = smLib::vecToValar(drawK_);
@@ -1384,7 +1362,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 	const std::valarray<double> drawK8 = drawK[std::slice(0, 8, 1)];
 	const std::valarray<double> drawL8 = drawL[std::slice(0, 8, 1)];
 
-	// least square approximation
+	/// least square approximation
 	const double slope = smLib::covariance(drawK8,
 										   drawL8)
 						 / smLib::covariance(drawK8,
@@ -1434,7 +1412,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 
 		/// draw squares
 		int rectSize = 3;
-		for(uint h = 0; h < timeShifts.size(); ++h) // drawK, drawL [last] is bottom-left
+		for(uint h = 0; h < timeShifts.size(); ++h) /// drawK, drawL [last] is bottom-left
 		{
 			drawX = pic.width() * gap + std::abs(drawK[h] - minX) / lenX
 					* (pic.width() * (1. - gap) - frame) - rectSize;
@@ -1468,7 +1446,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 		pnt.drawText(pic.width() * 0.7,
 					 pic.height() * 0.2 + 25,
 					 QString("R^2 = " + nm(smLib::doubleRound(
-											   pow(smLib::correlation(drawL, drawK), 2), 3
+											   std::pow(smLib::correlation(drawL, drawK), 2), 3
 											   )
 										   )
 							 )
@@ -1614,120 +1592,114 @@ std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
 	return res;
 }
 
-
-//double fractalDimensionBySpectre(const std::valarray<double> & arr,
-//								 const QString & picPath)
-//{
-//	const double srate = 250.;
-
-
-//	int N = arr.size();
-//	const int windowSize = 512;
-//	const int timeShift = 128;
-//	const double freqStep = srate / windowSize;
-////	std::cout << freqStep << std::endl;
-
-//	std::valarray<double> avSpectre = myLib::spectreRtoR(smLib::valarSubsec(arr,
-//																			0,
-//																			windowSize));
-//	int numWinds = (N - windowSize) / timeShift;
-//	for(int i = 0; i < numWinds; ++i)
-//	{
-//		auto windSpec = myLib::spectreRtoR(smLib::valarSubsec(arr,
-//															  i * timeShift,
-//															  i * timeShift + windowSize),
-//						   windowSize);
-//		avSpectre += windSpec;
-//	}
-//	avSpectre /= numWinds;
-//	avSpectre *= myLib::spectreNorm(windowSize, windowSize, srate);
-
-//	std::vector<double> drawK_{};
-//	std::vector<double> drawL_{};
-
-////	for(double fr = freqStep; fr < 15.; fr += freqStep)
-////	{
-////		drawK_.push_back(log(fr));
-////		drawL_.push_back(log(avSpectre[int(fr / freqStep)]));
-////	}
-//	for(int fr = 1; fr < 150; ++fr)
-//	{
-//		drawK_.push_back(log(fr));
-//		drawL_.push_back(log(avSpectre[fr]));
-//	}
-////	std::cout << drawK_.size() << " " << drawL_.size() << std::endl;
-
-//	std::valarray<double> drawK = smLib::vecToValar(drawK_);
-//	std::valarray<double> drawL = smLib::vecToValar(drawL_);
-
-////	std::cout << drawK.size() << " " << drawL.size() << std::endl;
-
-//	for(int i = 0; i < 20; ++i)
-//	{
-//		std::cout << drawK[i] << " " << drawL[i] << std::endl;
-//	}
-
-//	// least square approximation
-//	double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
-
-//	double drawX = 0.;
-//	double drawY = 0.;
-//	if(!picPath.isEmpty())
-//	{
-//		QPixmap pic = QPixmap(800, 600);
-//		QPainter pnt;
-//		pic.fill();
-//		pnt.begin(&pic);
-
-//		pnt.setPen("black");
-//		pnt.setBrush(QBrush("black"));
-
-//		double minX = drawK.min();
-//		double maxX = drawK.max();
-//		double minY = drawL.min();
-//		double maxY = drawL.max();
-//		double lenX = maxX - minX;
-//		double lenY = maxY - minY;
-
-//		int frame = 10; // pixels
-//		int rectSize = 3;
-//		for(int h = 0; h < drawK.size(); ++h) // drawK, drawL [last] is bottom-left
-//		{
-//			drawX = frame + std::abs(drawK[h] - minX) / lenX
-//					* (pic.width() - 2 * frame) - rectSize;
-//			drawY = frame + (1. - std::abs(drawL[h] - minY) / lenY)
-//					* (pic.height() - 2 * frame) - rectSize;
-//			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
-//		}
-
-//		pnt.setPen("red");
-//		pnt.setBrush(QBrush("red"));
-
-//		// line passes (meanX, meanY)
-//		/// check this with frame
-//		double add = smLib::mean(drawL) - slope * smLib::mean(drawK);
-
-//		drawX = (1. - (slope * minX + add - minY) / lenY) * pic.height(); // startY
-//		drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); // endY
-
-//		pnt.drawLine(0,
-//					 drawX,
-//					 pic.width(),
-//					 drawY
-//					 );
-
-//		pnt.end();
-//		pic.save(picPath, 0, 100);
-//	}
-//	return (5. + slope) / 2.;
-//}
+#if 0
+double fractalDimensionBySpectre(const std::valarray<double> & arr,
+								 const QString & picPath)
+{
+	const double srate = 250.;
 
 
+	int N = arr.size();
+	const int windowSize = 512;
+	const int timeShift = 128;
+	const double freqStep = srate / windowSize;
 
+	std::valarray<double> avSpectre = myLib::spectreRtoR(smLib::valarSubsec(arr,
+																			0,
+																			windowSize));
+	int numWinds = (N - windowSize) / timeShift;
+	for(int i = 0; i < numWinds; ++i)
+	{
+		auto windSpec = myLib::spectreRtoR(smLib::valarSubsec(arr,
+															  i * timeShift,
+															  i * timeShift + windowSize),
+						   windowSize);
+		avSpectre += windSpec;
+	}
+	avSpectre /= numWinds;
+	avSpectre *= myLib::spectreNorm(windowSize, windowSize, srate);
 
+	std::vector<double> drawK_{};
+	std::vector<double> drawL_{};
 
+#if 0
+	/// ???
+	for(double fr = freqStep; fr < 15.; fr += freqStep)
+	{
+		drawK_.push_back(std::log(fr));
+		drawL_.push_back(std::log(avSpectre[int(fr / freqStep)]));
+	}
+#endif
 
+	for(int fr = 1; fr < 150; ++fr)
+	{
+		drawK_.push_back(std::log(fr));
+		drawL_.push_back(std::log(avSpectre[fr]));
+	}
 
+	std::valarray<double> drawK = smLib::vecToValar(drawK_);
+	std::valarray<double> drawL = smLib::vecToValar(drawL_);
+
+	for(int i = 0; i < 20; ++i)
+	{
+		std::cout << drawK[i] << " " << drawL[i] << std::endl;
+	}
+
+	/// least square approximation
+	double slope = smLib::covariance(drawK, drawL) / smLib::covariance(drawK, drawK);
+
+	double drawX = 0.;
+	double drawY = 0.;
+	if(!picPath.isEmpty())
+	{
+		QPixmap pic = QPixmap(800, 600);
+		QPainter pnt;
+		pic.fill();
+		pnt.begin(&pic);
+
+		pnt.setPen("black");
+		pnt.setBrush(QBrush("black"));
+
+		double minX = drawK.min();
+		double maxX = drawK.max();
+		double minY = drawL.min();
+		double maxY = drawL.max();
+		double lenX = maxX - minX;
+		double lenY = maxY - minY;
+
+		int frame = 10; /// pixels
+		int rectSize = 3;
+		for(int h = 0; h < drawK.size(); ++h) /// drawK, drawL [last] is bottom-left
+		{
+			drawX = frame + std::abs(drawK[h] - minX) / lenX
+					* (pic.width() - 2 * frame) - rectSize;
+			drawY = frame + (1. - std::abs(drawL[h] - minY) / lenY)
+					* (pic.height() - 2 * frame) - rectSize;
+			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
+		}
+
+		pnt.setPen("red");
+		pnt.setBrush(QBrush("red"));
+
+		/// line passes (meanX, meanY)
+		/// check this with frame
+		double add = smLib::mean(drawL) - slope * smLib::mean(drawK);
+
+		drawX = (1. - (slope * minX + add - minY) / lenY) * pic.height(); /// startY
+		drawY = (1. - (slope * maxX + add - minY) / lenY) * pic.height(); /// endY
+
+		pnt.drawLine(0,
+					 drawX,
+					 pic.width(),
+					 drawY
+					 );
+
+		pnt.end();
+		pic.save(picPath, 0, 100);
+	}
+	return (5. + slope) / 2.;
+}
+#endif
 
 
 void centerMatrixRows(matrix & inData,
@@ -1758,20 +1730,18 @@ void centerMatrixRows(matrix & inData,
 	}
 }
 
-
-
 /// replace DEFS.getFreq()
 double morletCos(double const freq1, const double timeShift, const double pot, const double time)
 {
 	double freq = freq1 * 2. * pi / DEFS.getFreq();
-	return cos(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
+	return cos(freq * (time - timeShift)) * exp( - std::pow(freq * (time-timeShift) / pot, 2));
 }
 
 /// replace DEFS.getFreq()
 double morletSin(double const freq1, const double timeShift, const double pot, const double time)
 {
 	double freq = freq1 * 2. * pi / DEFS.getFreq();
-	return sin(freq * (time - timeShift)) * exp( - pow(freq * (time-timeShift) / pot, 2));
+	return sin(freq * (time - timeShift)) * exp( - std::pow(freq * (time-timeShift) / pot, 2));
 }
 
 
@@ -1782,12 +1752,12 @@ void splineCoeffCount(const std::valarray<double> & inX,
 					  std::valarray<double> & outB)
 {
 
-	// [inX[i-1]...inX[i]] - q[i-1] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+	/// [inX[i-1]...inX[i]] - q[i-1] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
     matrix coefsMatrix(dim, dim, 0);
 	std::valarray<double> rightVec(dim);
 	std::valarray<double> vectorK(dim);
 
-	// set coefs and rightVec
+	/// set coefs and rightVec
     coefsMatrix[0][0] = 2.*(inX[1] - inX[0]);
     coefsMatrix[0][1] = (inX[1] - inX[0]);
     rightVec[0] = 3. * (inY[1] - inY[0]);
@@ -1795,7 +1765,7 @@ void splineCoeffCount(const std::valarray<double> & inX,
     coefsMatrix[dim-1][dim-1] = 2.*(inX[dim-1] - inX[dim-2]);
     coefsMatrix[dim-1][dim-2] = (inX[dim-1] - inX[dim-2]);
     rightVec[dim-1] = 3. * (inY[dim-1] - inY[dim-2]);
-	for(int i = 1; i < dim-1; ++i) // besides first and last rows
+	for(int i = 1; i < dim-1; ++i) /// besides first and last rows
     {
         coefsMatrix[i][i-1] = 1 / (inX[i] - inX[i-1]);
         coefsMatrix[i][i] = 2 * (1 / (inX[i] - inX[i-1]) + 1 / (inX[i+1] - inX[i]));
@@ -1804,7 +1774,7 @@ void splineCoeffCount(const std::valarray<double> & inX,
         rightVec[i] = 3 * ( (inY[i] - inY[i-1]) / ( (inX[i] - inX[i-1]) * (inX[i] - inX[i-1]) ) + (inY[i+1] - inY[i]) / ( (inX[i+1] - inX[i]) * (inX[i+1] - inX[i]) ));
     }
 #if 0
-	// cout matrix and rightvec - OK
+	/// cout matrix and rightvec - OK
 	for(int i = 0; i < dim; ++i)
 	{
 		for(int j = 0; j < dim; ++j)
@@ -1814,10 +1784,10 @@ void splineCoeffCount(const std::valarray<double> & inX,
 		std::cout << rightVec[i] << std::endl;
 	}
 #endif
-	// count K's
+	/// count K's
     vectorK = coefsMatrix.matrixSystemSolveGauss(rightVec);
-	// count outA and outB
-	for(int i = 1; i < dim; ++i) // there is dim-1 intervals between dim points
+	/// count outA and outB
+	for(int i = 1; i < dim; ++i) /// there is dim-1 intervals between dim points
     {
         outA[i-1] =  vectorK[i - 1] * (inX[i] - inX[i - 1]) - (inY[i] - inY[i - 1]);
         outB[i-1] = -vectorK    [i] * (inX[i] - inX[i - 1]) + (inY[i] - inY[i - 1]);
@@ -1831,10 +1801,10 @@ double splineOutput(const std::valarray<double> & inX,
 					const std::valarray<double> & B,
                     double probeX)
 {
-	// [inX[i-1]...inX[i]] - q[i] = (1-t)*inY[i1] + t*inY[i] + t(1-t)(outA[i](1-t) + outB[i]t));
+	/// [inX[i-1]...inX[i]] - q[i] = (1-t)*inY[i1] + t*inY[i] + t(1-t)(outA[i](1-t) + outB[i]t));
     double t;
-	// which interval we have?
-	int num = -1; // number of interval
+	/// which interval we have?
+	int num = -1; /// number of interval
     for(int i = 0; i < dim-1; ++i)
     {
         if(inX[i] <= probeX && probeX < inX[i + 1])
@@ -1859,11 +1829,11 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 {
 
     const int inLength = arr.size();
-	const int fftLen = smLib::fftL(inLength); // int(pow(2., ceil(log(inLength)/log(2.))));
+	const int fftLen = smLib::fftL(inLength); /// int(std::pow(2., std::ceil(std::log(inLength)/std::log(2.))));
 	const double spStep = DEFS.getFreq() / fftLen;
-    const double normCoef = sqrt(fftLen / double(inLength));
+    const double normCoef = std::sqrt(fftLen / double(inLength));
 
-	std::valarray<double> out; // result
+	std::valarray<double> out; /// result
 	out.resize(2 * fftLen);
 	std::fill(std::begin(out), std::end(out), 0.);
 
@@ -1880,7 +1850,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 
 	spectreCtoC(out, fftLen);
 
-	// start filtering
+	/// start filtering
     for(int i = 0; i < fftLen; ++i)
     {
         if(i < 2. * lowFreq / spStep
@@ -1898,7 +1868,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
     out[1] = 0.;
     out[fftLen] = 0.;
     out[fftLen+1] = 0.;
-	// end filtering
+	/// end filtering
 
 	spectreCtoRrev(out);
     for(int i = 0; i < inLength; ++i)
@@ -1907,7 +1877,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
     }
 
 
-	// Hilbert via FFT
+	/// Hilbert via FFT
     for(int i = 0; i < inLength; ++i)
     {
         out[2 * i + 0] = filteredArr[i] * normCoef;
@@ -1930,26 +1900,26 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 
     for(int i = 0; i < inLength; ++i)
     {
-		tempArr[i] = out[2 * i + 1] / fftLen * 2; // hilbert
+		tempArr[i] = out[2 * i + 1] / fftLen * 2; /// hilbert
     }
-	// end Hilbert via FFT
+	/// end Hilbert via FFT
 
 
     for(int i = 0; i < fftLen; ++i)
     {
-        out[i] = sqrt(pow(tempArr[i], 2) + pow(filteredArr[i], 2));
+        out[i] = std::sqrt(std::pow(tempArr[i], 2) + std::pow(filteredArr[i], 2));
     }
 
 
     if(!picPath.isEmpty())
     {
 
-		// start check draw - OK
+		/// start check draw - OK
         QPixmap pic(fftLen, 600);
         QPainter pnt;
         pic.fill();
         pnt.begin(&pic);
-        //    double sum, sum2;
+        ///    double sum, sum2;
         double enlarge = 10.;
 
         pnt.setPen("black");
@@ -1983,7 +1953,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
         pic.fill();
         pnt.end();
 		std::cout << "hilber drawn" << std::endl;
-		// end check draw
+		/// end check draw
     }
     return out;
 }
@@ -2010,7 +1980,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 			start = inLength - fftLen;
 		}
 
-		// Hilbert via FFT
+		/// Hilbert via FFT
 		tempArr[i].resize(fftLen);
 		std::copy(std::begin(inArr) + start,
 				  std::begin(inArr) + start + fftLen,
@@ -2024,25 +1994,25 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 		tempArr[i].resize(inLength);
 		for(int j = 0; j < fftLen; ++j)
 		{
-			tempArr[i][start + j] = temp[2 * j + 1]; // hilbert. Why +1?
+			tempArr[i][start + j] = temp[2 * j + 1]; /// hilbert. Why +1?
 		}
 		tempArr[i] *= 2.;
-		// end Hilbert via FFT
+		/// end Hilbert via FFT
 	}
 
 	for(int i = 0; i < fftLen; ++i)
 	{
-		outHilbert[i] = sqrt(pow(tempArr[0][i], 2.) + pow(inArr[i], 2.));
+		outHilbert[i] = std::sqrt(std::pow(tempArr[0][i], 2.) + std::pow(inArr[i], 2.));
 	}
 
     int startReplace = 0;
-	double minD = 100.; // difference between two possible envelopes
+	double minD = 100.; /// difference between two possible envelopes
     double helpDouble = 0.;
 
     for(int i = inLength - fftLen; i < fftLen; ++i)
     {
-		helpDouble = outHilbert[i] - pow(pow(tempArr[1][i], 2.) +
-										 pow(inArr[i], 2.), 0.5);
+		helpDouble = outHilbert[i] - std::pow(std::pow(tempArr[1][i], 2.) +
+										 std::pow(inArr[i], 2.), 0.5);
 		/// could add derivative
         if(std::abs(helpDouble) <= std::abs(minD))
         {
@@ -2053,14 +2023,14 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 
     for(int i = startReplace; i < inLength; ++i)
     {
-		outHilbert[i] = sqrt(pow(tempArr[1][i], 2.) + pow(inArr[i], 2.));
+		outHilbert[i] = std::sqrt(std::pow(tempArr[1][i], 2.) + std::pow(inArr[i], 2.));
     }
 
 
     if(!picPath.isEmpty())
     {
 
-		// start check draw - OK
+		/// start check draw - OK
 		QPixmap pic(inLength, 600);
         QPainter pnt;
         pic.fill();
@@ -2078,25 +2048,32 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
                     );
         }
 
-        //        pnt.setPen("blue");
-        //        for(int i = 0; i < pic.width()-1; ++i)
-        //        {
-        //            pnt.drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
-        //        }
+#if 0
+		/// ???
+		pnt.setPen("blue");
+		for(int i = 0; i < pic.width()-1; ++i)
+		{
+			pnt.drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
+		}
+#endif
 
         pnt.setPen("green");
 		for(int i = 0; i < pic.width() - 1; ++i)
         {
+			/// draw the envelope?
 			pnt.drawLine(i,
 						 pic.height()/2. * (1. - outHilbert[i] / maxVal),
 						 i+1,
 						 pic.height()/2. * (1. - outHilbert[i + 1] / maxVal)
 					);
-//			pnt.drawLine(i,
-//						 pic.height()/2. * (1. - fftLen * tempArr[0][i] / maxVal),
-//						 i+1,
-//						 pic.height()/2. * (1. - fftLen * tempArr[0][i + 1] / maxVal)
-//					);
+#if 0
+			/// draw the signal?
+			pnt.drawLine(i,
+						 pic.height()/2. * (1. - fftLen * tempArr[0][i] / maxVal),
+						 i+1,
+						 pic.height()/2. * (1. - fftLen * tempArr[0][i + 1] / maxVal)
+					);
+#endif
         }
 
         pnt.setPen("blue");
@@ -2107,7 +2084,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 
         pnt.end();
         pic.save(picPath, 0, 100);
-		// end check draw
+		/// end check draw
     }
     return outHilbert;
 }
@@ -2171,13 +2148,13 @@ double hjorthActivity(const std::valarray<double> & inSignal)
 }
 double hjorthMobility(const std::valarray<double> & inSignal)
 {
-	return sqrt(smLib::variance(derivative(inSignal)) /
+	return std::sqrt(smLib::variance(derivative(inSignal)) /
 				smLib::variance(inSignal));
 }
 double hjorthComplexity(const std::valarray<double> & inSignal)
 {
 	/// second derivative
-	return sqrt(smLib::variance(derivative(derivative(inSignal))) /
+	return std::sqrt(smLib::variance(derivative(derivative(inSignal))) /
 				smLib::variance(inSignal));
 }
 
@@ -2185,35 +2162,33 @@ double hjorthComplexity(const std::valarray<double> & inSignal)
 std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 								 int numOfIntervals)
 {
-	double maxAmpl = 80.; // generality
+	double maxAmpl = 80.; /// generality
     int helpInt;
 	std::valarray<double> out(0., numOfIntervals);
 
     for(uint j = 0; j < dataIn.size(); ++j)
     {
-        helpInt = int(floor((dataIn[j] + maxAmpl) / (2. * maxAmpl / double(numOfIntervals))));
+        helpInt = int(std::floor((dataIn[j] + maxAmpl) / (2. * maxAmpl / double(numOfIntervals))));
 
 		if(helpInt != std::min(std::max(0, helpInt), numOfIntervals - 1))
         {
-			continue; // if helpInt not in range
+			continue; /// if helpInt not in range
         }
         out[helpInt] += 1;
     }
-    out /= double(dataIn.size()) * 10.; // 10 is norm coef for perceptron
+    out /= double(dataIn.size()) * 10.; /// 10 is norm coef for perceptron
 
     return out;
 }
 
-
-
-
+#if 0
 /// for fftWindow
-// double bes0(double in)
-// {
-// https:// en.wikipedia.org/wiki/Bessel_function#Modified_Bessel_functions
-//	return in;
-// }
-
+double bes0(double in)
+{
+	/// https:/// en.wikipedia.org/wiki/Bessel_function#Modified_Bessel_functions
+	return in;
+}
+#endif
 
 std::valarray<double> fftWindow(int N, windowName name)
 {
@@ -2235,7 +2210,6 @@ std::valarray<double> fftWindow(int N, windowName name)
 		for(int i = 0; i < N; ++i)
 		{
 			res[i] = 0.53836 - 0.46164 * cos (i * arg);
-//			res[i] = 0.54 - 0.46 * cos (i * arg);
 		}
 		break;
 	}
@@ -2389,11 +2363,8 @@ std::valarray<double> fftWindow(int N, windowName name)
 		break;
 	}
 	}
-
 	return res;
 }
-
-
 
 double RDfreq(const std::valarray<double> & inSignal, int fftWind)
 {
@@ -2429,22 +2400,12 @@ double PPGrange(const std::valarray<double> & inSignal)
 		if(sign(PPGdata[i]) != currSign)
 		{
 			int end = i - 1;
-
-//			std::cout << counter
-//					  << "\t" << PPGdata.size()
-//					  << "\t" << start
-//					  << "\t" << end
-//					  << std::endl;
 			std::valarray<double> val = smLib::contSubsec(PPGdata, start, end);
-//			std::cout << counter << std::endl;
-
-
 			if(currSign == +1)		{ maxs.push_back(val.max()); }
 			else if(currSign == -1)	{ mins.push_back(val.min()); }
 
 			start = i;
 			currSign *= -1; /// currSign = sign(chan[start]);
-//			std::cout << counter++ << std::endl;
 		}
 	}
 	int num = std::min(mins.size(), maxs.size());
@@ -2475,13 +2436,13 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 {
 	if(numOfSmooth < 0)
 	{
-		numOfSmooth = std::ceil(15 * sqrt(inSpectre.size() / 4096)); /// magic constant
+		numOfSmooth = std::ceil(15 * std::sqrt(inSpectre.size() / 4096)); /// magic constant
 	}
 	std::valarray<double> result = inSpectre;
     double help1, help2;
 
-	std::vector<double> coefs{1., 1., 1.};
-	coefs.push_back(1. / std::accumulate(std::begin(coefs), std::end(coefs), 0.));
+	/// generalized
+//	static const std::vector<double> smoothC{1., 1., 1., 1./3.};
 
     for(int num = 0; num < numOfSmooth; ++num)
     {
@@ -2490,9 +2451,8 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
         {
             help2 = result[i];
 			result[i] = (help1 + help2 + result[i + 1]) / 3.;
-//			result[i] = (help1 * coefs[0] +
-//						help2 * coefs[1] +
-//						result[i + 1] * coefs[2]) * coefs[3].;
+			/// generalized
+//			result[i] = (help1 * smoothC[0] + help2 * smoothC[1] + result[i + 1] * smoothC[2]) * smoothC[3];
             help1 = help2;
         }
     }
@@ -2521,13 +2481,13 @@ matrix countSpectre(const matrix & inData,
 		h = 0;
 		for(int j = 0; j < data2.rows(); ++j)
 		{
-			if(std::abs(data2[j][i]) <= threshold) ++h; // generality 1/8.
+			if(std::abs(data2[j][i]) <= threshold) ++h; /// generality 1/8.
 		}
 		if(h == data2.rows()) eyes += 1;
 	}
 
 	if(
-	   ( (fftLen - eyes) < DEFS.getFreq() * 3. ) // real signal shorter than 3 sec
+	   ( (fftLen - eyes) < DEFS.getFreq() * 3. ) /// real signal shorter than 3 sec
 //	   || (eyes > 0.3 * fftLen) /// too much eyes
 	   )
 	{
@@ -2608,7 +2568,7 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 		signalNums.push_back(eogNum);
 	}
 
-	const uint Size = eogChannels.size() + 1; // usually 3
+	const uint Size = eogChannels.size() + 1; /// usually 3
 	matrix matrixInit(Size, Size);
 	matrix coefficients(eegChannels.size(), eogChannels.size());
 
@@ -2623,7 +2583,7 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 										dataE[ signalNums[j] ],
 										dataE[ signalNums[z] ])
 								   / dataE.cols();
-				// maybe (dataE.cols() - 1), but it's not important here
+				/// maybe (dataE.cols() - 1), but it's not important here
 				if(j != z)
 				{
 					matrixInit[z][j] = matrixInit[j][z];
@@ -2654,4 +2614,4 @@ std::valarray<double> (* refilter)(const std::valarray<double> & inputSignal,
 								  double srate) =
 		&butter::refilter;
 
-}// namespace myLib
+}/// namespace myLib

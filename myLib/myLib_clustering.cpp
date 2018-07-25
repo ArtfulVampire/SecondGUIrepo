@@ -52,7 +52,8 @@ double countAngle(double initX, double initY)
 		return atan(initY/initX) + M_PI;
 	}
 }
-/*
+
+#if 0
 void clustering::readFile(QString filePath)
 {
 
@@ -101,7 +102,7 @@ void clustering::readFile(QString filePath)
     }
     std::sort(dists.begin(), dists.end(), mySort);
 
-    // make first bound
+    /// make first bound
 	std::vector<int>::iterator it;
 
     boundDots[ dists[0][1] ] = true;
@@ -123,7 +124,7 @@ void clustering::readFile(QString filePath)
 	std::vector<std::vector<double> >::iterator itt;
     while (contains(isolDots.begin(), isolDots.end(), true))
     {
-        // adjust dists[i][3]
+        /// adjust dists[i][3]
 		for(std::vector<std::vector<double> >::iterator iit = dists.begin();
             iit < dists.end();
             ++iit)
@@ -139,11 +140,11 @@ void clustering::readFile(QString filePath)
 //            if((*iit)[3] >= 2)
 //            {
 //                dists.erase(iit);
-////                --iit; // :-)
+////                --iit; /// :-)
 //            }
         }
 
-        // set new bound ()
+        /// set new bound ()
         for(itt = dists.begin();
             itt < dists.end();
             ++itt)
@@ -175,8 +176,7 @@ void clustering::readFile(QString filePath)
 	std::cout << newD << std::endl;
 
 }
-
-*/
+#endif
 
 
 
@@ -199,10 +199,10 @@ const int input)
         {
             if(i != input && j != input) continue;
 
-            helpDist = pow( pow(testCoords[i].first - testCoords[j].first, 2)
-                            + pow(testCoords[i].second - testCoords[j].second, 2), 0.5);
+			helpDist = std::pow( std::pow(testCoords[i].first - testCoords[j].first, 2)
+							+ std::pow(testCoords[i].second - testCoords[j].second, 2), 0.5);
             dist[i][j] = helpDist;
-            dist[j][i] = helpDist; // unneeded?
+            dist[j][i] = helpDist; /// unneeded?
         }
     }
 }
@@ -222,10 +222,10 @@ void refreshDistAll(mat & distNew,
     {
         for(int j = i+1; j < numRow; ++j)
         {
-            helpDist = pow( pow(plainCoords[i].first - plainCoords[j].first, 2)
-                            + pow(plainCoords[i].second - plainCoords[j].second, 2), 0.5);
+			helpDist = std::pow( std::pow(plainCoords[i].first - plainCoords[j].first, 2)
+							+ std::pow(plainCoords[i].second - plainCoords[j].second, 2), 0.5);
             distNew[i][j] = helpDist;
-            distNew[j][i] = helpDist;  // unneeded?
+            distNew[j][i] = helpDist;  /// unneeded?
         }
     }
 }
@@ -292,16 +292,16 @@ void moveCoordsGradient(coordType & plainCoords,
     while(1)
     {
         errorBackup = errorSammon(distOld, distNew);
-        // a bit move coords
+        /// a bit move coords
         for(int i = 0; i < size; ++i)
         {
             plainCoords[i].first -= gradient[2 * i] * lambda;
             plainCoords[i].second -= gradient[2 * i+1] * lambda;
         }
-        // count new dists
+        /// count new dists
         refreshDistAll(distNew, plainCoords);
 
-        // if became worse - go back
+        /// if became worse - go back
         if(errorBackup < errorSammon(distOld, distNew))
         {
             for(int i = 0; i < size; ++i)
@@ -319,7 +319,7 @@ void moveCoordsGradient(coordType & plainCoords,
 }
 
 double errorSammon(const mat & distOld,
-                   const mat & distNew) // square matrices
+                   const mat & distNew) /// square matrices
 {
     int size = distOld.size();
 	//    std::cout << "errorSammon size = " << size << std::endl;
@@ -328,7 +328,7 @@ double errorSammon(const mat & distOld,
     {
         for(int j = i+1; j < size; ++j)
         {
-            res += pow(distOld[i][j] - distNew[i][j], 2.) / pow(distOld[i][j], 2.);
+			res += std::pow(distOld[i][j] - distNew[i][j], 2.) / std::pow(distOld[i][j], 2.);
         }
     }
     return res;
@@ -338,14 +338,14 @@ double errorSammon(const mat & distOld,
 
 double errorSammonAdd(const mat & distOld,
                       const mat & distNew,
-					  const std::vector<int> & placedDots) // square matrices
+					  const std::vector<int> & placedDots) /// square matrices
 {
     double res = 0.;
     for(unsigned int i = 0; i < placedDots.size(); ++i)
     {
         for(unsigned int j = i+1; j < placedDots.size(); ++j)
         {
-            res += pow(distOld[i][j] - distNew[i][j], 2.) / pow(distOld[i][j], 2.);
+			res += std::pow(distOld[i][j] - distNew[i][j], 2.) / std::pow(distOld[i][j], 2.);
         }
     }
     return res;
@@ -366,30 +366,30 @@ void countInvHessianAddDot(const mat & distOld,
     for(unsigned int j = 0; j < placedDots.size() - 1; ++j)
     {
 		const int i = placedDots[j];
-        // dydy
+        /// dydy
         invHessian[0][0] +=
                 2. * (distOld[i][b] *
-                      (pow(distNew[i][b], -3.) *
-                       pow(crds.back().second - crds[j].second, 2.) -
-                       pow(distNew[i][b], -1.)
+					  (std::pow(distNew[i][b], -3.) *
+					   std::pow(crds.back().second - crds[j].second, 2.) -
+					   std::pow(distNew[i][b], -1.)
                        )
                       + 1.)
-                * pow(distOld[i][b], -2.);
-        // dxdx
+				* std::pow(distOld[i][b], -2.);
+        /// dxdx
         invHessian[1][1] +=
                 2. * (distOld[i][b] *
-                      (pow(distNew[i][b], -3.) *
-                       pow(crds.back().first - crds[j].first, 2.) -
-                       pow(distNew[i][b], -1.)
+					  (std::pow(distNew[i][b], -3.) *
+					   std::pow(crds.back().first - crds[j].first, 2.) -
+					   std::pow(distNew[i][b], -1.)
                        )
                       + 1.)
-                * pow(distOld[i][b], -2.);
+				* std::pow(distOld[i][b], -2.);
         invHessian[0][1] +=
                 -2. * distOld[i][b] *
-                pow(distNew[i][b], -3.) *
+				std::pow(distNew[i][b], -3.) *
                 (crds.back().first - crds[j].first) *
                 (crds.back().second - crds[j].second)
-                * pow(distOld[i][b], -2.);
+				* std::pow(distOld[i][b], -2.);
     }
     invHessian[1][0] = invHessian[0][1];
 
@@ -408,7 +408,7 @@ void countGradientAddDot(const mat & distOld,
                          const mat & distNew,
 						 const coordType & crds,
 						 const std::vector<int> & placedDots,
-						 std::vector<double>  & gradient) // gradient for one dot
+						 std::vector<double>  & gradient) /// gradient for one dot
 {
 	const int b = placedDots.back();
     gradient[0] = 0.;
@@ -421,26 +421,26 @@ void countGradientAddDot(const mat & distOld,
                 2. * (1. - distOld[i][b] /
                       distNew[i][b]) *
                 (crds.back().first - crds[j].first)
-                * pow(distOld[i][b], -2.);
+				* std::pow(distOld[i][b], -2.);
         gradient[1] +=
                 2. * (1. - distOld[i][b] /
                       distNew[i][b]) *
                 (crds.back().second - crds[j].second)
-                * pow(distOld[i][b], -2.);
+				* std::pow(distOld[i][b], -2.);
     }
 
 }
 
-void countDistNewAdd(mat & distNew, // change only last coloumn
+void countDistNewAdd(mat & distNew, /// change only last coloumn
 					 const coordType & crds,
 					 const std::vector<int> & placedDots)
 {
-	const int b = placedDots.back(); // placedDots[placedDots.size() - 1];
+	const int b = placedDots.back(); /// placedDots[placedDots.size() - 1];
     for(unsigned int i = 0; i < placedDots.size() - 1; ++i)
     {
 		const int a = placedDots[i];
-        distNew[a][b] = pow(pow(crds[i].first  - crds.back().first , 2) +
-                            pow(crds[i].second - crds.back().second, 2),
+		distNew[a][b] = std::pow(std::pow(crds[i].first  - crds.back().first , 2) +
+							std::pow(crds[i].second - crds.back().second, 2),
                             0.5);
         distNew[b][a] = distNew[a][b];
     }
@@ -448,19 +448,19 @@ void countDistNewAdd(mat & distNew, // change only last coloumn
 }
 
 void sammonAddDot(const mat & distOld,
-                  mat & distNew, // change only last coloumn
+                  mat & distNew, /// change only last coloumn
 				  coordType & plainCoords,
 				  const std::vector<int> & placedDots)
 {
     const int addNum = placedDots.size() - 1;
-    // set initial place
+    /// set initial place
     double helpX = 0.;
     double helpY = 0.;
     double sumW = 0.;
     double currW = 0.;
     for(int i = 0; i < addNum; ++i)
     {
-        currW = pow(distOld[placedDots[i]][placedDots.back()], -2.);
+		currW = std::pow(distOld[placedDots[i]][placedDots.back()], -2.);
         sumW += currW;
         helpX += plainCoords[i].first  * currW;
         helpY += plainCoords[i].second * currW;
@@ -470,14 +470,14 @@ void sammonAddDot(const mat & distOld,
 
 	plainCoords.push_back(std::make_pair(helpX, helpY));
 
-	// std::cout all the dots
+	/// std::cout all the dots
 
 
 
-    // gradien descent
+    /// gradien descent
 	std::vector<double> gradient;
     gradient.resize(2);
-    mat invHessian; // matrix 2x2
+    mat invHessian; /// matrix 2x2
     invHessian.resize(2);
     invHessian[0].resize(2);
     invHessian[1].resize(2);
@@ -485,7 +485,7 @@ void sammonAddDot(const mat & distOld,
     double tmpError1 = 0.;
     double tmpError2 = 0.;
 
-    // count initial error
+    /// count initial error
     countDistNewAdd(distNew,
                     plainCoords,
                     placedDots);
@@ -551,7 +551,7 @@ void sammonProj(const mat & distOld,
     srand(time(NULL));
     int size = distOld.size();
 
-    mat distNew; // use only higher triangle
+    mat distNew; /// use only higher triangle
     distNew.resize(size);
     for(int i = 0; i < size; ++i)
     {
@@ -561,8 +561,8 @@ void sammonProj(const mat & distOld,
 	std::vector< std::pair <double, double> > plainCoords;
     //    plainCoords.resize(size);
 
-    // find three most distant points
-    // precise
+    /// find three most distant points
+    /// precise
     int num1 = -1;
     int num2 = -1;
     int num3 = -1;
@@ -596,15 +596,15 @@ void sammonProj(const mat & distOld,
         }
     }
 	//    std::cout << "maxDist = " << maxDist << std::endl;
-    // count third dot coords
-    double tm = (pow(distOld[num1][num3], 2.) +
-                 pow(distOld[num1][num1], 2.) -
-                 pow(distOld[num2][num3], 2.)
+    /// count third dot coords
+	double tm = (std::pow(distOld[num1][num3], 2.) +
+				 std::pow(distOld[num1][num1], 2.) -
+				 std::pow(distOld[num2][num3], 2.)
                  ) * 0.5 / distOld[num1][num2];
 	//    std::cout << "tm = " << tm << std::endl;
 	plainCoords.push_back(std::make_pair(tm,
-                                    pow( pow(distOld[num1][num3], 2.) -
-                                         pow(tm, 2.),
+									std::pow( std::pow(distOld[num1][num3], 2.) -
+										 std::pow(tm, 2.),
                                          0.5)
                                     )
                           );
@@ -625,7 +625,7 @@ void sammonProj(const mat & distOld,
     for(int addNum = 3; addNum < size; ++addNum)
     {
         maxDist = 0.;
-        // search max distant dot
+        /// search max distant dot
         for(int i = 0; i < size; ++i)
         {
             if(std::find(placedDots.begin(),
@@ -646,10 +646,10 @@ void sammonProj(const mat & distOld,
         }
 		//        std::cout << "newDotNum = " << num3 << std::endl;
 
-        // place this dot
+        /// place this dot
         placedDots.push_back(num3);
         sammonAddDot(distOld, distNew, plainCoords, placedDots);
-        if(addNum >= int(sqrt(size)))
+		if(addNum >= int(std::sqrt(size)))
         {
             //// TODO
             //            adjustSkeletonDots(distOld, distNew, plainCoords, placedDots);
@@ -674,11 +674,11 @@ void sammonProj(const mat & distOld,
 
 void drawSammon(const coordType & plainCoords,
 				const std::vector<int> & types,
-				const QString & picPath) // uses coords array
+				const QString & picPath) /// uses coords array
 {
 
 	const int NumberOfVectors = plainCoords.size();
-	// draw the points
+	/// draw the points
 	QPixmap pic(1200, 1200);
 	pic.fill();
 	QPainter painter;
@@ -723,7 +723,7 @@ void drawSammon(const coordType & plainCoords,
 	double drawX = 0.;
 	double drawY = 0.;
 
-	// count half of points for right angle
+	/// count half of points for right angle
 	double sumAngle1 = 0.;
 	double sumAngle2 = 0.;
 	double maxLeng = 0;
@@ -732,11 +732,11 @@ void drawSammon(const coordType & plainCoords,
 		sum1 = plainCoords[i].first;
 		sum2 = plainCoords[i].second;
 
-		// relative coordinates (centroid)
+		/// relative coordinates (centroid)
 		initX = sum1 - avX;
 		initY = sum2 - avY;
 
-		leng = pow(pow(initX, 2.) + pow(initY, 2.), 0.5);
+		leng = std::pow(std::pow(initX, 2.) + std::pow(initY, 2.), 0.5);
 		maxLeng = fmax(leng, maxLeng);
 
 		angle = countAngle(initX, initY);
@@ -819,7 +819,7 @@ void drawSammon(const coordType & plainCoords,
 		initX = sum1 - avX;
 		initY = -(sum2 - avY);
 
-		leng = pow(pow(initX, 2.) + pow(initY, 2.), 0.5);
+		leng = std::pow(std::pow(initX, 2.) + std::pow(initY, 2.), 0.5);
 		angle = countAngle(initX, initY);
 
 		angle -= sumAngle1;
@@ -852,7 +852,7 @@ void drawShepard(const mat & distOld,
 {
 	//    std::cout << distNew << std::endl;
 	const int num = distOld.size();
-	// draw the points
+	/// draw the points
 	QPixmap pic(1200, 1200);
 	pic.fill();
 	QPainter painter;

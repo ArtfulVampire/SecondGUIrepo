@@ -59,9 +59,7 @@ void FeedbackClass::checkStatTimes(taskType typ, ansType howSolved)
 	(*ostr) << "\t";
 
 	(*ostr)
-//			  << "av.acceleration = "
 			  << (smLib::mean(vals1) - smLib::mean(vals2)) / smLib::mean(vals1) << "\t"
-//			  << std::endl
 				 ;
 }
 
@@ -74,12 +72,9 @@ void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 	(*ostr)
 			<< num1 << "\t"
 			<< num2 << "\t"
-//			<< "p-value = "
 			<< a << "\t"
 			<< (a <= 0.05) << "\t"
-//			<< "improvement = "
 			<< double(num2 - num1) / num1 << "\t"
-//			<< std::endl
 			   ;
 }
 
@@ -97,11 +92,8 @@ void FeedbackClass::checkStatInsight(double thres)
 	(*ostr)
 			<< num1 << "\t"
 			<< num2 << "\t"
-//			<< "p-value = "
 			<< a << "\t"
 			<< (a <= 0.05) << "\t"
-//			<< "improvement = "
-//			<< std::endl
 			   ;
 
 	/// of solved
@@ -109,11 +101,8 @@ void FeedbackClass::checkStatInsight(double thres)
 	(*ostr)
 			<< num1 / double(numAll1) << "\t"
 			<< num2 / double(numAll2) << "\t"
-//			<< "p-value = "
 			<< b << "\t"
 			<< (b <= 0.05) << "\t"
-//			<< "improvement = "
-//			<< std::endl
 			   ;
 }
 
@@ -142,7 +131,6 @@ void FeedbackClass::writeDists(ansType howSolved)
 			double a = files[static_cast<int>(fileNum::first)].distSpec(taskType(i), taskType(j), howSolved);
 			double b = files[static_cast<int>(fileNum::third)].distSpec(taskType(i), taskType(j), howSolved);
 			(*ostr)
-//					<< std::setprecision(4)
 					<< a << "\t"
 					<< b << "\t"
 					<< (b - a) / a << "\t";
@@ -158,7 +146,6 @@ void FeedbackClass::writeDispersions(ansType howSolved)
 		double a = files[static_cast<int>(fileNum::first)].spectreDispersion(typ, howSolved);
 		double b = files[static_cast<int>(fileNum::third)].spectreDispersion(typ, howSolved);
 		(*ostr)
-//				<< std::setprecision(4)
 				<< a << "\t"
 				<< b << "\t"
 				<< (b - a) / a << "\t";
@@ -171,7 +158,6 @@ void FeedbackClass::writeDispersions(ansType howSolved)
 		double a = files[static_cast<int>(fileNum::first)].spectreDispersionWinds(typ, howSolved);
 		double b = files[static_cast<int>(fileNum::third)].spectreDispersionWinds(typ, howSolved);
 		(*ostr)
-//				<< std::setprecision(4)
 				<< a << "\t"
 				<< b << "\t"
 				<< (b - a) / a << "\t";
@@ -235,7 +221,6 @@ void FeedbackClass::writeClass(bool aplhaOnly)
 		double a = files[static_cast<int>(fileNum::first)].classifyReals(aplhaOnly).first;
 		double b = files[static_cast<int>(fileNum::third)].classifyReals(aplhaOnly).first;
 		(*ostr)
-//				<< std::setprecision(3)
 				<< a << "\t"
 				<< b << "\t"
 				<< (b - a) / a << "\t";
@@ -247,7 +232,6 @@ void FeedbackClass::writeClass(bool aplhaOnly)
 		double a = files[static_cast<int>(fileNum::first)].classifyWinds(aplhaOnly).first;
 		double b = files[static_cast<int>(fileNum::third)].classifyWinds(aplhaOnly).first;
 		(*ostr)
-//				<< std::setprecision(3)
 				<< a << "\t"
 				<< b << "\t"
 				<< (b - a) / a << "\t";
@@ -370,7 +354,7 @@ void FeedbackClass::writeFile()
 
 	for(int i : {static_cast<int>(fileNum::first), static_cast<int>(fileNum::third)})
 	{
-		for(int j = 0; j < 2; ++j) // taskType
+		for(int j = 0; j < 2; ++j) /// taskType
 		{
 
 			outStr << std::fixed;
@@ -404,4 +388,4 @@ void FeedbackClass::writeFile()
 	}
 	outStr.close();
 }
-} // end namespace fb
+} /// end namespace fb

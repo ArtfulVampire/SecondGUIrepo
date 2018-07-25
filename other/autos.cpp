@@ -25,7 +25,7 @@ matrix makeTestData(const QString & outPath)
 {
 	matrix testSignals(8, 250 * 60 * 3); /// 3 min
 
-	// signals
+	/// signals
 	double helpDouble;
 	double x, y;
 
@@ -35,31 +35,31 @@ matrix makeTestData(const QString & outPath)
 
 	for(int i = 0; i < testSignals.cols(); ++i)
 	{
-		helpDouble = 2. * pi * i / DEFS.getFreq() * 12.5; // 12.5 Hz ~ 20 bins per period
-		testSignals[0][i] = sin(helpDouble); // sine
+		helpDouble = 2. * pi * i / DEFS.getFreq() * 12.5; /// 12.5 Hz ~ 20 bins per period
+		testSignals[0][i] = sin(helpDouble); /// sine
 
-		testSignals[1][i] = (i + 2) % 29;      // saw
+		testSignals[1][i] = (i + 2) % 29;      /// saw
 
-		testSignals[2][i] = (i % 26 >= 13); // rectangle
-
-		x = distr(gen);
-		y = distr(gen);
-		testSignals[3][i] = sqrt(-2. * log(x)) * cos(2. * pi * y); // gauss?
-
-		testSignals[4][i] = std::abs(i % 22 - 11); // triangle
-
-		testSignals[5][i] = rand() % 27; // noise
+		testSignals[2][i] = (i % 26 >= 13); /// rectangle
 
 		x = distr(gen);
 		y = distr(gen);
-		testSignals[6][i] = sqrt(-2. * log(x)) * cos(2. * pi * y); // gauss?
+		testSignals[3][i] = std::sqrt(-2. * std::log(x)) * cos(2. * pi * y); /// gauss?
 
-		testSignals[7][i] = pow(rand() % 13, 3); // non-white noise
+		testSignals[4][i] = std::abs(i % 22 - 11); /// triangle
+
+		testSignals[5][i] = rand() % 27; /// noise
+
+		x = distr(gen);
+		y = distr(gen);
+		testSignals[6][i] = std::sqrt(-2. * std::log(x)) * cos(2. * pi * y); /// gauss?
+
+		testSignals[7][i] = std::pow(rand() % 13, 3); /// non-white noise
 	}
 
 
 	double sum1, sum2;
-	// normalize by dispersion = coeff
+	/// normalize by dispersion = coeff
 	double coeff = 10.;
 	for(int i = 0; i < testSignals.rows(); ++i)
 	{
@@ -67,7 +67,7 @@ matrix makeTestData(const QString & outPath)
 		sum2 = smLib::variance(testSignals[i]);
 
 		testSignals[i] -= sum1;
-		testSignals[i] /= sqrt(sum2);
+		testSignals[i] /= std::sqrt(sum2);
 		testSignals[i] *= coeff;
 
 	}
@@ -79,7 +79,7 @@ matrix makeTestData(const QString & outPath)
 	testSignals = pewM * testSignals;
 
 	myLib::writePlainData(outPath, testSignals);
-	myLib::writePlainData(outPath + "_", testSignals.resizeCols(2000)); // edit out time
+	myLib::writePlainData(outPath + "_", testSignals.resizeCols(2000)); /// edit out time
 	return pewM;
 }
 
@@ -114,7 +114,7 @@ void clustering()
 	std::vector<int> types;
 	types.resize(numRow);
 
-	std::vector<std::vector<double>> dists; // distance, i, j,
+	std::vector<std::vector<double>> dists; /// distance, i, j,
 
 	std::vector<double> temp(4);
 
@@ -146,7 +146,7 @@ void clustering()
 	clust::sammonProj(distOld, types,
 					  "/media/Files/Data/Mati/sammon.jpg");
 #if 0
-	// test
+	/// test
 
 	const int N = 15;
 	const int dim = 2;
@@ -187,8 +187,6 @@ void clustering()
 		}
 	}
 
-//    std::cout << distOld << std::endl;
-
 	sammonProj(distOld, types,
 			   "/media/Files/Data/Mati/sammon.jpg");
 
@@ -201,9 +199,9 @@ return;
 
 
 #if 0
-	// smallest tree
+	/// smallest tree
 	std::sort(dists.begin(), dists.end(), mySort);
-	// make first bound
+	/// make first bound
 
 	boundDots[ dists[0][1] ] = true;
 	isolDots[ dists[0][1] ] = false;
@@ -219,7 +217,7 @@ return;
 	std::vector<std::vector<double> >::iterator itt;
 	while (contains(isolDots.begin(), isolDots.end(), true))
 	{
-		// adjust dists[i][3]
+		/// adjust dists[i][3]
 		for(std::vector<std::vector<double> >::iterator iit = dists.begin();
 			iit < dists.end();
 			++iit)
@@ -234,7 +232,7 @@ return;
 			}
 		}
 
-		// set new bound ()
+		/// set new bound ()
 		for(itt = dists.begin();
 			itt < dists.end();
 			++itt)
@@ -250,27 +248,26 @@ return;
 
 		(*itt)[3] = 2;
 		newDists.push_back(*itt);
-
-//        for(int j = 0; j < 3; ++j)
-//        {
-//            std::cout << (*itt)[j] << '\t';
-//        }
-//        std::cout << std::endl;
+#if 0
+		/// cout something
+		for(int j = 0; j < 3; ++j)
+		{
+			std::cout << (*itt)[j] << '\t';
+		}
+		std::cout << std::endl;
+#endif
 	}
 	std::sort(newDists.begin(), newDists.end(), mySort);
-	vector<double> newD;
+	std::vector<double> newD;
 	for(int i = 0; i < newDists.size(); ++i)
 	{
 		newD.push_back(newDists[i][0]);
 	}
-//    std::cout << newD << std::endl;
 
 
-//    helpString = "/media/Files/Data/Mati/clust.jpg";
-//    kernelEst(newD.data(), newD.size(), helpString);
-//    helpString = "/media/Files/Data/Mati/clustH.jpg";
-//    histogram(newD.data(), newD.size(), 40).save(helpString, 0, 100);
+	myLib::kernelEst(smLib::vecToValar(newD)).save("/media/Files/Data/Mati/clust.jpg", 0, 100);
+	myLib::histogram(smLib::vecToValar(newD), 40).save("/media/Files/Data/Mati/clustH.jpg", 0, 100);
 #endif
 }
 
-} // end namespace autos
+} /// end namespace autos

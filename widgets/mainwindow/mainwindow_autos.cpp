@@ -21,15 +21,6 @@ matrix countEvoked(const std::vector<matrix> & inData, int length)
 	return res;
 }
 
-
-//Classifier::avType MainWindow::classifyOneFile(const QString & filePath)
-//{
-//	edfFile fil;
-//	fil.readEdfFile(filePath);
-//	auto reals = myLib::sliceData(fil.getData(), fil.getMarkers(), {241, 247, 254});
-
-//}
-
 void MainWindow::drawWeights(const QString & wtsPath,
 							 const QString & spectraPath,
 							 const QString & outPath,
@@ -114,7 +105,7 @@ void MainWindow::testSuccessive2()
 		Net * net = new Net();
 
 		net->setSource("w");
-		net->setMode("t"); // train-test
+		net->setMode("t"); /// train-test
 
 		std::cout << name << std::endl;
 		res.push_back(
@@ -146,7 +137,7 @@ void MainWindow::testSuccessive(const std::vector<double> & vals)
 
 
 	ui->windowLengthSpinBox->setValue(windLength);
-	ui->windsButton->setChecked(true); // sliceWindFromReal
+	ui->windsButton->setChecked(true); /// sliceWindFromReal
 
 	for(QString name : names)
 	{
@@ -213,7 +204,7 @@ void MainWindow::testSuccessive(const std::vector<double> & vals)
 
 		net->setClassifier(ModelType::ANN);
 		net->setSource("w");
-		net->setMode("t"); // train-test
+		net->setMode("t"); /// train-test
 
 		std::cout << name << std::endl;
 		net->successiveProcessing();

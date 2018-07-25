@@ -32,9 +32,13 @@ double quantile(double alpha);
 double normalCumulative(double zVal);
 
 double rankit(int i, int length, double k = 0.375);
-// bool gaussApproval(double * arr, int length); // not finished?
-// bool gaussApproval(QString filePath); // not finished?
-// bool gaussApproval2(double * arr, int length); // not finished?
+
+#if 0
+/// normality tests
+bool gaussApproval(double * arr, int length);	/// not finished?
+bool gaussApproval(QString filePath);			/// not finished?
+bool gaussApproval2(double * arr, int length);	/// not finished?
+#endif
 
 
 
@@ -79,7 +83,7 @@ double covariance (const Typ & arr1,
 
 
 void drawRCP(const std::valarray<double> & values,
-			 const QString & picPath);
+			 const QString & picPath); /// what is it?
 void countRCP(QString filename,
 			  QString picPath  = QString(),
 			  double * outMean = nullptr,
@@ -95,4 +99,4 @@ int binomialLimitOfSignificance(int n, double successRate, double pval);
 
 }
 
-#endif // STATISTICS_H
+#endif /// STATISTICS_H

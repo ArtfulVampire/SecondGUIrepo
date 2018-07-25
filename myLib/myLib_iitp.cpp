@@ -15,7 +15,7 @@ namespace iitp
 std::complex<double> gFunc(const std::complex<double> & in)
 {
 
-	return (1 - pow(std::abs(in), 2)) * pow(atanh(std::abs(in)), 2) / std::norm(in);
+	return (1 - std::pow(std::abs(in), 2)) * std::pow(atanh(std::abs(in)), 2) / std::norm(in);
 }
 
 QPixmap phaseDifferences(const std::valarray<double> & sig1,
@@ -75,7 +75,6 @@ std::valarray<std::complex<double>> coherenciesUsual(const std::valarray<double>
 
 
 	using specType = std::valarray<std::complex<double>>;
-//	specType res{};
 	specType av11{};
 	specType av12{};
 	specType av22{};
@@ -172,11 +171,13 @@ std::complex<double> iitpData::coherency(int chan1, int chan2, double freq)
 											  this->crossSpectra[chan2][chan2]);
 		mscoherencies[chan1][chan2] = std::pow(smLib::abs(coherencies[chan1][chan2]), 2.);
 
-		/// crutch
-//		if(mscoherencies[chan1][chan2].max() > 1.0)
-//		{
-//			mscoherencies[chan1][chan2] = 0.;
-//		}
+#if 0
+		/// crutch for large values
+		if(mscoherencies[chan1][chan2].max() > 1.0)
+		{
+			mscoherencies[chan1][chan2] = 0.;
+		}
+#endif
 	}
 	int index = freq / getSpStepW();
 	return coherencies[chan1][chan2][index];
@@ -428,7 +429,7 @@ void iitpData::countContiniousTaskSpectra()
 	std::valarray<double> spec(localFftLen);
 
 	this->cutPieces(localFftLen / double(this->srate));
-//	this->setFftLen(localFftLen);
+//	this->setFftLen(localFftLen); /// needed ?
 	this->countPiecesFFT();
 	for(int i = 0; i < numCh; ++i)
 	{
@@ -442,22 +443,24 @@ void iitpData::countContiniousTaskSpectra()
 				  std::begin(spec) + rightInd,
 				  std::begin(spectre) + i * spLen);
 	}
-	int num = this->getFileNum();
-	QString add = iitp::trialTypesNames[trialTypes[num]];
 
 	myLib::writeFileInLine(def::iitpResFolder
 						   + "/" + this->getGuy()
 						   + "/sp"
 						   + "/" + this->getInit()
-						   + "_" + iitp::trialTypesNames[iitp::trialTypes[this->getFileNum()]]
+						   + "_" + iitp::trialTypesNames[ iitp::trialTypes[this->getFileNum()] ]
 						   + "_sp.txt",
 						   spectre);
 
-//	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
-//	templ = myLib::drw::drawArray(templ, spectre);
-//	templ.save(def::iitpResFolder + "/" + this->getGuy()
-//			   + "/pic"
-//			   + "/" + this->getInit() + ".jpg", 0, 100);
+#if 0
+	/// draw spectre
+	QString add = iitp::trialTypesNames[ iitp::trialTypes[this->getFileNum()] ];
+	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
+	templ = myLib::drw::drawArray(templ, spectre);
+	templ.save(def::iitpResFolder + "/" + this->getGuy()
+			   + "/pic"
+			   + "/" + this->getInit() + ".jpg", 0, 100);
+#endif
 }
 
 
@@ -493,12 +496,14 @@ void iitpData::countContiniousTaskSpectraW(const QString & resPath, double overl
 						   + "_" + iitp::trialTypesNames[iitp::trialTypes[this->getFileNum()]]
 						   + "_sp.txt",
 						   spectre);
-
-//	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
-//	templ = myLib::drw::drawArray(templ, spectre);
-//	templ.save(def::iitpResFolder + "/" + this->getGuy()
-//			   + "/pic"
-//			   + "/" + this->getInit() + ".jpg", 0, 100);
+#if 0
+	/// draw winds spectre
+	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
+	templ = myLib::drw::drawArray(templ, spectre);
+	templ.save(def::iitpResFolder + "/" + this->getGuy()
+			   + "/pic"
+			   + "/" + this->getInit() + ".jpg", 0, 100);
+#endif
 }
 
 void iitpData::countFlexExtSpectra(int mark1, int mark2)
@@ -589,7 +594,6 @@ void iitpData::countFlexExtSpectraW(const QString & resPath, int mark1, int mark
 
 	/// flexion
 	this->setPiecesW(mark1, mark2, overlap);
-//	std::cout << this->getFileNam() << "\t" << this->piecesData.size() << std::endl;
 	for(int i = 0; i < numCh; ++i)
 	{
 		spec = 0.;
@@ -640,12 +644,14 @@ void iitpData::countFlexExtSpectraW(const QString & resPath, int mark1, int mark
 						   + "/" + this->getInit() + joint + "_extension_sp.txt",
 						   spectre);
 
-
-//	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
-//	templ = myLib::drw::drawArrays(templ, spectra);
-//	templ.save(def::iitpResFolder + "/" + this->getGuy()
-//			   + "/pic"
-//			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
+#if 0
+	/// draw spectre
+	QPixmap templ = myLib::drw::drawTemplate(true, leftFr, rightFr, numCh);
+	templ = myLib::drw::drawArrays(templ, spectra);
+	templ.save(def::iitpResFolder + "/" + this->getGuy()
+			   + "/pic"
+			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
+#endif
 }
 
 int gonioMinMarker(int numGonioChan)
@@ -795,7 +801,7 @@ iitpData & iitpData::staging(const QString & chanName,
 	int start = 0;
 
 	std::ofstream of("/media/Files/Data/iitp/out.txt", std::ios_base::app);
-	for(uint i = 0; i < chan.size() - 1; ++i) // -1 for stability
+	for(uint i = 0; i < chan.size() - 1; ++i) /// -1 for stability
 	{
 
 		if(sign(chan[i]) != currSign)
@@ -921,13 +927,10 @@ iitpData & iitpData::staging(const QString & chanName,
 int iitpData::setFftLen()
 {
 	int res = 0;
-//	std::cout << this->ExpName << std::endl;
 	for(const auto & in : this->piecesData)
 	{
 		res = std::max(smLib::fftL(in.cols()), res);
-//		std::cout << res << "\t";
 	}
-//	std::cout << std::endl;
 	this->fftLen = res;
 	this->spStep = this->srate / double(this->fftLen);
 	return res;
@@ -954,21 +957,21 @@ forMap::forMap(const iitp::iitpData::mscohsType & in,
 	fileType = typ;
 	gonio = gon;
 
-
-
 	fmChans.clear();
-	for(QString emgNam : iitp::forMapEmgNames)
+	for(const QString & emgNam : iitp::forMapEmgNames)
 	{
-//			auto a = inFile.findChannel(emgNam);
-//			if(a != -1)
-//			{
-//				fmChans.push_back(a);
-//			}
+#if 0
+		/// bad channel numbers workaround moved somewhere - forMap::isBad ?
+		auto a = inFile.findChannel(emgNam);
+		if(a != -1)
+		{
+			fmChans.push_back(a);
+		}
+#endif
 		fmChans.push_back(inFile.findChannel(emgNam));
 	}
 
 	/// new 28.11.17 - EXPERIMENTAL
-//		std::cout << fmChans << std::endl;
 	forMapRanges.resize(iitp::forMapEmgNames.size());
 	for(uint i = 0; i < forMapRanges.size(); ++i) /// i ~ EMG channel
 	{
@@ -998,16 +1001,26 @@ forMap::forMap(const iitp::iitpData::mscohsType & in,
 									 << " rhythm " << iitp::forMapRangeNames[j]
 										<< std::endl;
 					}
-//						pewpew.meanVal[eegNum] += val;
-//						pewpew.maxVal[eegNum] = std::max(pewpew.maxVal[eegNum], val);
 
+#if 0
+					/// old
+					pewpew.meanVal[eegNum] += val;
+					pewpew.maxVal[eegNum] = std::max(pewpew.maxVal[eegNum], val);
+#else
+					/// new, incapsulated
 					pewpew.setMeanVal(eegNum, val);
 					pewpew.setMaxVal(eegNum,
 									 std::max(pewpew.getMaxVal(eegNum), val));
+#endif
 				}
 			}
-//				pewpew.meanVal /= pewpew.rightLim - pewpew.leftLim;
+#if 0
+			/// old
+			pewpew.meanVal /= pewpew.rightLim - pewpew.leftLim;
+#else
+			/// new, incapsulated
 			pewpew.meanValDivide(pewpew.rig() - pewpew.lef());
+#endif
 		}
 	}
 
@@ -1023,9 +1036,6 @@ forMap::forMap(const iitp::iitpData::mscohsType & in,
 				const fmRange & pewpew = forMapRanges[i][j];
 
 				std::cout << fileNum << " " << i << " " << j << " : " << std::endl;
-//					std::cout << pewpew.meanVal << std::endl;
-//					std::cout << pewpew.maxVal << std::endl;
-
 				std::cout << pewpew.getMeanVal() << std::endl;
 				std::cout << pewpew.getMaxVal() << std::endl;
 			}
@@ -1042,12 +1052,14 @@ bool forMap::isBad(int numEmg) const
 	/// may not have such Emg channel
 	/// OR it is not interesting EMG,
 	/// i.e. the signal may be bad and coherencies weren't calced
-	///
-//		std::cout << "isGood(" << numEmg << "):" << std::endl;
-//		std::cout << "num of chan (should != -1) " << fmChans[numEmg] << std::endl;
-//		std::cout << "is emg in interest chans? " << myLib::contains(iitp::interestEmg[fileNum],
-//																	 myLib::indexOfVal(iitp::emgNames,
-//																					   iitp::forMapEmgNames[numEmg])) << std::endl;
+#if 0
+	/// cout where exactly is bad
+	std::cout << "isGood(" << numEmg << "):" << std::endl;
+	std::cout << "num of chan (should != -1) " << fmChans[numEmg] << std::endl;
+	std::cout << "is emg in interest chans? " << myLib::contains(iitp::interestEmg[fileNum],
+																 myLib::indexOfVal(iitp::emgNames,
+																				   iitp::forMapEmgNames[numEmg])) << std::endl;
+#endif
 	return (fmChans[numEmg] == -1) ||
 			(!myLib::contains(iitp::interestEmg[fileNum],
 							 myLib::indexOfVal(iitp::emgNames,
@@ -1055,4 +1067,4 @@ bool forMap::isBad(int numEmg) const
 }
 
 
-} // namespace iitp
+} /// namespace iitp

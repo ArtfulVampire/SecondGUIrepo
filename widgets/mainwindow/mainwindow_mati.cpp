@@ -31,7 +31,7 @@ void MainWindow::markerGetSlot()
 
 	for(int h = 0; h < 16; ++h)
 	{
-		byteMarker[16-1 - h] = (marker%(int(pow(2, h+1)))) / (int(pow(2,h)));
+		byteMarker[16-1 - h] = (marker%(int(std::pow(2, h+1)))) / (int(std::pow(2,h)));
 	}
 
 	helpString.clear();
@@ -67,14 +67,14 @@ void MainWindow::markerSetDecValueSlot()
 	for(int h = 0; h < 8; ++h)
 	{
 		if(helpString[h] != '0' && helpString[h] != '1') return;
-		marker += pow(2, 8) * (helpString[h] == '1') * pow(2, 7-h);
+		marker += std::pow(2, 8) * (helpString[h] == '1') * std::pow(2, 7-h);
 	}
 
 	helpString = ui->markerBin1LineEdit->text();
 	for(int h = 0; h < 8; ++h)
 	{
 		if(helpString[h] != '0' && helpString[h] != '1') return;
-		marker += (helpString[h] == '1') * pow(2, 7-h);
+		marker += (helpString[h] == '1') * std::pow(2, 7-h);
 	}
 	ui->markerDecimalLineEdit->setText(nm(marker));
 }
@@ -109,9 +109,8 @@ void MainWindow::matiPreprocessingSlot()
 	/// SPLIT INTO SOME FUNCTIONS
 	/// for eeg+amod vertical concatenation
 
-	DEFS.setDir(DEFS.dirPath()); // "/media/Files/Data/Mati/"
-	QStringList dirList = DEFS.dirEntryList(QDir::Dirs|QDir::NoDotAndDotDot); // list of folders
-//    dirList = {"ADA", "BSA", "FEV", "KMX", "NOS", "NVV", "PYV", "SDA", "SDV", "SIV"};
+	DEFS.setDir(DEFS.dirPath()); /// "/media/Files/Data/Mati/"
+	QStringList dirList = DEFS.dirEntryList(QDir::Dirs|QDir::NoDotAndDotDot); /// list of folders
 	bool flagCommaDot = false;
 	bool flagAmodLogToEdf = false;
 	bool flagSliceEdfBySessions = false;
@@ -119,23 +118,23 @@ void MainWindow::matiPreprocessingSlot()
 	bool flagMakeDiffMark = false;
 	bool flagSliceSessionsToPieces = false;
 
-//    flagCommaDot = true;
-//    flagAmodLogToEdf = true;
-//    flagSliceEdfBySessions = true;
-//    flagAppendAmodToEeg = true;
+//	flagCommaDot = true;
+//	flagAmodLogToEdf = true;
+//	flagSliceEdfBySessions = true;
+//	flagAppendAmodToEeg = true;
+//	flagSliceSessionsToPieces = true;
 	flagMakeDiffMark = true;
-//    flagSliceSessionsToPieces = true;
 
 
 	QString fileSuffix = "_w";
-//    fileSuffix = "_rr_f";
+//	fileSuffix = "_rr_f";
 
 
 	for(int dirNum = 0; dirNum < dirList.length(); ++dirNum)
 	{
 		if(!dirList[dirNum].contains("SDA")) continue;
 
-		if(flagCommaDot) // change , to . in amod logFiles
+		if(flagCommaDot) /// change , to . in amod logFiles
 		{
 			ui->progressBar->setValue(0.);
 			QTime myTime;
@@ -175,7 +174,7 @@ void MainWindow::matiPreprocessingSlot()
 			ui->progressBar->setValue(0.);
 		}
 
-		if(flagAmodLogToEdf) // corrected logFiles to amod edfs
+		if(flagAmodLogToEdf) /// corrected logFiles to amod edfs
 		{
 			ui->progressBar->setValue(0.);
 			QTime myTime;
@@ -183,7 +182,7 @@ void MainWindow::matiPreprocessingSlot()
 			outStream << "amod.txt -> amod.edf start" << std::endl;
 			QString helpString = DEFS.dirPath() + "/" + dirList[dirNum] + "/amod";
 			DEFS.setDir(helpString);
-			QStringList lst = DEFS.dirEntryList(QStringList("*.txt_")); // _ for corrected logs
+			QStringList lst = DEFS.dirEntryList(QStringList("*.txt_")); /// _ for corrected logs
 
 			edfFile tempEdf;
 			for(int i = 0; i < lst.length(); ++i)
@@ -192,7 +191,7 @@ void MainWindow::matiPreprocessingSlot()
 						+ "/" + dirList[dirNum]
 						+ "/amod"
 						+ "/" + lst[i];
-				tempEdf = edfFile(helpString); // edfFile(QString) for MATI only
+				tempEdf = edfFile(helpString); /// edfFile(QString) for MATI only
 
 				helpString = DEFS.dirPath()
 						+ "/auxEdfs"
@@ -207,7 +206,7 @@ void MainWindow::matiPreprocessingSlot()
 			ui->progressBar->setValue(0);
 		}
 
-		if(flagSliceEdfBySessions) // slice initial edf to edf sessions
+		if(flagSliceEdfBySessions) /// slice initial edf to edf sessions
 		{
 			QTime myTime;
 			myTime.start();
@@ -230,7 +229,7 @@ void MainWindow::matiPreprocessingSlot()
 		}
 
 
-		if(flagAppendAmodToEeg) // append amod data to EEG data
+		if(flagAppendAmodToEeg) /// append amod data to EEG data
 		{
 			QTime myTime;
 			myTime.start();
@@ -245,7 +244,7 @@ void MainWindow::matiPreprocessingSlot()
 			{
 				for(int session = 0; session < 6; ++session)
 				{
-					// session path
+					/// session path
 					helpString = DEFS.dirPath()
 							+ "/" + dirList[dirNum]
 							+ "/auxEdfs"
@@ -262,16 +261,16 @@ void MainWindow::matiPreprocessingSlot()
 
 					tempEdf.readEdfFile(helpString);
 
-					// amod file
+					/// amod file
 					addPath = DEFS.dirPath()
 							+ "/" + dirList[dirNum]
 							+ "/auxEdfs"
 							+ "/" + dirList[dirNum]
 							+ "_" + nm(type)
 							+ "_" + nm(session)
-							+ "_amod.edf"; // generality
+							+ "_amod.edf"; /// generality
 
-					// eeg+amod path
+					/// eeg+amod path
 					outPath = DEFS.dirPath()
 							+ "/" + dirList[dirNum]
 							+ "/auxEdfs"
@@ -279,12 +278,12 @@ void MainWindow::matiPreprocessingSlot()
 							+ "_a"
 							+ "_" + nm(type)
 							+ "_" + nm(session)
-							+ ".edf"; // generality
+							+ ".edf"; /// generality
 
 					tempEdf.vertcatFile(addPath, outPath);
 
 #if 0
-					// copy the same files into amod dir
+					/// copy the same files into amod dir
 
 					helpString = DEFS.dirPath()
 								 + "/" + dirList[dirNum]
@@ -293,7 +292,7 @@ void MainWindow::matiPreprocessingSlot()
 								 + "_a"
 								 + "_" + nm(type)
 								 + "_" + nm(session)
-								 + ".edf"; // generality
+								 + ".edf"; /// generality
 					if(QFile::exists(helpString)) QFile::remove(helpString);
 					QFile::copy(outPath, helpString);
 #endif
@@ -304,7 +303,7 @@ void MainWindow::matiPreprocessingSlot()
 			outStream << "append amod.edf to eeg.edf: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 		}
 
-		if(flagMakeDiffMark) // make files of markers differences
+		if(flagMakeDiffMark) /// make files of markers differences
 		{
 			QTime myTime;
 			myTime.start();
@@ -317,7 +316,7 @@ void MainWindow::matiPreprocessingSlot()
 			{
 				for(int session = 0; session < 6; ++session)
 				{
-					// eeg+amod path
+					/// eeg+amod path
 					helpString = DEFS.dirPath()
 							+ "/" + dirList[dirNum]
 
@@ -344,7 +343,7 @@ void MainWindow::matiPreprocessingSlot()
 						{
 							for(int j = i - 40; j < i + 40; ++j)
 							{
-								if(fil.getData()[37][j+1] != fil.getData()[37][j]) // 37 for EEG + AMOD
+								if(fil.getData()[37][j+1] != fil.getData()[37][j]) /// 37 for EEG + AMOD
 								{
 									outStr << i << "\t" << j+1 << "\t" << (i-j-1)*4 << '\n';
 									break;
@@ -360,9 +359,9 @@ void MainWindow::matiPreprocessingSlot()
 			outStream << "make diffMark files: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 		}
 
-		if(flagSliceSessionsToPieces) // slice constructed eeg+amod files for small pieces
+		if(flagSliceSessionsToPieces) /// slice constructed eeg+amod files for small pieces
 		{
-			// not finished
+			/// not finished
 			QTime myTime;
 			myTime.start();
 			outStream << "slice sessions to pieces start" << std::endl;
@@ -378,12 +377,12 @@ void MainWindow::matiPreprocessingSlot()
 					+ "_a"
 					+ "_0"
 					+ "_1"
-					+ ".edf"; // generality
+					+ ".edf"; /// generality
 			outPath = DEFS.dirPath()
 					+ "/" + dirList[dirNum]
 					+ "/" + dirList[dirNum] + fileSuffix
 					+ "_a"
-					+ ".edf"; // generality
+					+ ".edf"; /// generality
 			if(QFile::exists(outPath)) QFile::remove(outPath);
 			QFile::copy(helpString, outPath);
 

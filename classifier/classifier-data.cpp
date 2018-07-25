@@ -7,6 +7,7 @@
 
 using namespace myOut;
 
+/// use a map of class marker - class number
 #define MAP 01
 
 void ClassifierData::adjust()
@@ -289,7 +290,7 @@ void ClassifierData::push_back(const std::valarray<double> & inDatum,
 	}
 	else
 	{
-		indices[ classMarkers[inType] ].push_back(dataMatrix.rows() - 1); // index of a new
+		indices[ classMarkers[inType] ].push_back(dataMatrix.rows() - 1); /// index of a new
 	}
 #else
 	if(inType >= indices.size()) { indices.resize(inType + 1); }
@@ -319,29 +320,6 @@ void ClassifierData::pop_back()
 	indices[type].pop_back();
 #endif
 }
-
-void ClassifierData::pop_front()
-{
-	this->erase(0);
-}
-
-//void ClassifierData::resize(int rows, int cols, double val)
-//{
-//	this->dataMatrix.resize(rows, cols, val);
-//}
-
-//void ClassifierData::resizeRows(int newRows)
-//{
-//	this->dataMatrix.resizeRows(newRows);
-//}
-
-
-///// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-//void ClassifierData::resizeCols(int newCols)
-//{
-
-//}
-
 
 void ClassifierData::centeringSubset(const std::vector<uint> & rows)
 {
@@ -418,7 +396,6 @@ void ClassifierData::variancing(double var)
 
 void ClassifierData::z_transform(double var)
 {
-//	this->dataMatrix /= 20; return;
 	this->centering();
 	this->variancing(var);
 }
@@ -440,7 +417,7 @@ ClassifierData ClassifierData::toPca(int numOfPca, double var) const
 		trace += smLib::variance(centeredMatrix[i]);
 	}
 
-	const double eigenValuesTreshold = pow(10., -8.);
+	const double eigenValuesTreshold = std::pow(10., -8.);
 
 	/// auto [eigenVectors, eigenValues] =
 	matrix eigenVectors;

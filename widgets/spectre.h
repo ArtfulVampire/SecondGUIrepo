@@ -83,4 +83,4 @@ private:
     std::vector<QString> fileNames;
 };
 
-#endif // SPECTRE_H
+#endif /// SPECTRE_H

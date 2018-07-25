@@ -55,7 +55,6 @@ void toLatinFileOrFolder(const QString & fileOrFolderPath)
 	}
 	QDir tmp(fileOrFolderPath);
 	tmp.rename(fileOrFolderPath,  dirName + "/" + newFileName);
-//	QFile::rename(fileOrFolderPath, dirName + "/" + newFileName);
 }
 
 void toLatinDir(const QString & dirPath, const QStringList & filters)
@@ -205,13 +204,6 @@ void channelsOrderFile(const QString & inFilePath,
 	}
 	for(int j : leftChannels) { reorderChanList.push_back(j); }
 
-//	for(int k : reorderChanList)
-//	{
-//		std::cout << initFile.getLabels(k) << std::endl;
-//	}
-//	std::cout << std::endl;
-//	return;
-
 	std::vector<int> ident = smLib::range<std::vector<int>>(0, initFile.getNs() + 1);
 
     if(reorderChanList != ident)
@@ -233,28 +225,16 @@ void channelsOrderDir(const QString & inDirPath,
     const auto leest = QDir(inDirPath).entryList(def::edfFilters, QDir::Files);
     const auto vec = leest.toVector();
 
-// #pragma omp parallel
-// #pragma omp for nowait schedule(dynamic,3)
+/// #pragma omp parallel
+/// #pragma omp for nowait schedule(dynamic,3)
     for(int i = 0; i < vec.size(); ++i)
     {
-        QString outName = vec[i];
-//        outName.replace(".edf", "_goodChan.edf", Qt::CaseInsensitive);
-//        std::cout << outName << std::endl;
+		QString outName = vec[i];
 		channelsOrderFile(inDirPath + "/" + vec[i],
 						  outDirPath + "/" + outName,
 						  standard);
-//		break;
     }
 }
-
-
-// void invertEogs(const QString & inFilePath)
-// {
-//	edfFile fil;
-//	fil.readEdfFile(inFilePath);
-//	fil.divideChannels(fil.findChannels({"EOG1-A1", "EOG2-A2"}), -1).writeEdfFile(inFilePath);
-// }
-
 
 void holesFile(const QString & inFilePath,
 			   int numChan,
@@ -285,8 +265,7 @@ void holesFile(const QString & inFilePath,
             }
         }
 		if(count == numChan)
-        {
-//			std::cout << smLib::valarSubsec(col, 0, 31)  << std::endl << std::endl;
+		{
             it = dataList.erase(it);
 			--it;
         }

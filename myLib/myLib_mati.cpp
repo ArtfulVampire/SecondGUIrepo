@@ -46,8 +46,8 @@ std::vector<bool> matiCountByte(double marker)
 
 void matiFixMarker(double & marker)
 {
-    // throw 10000000 00000000 and 00000000 10000000 and 00000000 00000000
-    if(marker == pow(2, 15) || marker == pow(2, 7) || marker == 0)
+    /// throw 10000000 00000000 and 00000000 10000000 and 00000000 00000000
+    if(marker == std::pow(2, 15) || marker == std::pow(2, 7) || marker == 0)
     {
         marker = 0;
         return;
@@ -56,9 +56,9 @@ void matiFixMarker(double & marker)
     std::vector<bool> byteMarker = matiCountByte(marker);
     bool boolBuf;
 
-    if(!byteMarker[7]) // elder byte should start with 0 and younger - with 1
+    if(!byteMarker[7]) /// elder byte should start with 0 and younger - with 1
     {
-        // swap bytes if wrong order
+        /// swap bytes if wrong order
         for(int h = 0; h < 8; ++h)
         {
             boolBuf = byteMarker[h];
@@ -75,7 +75,7 @@ int matiCountDecimal(std::vector<bool> byteMarker)
     int res = 0;
     for(int h = 0; h < 16; ++h)
     {
-        res += byteMarker[h] * pow(2, h);
+        res += byteMarker[h] * std::pow(2, h);
     }
     return res;
 }
@@ -88,11 +88,11 @@ int matiCountDecimal(QString byteMarker)
     int res = 0;
     for(int h = 0; h < 16; ++h)
     {
-		res += ((byteMarker[h] == QChar('1')) ? 1 : 0) * pow(2, 15-h);
+		res += ((byteMarker[h] == QChar('1')) ? 1 : 0) * std::pow(2, 15-h);
     }
     return res;
 }
 
 
 
-}// namespace myLib
+}/// namespace myLib

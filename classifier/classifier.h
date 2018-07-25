@@ -48,7 +48,7 @@ protected:
 
 	ClassifierData * myClassData;
 
-	matrix confusionMatrix; // [realClass] [predictedClass]
+	matrix confusionMatrix; /// [realClass] [predictedClass]
 	double averageAccuracy;				/// to deprecate
 	double kappa;						/// to deprecate
 	std::valarray<double> outputLayer;	/// output of classification
@@ -64,8 +64,7 @@ protected:
 
 #if INERTIA
 	std::valarray<double> fbVal;
-//	const double inertiaCoef = suc::inertiaCoef;
-	uint curType = 15; // not any of types
+	uint curType = 15; /// not any of types
 #endif
 
 
@@ -81,7 +80,6 @@ public:
 	std::valarray<double> getOutputLayer() const	{ return outputLayer; }
 	double getOutputLayer(int i) const				{ return outputLayer[i]; }
 
-	/// 
 	void peopleClassification(bool indZ, std::ostream & os = std::cout);
 	void leaveOneOutClassification(std::ostream & os = std::cout);
 	void crossClassification(int numOfPairs, int fold, std::ostream & os = std::cout);
@@ -114,13 +112,11 @@ public:
 	virtual void printParams();
 	virtual void adjustToNewData() {}
 
-//	std::pair<uint, double> classifyDatumLast();
 	classOneType classifyDatumLast();
 
 protected:
-//	std::pair<uint, double> classifyDatum(uint vecNum); // return class and error, effect on confMat
-	classOneType classifyDatum(uint vecNum); // effect on confMat
-	virtual void classifyDatum1(uint vecNum) = 0;		// just count outputLayer
+	classOneType classifyDatum(uint vecNum);			/// effect on confMat
+	virtual void classifyDatum1(uint vecNum) = 0;		/// just count outputLayer
 	void classifyDatumLast1();
 };
 
@@ -202,9 +198,6 @@ protected:
     /// successive
     void successiveRelearn() override;
 	void adjustToNewData() override;
-
-public:
-//	static void cleaningNfold(matrix & inData, std::vector<uint> & inTypes);
 };
 
 
@@ -274,7 +267,7 @@ class NBC : public Classifier
 {
 private:
     std::vector<std::valarray<double>> centers;
-    std::vector<std::valarray<double>> sigmas; // [class][feature]
+	std::vector<std::valarray<double>> sigmas; /// [class][feature]
 
 public:
     NBC();
@@ -329,4 +322,4 @@ protected:
 };
 
 
-#endif // CLASSIFIER_H
+#endif /// CLASSIFIER_H

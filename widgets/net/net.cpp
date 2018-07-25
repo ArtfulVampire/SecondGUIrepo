@@ -36,7 +36,7 @@ Net::Net() :
 
     ui->crossRadioButton->setChecked(true); /// k-fold
     ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
-//    ui->trainTestRadioButton->setChecked(true); /// train-test
+///    ui->trainTestRadioButton->setChecked(true); /// train-test
 	if(DEFS.isUser(username::Ossadtchi))
     {
         ui->trainTestRadioButton->setChecked(true); /// train-test

@@ -30,19 +30,19 @@ void RDA::setLambda(double in)
 
 void RDA::printParams()
 {
+#if 0
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
 	{
-//		std::cout << centers[i] << std::endl;
+		std::cout << centers[i] << std::endl;
 	}
+#endif
 }
 
 
 /// check!
 void RDA::learn(std::vector<uint> & indices)
 {
-//	std::cout << lambda << "\t" << gamma << std::endl;
 	matrix oneClass[myClassData->getNumOfCl()];
-//	std::cout << myClassData->getNumOfCl() << "\t" << covMat.size() << std::endl;
 	covMat[myClassData->getNumOfCl()] = matrix(myClassData->getData().cols(), myClassData->getData().cols(), 0);
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
@@ -66,7 +66,7 @@ void RDA::learn(std::vector<uint> & indices)
         /// shrinkage
         double tmpTrace = covMat[i].trace();
         covMat[i] *= (1. - gamma);
-// #pragma omp parallel for
+
 		for(int j = 0; j < covMat[i].rows(); ++j)
         {
             covMat[i][j][j] += gamma * tmpTrace / covMat[i].rows();
@@ -82,9 +82,9 @@ void RDA::classifyDatum1(uint vecNum)
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
 	{
 		std::valarray<double> a = (myClassData->getData()[vecNum] - centers[i]);
-        matrix m1(a, 'r'); // row
-        matrix m2(a, 'c'); // col
+        matrix m1(a, 'r'); /// row
+        matrix m2(a, 'c'); /// col
 		double tmp = (m1 * covMat[i] * m2)[0][0];
-		outputLayer[i] = - tmp - log(dets[i]) + 2 * log(myClassData->getApriori()[i]);
+		outputLayer[i] = - tmp - std::log(dets[i]) + 2 * std::log(myClassData->getApriori()[i]);
 	}
 }

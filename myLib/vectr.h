@@ -4,6 +4,6 @@
 namespace vcLib
 {
 
-} // end namespace vcLib
+} /// end namespace vcLib
 
-#endif // VECTR_H
+#endif /// VECTR_H

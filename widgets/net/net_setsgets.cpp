@@ -91,12 +91,12 @@ void Net::setSource(const QString & in)
     if(in.contains("real", Qt::CaseInsensitive) || in.startsWith('r'))
     {
         ui->realsRadioButton->setChecked(true);
-//        loadDataNorm = 10.;
+//		loadDataNorm = 10.;
     }
     else if(in.contains("wind", Qt::CaseInsensitive) || in.startsWith('w'))
     {
         ui->windsRadioButton->setChecked(true);
-//        loadDataNorm = 5.;
+//		loadDataNorm = 5.;
     }
 }
 
@@ -289,17 +289,17 @@ void Net::setModeSlot(QAbstractButton * but, bool i)
 void Net::aaDefaultSettings()
 {
     /// mode
-    ui->crossRadioButton->setChecked(true); /// k-fold
-//    ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
-//    ui->trainTestRadioButton->setChecked(true); /// train-test
+	ui->crossRadioButton->setChecked(true); /// k-fold
+//	ui->leaveOneOutRadioButton->setChecked(true); /// N-fold
+//	ui->trainTestRadioButton->setChecked(true); /// train-test
 
-    /// source
-		ui->realsRadioButton->setChecked(true); /// reals
-//        ui->windsRadioButton->setChecked(true); /// winds
-//    ui->pcaRadioButton->setChecked(true); /// PCA
+	/// source
+	ui->realsRadioButton->setChecked(true); /// reals
+//	ui->windsRadioButton->setChecked(true); /// winds
+//	ui->pcaRadioButton->setChecked(true); /// PCA
 
 	ui->foldSpinBox->setValue(5); /////// fold
 	ui->numOfPairsBox->setValue(5); //// pairs
-    ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
-    ui->learnRateBox->setValue(0.05); /// lrate PEWPEW
+	ui->critErrorDoubleSpinBox->setValue(0.04); /// errcrit PEWPEW
+	ui->learnRateBox->setValue(0.05); /// lrate PEWPEW
 }

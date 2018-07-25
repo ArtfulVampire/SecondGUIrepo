@@ -20,9 +20,9 @@
 namespace myLib
 {
 
-QString rightNumber(const unsigned int input, int N); // prepend zeros
-QString fitNumber(double input, int N); // append spaces
-QString fitString(const QString & input, int N); // append spaces
+QString rightNumber(const unsigned int input, int N);	/// prepend zeros
+QString fitNumber(double input, int N);					/// append spaces
+QString fitString(const QString & input, int N);		/// append spaces
 
 }
 
@@ -79,15 +79,18 @@ inline std::ostream & myWrite (std::ostream & os, const input & in, const inputs
 #endif
 
 
-// containers w/o allocators
+/// containers w/o allocators
 template <typename Typ,
 		  template <typename> class Cont
 		  ,	typename = typename std::enable_if<!std::is_same<Cont<Typ>, std::string>::value>::type
 		  >
 inline std::ostream & operator<< (std::ostream & os, const Cont<Typ> & toOut)
 {
+#if 01
 	std::string separ = "\t";
-//	std::string separ = "\n";
+#else
+	std::string separ = "\n";
+#endif
 	for(const auto & in : toOut)
 	{
 		os << in << separ;
@@ -96,14 +99,17 @@ inline std::ostream & operator<< (std::ostream & os, const Cont<Typ> & toOut)
 	return os;
 }
 
-// containers with allocators
+/// containers with allocators
 template <typename Typ,
 		  template <typename, typename = std::allocator<Typ>> class Cont
 		  >
 inline std::ostream & operator<< (std::ostream & os, const Cont<Typ> & toOut)
 {
+#if 01
 	std::string separ = "\t";
-//	std::string separ = "\n";
+#else
+	std::string separ = "\n";
+#endif
 	for(const auto & in : toOut)
 	{
 		os << in << separ;
@@ -115,4 +121,4 @@ inline std::ostream & operator<< (std::ostream & os, const Cont<Typ> & toOut)
 }
 
 
-#endif // OUTPUT_H
+#endif /// OUTPUT_H

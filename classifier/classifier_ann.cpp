@@ -29,16 +29,16 @@ void ANN::setCritError(double in)
 void ANN::allocParams(weightType & inMat)
 {
     inMat.resize(dim.size() - 1);
-    for(uint i = 0; i < inMat.size(); ++i) // weights to layer i+1 from i
+	for(uint i = 0; i < inMat.size(); ++i) /// weights to layer i+1 from i
     {
 #if WEIGHT_MATRIX
         inMat[i] = matrix(dim[i + 1], dim[i] + 1, 0.);
 #else
         inMat[i].resize(dim[i + 1]);
-        for(auto & b : inMat[i]) // to j'th in i+1 layer
+		for(auto & b : inMat[i]) /// to j'th in i+1 layer
         {
-            // resizing std::valarray<double> -> fill zeros
-            b.resize(dim[i] + 1); // from k'th in i layer + bias
+			/// resizing std::valarray<double> -> fill zeros
+			b.resize(dim[i] + 1); /// from k'th in i layer + bias
         }        
 #endif
     }
@@ -52,7 +52,7 @@ void ANN::allocParams(weightType & inMat)
     int i = 0;
     for(auto & b : output)
     {
-        b.resize(dim[i] + 1); // +1 for biases
+		b.resize(dim[i] + 1); /// +1 for biases
         ++i;
     }
 
@@ -61,7 +61,7 @@ void ANN::allocParams(weightType & inMat)
         deltaWeights.resize(dim.size());
         for(uint i = 0; i < dim.size(); ++i)
         {
-            deltaWeights[i].resize(dim[i]); // fill zeros
+			deltaWeights[i].resize(dim[i]); /// fill zeros
         }
     }
 }
@@ -103,7 +103,7 @@ void ANN::setDim(const std::vector<int> & inDim)
 
 #if 0
 	/// CHECK
-    if(0) // if backprop
+	if(0) /// if backprop
     {
         std::default_random_engine engine;
         std::uniform_int_distribution<int> dist(0, 1000 - 1);
@@ -113,7 +113,7 @@ void ANN::setDim(const std::vector<int> & inDim)
             {
                 for(uint k = 0; k < weight[i][j].size(); ++k)
                 {
-                    weight[i][j][k] = (-500 + dist(engine)) / 50000.;  // backprop ~0
+					weight[i][j][k] = (-500 + dist(engine)) / 50000.;  /// backprop ~0
                 }
             }
         }
@@ -136,8 +136,8 @@ void ANN::loadVector(uint vecNum, uint & type)
 	std::copy(std::begin(myClassData->getData()[vecNum]),
 			  std::end(myClassData->getData()[vecNum]),
               std::begin(output[0]));
-	output[0][output[0].size() - 1] = 1.; // bias
-	type = myClassData->getTypes()[vecNum]; // true class
+	output[0][output[0].size() - 1] = 1.; /// bias
+	type = myClassData->getTypes()[vecNum]; /// true class
 }
 
 void ANN::countOutput()
@@ -162,13 +162,13 @@ void ANN::countOutputDelta()
         smLib::resizeValar(output[i], output[i].size() + 1);
         output[i][output[i].size() - 1] = 1;
 #else
-        for(int j = 0; j < dim[i]; ++j) // higher level, w/o bias
+		for(int j = 0; j < dim[i]; ++j) /// higher level, w/o bias
         {
-            output[i][j] = smLib::prod(weight[i - 1][j], output[i - 1]); // bias included
+			output[i][j] = smLib::prod(weight[i - 1][j], output[i - 1]); /// bias included
         }
 #endif
         output[i] = activation(output[i]);
-        output[i][ dim[i] ] = 1.; // bias, unused for the highest layer
+		output[i][ dim[i] ] = 1.; /// bias, unused for the highest layer
     }
 	outputLayer = output.back();
 	smLib::valarResize(outputLayer, outputLayer.size() - 1);
@@ -179,23 +179,23 @@ void ANN::countOutputBackprop()
 #if 0
     /// count deltaWeights
     /// CHECK
-    // count deltaweights (used for backprop only)
-    // for the last layer
+	/// count deltaweights (used for backprop only)
+	/// for the last layer
     for(uint j = 0; j < dim[numOfLayers - 1]; ++j)
     {
         deltaWeights[numOfLayers-1][j] = -1. / temp
                                          * output[numOfLayers-1][j]
                                          * (1. - output[numOfLayers-1][j])
-                * ((type == j) - output[numOfLayers-1][j]); // ~0.1
+				* ((type == j) - output[numOfLayers-1][j]); /// ~0.1
     }
 
-    // for the other layers, besides the input one, upside->down
+	/// for the other layers, besides the input one, upside->down
     for(int i = numOfLayers - 2; i >= 1; --i)
     {
-        for(int j = 0; j < dim[i] + 1; ++j) // +1 for bias
+		for(int j = 0; j < dim[i] + 1; ++j) /// +1 for bias
         {
             deltaWeights[i][j] = 0.;
-            for(int k = 0; k < dim[i + 1]; ++k) // connected to the higher-layer
+			for(int k = 0; k < dim[i + 1]; ++k) /// connected to the higher-layer
             {
                 deltaWeights[i][j] += deltaWeights[i + 1][k] * weight[i][j][k];
             }
@@ -209,29 +209,29 @@ void ANN::countOutputBackprop()
 }
 
 void ANN::moveWeights(const std::vector<double> & normCoeff,
-                      const uint type)
+					  const uint type)
 {
-    if(learnStyl == learnStyle::delta)
-    {
+	if(learnStyl == learnStyle::delta)
+	{
 		for(uint j = 0; j < myClassData->getNumOfCl(); ++j)
-        {
-            weight[0][j] += output[0]
-                    * (learnRate * normCoeff[type]
-                       * ((type == j) - output[1][j])
-//                    * (output[1][j] * (1. - output[1][j])) * 6. // derivative
-                    );
-        }
+		{
+			weight[0][j] += output[0]
+					* (learnRate * normCoeff[type]
+					   * ((type == j) - output[1][j])
+					* (output[1][j] * (1. - output[1][j])) * 6. /// derivative
+					);
+		}
 
-    }
+	}
 #if 0
 	/// CHECK
     else if(learnStyl == learnStyle::backprop)
     {
         /// check this sheet
-        // count new weights using deltas
+		/// count new weights using deltas
         for(int i = 0; i < numOfLayers - 1; ++i)
         {
-            for(int j = 0; j < dim[i] + 1; ++j) // +1 for bias? 01.12.2014
+			for(int j = 0; j < dim[i] + 1; ++j) /// +1 for bias? 01.12.2014
             {
                 for(int k = 0; k < dim[i + 1]; ++k)
                 {
@@ -298,7 +298,7 @@ void ANN::learn(std::vector<uint> & indices)
     while(currentError > critError && epoch < epochLimit)
 	{
         currentError = 0.0;
-		// mix the sequence of input vectors
+		/// mix the sequence of input vectors
 		smLib::mix(indices);
 
         for(int index : indices)
@@ -310,22 +310,24 @@ void ANN::learn(std::vector<uint> & indices)
 		}
         ++epoch;
 
-        // count error
+		/// count error
         if(errType == errorNetType::SME)
         {
             currentError /= indices.size();
         }
 	}
+#if 0
 	/// std::cout epoch
-//    std::cout << "epoch = " << epoch << "\t"
-//              << "error = " << smLib::doubleRound(currentError, 4) << "\t"
-//              << "time elapsed = " << myTime.elapsed() / 1000. << " sec"  << std::endl;
+	std::cout << "epoch = " << epoch << "\t"
+			  << "error = " << smLib::doubleRound(currentError, 4) << "\t"
+			  << "time elapsed = " << myTime.elapsed() / 1000. << " sec"  << std::endl;
+#endif
 }
 
 
 void ANN::successiveRelearn()
 {
-    // decay weights
+	/// decay weights
     const double rat = suc::decayRate;
     for(uint i = 0; i < dim.size() - 1; ++i)
     {
@@ -336,7 +338,7 @@ void ANN::successiveRelearn()
     }
 
     this->resetFlag = false;
-	learnAll(); // relearn w/o weights reset
+	learnAll(); /// relearn w/o weights reset
     this->resetFlag = true;
 }
 
@@ -349,7 +351,7 @@ void ANN::classifyDatum1(uint vecNum)
 {
 	uint type;
 	loadVector(vecNum, type);
-	countOutput(); // provides outputLayer
+	countOutput(); /// provides outputLayer
 
 #if 0
 	/// std::cout results
@@ -360,8 +362,12 @@ void ANN::classifyDatum1(uint vecNum)
 				 std::ios_base::app);
 
 	/// uncomment to write to file
-//    auto tmp = std::cout.rdbuf();
-//    std::cout.rdbuf(resFile.rdbuf());
+#define TO_FILE 0
+
+#if TO_FILE
+	auto tmp = std::cout.rdbuf();
+	std::cout.rdbuf(resFile.rdbuf());
+#endif
 
 	std::cout << "type = " << type << '\t' << "(";
 	for(int i = 0; i < myClassData->getNumOfCl(); ++i)
@@ -371,7 +377,10 @@ void ANN::classifyDatum1(uint vecNum)
 	std::cout << ") " << ((type == outClass) ? "+ " : "- ") << "\t"
 			  << myClassData->getFileNames()[vecNum] << std::endl;
 
-//    std::cout.rdbuf(tmp);
+#if TO_FILE
+	std::cout.rdbuf(tmp);
+#endif
+#undef TO_FILE
 
 	resFile.close();
 #endif
@@ -409,11 +418,11 @@ void ANN::writeWeight(const QString & wtsPath) const
 	weightsFile << std::fixed;
 	weightsFile.precision(4);
 
-    for(uint i = 0; i < weight.size(); ++i) // numOfLayers
+	for(uint i = 0; i < weight.size(); ++i) /// numOfLayers
     {
-        for(uint j = 0; j < weight[i].size(); ++j) // top layer
+		for(uint j = 0; j < weight[i].size(); ++j) /// top layer
         {
-            for(uint k = 0; k < weight[i][j].size(); ++k) // bot layer
+			for(uint k = 0; k < weight[i][j].size(); ++k) /// bot layer
             {
                 weightsFile << weight[i][j][k] << '\n';
             }
@@ -441,14 +450,11 @@ void ANN::readWeight(const QString & fileName,
     }
     allocParams((*wtsMatrix));
 
-	/// first row with "numOfRows N	numOfCols M"
-//	wtsStr.ignore(128, '\n');
-
-    for(uint i = 0; i < weight.size(); ++i) // numOfLayers
+	for(uint i = 0; i < weight.size(); ++i) /// numOfLayers
     {
-        for(uint j = 0; j < weight[i].size(); ++j) // top layer
+		for(uint j = 0; j < weight[i].size(); ++j) /// top layer
         {
-            for(uint k = 0; k < weight[i][j].size(); ++k) // bot layer (bias already inside)
+			for(uint k = 0; k < weight[i][j].size(); ++k) /// bot layer (bias already inside)
             {
                 wtsStr >> (*wtsMatrix)[i][j][k];
             }
@@ -471,23 +477,26 @@ void ANN::drawWeight(QString wtsPath,
 	twovector<std::valarray<double>> tempWeights; /// [0][3][NetLen]
 	readWeight(wtsPath, &tempWeights);
 	matrix drawWts = tempWeights[0];
-	drawWts.resizeCols(drawWts.cols() - 1); // fck the bias?
+	drawWts.resizeCols(drawWts.cols() - 1); /// fck the bias?
 
     if(picPath.isEmpty())
     {
         picPath = wtsPath;
         picPath.replace(".wts", "_wts.jpg"); /// make default suffixes
     }
+#if 0
 	/// old
-//	myLib::drawTemplate(picPath);
-//	myLib::drawArrays(picPath,
-//					  drawWts,
-//					  true);
+	myLib::drawTemplate(picPath);
+	myLib::drawArrays(picPath,
+					  drawWts,
+					  true);
+#else
 	/// new 2.02.2018
 	myLib::drw::drawArrays(myLib::drw::drawTemplate(),
 						   drawWts,
 						   0.,
 						   true).save(picPath, 0, 100);
+#endif
 }
 
 
@@ -516,7 +525,7 @@ double ANN::adjustLearnRate(std::ostream & os)
         if(epoch > ANN::epochHighLimit ||
            epoch < ANN::epochLowLimit)
         {
-			learnRate = currVal * sqrt(epoch /
+			learnRate = currVal * std::sqrt(epoch /
 									   ((ANN::epochLowLimit + ANN::epochHighLimit) / 2.));
 
 			res = learnRate;
@@ -549,43 +558,3 @@ double ANN::adjustLearnRate(std::ostream & os)
 
     return res;
 }
-
-
-//void ANN::cleaningNfold(matrix & inData, std::vector<uint> & inTypes)
-//{
-//	ClassifierData clData(inData, inTypes);
-//	ANN * ann = new ANN();
-//	ann->setClassifierData(clData);
-
-
-//	for(int i = 0; i < 5; ++i)
-//	{
-//		std::vector<uint> learnIndices{};
-//		std::vector<uint> exclude{};
-//		for(uint i = 0; i < clData.size(); ++i)
-//		{
-////			if((i + 1) % 10 == 0) { os << i + 1 << " "; os.flush(); }
-
-//			learnIndices.clear();
-//			learnIndices.resize(clData.size() - 1);
-//			std::iota(std::begin(learnIndices),
-//					  std::begin(learnIndices) + i,
-//					  0);
-//			std::iota(std::begin(learnIndices) + i,
-//					  std::end(learnIndices),
-//					  i + 1);
-
-//			ann->learn(learnIndices);
-//			auto a = ann->test(i);
-//			if(!std::get<0>(a))
-//			{
-//				exclude.push_back(i);
-//			}
-
-//		}
-//		clData.erase(exclude);
-//	}
-//	inData = clData.getData();
-//	inTypes = clData.getTypes();
-//	delete ann;
-//}

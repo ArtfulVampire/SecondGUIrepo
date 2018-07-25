@@ -162,8 +162,11 @@ void writeFileInLine(const QString & filePath,
         return;
     }
 
-//	bool asCol = false;
+#if 0
+	bool asCol = false;
+#else
 	bool asCol = true;
+#endif
 
 	file << std::fixed;
 	file.precision(6);
@@ -228,36 +231,37 @@ matrix readPlainData(const QString & inPath)
 {
 	matrix res{};
 	std::ifstream inStr;
-    inStr.open(inPath.toStdString());
-    if(!inStr.good())
-    {
+	inStr.open(inPath.toStdString());
+	if(!inStr.good())
+	{
 		std::cout << "readPlainData: cannot open file\n" << inPath << std::endl;
 		return {};
-    }
-    int localNs;
+	}
+	int localNs;
 	int numOfSlices;
-    inStr.ignore(64, ' '); // "NumOfSlices "
-    inStr >> numOfSlices;
-    inStr.ignore(64, ' '); // "NumOfChannels "
-    inStr >> localNs;
+	inStr.ignore(64, ' '); /// "NumOfSlices "
+	inStr >> numOfSlices;
+	inStr.ignore(64, ' '); /// "NumOfChannels "
+	inStr >> localNs;
 
 	res.resize(localNs, numOfSlices);
 
-    for (int i = 0; i < numOfSlices; ++i)
-    {
-        for(int j = 0; j < localNs; ++j)
-        {
+	for (int i = 0; i < numOfSlices; ++i)
+	{
+		for(int j = 0; j < localNs; ++j)
+		{
 			inStr >> res[j][i];
-            /// Ossadtchi
-//            if(j == ns - 1 && DEFS.isUser(username::Ossadtchi))
-//            {
-//                if(i == 0) data[j][i + start] = inPath.right(3).toDouble();
-//                else if(i == numOfSlices-1) data[j][i + start] = 254;
-//                else data[j][i + start] = 0.;
-//            }
-
-        }
-    }
+#if 0
+			/// Ossadtchi - move to another func
+			if(j == ns - 1 && DEFS.isUser(username::Ossadtchi))
+			{
+				if(i == 0) data[j][i + start] = inPath.right(3).toDouble();
+				else if(i == numOfSlices-1) data[j][i + start] = 254;
+				else data[j][i + start] = 0.;
+			}
+#endif
+		}
+	}
     inStr.close();
 	return res;
 }
@@ -382,7 +386,6 @@ void readIITPfile(const QString & filePath,
 	int numOfRows;
 	int numOfCols;
 	inStr >> numOfRows >> numOfCols; inStr.ignore(256, '\n'); /// no need Tstart and inerval
-//	std::cout << numOfRows << '\t' << numOfCols << std::endl;
 
 	std::string tmp;
 	outLabels.resize(numOfCols);
@@ -392,7 +395,6 @@ void readIITPfile(const QString & filePath,
 		inStr >> tmp;
 		outLabels[i] = QString(tmp.c_str());
 	}
-//	inStr.ignore(64, '\n'); /// need?
 
 	outData = matrix(numOfCols, numOfRows, 0.); /// transposed
 	for(int i = 0; i < numOfRows; ++i)
@@ -410,7 +412,6 @@ void readIITPfile(const QString & filePath,
 		outData[i] -= smLib::mean(outData[i]);
 		outData[i] *= 1000; /// magic const
 	}
-//	return outData;
 }
 
 void readUCIdataSet(const QString & setName,

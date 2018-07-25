@@ -214,7 +214,6 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 	pnt.begin(&pic);
 	for(uint i = 0; i < drawData.size() - 1; ++i)
 	{
-//		std::cout << i << "\t" << arr[i] << std::endl;
 		pnt.drawLine( pic.width() * (leftGap + i / double(drawData.size()) * (1. - (leftGap +  rightGap))),
 					  pic.height() * (1. - drawData[i] / maxVal) * graphHeight,
 					  pic.width() * (leftGap + (i + 1) / double(drawData.size()) * (1. - (leftGap +  rightGap))),
@@ -224,7 +223,7 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 	pnt.setFont(font);
 
 	/// Y values
-	const double valStep = std::pow(10., std::floor(log10(maxVal)));
+	const double valStep = std::pow(10., std::floor(std::log10(maxVal)));
 	for(double val = 0.; val < maxVal; val += valStep)
 	{
 		const double y = pic.height() * (1. - val / maxVal) * graphHeight;
@@ -335,7 +334,6 @@ void IITPdat(const QString & guyName)
 								 guyName + "/" +
 								 fil;
 		int num = fil.mid(fil.indexOf('_') + 1, 2).toInt();
-//		std::cout << num << std::endl;
 
 		QFile f(filePath);
 		f.open(QIODevice::ReadOnly);
@@ -403,13 +401,13 @@ void IITPtestCoh2(const QString & guyName)
 	const double highFreq = 45.;
 
 	/// Test guy
-	std::vector<int> nums{1,2,3,4};
 	std::vector<QString> names{"1_e", "2_e", "3_e", "4_e"}; /// enveloped
 //	std::vector<QString> names{"1", "2", "3", "4"};
+//	std::vector<QString> names{"coh_l", "coh_r"};
 
 	/// take Ta_l - file 24 and Ta_r - file 25
+	std::vector<int> nums{1,2,3,4};
 //	std::vector<int> nums{24, 25};
-//	std::vector<QString> names{"coh_l", "coh_r"};
 
 	QString postfix = "_sum_new_abs";
 	{
@@ -440,7 +438,6 @@ void IITPtestCoh2(const QString & guyName)
 			myLib::drw::drawOneArray(myLib::drw::drawOneTemplate("Cz", lowFreq, highFreq),
 									 smLib::vecToValar(outCoh)).save(
 						"/media/Files/Data/iitp/" + names[i] + postfix + ".jpg", 0, 100);
-//			std::cout << postfix << std::endl;
 			std::cout << names[i] << " coh max = " << *std::max_element(std::begin(outCoh), std::end(outCoh)) << std::endl;
 		}
 	}
@@ -1087,11 +1084,6 @@ void IITPrerefCAR(const QString & guyName,
 
 	const auto & usedLabels = coords::lbl19;	/// to build reref array
 
-//	const std::vector<QString> usedLabels{"Fp1", "Fp2",
-//									  "F7", "F3", "Fz",       "F8",
-//									  "T3", "C3", "Cz", "C4", "T4",
-//									  "T5", "P3", "Pz", "P4", "T6",
-//									  "O1", "O2"};
 
 	const auto & rerefLabels = coords::lbl19;	/// list to reref
 
@@ -1103,8 +1095,6 @@ void IITPrerefCAR(const QString & guyName,
 	for(QString fileName : edfs)
 	{
 		if(!addFilter.isEmpty() && !fileName.contains(addFilter)) { continue; }
-
-//		std::cout << fileName << std::endl;
 
 		edfFile fil;
 		fil.readEdfFile(workPath + "/" + fileName);
@@ -1140,8 +1130,6 @@ void IITPrerefCAR(const QString & guyName,
 		}
 		/// add name or not
 		fil.rewriteEdfFile();
-//		fil.writeEdfFile(workPath + "/" + fileName.replace(".edf", "_car.edf"));
-
 	}
 }
 
@@ -1266,10 +1254,8 @@ void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums)
 		outPath = paths[i];
 		outPath.replace("/sp/", "/pic/");
 		outPath.replace("_sp.txt", ".jpg");
-//		std::cout << outPath << std::endl;
 		res[i].save(outPath, 0, 100);
 	}
-//	exit(0);
 }
 
 void IITPwriteCohsToFile(std::ofstream & outStr,
@@ -1434,9 +1420,6 @@ void IITPprocessStaged(const QString & guyName,
 			catch (std::out_of_range a)
 			{
 				/* do nothing, it's okay */
-//				std::cout << "check bad files - out_of_range exception" << std::endl;
-//				std::cout << a.what() << std::endl;
-//				continue;
 			}
 			catch (...)
 			{
@@ -1497,7 +1480,7 @@ void IITPprocessStaged(const QString & guyName,
 						IITPwriteCohsToFile(outStr, dt, fileNum, confidenceLevel);
 						outStr.close();
 
-						// flexion only
+						/// flexion only
 						if(type == 0 &&
 						   (iitp::interestingForLegs.contains(fileNum) ||
 						   iitp::interestingForWrists.contains(fileNum))
@@ -1526,11 +1509,11 @@ void IITPdoShit(const QString & resultsPathPrefix,
 {
 
 	QString picName =  guyName +
-					   "_" + rn(in.fileNum, 2) +		// fileNum
-					   "_" + in.gonio +					// joint
-					   "_" + in.fileType +				// free/flex/ext
-					   "_" + iitp::forMapEmgNames[i] +	// muscle
-					   "_" + iitp::forMapRangeNames[j] +// rhythm
+					   "_" + rn(in.fileNum, 2) +		/// fileNum
+					   "_" + in.gonio +					/// joint
+					   "_" + in.fileType +				/// free/flex/ext
+					   "_" + iitp::forMapEmgNames[i] +	/// muscle
+					   "_" + iitp::forMapRangeNames[j] +/// rhythm
 					   ".jpg";
 
 
@@ -1770,6 +1753,6 @@ void IITPmaxCoh(const QString & filePath,
 	}
 }
 
-} // end namespace autos
+} /// end namespace autos
 
 

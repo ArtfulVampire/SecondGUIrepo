@@ -158,7 +158,7 @@ matrix::matrix(std::initializer_list<std::valarray<double>> lst)
 
 /// these two are the same
 
-matrix::matrix(const std::valarray<double> & vect) // diagonal
+matrix::matrix(const std::valarray<double> & vect) /// diagonal
 {
     this->resize(vect.size(), vect.size());
     this->fill(0.);
@@ -170,7 +170,7 @@ matrix::matrix(const std::valarray<double> & vect) // diagonal
     }
 }
 
-matrix::matrix(std::initializer_list<double> lst) // diagonal
+matrix::matrix(std::initializer_list<double> lst) /// diagonal
 {
     (*this) = matrix(std::valarray<double>{lst});
     return;
@@ -338,7 +338,7 @@ matrix matrix::operator -()
 matrix operator * (const matrix & lhs, double val)
 {
     matrix result(lhs.rows(), lhs.cols());
-// #pragma omp parallel for
+/// #pragma omp parallel for
 	for(int i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] * val;
@@ -424,7 +424,7 @@ std::valarray<double> operator * (const std::valarray<double> & lhs, const matri
 matrix operator / (const matrix & lhs, double val)
 {
     matrix result(lhs.rows(), lhs.cols());
-// #pragma omp parallel for
+/// #pragma omp parallel for
 	for(int i = 0; i < lhs.rows(); ++i)
     {
         result[i] = lhs[i] / val;
@@ -567,8 +567,7 @@ matrix & matrix::horzCat(const matrix & other)
 
 matrix & matrix::random(double low, double high)
 {
-    std::default_random_engine gen(std::chrono::system_clock::now().time_since_epoch().count());
-//    std::default_random_engine gen;
+	std::default_random_engine gen(std::chrono::system_clock::now().time_since_epoch().count());
     std::uniform_real_distribution<double> distr(low, high);
 	for(auto it = std::begin(myData); it != std::end(myData); ++it)
     {
@@ -948,7 +947,7 @@ std::valarray<double> matrix::sigmaOfCols() const
         res += row;
     }
     res /= this->rows();
-    res = sqrt(res);
+    res = std::sqrt(res);
 #endif
 
     return res;
@@ -1005,8 +1004,7 @@ void matrix::print(int rows, int cols) const
 			std::cout << smLib::doubleRound(myData[i][j], 3) << "\t";
         }
 		std::cout << std::endl;
-    }
-//    std::cout << std::endl;
+	}
 }
 
 void matrix::printWithBraces(int rows, int cols) const
@@ -1064,7 +1062,7 @@ matrix & matrix::transpose()
     int oldCols = this->cols();
     int oldRows = this->rows();
     this->resize(max(oldRows, oldCols),
-                 max(oldRows, oldCols)); // make square
+                 max(oldRows, oldCols)); /// make square
 
 	for(int i = 0; i < this->rows(); ++i)
     {
@@ -1102,7 +1100,6 @@ matrix & matrix::invert(double * det)
     if(this->rows() != this->cols())
     {
 		std::cout << "matrix::invert: matrix is not square" << std::endl;
-//        exit(1);
         return *this;
     }
 
@@ -1116,14 +1113,13 @@ matrix & matrix::invert(double * det)
     }
     double coeff;
 
-//    std::cout << "start first cycle" << std::endl;
 
-    // 1) make higher-triangular
-	for(int i = 0; i < size - 1; ++i) // which line to substract
+    /// 1) make higher-triangular
+	for(int i = 0; i < size - 1; ++i) /// which line to substract
     {
-		for(int j = i + 1; j < size; ++j) // FROM which line to substract
+		for(int j = i + 1; j < size; ++j) /// FROM which line to substract
         {
-            coeff = initMat[j][i] / initMat[i][i]; // coefficient
+            coeff = initMat[j][i] / initMat[i][i]; /// coefficient
 
             // row[j] -= coeff * row[i] for both (temp & init) matrices
             initMat[j] -= initMat[i] * coeff;
@@ -1131,11 +1127,10 @@ matrix & matrix::invert(double * det)
         }
     }
 
-//    std::cout << "start second cycle" << std::endl;
-    // 2) make diagonal
-    for(int i = size - 1; i > 0; --i) // which line to substract (bottom -> up)
+    /// 2) make diagonal
+    for(int i = size - 1; i > 0; --i) /// which line to substract (bottom -> up)
     {
-        for(int j = i - 1; j >= 0; --j) // FROM which line to substract
+        for(int j = i - 1; j >= 0; --j) /// FROM which line to substract
         {
             coeff = initMat[j][i] / initMat[i][i];
 
@@ -1143,8 +1138,7 @@ matrix & matrix::invert(double * det)
             initMat[j] -= initMat[i] * coeff;
             tempMat[j] -= tempMat[i] * coeff;
         }
-    }
-//    std::cout << "do the rest" << std::endl;
+	}
 
     if(det != nullptr)
     {
@@ -1155,8 +1149,8 @@ matrix & matrix::invert(double * det)
         }
     }
 
-    // 3) divide on diagonal elements
-	for(int i = 0; i < size; ++i) // which line to divide
+    /// 3) divide on diagonal elements
+	for(int i = 0; i < size; ++i) /// which line to divide
     {
         tempMat[i] /= initMat[i][i];
     }
@@ -1261,7 +1255,7 @@ matrix operator * (const matrix & lhs, const matrix & rhs)
 			result[i] += lhs[i][j] * rhs[j];
 		}
 	}
-#endif // omp
+#endif /// omp
 
 
 #endif

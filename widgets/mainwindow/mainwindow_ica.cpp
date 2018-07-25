@@ -8,7 +8,7 @@
 
 using namespace myOut;
 
-void MainWindow::ICA() // fastICA
+void MainWindow::ICA() /// fastICA
 {
 	const uint numOfICs = ui->numOfIcSpinBox->value(); /// usually 19
 	const double eigenValuesTreshold = std::pow(10., - ui->svdDoubleSpinBox->value());
@@ -50,8 +50,13 @@ void MainWindow::ICA() // fastICA
 
 
 	matrix components = icaClassInstance.getComponents();
-//	components.vertCat(resMatBackup); /// comment to drop all non-EEG channels
+#if 0
+	/// append all non-EEG channels
+	components.vertCat(resMatBackup);
+#else
+	/// append only markers
 	components.push_back(globalEdf.getMarkArr());
+#endif
 
 	/// save ICA file as a new edf
 	std::vector<int> chanList(numOfICs);

@@ -22,7 +22,7 @@ const std::vector<std::pair<QString, QString>> guysFBnew {
 			std::make_pair("SRV", "SRV"),
 			std::make_pair("TAA", "TAA"),
 			std::make_pair("TihAA", "TihAA"),
-			std::make_pair("UIA", "UIA")
+			std::make_pair("UIA", "UIA"),
 };
 
 enum class fbGroup {all, experiment, control, other, improved, not_improved};
@@ -82,7 +82,7 @@ const std::map<fbGroup, std::vector<std::pair<QString, QString>>> guysFBfinal{
 					std::make_pair("Markina", "MAM"),			/// low performance
 					std::make_pair("Nikonenko", "NUA"),			/// low performance
 					std::make_pair("Shafikova_s", "SDR"),		/// single data
-					std::make_pair("Tankina_s", "TOA")			/// single data
+					std::make_pair("Tankina_s", "TOA"),			/// single data
 		}
 	},
 	{fbGroup::improved,
@@ -112,7 +112,23 @@ const std::map<fbGroup, std::vector<std::pair<QString, QString>>> guysFBfinal{
 	}
 };
 
-const QStringList leest_less = {
+
+const QStringList matiList
+{
+	"ADA",
+	"BSA",
+	"FEV",
+	"KMX",
+	"NOS",
+	"NVV",
+	"PYV",
+	"SDA",
+	"SDV",
+	"SIV",
+};
+
+const QStringList leest_less
+{
 	"Berlin-Henis",
 	"Bushenkov",
 	"CHemerisova",
@@ -126,25 +142,28 @@ const QStringList leest_less = {
 	"Sarvardinova",
 	"SHkarina",
 	"Vasina",
-//    "Zelenkov"
+//	"Zelenkov",
 };
-const QStringList leest_more = {
+const QStringList leest_more
+{
 	"Burmistrova",
 	"Garmotko",
 	"Hanenya",
 	"Kalinichenko",
-	"Tinyanova"
+	"Tinyanova",
 };
 
-const QStringList leest_non = {
+const QStringList leest_non
+{
 	"tactile",
 	"Dasha_GO",
 	"Dasha_GZ",
 	"Dasha_smell",
-	"Dasha_smell_2"
+	"Dasha_smell_2",
 };
 
-const QStringList leest_mri = {
+const QStringList leest_mri
+{
 	"Ali-Zade",
 	"Atanov",
 	"Azieva",
@@ -166,9 +185,9 @@ const QStringList leest_mri = {
 	"Sushinsky2",
 	"Umanskaya",
 	"Vorobiev",
-	"Zavyalova"
+	"Zavyalova",
 };
-} // end namespace subj
+} /// end namespace subj
 
 
-#endif // SUBJECTS_H
+#endif /// SUBJECTS_H

@@ -44,7 +44,7 @@ MainWindow::MainWindow() :
     {
         helpString += fileMark + "; ";
     }
-    helpString.resize(helpString.size() - 2); // remove the last "; "
+    helpString.resize(helpString.size() - 2); /// remove the last "; "
     ui->fileMarkersLineEdit->setText(helpString);
 	ui->fileMarkersLineEdit->setText(helpString);
 
@@ -71,7 +71,7 @@ MainWindow::MainWindow() :
     ui->windowLengthSpinBox->setValue(4);
     ui->realsButton->setChecked(true);
 
-	ui->numOfIcSpinBox->setMaximum(19); // generality
+	ui->numOfIcSpinBox->setMaximum(19); /// generality
     ui->numOfIcSpinBox->setMinimum(2);
     ui->numOfIcSpinBox->setValue(19);
 
@@ -123,8 +123,8 @@ MainWindow::MainWindow() :
     ui->matiPieceLengthSpinBox->setMaximum(64);
     ui->matiPieceLengthSpinBox->setMinimum(4);
     ui->matiPieceLengthSpinBox->setValue(16);
-	ui->markerBinTimeSpinBox->setMaximum(250 * 60 * 60 * 2);   // 2 hours
-	ui->markerSecTimeDoubleSpinBox->setMaximum(60 * 60 * 2); // 2 hours
+	ui->markerBinTimeSpinBox->setMaximum(250 * 60 * 60 * 2);   /// 2 hours
+	ui->markerSecTimeDoubleSpinBox->setMaximum(60 * 60 * 2); /// 2 hours
 
 	ui->eogBipolarCheckBox->setChecked(false);
 	ui->progressBar->setValue(0);
@@ -150,11 +150,8 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->markerSetPushButton, SIGNAL(clicked()), this, SLOT(markerSetSlot()));
 	QObject::connect(ui->markerBinTimeSpinBox, SIGNAL(valueChanged(int))this, SLOT(markerSetSecTime(int)));
 
-//	QObject::connect(ui->markerDecimalLineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetBinValueSlot()));
 	QObject::connect(ui->markerDecimalLineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetBinValueSlot()));
-//	QObject::connect(ui->markerBin0LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
 	QObject::connect(ui->markerBin0LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
-//	QObject::connect(ui->markerBin1LineEdit, SIGNAL(returnPressed()), this, SLOT(markerSetDecValueSlot()));
 	QObject::connect(ui->markerBin1LineEdit, SIGNAL(textChanged(QString)), this, SLOT(markerSetDecValueSlot()));
 
 	globalEdf.setMatiFlag(ui->matiCheckBox->isChecked());
@@ -330,7 +327,7 @@ void MainWindow::processEyes()
         }
     }
     /// or (eogs, eegs)
-	myLib::eyesProcessingStatic(eogs); // for first 19 eeg channels
+	myLib::eyesProcessingStatic(eogs); /// for first 19 eeg channels
 }
 
 void MainWindow::showNet()
@@ -383,8 +380,11 @@ void MainWindow::setEdfFile(const QString & filePath)
 	DEFS.dirMkdir("Help/wm");
 	DEFS.dirMkdir("Help/PA");
 	DEFS.dirMkdir("Help/wts");
-//	DEFS.dirMkdir("amod");
-//	DEFS.dirMkdir("auxEdfs");
+	if(DEFS.getUser() == username::Mati)
+	{
+		DEFS.dirMkdir("amod");
+		DEFS.dirMkdir("auxEdfs");
+	}
 
 	readData();
 }

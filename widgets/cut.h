@@ -52,7 +52,7 @@ private:
 	void undo();
 	void saveAs(const QString & addToName);
 	void setMarker(int offset, int newVal);
-	bool checkBadRange(int start, int end, QString func); // return true if too long
+	bool checkBadRange(int start, int end, QString func); /// return true if too long
 
 	void paintData(matrix & drawDataLoc);
 	void repaintData(matrix & drawDataLoc, int sta, int fin);
@@ -75,13 +75,12 @@ private:
 	void findPrevMark(double mark);
 	void smartFindFind(bool forward);
 	void smartFindShowValues();
-//	bool smartFindCheck(); // return true if bad window
+//	bool smartFindCheck(); /// return true if bad window
 
-//	void drawSamples();
 	std::vector<std::pair<int, QColor>> makeColouredChans();
 	template<class...params> void logAction(const params &... par);
 	void applyLog(const QString & logPath);
-	void iitpLog(const QString & typ, int num = 2, const QString & add = QString()); // to deprecate
+	void iitpLog(const QString & typ, int num = 2, const QString & add = QString()); /// to deprecate
 
 public slots:
 	void browseSlot();
@@ -140,7 +139,6 @@ protected:
 private:
 	struct thrParam
 	{
-//		QString name{};
 		double mean;
 		double sigma;
 		int numChan;
@@ -178,7 +176,7 @@ private:
 	QStringList filesList;
 	QStringList::iterator fileListIter{};
 	QString currentFile; /// deprecate to edfFile filePath (as fileType::real will be deprecated)
-	int addNum = 0; // for cut() winds
+	int addNum = 0; /// for cut() winds
 
 	/// copy, split, paste, undo
 	matrix copyData{};
@@ -188,7 +186,7 @@ private:
 
 	/// for auto lookup for bad points
 	const int smartFindNumCh = 19;
-	const int smartFindWindLen = std::pow(2, 7); // = 128 = 0.5 sec
+	const int smartFindWindLen = std::pow(2, 7); /// = 128 = 0.5 sec
 	std::vector<matrix> smartFindLearnData{}; /// to find bad points
 
 	std::vector<std::vector<thrParam>> smartFindThresholds{}; /// [channel][param]
@@ -201,4 +199,4 @@ private:
 	std::vector<double> paramAbsThreshold{};
 };
 
-#endif // CUT_H
+#endif /// CUT_H

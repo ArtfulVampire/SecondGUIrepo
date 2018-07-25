@@ -111,7 +111,7 @@ void drawWaveletMtlb(const matrix & inData, QString picPath)
 			painter.setPen(wvlt::hueJet(wvlt::range, drawData[i][j]));
 
 			painter.drawRect( j * barL,
-							  pic.height() - (i + 1) * barH, // +1 'cause left UPPER
+							  pic.height() - (i + 1) * barH, /// +1 'cause left UPPER
 							  barL,
 							  barH);
 		}
@@ -152,30 +152,30 @@ void drawWaveletMtlb(const matrix & inData, QString picPath)
 
 
 
-const int timeStep = ceil(0.02 * DEFS.getFreq());
-const double freqMax = 20.; // DEFS.getRightFreq()
-const double freqMin = 2.; // DEFS.getLeftFreq()
+const int timeStep = std::ceil(0.02 * DEFS.getFreq());
+const double freqMax = 20.; /// DEFS.getRightFreq()
+const double freqMin = 2.; /// DEFS.getLeftFreq()
 const double freqStep = 1.;
 const int range = 1024;
-const double pi_sqrt = sqrt(M_PI);
+const double pi_sqrt = std::sqrt(M_PI);
 
 #if !WAVELET_FREQ_STEP_TYPE
-const int numberOfFreqs = int(log(wvlt::freqMin/wvlt::freqMax) / log(wvlt::freqStep)) + 1;
+const int numberOfFreqs = int(std::log(wvlt::freqMin/wvlt::freqMax) / std::log(wvlt::freqStep)) + 1;
 #else
 const int numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
 #endif
 
 
 
-double const morletFall = 9.; // coef in matlab = mF^2 / (2 * pi^2);
-double morletCosNew(double const freq1, // Hz
+double const morletFall = 9.; /// coef in matlab = mF^2 / (2 * pi^2);
+double morletCosNew(double const freq1, /// Hz
 					const double timeShift,
 					const double time)
 {
 	double freq = freq1 * 2. * pi;
-	double res =  sqrt(2. * freq / pi_sqrt / morletFall)
+	double res =  std::sqrt(2. * freq / pi_sqrt / morletFall)
 				  * cos(freq * (time - timeShift) / DEFS.getFreq())
-				  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / DEFS.getFreq(), 2));
+				  * exp(-0.5 * std::pow(freq / morletFall * (time - timeShift) / DEFS.getFreq(), 2));
 	return res;
 }
 
@@ -184,9 +184,9 @@ double morletSinNew(double const freq1,
 					const double time)
 {
 	double freq = freq1 * 2. * pi;
-	double res =  sqrt(2. * freq / pi_sqrt / morletFall)
+	double res =  std::sqrt(2. * freq / pi_sqrt / morletFall)
 				  * sin(freq * (time - timeShift) / DEFS.getFreq())
-				  * exp(-0.5 * pow(freq / morletFall * (time - timeShift) / DEFS.getFreq(), 2));
+				  * exp(-0.5 * std::pow(freq / morletFall * (time - timeShift) / DEFS.getFreq(), 2));
 	return res;
 }
 
@@ -195,7 +195,7 @@ void wavelet(QString filePath,
 			 int channelNumber,
 			 int ns)
 {
-	// continious
+	/// continious
 	double helpDouble;
 
 	matrix fileData = myLib::readPlainData(filePath);
@@ -209,12 +209,12 @@ void wavelet(QString filePath,
 
 	matrix temp;
 	temp.resize(wvlt::numberOfFreqs,
-				ceil(fileData.cols() / wvlt::timeStep) + 1);
+				std::ceil(fileData.cols() / wvlt::timeStep) + 1);
 	temp.fill(0.);
 
 	//    mat temp;
 	//    temp.resize(wvlt::numberOfFreqs);
-	//    const int num = ceil(fileData.cols() / wvlt::timeStep);
+	//    const int num = std::ceil(fileData.cols() / wvlt::timeStep);
 	//    std::for_each(temp.begin(),
 	//                  temp.end(),
 	//                  [num](vec & in){in.resize(num, 0.); });
@@ -235,7 +235,7 @@ void wavelet(QString filePath,
 	   freq -= wvlt::freqStep)
 #endif
 	{
-		//        timeStep = DEFS.getFreq()Freq / 2.5;  // in time-bins 250 Hz
+		//        timeStep = DEFS.getFreq()Freq / 2.5;  /// in time-bins 250 Hz
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < fileData.cols(); currSlice += wvlt::timeStep)
 		{
@@ -244,7 +244,7 @@ void wavelet(QString filePath,
 			tempI = 0.;
 
 			/////// TO LOOK
-			// set left & right limits of counting - should be 2.5 * morletFall... but works so
+			/// set left & right limits of counting - should be 2.5 * morletFall... but works so
 			kMin = std::max(0, int(currSlice - 3 * morletFall * DEFS.getFreq() / freq));
 			kMax = std::min(int(fileData.cols()), int(currSlice + 3 * morletFall * DEFS.getFreq() / freq));
 
@@ -253,20 +253,20 @@ void wavelet(QString filePath,
 				tempI += (morletSinNew(freq, currSlice, k) * input[k]);
 				tempR += (morletCosNew(freq, currSlice, k) * input[k]);
 			}
-			temp[currFreqNum][currSliceNum] = pow(tempI, 2) + pow(tempR, 2);
+			temp[currFreqNum][currSliceNum] = std::pow(tempI, 2) + std::pow(tempR, 2);
 			++currSliceNum;
 		}
 		++currFreqNum;
 	}
 
-	// maximal value from temp matrix
+	/// maximal value from temp matrix
 	helpDouble = temp.maxVal();
 	//    helpDouble = 800000;
 
 	//    std::cout << helpDouble << std::endl;
 	//    helpDouble = 1e5;
 
-	//    /// test for maxVal
+	///    /// test for maxVal
 	//    ofstream str;
 	//    str.open("/media/Files/Data/wav.txt", ios_base::app);
 	//    str << helpDouble << std::endl;
@@ -283,16 +283,16 @@ void wavelet(QString filePath,
 	   freq -= wvlt::freqStep)
 #endif
 	{
-		//        timeStep = DEFS.getFreq()Freq / 2.5;  // in time-bins 250 Hz
+		//        timeStep = DEFS.getFreq()Freq / 2.5;  /// in time-bins 250 Hz
 
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < fileData.cols(); currSlice += wvlt::timeStep)
 		{
 			//            std::cout << temp[currFreqNum][currSliceNum] << std::endl;
-			numb = fmin(floor(temp[currFreqNum][currSliceNum] / helpDouble * wvlt::range),
+			numb = fmin(std::floor(temp[currFreqNum][currSliceNum] / helpDouble * wvlt::range),
 						wvlt::range);
 
-			//             numb = pow(numb/wvlt::range, 0.8) * wvlt::range; // sligthly more than numb, may be dropped
+			//             numb = std::pow(numb/wvlt::range, 0.8) * wvlt::range; /// sligthly more than numb, may be dropped
 
 			painter.setBrush(QBrush(wvlt::hueJet(wvlt::range, numb)));
 			painter.setPen(wvlt::hueJet(wvlt::range, numb));
@@ -356,12 +356,12 @@ void wavelet(QString filePath,
 template <typename signalType>
 matrix countWavelet(const signalType & inSignal)
 {
-	// continious
+	/// continious
 	int NumOfSlices = inSignal.size();
 
 	matrix res;
 	res.resize(wvlt::numberOfFreqs,
-			   ceil(NumOfSlices / wvlt::timeStep) + 1);
+			   std::ceil(NumOfSlices / wvlt::timeStep) + 1);
 	res.fill(0.);
 
 	double tempR = 0., tempI = 0.;
@@ -378,7 +378,7 @@ matrix countWavelet(const signalType & inSignal)
 	   freq -= wvlt::freqStep)
 #endif
 	{
-		//        timeStep = DEFS.getFreq()Freq / 2.5;  // in time-bins 250 Hz
+		//        timeStep = DEFS.getFreq()Freq / 2.5;  /// in time-bins 250 Hz
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
 		{
@@ -387,7 +387,7 @@ matrix countWavelet(const signalType & inSignal)
 			tempI = 0.;
 
 			/////// TO LOOK
-			// set left & right limits of counting - should be 2.5 * morletFall... but works so
+			/// set left & right limits of counting - should be 2.5 * morletFall... but works so
 			kMin = std::max(0, int(currSlice - 3 * morletFall * DEFS.getFreq() / freq));
 			kMax = std::min(NumOfSlices, int(currSlice + 3 * morletFall * DEFS.getFreq() / freq));
 
@@ -396,13 +396,13 @@ matrix countWavelet(const signalType & inSignal)
 				tempI += (morletSinNew(freq, currSlice, k) * inSignal[k]);
 				tempR += (morletCosNew(freq, currSlice, k) * inSignal[k]);
 			}
-			res[currFreqNum][currSliceNum] = (pow(tempI, 2) + pow(tempR, 2)) / 1e5; // ~1
+			res[currFreqNum][currSliceNum] = (std::pow(tempI, 2) + std::pow(tempR, 2)) / 1e5; /// ~1
 
 			++currSliceNum;
 		}
 		++currFreqNum;
 	}
-	// no normalization
+	/// no normalization
 	return res;
 }
 
@@ -411,13 +411,13 @@ matrix countWavelet(const signalType & inSignal)
 double red(int range, double j, double V, double S)
 {
 	double part = j / double(range);
-	// matlab
+	/// matlab
 	if    (0. <= part && part <= wvlt::colDots[0]) return V*(1.-S);
 	else if(wvlt::colDots[0] < part && part <= wvlt::colDots[1]) return V*(1.-S);
 	else if(wvlt::colDots[1] < part && part <= wvlt::colDots[2]) return V*(1.-S) + V*S*(part-wvlt::colDots[1])/(wvlt::colDots[2] - wvlt::colDots[1]);
 	else if(wvlt::colDots[2] < part && part <= wvlt::colDots[3]) return V;
 	else if(wvlt::colDots[3] < part && part <= 1.) return V - V*S*(part-wvlt::colDots[3])/(1 - wvlt::colDots[3])/2.;
-	// old
+	/// old
 	if    (0.000 <= part && part <= 0.167) return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.;
 	else if(0.167 < part && part <= 0.400) return V*(1.-S);
 	else if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
@@ -430,13 +430,13 @@ double green(int range, double j, double V, double S)
 {
 	double part = j / double(range);
 	double hlp = 1.0;
-	// matlab
+	/// matlab
 	if    (0.0 <= part && part <= wvlt::colDots[0]) return V*(1.-S);
 	else if(wvlt::colDots[0] < part && part <= wvlt::colDots[1]) return V*(1.-S) + V*S*(part-wvlt::colDots[0])/(wvlt::colDots[1] - wvlt::colDots[0]);
 	else if(wvlt::colDots[1] < part && part <= wvlt::colDots[2]) return V;
 	else if(wvlt::colDots[2] < part && part <= wvlt::colDots[3]) return V - V*S*(part-wvlt::colDots[2])/(wvlt::colDots[3] - wvlt::colDots[2]);
 	else if(wvlt::colDots[3] < part && part <= 1.) return V*(1.-S);
-	// old
+	/// old
 	if    (0.000 <= part && part <= 0.167) return V*(1.-S);
 	else if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
 	else if(0.400 < part && part <= 0.500) return V-V*S*(1.-hlp);
@@ -456,7 +456,7 @@ double blue(int range, double j, double V, double S)
 	else if(wvlt::colDots[2] < part && part <= wvlt::colDots[3]) return V*(1.-S);
 	else if(wvlt::colDots[3] < part && part <= 1.) return V*(1.-S);
 
-	// old
+	/// old
 	if    (0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
 	else if(0.167 < part && part <= 0.400) return V;
 	else if(0.400 < part && part <= 0.500) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
@@ -470,8 +470,8 @@ double blue(int range, double j, double V, double S)
 
 QColor hueJet(int range, double j)
 {
-	if(j > range) j = range; // bicycle for no black colour
-	if(j < 0) j = 0; // bicycle for no black colour
+	if(j > range) j = range; /// bicycle for no black colour
+	if(j < 0) j = 0; /// bicycle for no black colour
 	//    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
 	return QColor(255. * red(range, j),
 				  255. * green(range, j),
@@ -481,7 +481,7 @@ QColor hueJet(int range, double j)
 void drawWavelet(QString picPath,
 				 const matrix & inData)
 {
-	int NumOfSlices = ceil(inData.cols() * wvlt::timeStep);
+	int NumOfSlices = std::ceil(inData.cols() * wvlt::timeStep);
 	QPixmap pic(NumOfSlices, 1000);
 	pic.fill();
 	QPainter painter;
@@ -504,10 +504,10 @@ void drawWavelet(QString picPath,
 		currSliceNum = 0;
 		for(int currSlice = 0; currSlice < NumOfSlices; currSlice += wvlt::timeStep)
 		{
-			numb = fmin(floor(inData[currFreqNum][currSliceNum] * wvlt::range), wvlt::range);
+			numb = fmin(std::floor(inData[currFreqNum][currSliceNum] * wvlt::range), wvlt::range);
 
-			// sligthly more than numb, may be dropped
-			numb = pow(numb/wvlt::range, 0.6) * wvlt::range;
+			/// sligthly more than numb, may be dropped
+			numb = std::pow(numb/wvlt::range, 0.6) * wvlt::range;
 
 			painter.setBrush(QBrush(wvlt::hueJet(wvlt::range, numb)));
 			painter.setPen(wvlt::hueJet(wvlt::range, numb));

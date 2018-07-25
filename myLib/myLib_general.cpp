@@ -91,12 +91,12 @@ QString rerefChannel(const QString & initialRef,
 
 }
 
-QString setFileName(const QString & initNameOrPath) // append _num before the dot
+QString setFileName(const QString & initNameOrPath) /// append _num before the dot
 {
     QString beforeDot = initNameOrPath;
     beforeDot.resize(beforeDot.lastIndexOf('.'));
 
-    QString afterDot = initNameOrPath; // with the dot
+    QString afterDot = initNameOrPath; /// with the dot
     afterDot = afterDot.right(afterDot.length() - afterDot.lastIndexOf('.'));
 
     QString helpString;
@@ -109,15 +109,15 @@ QString setFileName(const QString & initNameOrPath) // append _num before the do
     return helpString;
 }
 
-QString getExpNameLib(const QString & filePath, bool shortened) // getFileName
+QString getExpNameLib(const QString & filePath, bool shortened) /// getFileName
 {
     QString hlp;
     hlp = (filePath);
-	hlp = hlp.right(hlp.length() - hlp.lastIndexOf('/') - 1); // ExpName.edf
-    hlp = hlp.left(hlp.lastIndexOf('.')); // ExpName
+	hlp = hlp.right(hlp.length() - hlp.lastIndexOf('/') - 1); /// ExpName.edf
+    hlp = hlp.left(hlp.lastIndexOf('.')); /// ExpName
 	if(shortened)
 	{
-		hlp = hlp.left(hlp.indexOf('_')); // 
+		hlp = hlp.left(hlp.indexOf('_')); /// 
 	}
     return hlp;
 }
@@ -126,23 +126,6 @@ QString getDirPathLib(const QString & filePath)
 {
 	return filePath.left(filePath.lastIndexOf('/'));
 }
-
-
-//QString getFileMarker(const QString & fileName, const QStringList & markers)
-//{
-//	for(const QString & fileMark : markers)
-//    {
-//        QStringList lst = fileMark.split(' ', QString::SkipEmptyParts);
-//        for(const QString & filter : lst)
-//        {
-//            if(fileName.contains(filter))
-//            {
-//                return filter.right(3); // generality markers appearance
-//            }
-//        }
-//    }
-//    return QString();
-//}
 
 QString getExtension(const QString & filePath)
 {
@@ -281,8 +264,6 @@ template int indexOfVal(const std::vector<QString> & cont, QString val);
 template <typename Container, typename Typ>
 bool contains(const Container & cont, Typ val)
 {
-//	return indexOfVal(cont, val) != cont.size();
-	/// stl
 	return std::find(std::begin(cont), std::end(cont), val) != std::end(cont);
 }
 template bool contains(const std::vector<int> & cont, int val);
@@ -364,13 +345,13 @@ void writeBytes(FILE * fil, int value, int numBytes)
 	int tempInt;
 	for(int i = 0; i < numBytes; ++i)
 	{
-		tempInt = (value / int(pow(256, i)))%256;
+		tempInt = (value / int(std::pow(256, i)))%256;
 		writeByte(fil, tempInt);
 	}
 }
 
 
-int len(const QString & s) // lentgh till double \0-byte for EDF+annotations
+int len(const QString & s) /// lentgh till double \0-byte for EDF+annotations
 {
 	int l = 0;
 	for(int i = 0; i < 100500; ++i)
@@ -441,7 +422,7 @@ double areSimilarFiles(const QString & path1,
 	{
 		fil1 >> dat1;
 		fil2 >> dat2;
-		sum += pow(dat1 - dat2, 2);
+		sum += std::pow(dat1 - dat2, 2);
 		++count;
 	}
 	fil1.close();
@@ -521,7 +502,7 @@ void cleanDir(QString dirPath, QString nameFilter, bool ext)
 
 void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 {
-	// http:// soundfile.sapp.org/doc/WaveFormat/
+	/// http:/// soundfile.sapp.org/doc/WaveFormat/
 
 
 	FILE * outFile;
@@ -542,64 +523,64 @@ void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 	const int byteRate = sampleFreq * numChannels * bitsPerSample / 8;
 	const int blockAlign = numChannels * bitsPerSample / 8;
 
-	// RIFF
+	/// RIFF
 	writeByte(outFile, 0x52);
 	writeByte(outFile, 0x49);
 	writeByte(outFile, 0x46);
 	writeByte(outFile, 0x46);
 
-	// chunksize = 44 + ns * numSamples * bytesPerSample
+	/// chunksize = 44 + ns * numSamples * bytesPerSample
 	writeBytes(outFile, chunkSize, 4);
 
-	// WAVE
+	/// WAVE
 	writeByte(outFile, 0x57);
 	writeByte(outFile, 0x41);
 	writeByte(outFile, 0x56);
 	writeByte(outFile, 0x45);
 
-	// fmt
+	/// fmt
 	writeByte(outFile, 0x66);
 	writeByte(outFile, 0x6d);
 	writeByte(outFile, 0x74);
 	writeByte(outFile, 0x20);
 
-	// Subchunk1Size = 16 for pcm
+	/// Subchunk1Size = 16 for pcm
 	writeBytes(outFile, 16, 4);
 
-	// audioFormat = 1 PCM
+	/// audioFormat = 1 PCM
 	writeBytes(outFile, 1, 2);
 
-	// numChannels
+	/// numChannels
 	writeBytes(outFile, numChannels, 2);
 
-	// sampleRate
+	/// sampleRate
 	writeBytes(outFile, sampleFreq, 4);
 
-	// BYTErate
+	/// BYTErate
 	writeBytes(outFile, byteRate, 4);
 
-	// block align
+	/// block align
 	writeBytes(outFile, blockAlign, 2);
 
-	// bitsPerSample
+	/// bitsPerSample
 	writeBytes(outFile, bitsPerSample, 2);
 
-	// data
+	/// data
 	writeByte(outFile, 0x64);
 	writeByte(outFile, 0x61);
 	writeByte(outFile, 0x74);
 	writeByte(outFile, 0x61);
 
-	// subchunk2size
+	/// subchunk2size
 	writeBytes(outFile, subchunk2size, 4);
 
-	// the data itself
+	/// the data itself
 	int currVal;
 	for(int i = 0; i < numSamples; ++i)
 	{
 		for(int j = 0; j < numChannels; ++j)
 		{
-			currVal = int(inData[i] * pow(256, bitsPerSample/8/numChannels) / maxAmpl);
+			currVal = int(inData[i] * std::pow(256, bitsPerSample/8/numChannels) / maxAmpl);
 			writeBytes(outFile, currVal, int(bitsPerSample/8/numChannels));
 		}
 	}
@@ -618,7 +599,7 @@ template uint indexOfMin(const std::valarray<double> & cont);
 template uint indexOfMin(const std::list<double> & cont);
 
 
-} // namespace myLib
+} /// namespace myLib
 
 
 

@@ -141,7 +141,6 @@ public:
 
 
 private:
-//	std::ostream & ostr = std::cout;
 	bool isGood{false};
 	std::vector<double> freqs;
 	std::vector<ansType> readAns(const QString & ansPath);
@@ -231,6 +230,6 @@ void successiveNetPrecleanWinds(const QString & windsPath);
 
 
 
-} // end namespace fb
+} /// end namespace fb
 
-#endif // EDFFILE_FB_H
+#endif /// EDFFILE_FB_H

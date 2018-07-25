@@ -99,17 +99,6 @@ Typ mean(const std::vector<Typ> & arr)
 template double mean(const std::vector<double> & arr);
 template std::complex<double> mean(const std::vector<std::complex<double>> & arr);
 
-//template <typename Typ, template <typename, typename> class Cont>
-//Typ mean(const Cont<Typ> & arr)
-//{
-//	return std::accumulate(std::begin(arr), std::end(arr), 0.) / Typ(arr.size());
-//}
-//template double mean(const std::vector<double> & arr);
-
-
-
-
-
 template <class Container>
 double covariance(const Container & arr1, const Container & arr2)
 {
@@ -118,7 +107,6 @@ double covariance(const Container & arr1, const Container & arr2)
 }
 template double covariance(const std::valarray<double> & arr1, const std::valarray<double> & arr2);
 //template double covariance(const std::vector<double> & arr1, const std::vector<double> & arr2);
-//template double covariance(const Container & arr1, const Container & arr2);
 
 template <class Container>
 double correlation(const Container & arr1, const Container & arr2)
@@ -127,17 +115,16 @@ double correlation(const Container & arr1, const Container & arr2)
 }
 template double correlation(const std::valarray<double> & arr1, const std::valarray<double> & arr2);
 //template double correlation(const std::vector<double> & arr1, const std::vector<double> & arr2);
-//template double covariance(const Container & arr1, const Container & arr2);
 
 
 std::valarray<double> softmax(const std::valarray<double> & in)
 {
-	// -1 for bias
+	/// -1 for bias
 	std::valarray<double> tmp = exp(in);
 	double sum = std::accumulate(std::begin(tmp),
 								 std::end(tmp) - 1,
 								 0.);
-	return tmp / sum; // dont care about the last(bias)
+	return tmp / sum; /// dont care about the last(bias)
 
 }
 
@@ -195,7 +182,6 @@ Container centered(const Container & arr)
 	return res;
 }
 template std::vector<double> centered(const std::vector<double> & arr);
-//template Container centered(const Container & arr);
 
 template <class Container>
 double sigmaToMean(const Container & arr)
@@ -204,7 +190,6 @@ double sigmaToMean(const Container & arr)
 }
 template double sigmaToMean(const std::valarray<double> & arr);
 //template double sigmaToMean(const std::vector<double> & arr);
-//template double sigmaToMean(const Container & arr);
 
 template <class Container>
 double norma(const Container & in)
@@ -226,9 +211,6 @@ double prod(const Container & in1, const Container & in2)
 }
 template double prod(const std::valarray<double> & in1, const std::valarray<double> & in2);
 template double prod(const std::vector<double> & in1, const std::vector<double> & in2);
-//template double prod(const Container & in1, const Container & in2);
-//template double prod(const Container & in1, const Container & in2);
-
 
 template <class Container>
 double normaSq(const Container & in)
@@ -249,8 +231,6 @@ double variance(const Container & arr)
 }
 template double variance(const std::valarray<double> & arr);
 //template double variance(const std::vector<double> & arr);
-//template double variance(const Container & arr);
-//template double variance(const Container & arr);
 
 template <class Container>
 double sigma(const Container & arr)
@@ -259,7 +239,6 @@ double sigma(const Container & arr)
 }
 template double sigma(const std::valarray<double> & arr);
 //template double sigma(const std::vector<double> & arr);
-//template double sigma(const Container & arr);
 
 
 template <typename Typ>
@@ -309,5 +288,6 @@ void mix (Container & in)
 				 std::default_random_engine(seed));
 }
 template void mix(std::vector<uint> &);
+template void mix(std::vector<int> &);
 
-} // end of namespace
+} /// end of namespace

@@ -90,16 +90,26 @@ public:
 
     /// NEED CHECK
     void successiveProcessing();
-	Classifier::avType successiveByEDF(const QString & edfPath1, const QString & ansPath1,
-									   const QString & edfPath2, const QString & ansPath2);
+	/// to compare FeedbackNew and FeedbackFinal
+	Classifier::avType successiveByEDF(const fb::FBedf & file1,
+									   const fb::FBedf & file2);
+	Classifier::avType successiveByEDF(const QString & edfPath,
+									   const QString & ansPath1,
+									   const QString & edfPath2,
+									   const QString & ansPath2);
+	Classifier::avType successiveByEDFfinal(const fb::FBedf & file1,
+											const fb::FBedf & file2);
 	Classifier::avType successiveByEDFfinal(const QString & edfPath1,
 											const QString & ansPath1,
 											const QString & edfPath2,
 											const QString & ansPath2);
-	Classifier::avType successiveByEDFfinal(const fb::FBedf & file1,
-											const fb::FBedf & file2);	
+	std::pair<Classifier::avType, Classifier::avType>
+	successiveByEDFfinalBoth(const fb::FBedf & file1,
+							 const fb::FBedf & file2);
+
+
 	void successivePreclean(const QString & spectraPath,
-							const QStringList & filters = {"*_train*"});
+							const QStringList & filters = {"*_train*"}); /////////////////
 	void innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ansType howSolved);
 
     /// setsgets
@@ -117,10 +127,8 @@ public:
 	const ClassifierData & getClassifierData() const { return myClassifierData; }
 
 	/// data
-    void loadData(const QString & spectraPath = DEFS.dirPath()
-												+ "/SpectraSmooth",
+	void loadData(const QString & spectraPath = DEFS.dirPath() + "/SpectraSmooth",
 				  const QStringList & filters = {"*.psd"});
-//	void loadData(const QString & matrix, const std::vector<uint> & types);
 	void loadDataUCI(const QString & setName);
 	void loadDataXenia(const QString & filesPath = DEFS.dirPath() + "/Xenia_tables",
 					   const QString & type = "bd_new");
@@ -152,4 +160,4 @@ public slots:
     void writeWtsSlot();
 };
 
-#endif // NET_H
+#endif /// NET_H

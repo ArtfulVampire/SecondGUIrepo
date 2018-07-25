@@ -104,10 +104,9 @@ QPixmap histogram(const std::valarray<double> & arr,
 	}
 
 	/// complex sheet
-	const double denom = std::pow(10, -std::floor(log10(xMax - xMin)));
+	const double denom = std::pow(10, -std::floor(std::log10(xMax - xMin)));
 	xMin = std::floor(xMin * denom) / denom;
 	xMax = std::ceil(xMax * denom) / denom;
-//	std::cout << denom  << "\t" << xMin << "\t" << xMax << std::endl;
 
 	std::for_each(std::begin(arr),
 				  std::end(arr),
@@ -188,8 +187,8 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 	int length = arr.size();
 
 	sigma = smLib::variance(arr);
-	sigma = sqrt(sigma);
-	double h = 1.06 * sigma * pow(length, -0.2);
+	sigma = std::sqrt(sigma);
+	double h = 1.06 * sigma * std::pow(length, -0.2);
 
 	QPixmap pic(1000, 400);
 	QPainter pnt;
@@ -206,19 +205,19 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 	xMax = *std::max_element(std::begin(arr),
 							 std::end(arr));
 
-	xMin = floor(xMin);
-	xMax = ceil(xMax);
+	xMin = std::floor(xMin);
+	xMax = std::ceil(xMax);
 
-	//    sigma = (xMax - xMin);
-	//    xMin -= 0.1 * sigma;
-	//    xMax += 0.1 * sigma;
+	///    sigma = (xMax - xMin);
+	///    xMin -= 0.1 * sigma;
+	///    xMax += 0.1 * sigma;
 
-	//    // generality
-	//    xMin = -20;
-	//    xMax = 20;
+	///    /// generality
+	///    xMin = -20;
+	///    xMax = 20;
 
-	//    xMin = 65;
-	//    xMax = 100;
+	///    xMin = 65;
+	///    xMax = 100;
 
 
 	for(int i = 0; i < pic.width(); ++i)
@@ -247,7 +246,7 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 				 pic.width(),
 				 pic.height() * 0.9);
 
-	// x markers - 10 items
+	/// x markers - 10 items
 	for(int i = xMin; i <= xMax; i += (xMax - xMin) / 10)
 	{
 		pnt.drawLine((i - xMin) / (xMax - xMin) * pic.width(),
@@ -283,16 +282,16 @@ QPixmap kernelEst(const std::valarray<double> & arr)
 	xMin = std::floor(xMin);
 	xMax = std::ceil(xMax);
 
-	//    sigma = (xMax - xMin);
-	//    xMin -= 0.1 * sigma;
-	//    xMax += 0.1 * sigma;
+	///    sigma = (xMax - xMin);
+	///    xMin -= 0.1 * sigma;
+	///    xMax += 0.1 * sigma;
 
-	//    // generality
-	//    xMin = -20;
-	//    xMax = 20;
+	///    /// generality
+	///    xMin = -20;
+	///    xMax = 20;
 
-	//    xMin = 65;
-	//    xMax = 100;
+	///    xMin = 65;
+	///    xMax = 100;
 
 
 	std::vector<double> values(pic.width(), 0.);
@@ -321,7 +320,7 @@ QPixmap kernelEst(const std::valarray<double> & arr)
 				 pic.width(),
 				 pic.height() * 0.9);
 
-	// x markers - 10 items
+	/// x markers - 10 items
 	for(double i = xMin; i <= xMax; i += (xMax - xMin) / 10.)
 	{
 		pnt.drawLine((i - xMin) / (xMax - xMin) * pic.width(),
@@ -335,8 +334,9 @@ QPixmap kernelEst(const std::valarray<double> & arr)
 	return pic;
 }
 
-/*
-bool gaussApproval(double * arr, int length) // kobzar page 239
+#if 0
+/// tests on normality
+bool gaussApproval(double * arr, int length) /// kobzar page 239
 {
 	double z;
 	int m = int(length/2);
@@ -345,28 +345,28 @@ bool gaussApproval(double * arr, int length) // kobzar page 239
 	double B = 0.;
 	double W;
 
-	a[0] = 0.899/pow(length-2.4, 0.4162) - 0.02;
+	a[0] = 0.899 / std::pow(length-2.4, 0.4162) - 0.02;
 	for(int j = 1; j <= m; ++j)
 	{
 		z = (length - 2*j + 1.) / (length - 0.5);
-		a[j] = a[0] * (z + 1483 / pow(3.-z, 10.845) + pow(71.61, -10.) / pow(1.1-z, 8.26));
-		B += a[j] * (arr[length-j+1] - arr[j-1]); // or without +1
+		a[j] = a[0] * (z + 1483 / std::pow(3.-z, 10.845) + std::pow(71.61, -10.) / std::pow(1.1-z, 8.26));
+		B += a[j] * (arr[length-j+1] - arr[j-1]); /// or without +1
 	}
 	B *= B;
-	W = (1 - 0.6695 / pow(length, 0.6518)) * disp / B;
+	W = (1 - 0.6695 / std::pow(length, 0.6518)) * disp / B;
 
 	if(W < 1.) return true;
 	return false;
 }
 
 
-bool gaussApproval(QString filePath)
+bool gaussApproval(const QString & filePath)
 {
-//	std::valarray<double> arr = readFileInLine(filePath);
+	std::valarray<double> arr = readFileInLine(filePath);
 	return gaussApproval(arr.data(), arr.size());
 }
 
-bool gaussApproval2(double * arr, int length) // kobzar page 238
+bool gaussApproval2(double * arr, int length) /// kobzar page 238
 {
 	double W = 0.;
 	double disp = variance(arr, length) * length;
@@ -374,9 +374,9 @@ bool gaussApproval2(double * arr, int length) // kobzar page 238
 	double sum = 0.;
 	for(int i = 1; i <= length; ++i)
 	{
-		sum += pow(rankit(i, length), 2.);
+		sum += std::pow(rankit(i, length), 2.);
 	}
-	sum = sqrt(sum);
+	sum = std::sqrt(sum);
 	for(int j = 1; j < length; ++j)
 	{
 		c[j] = rankit(length - j + 1, length) / sum;
@@ -389,7 +389,8 @@ bool gaussApproval2(double * arr, int length) // kobzar page 238
 
 
 }
-*/
+#endif
+
 
 double quantile(double alpha) /// zValue(1 - pValue)
 {
@@ -399,11 +400,13 @@ double quantile(double alpha) /// zValue(1 - pValue)
 
 double normalCumulative(double zVal) /// (1 - pValue)(zValue)
 {
+#if 01
 	/// Kobzar page 27, approx 8
 	return 1. - 0.852 * std::exp(-std::pow((zVal + 1.5774) / 2.0637, 2.34));
-
+#else
 	/// Kobzar page 28, approx 18
-//	return 1 - 0.5 * std::exp(-0.717 * zVal - 0.416 * zVal * zVal);
+	return 1 - 0.5 * std::exp(-0.717 * zVal - 0.416 * zVal * zVal);
+#endif
 
 }
 
@@ -437,15 +440,9 @@ void drawRCP(const std::valarray<double> & values, const QString & picPath)
 	pnt.setPen("black");
 	int length = values.size();
 
-
-
 	int numOfDisp = 4;
-//    double xMin, xMax;
-//    xMin = -numOfDisp;
-//    xMax = numOfDisp;
 
 	std::valarray<double> line(pic.width());
-
 	for(int i = 0; i < pic.width(); ++i)
 	{
 		line[i] = smLib::gaussian( (i - pic.width()/2) / (pic.width()/2.) * numOfDisp );
@@ -466,16 +463,14 @@ void drawRCP(const std::valarray<double> & values, const QString & picPath)
 				 pic.height() * 0.9);
 
 
-	int coordinate;
-
-	for(int i = 0; i < length; ++i) // draw the values
+	for(int i = 0; i < length; ++i) /// draw the values
 	{
-		coordinate = pic.width()/2. * (1. + values[i] / numOfDisp);
-		if(i%2 == 0) // raw data
+		int coordinate = pic.width()/2. * (1. + values[i] / numOfDisp);
+		if(i%2 == 0) /// raw data
 		{
 			pnt.setPen("blue");
 		}
-		else // ica data
+		else /// ica data
 		{
 			pnt.setPen("red");
 		}
@@ -613,7 +608,7 @@ trivector<int> countMannWhitney(const QString & spectraPath,
 	trivector<int> res; /// [class1][class2][NetLength]
 
 
-	// 0 - Spatial, 1 - Verbal, 2 - Rest
+	/// 0 - Spatial, 1 - Verbal, 2 - Rest
 	std::vector<matrix> spectra = myLib::readSpectraDir(spectraPath);
 	const int NetLength = spectra[0][0].size();
 
@@ -659,7 +654,7 @@ trivector<double> countMannWhitneyD(const QString & spectraPath)
 {
 	trivector<double> res;
 
-	// 0 - Spatial, 1 - Verbal, 2 - Rest
+	/// 0 - Spatial, 1 - Verbal, 2 - Rest
 	std::vector<matrix> spectra = myLib::readSpectraDir(spectraPath);
 	const int NetLength = spectra[0][0].size();
 
@@ -756,4 +751,4 @@ double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool 
 template double covariance(const std::vector<double> &arr1, const std::vector<double> &arr2, int length, int shift, bool fromZero);
 template double covariance(const std::valarray<double> &arr1, const std::valarray<double> &arr2, int length, int shift, bool fromZero);
 
-} // namespace myLib
+} /// namespace myLib

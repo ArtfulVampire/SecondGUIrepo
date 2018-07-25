@@ -5,21 +5,21 @@
 namespace myLib
 {
 
-QString fitNumber(double input, int N) // append spaces
+QString fitNumber(double input, int N) /// append spaces
 {
 	QString h;
 	h.setNum(input);
 	h += QString(N, ' ');
 	return h.left(N);
 }
-QString fitString(const QString & input, int N) // append spaces
+QString fitString(const QString & input, int N) /// append spaces
 {
 	QString h(input);
 	h += QString(N, ' ');
 	return h.left(N);
 }
 
-QString rightNumber(const unsigned int input, int N) // prepend zeros
+QString rightNumber(const unsigned int input, int N) /// prepend zeros
 {
 	QString h;
 	h.setNum(input);
@@ -27,7 +27,7 @@ QString rightNumber(const unsigned int input, int N) // prepend zeros
 	return h.right(N);
 }
 
-} // namespace myLib
+} /// namespace myLib
 
 
 
@@ -74,8 +74,11 @@ std::ostream & operator<< (std::ostream & os, const std::complex<double> & toOut
 
 std::ostream & operator<< (std::ostream & os, const QStringList & toOut)
 {
-//	std::string separ = "\t";
+#if 0
+	std::string separ = "\t";
+#else
 	std::string separ = "\r\n";
+#endif
 	for(const QString & in : toOut)
 	{
 		os << in << separ;
@@ -101,4 +104,4 @@ std::ostream & operator<< (std::ostream & os, const QStringList & toOut)
 //template std::ostream & operator << (std::ostream & os, const std::valarray<int> & toOut);
 //template std::ostream & operator << (std::ostream & os, const QList<int> & toOut);
 //template std::ostream & operator << (std::ostream & os, const QList<double> & toOut);
-} // namespace myOut
+} /// namespace myOut

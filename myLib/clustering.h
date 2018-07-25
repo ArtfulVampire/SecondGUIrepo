@@ -50,11 +50,11 @@ void countGradient(const coordType & plainCoords,
 				   std::vector<double> & gradient);
 
 void sammonAddDot(const mat & distOld,
-				  mat & distNew, // change only last coloumn
+				  mat & distNew, /// change only last coloumn
 				  coordType & plainCoords,
 				  const std::vector<int> & placedDots);
 
-void countDistNewAdd(mat & distNew, // change only last coloumn
+void countDistNewAdd(mat & distNew, /// change only last coloumn
 					 const coordType & crds,
 					 const std::vector<int> & placedDots);
 
@@ -76,4 +76,4 @@ double errorSammonAdd(const mat & distOld,
 
 }
 
-#endif // CLUSTERING_H
+#endif /// CLUSTERING_H

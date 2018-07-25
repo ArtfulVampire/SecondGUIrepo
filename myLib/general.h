@@ -27,9 +27,9 @@ std::string funcName(std::string in);
 
 
 
-// small shit
+/// small shit
 void writeWavFile(const std::vector<double> & inData, const QString & outPath);
-int len(const QString & s); // string length for EDF+ annotations
+int len(const QString & s); /// string length for EDF+ annotations
 
 QString kyrToLatin(const QString & in);
 QString getFileName(const QString & filePath, bool withExtension = true);
@@ -39,14 +39,12 @@ QString getExtension(const QString & filePath);
 QString getLabelName(const QString & label);
 QString getPicPath(const QString & dataPath,
 				   const QString & ExpNameDir);
-//QString getFileMarker(const QString & fileName,
-//					  const QStringList & markers);
 int getTypeOfFileName(const QString & fileName,
 					  const QStringList & markers);
 
 void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
 
-QString setFileName(const QString & initNameOrPath); // -> initName_i.ext
+QString setFileName(const QString & initNameOrPath); /// -> initName_i.ext
 
 
 
@@ -92,6 +90,6 @@ void centerMatrixRows(matrix & inData,
 				  const int howManyRows);
 
 
-} // myLib namespace
+} /// myLib namespace
 
 #endif

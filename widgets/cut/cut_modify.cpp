@@ -62,7 +62,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 {
 #if 0
 	QStringList lst = currentFile.split(QRegExp("[_.]"),
-										QString::SkipEmptyParts); // to detect session, type, piece
+										QString::SkipEmptyParts); /// to detect session, type, piece
 	int tempNum = 0;
 	for(int i = 0; i < lst.length(); ++i)
 	{
@@ -76,7 +76,7 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 	int sesNum = lst[tempNum + 1].toInt();
 	int pieceNum = lst[tempNum + 2].toInt();
 
-	if(typeNum != 0 && typeNum != 2) return; // adjust only for counting or composed activity
+	if(typeNum != 0 && typeNum != 2) return; /// adjust only for counting or composed activity
 
 	int newLeftLimit = leftLimit;
 	int newRightLimit = rightLimit;
@@ -89,14 +89,14 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 	while (!myLib::matiCountBit(data3[edfFil.getNs() - 1][newRightLimit], 14)
 		   && newRightLimit < data3.cols())
 	{
-		++newRightLimit; // maximum of Num Of Slices
+		++newRightLimit; /// maximum of Num Of Slices
 	}
 
 
 	std::cout << "newLeftLimit = " << newLeftLimit << std::endl;
 	std::cout << "newRightLimit = " << newRightLimit << std::endl;
 
-	// adjust limits if slice by whole count problems
+	/// adjust limits if slice by whole count problems
 	++newLeftLimit;
 	if(newRightLimit != data3.cols()) ++newRightLimit;
 
@@ -106,26 +106,25 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 
 
 
-	// adjust limits if slice by N seconds
+	/// adjust limits if slice by N seconds
 	if(newLeftLimit > 0 || myLib::matiCountBit(data3[edfFil.getNs() - 1][0], 14))
 	{
-		++newLeftLimit; // after the previous marker
+		++newLeftLimit; /// after the previous marker
 	}
-	else // if(newLeftLimit == 0)
+	else /// if(newLeftLimit == 0)
 	{
-		// cut end in previous file, suspect that there ARE count answers
-		if(pieceNum != 0) // if this piece is not the first in the session
+		/// cut end in previous file, suspect that there ARE count answers
+		if(pieceNum != 0) /// if this piece is not the first in the session
 		{
-//            std::cout << "zero prev file" << std::endl;
 			prev();
 			leftLimit = rightLimit;
-			while (!myLib::matiCountBit(data3[edfFil.getNs() - 1][leftLimit], 14)) // there ARE count answers
+			while (!myLib::matiCountBit(data3[edfFil.getNs() - 1][leftLimit], 14)) /// there ARE count answers
 			{
 				--leftLimit;
 			}
 			++leftLimit;
 			std::cout << "prev file leftLimit = " << leftLimit << std::endl;
-			// zero() from tempLimit to rightLimit
+			/// zero() from tempLimit to rightLimit
 			zeroData(data3, leftLimit, rightLimit);
 			rewrite();
 			next();
@@ -135,24 +134,24 @@ void Cut::matiAdjustLimits() /////// should TEST !!!!!
 
 	if(newRightLimit < data3.cols())
 	{
-		++newRightLimit; // after the previous marker
+		++newRightLimit; /// after the previous marker
 	}
 	else if (myLib::matiCountBit(data3[edfFil.getNs() - 1][data3.cols() - 1], 14))
 	{
-		// do nothing
+		/// do nothing
 	}
-	else // if(newRightLimit == data3.cols() && bit == 0)
+	else /// if(newRightLimit == data3.cols() && bit == 0)
 	{
-		// cut start in next file, suspect that there ARE count answers
+		/// cut start in next file, suspect that there ARE count answers
 		next();
 		lst = currentFile.split(QRegExp("[_.]"),
 								QString::SkipEmptyParts);
 		if (lst[tempNum + 1].toInt() == sesNum
 			&& lst[tempNum].toInt() == typeNum
-			&& lst[tempNum + 2].toInt() == pieceNum + 1) // if next piece is ok
+			&& lst[tempNum + 2].toInt() == pieceNum + 1) /// if next piece is ok
 		{
 			rightLimit = leftLimit;
-			while (!myLib::matiCountBit(data3[edfFil.getNs() - 1][rightLimit], 14)) // there ARE count answers
+			while (!myLib::matiCountBit(data3[edfFil.getNs() - 1][rightLimit], 14)) /// there ARE count answers
 			{
 				++rightLimit;
 			}
@@ -279,7 +278,7 @@ void Cut::zero(int start, int end)
 {
 	if( !fileOpened ) { return; }
 
-	if(start > end)
+	if(start > end) /// not really possible
 	{
 		std::cout << "Cut::zero: leftEdge > rightEdge" << std::endl;
 		return;
@@ -287,21 +286,19 @@ void Cut::zero(int start, int end)
 
 	if(this->checkBadRange(start, end, "zero")) { return; }
 
-	// if MATI with counting - adjust limits to small task edges
-	// move leftLimit on the nearest prev marker
-	// move rightLimit on the nearest next marker
-	// delete [leftLimit, rightLimit)
-
-//	this->zero(ui->leftLimitSpinBox->value(), ui->rightLimitSpinBox->value());
+	/// if MATI with counting - adjust limits to small task edges
+	/// move leftLimit on the nearest prev marker
+	/// move rightLimit on the nearest next marker
+	/// delete [leftLimit, rightLimit)
 	/// MATI counting problem only
 	/// SHOULD REMAKE FOR EDF
 	{
-		// ExpName.left(3)_fileSuffix_TYPE_SESSION_PIECE.MARKER
+		/// ExpName.left(3)_fileSuffix_TYPE_SESSION_PIECE.MARKER
 		QString helpString = "_0_[0-9]_[0-9]{2,2}";
 		if(currentFile.contains(QRegExp(helpString)))
 		{
-//			std::cout << "zero: adjust limits   " << currentFile << std::endl;
-//			matiAdjustLimits();
+			std::cout << "zero: adjust limits   " << currentFile << std::endl;
+			matiAdjustLimits();
 		}
 	}
 
@@ -602,7 +599,7 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 	this->split(start, end);
 	logAction("split", start, end);
 
-	ui->paintStartLabel->setText("start (max " + nm(floor(dataCutLocal.cols() / edfFil.getFreq())) + ")");
+	ui->paintStartLabel->setText("start (max " + nm(std::floor(dataCutLocal.cols() / edfFil.getFreq())) + ")");
 
 	/// crutch with drawFlag
 	this->drawFlag = false;

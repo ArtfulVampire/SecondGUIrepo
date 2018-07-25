@@ -40,7 +40,6 @@ void Cut::smartFindLearnSlot()
 					vals[windNum] = smartFindFuncs[numFunc] (smartFindLearnData[windNum][ch]);
 				}
 
-//				param.name = paramNames[numFunc];
 				param.numParam = numFunc;
 				param.mean = smLib::mean(vals);
 				param.sigma = (smLib::sigma(vals) != 0) ? smLib::sigma(vals) : 1.;
@@ -62,11 +61,11 @@ void Cut::smartFindLearnSlot()
 
 void Cut::smartFindCountParams()
 {
-	// counts for all windows in record
+	/// counts for all windows in record
 
 	if( !fileOpened ) { return; }
 
-	smartFindWindParams.resize(dataCutLocal.cols() / smartFindWindLen); // each window
+	smartFindWindParams.resize(dataCutLocal.cols() / smartFindWindLen); /// each window
 	for(uint windNum = 0; windNum < smartFindWindParams.size(); ++windNum)
 	{
 		smartFindWindParams[windNum].resize(smartFindNumCh);
@@ -298,16 +297,17 @@ void Cut::smartFindFind(bool forward)
 		{
 			for(uint numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
 			{
-//				std::cout << "numFunc = " << numFunc << std::endl;
-//				std::cout << "mean = " << thrParams[ch][numFunc].mean << std::endl;
-//				std::cout << "sigma = " << thrParams[ch][numFunc].sigma << std::endl;
-//				std::cout << "val = " << windParams[windNum][ch][numFunc] << std::endl;
+#if 0
+				std::cout << "numFunc = " << numFunc << std::endl;
+				std::cout << "mean = " << thrParams[ch][numFunc].mean << std::endl;
+				std::cout << "sigma = " << thrParams[ch][numFunc].sigma << std::endl;
+				std::cout << "val = " << windParams[windNum][ch][numFunc] << std::endl;
+#endif
 				double numSigmas = std::abs(smartFindWindParams[windNum][ch][numFunc]
 											- smartFindThresholds[ch][numFunc].mean)
 								   /  smartFindThresholds[ch][numFunc].sigma;
 
 				if(numSigmas > paramSigmaThreshold[numFunc] && checkSigmas) /// add spin box
-//				if(numSigmas > 10. && checkSigmas) /// add spin box
 				{
 					std::cout << paramNames[numFunc] << "\t"
 							  << edfFil.getLabels(ch) << "\t"
@@ -375,10 +375,12 @@ void Cut::smartFindNextSlot()
 		{
 			for(uint numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
 			{
-//				std::cout << "numFunc = " << numFunc << std::endl;
-//				std::cout << "mean = " << thrParams[ch][numFunc].mean << std::endl;
-//				std::cout << "sigma = " << thrParams[ch][numFunc].sigma << std::endl;
-//				std::cout << "val = " << windParams[windNum][ch][numFunc] << std::endl;
+#if 0
+				std::cout << "numFunc = " << numFunc << std::endl;
+				std::cout << "mean = " << thrParams[ch][numFunc].mean << std::endl;
+				std::cout << "sigma = " << thrParams[ch][numFunc].sigma << std::endl;
+				std::cout << "val = " << windParams[windNum][ch][numFunc] << std::endl;
+#endif
 				double numSigmas = std::abs(smartFindWindParams[windNum][ch][numFunc]
 											- smartFindThresholds[ch][numFunc].mean)
 								   /  smartFindThresholds[ch][numFunc].sigma;

@@ -63,12 +63,19 @@ void calculateFeatures(const QString & pathWithEdfs,
 		}
 #endif
 	}
-//#ifdef _OPENMP
-//	omp_set_dynamic(0);
-//	omp_set_num_threads(3);
-//#pragma omp parallel
-//#pragma omp for nowait
-//#endif
+
+
+#if 0
+	/// parallel calculations - not really needed
+#ifdef _OPENMP
+	omp_set_dynamic(0);
+	omp_set_num_threads(3);
+#pragma omp parallel
+#pragma omp for nowait
+#endif
+
+#endif
+
 	for(int i = 0; i < filesVec.size(); ++i)
 	{
 		QString filePath = pathWithEdfs + "/" + filesVec[i];
@@ -331,7 +338,7 @@ void countHilbert(const matrix & inData,
 				std::make_pair(10, 13)		/// [4] high_alpha
 	};
 
-	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); // [filter][chan][0-carr, 1-SD]
+	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); /// [filter][chan][0-carr, 1-SD]
 
 	for(uint numFilt = 0; numFilt < filters.size(); ++numFilt)
 	{
@@ -345,7 +352,7 @@ void countHilbert(const matrix & inData,
 		hilb[numFilt].resize(inData.rows());
 		for(int i = 0; i < inData.rows(); ++i)
 		{
-			// write envelope median spectre
+			/// write envelope median spectre
 			env = myLib::hilbertPieces(currMat[i]) ;
 			envSpec = myLib::spectreRtoR(env);
 			envSpec[0] = 0.;
@@ -364,7 +371,7 @@ void countHilbert(const matrix & inData,
 			helpDouble /= sumSpec;
 			helpDouble /= fftLimit(1.,
 								   srate,
-								   smLib::fftL( inData.cols() )); // convert to Hz
+								   smLib::fftL( inData.cols() )); /// convert to Hz
 
 			hilb[numFilt][i] = {helpDouble, smLib::sigma(env) / smLib::mean(env)};
 		}
@@ -492,7 +499,7 @@ void countWavelet(const matrix & inData,
 
 
 #else
-//	std::cout << "waveletOneFile doesn't work" << std::endl;
+	std::cout << "waveletOneFile doesn't work" << std::endl;
 #endif
 }
 
@@ -543,9 +550,6 @@ void rhythmAdoption(const QString & filesPath,
 
 	const QString restFileName = QDir(filesPath).entryList({"*" + restMark + "*"})[0];
 	const QString ExpName = restFileName.left(restFileName.indexOf(restMark));
-
-//	std::cout << restFileName << std::endl;
-//	std::cout << ExpName << std::endl;
 
 	edfFile restEdf;
 	restEdf.readEdfFile(filesPath + "/" + restFileName);
@@ -617,10 +621,12 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 			continue;
 		}
 
-		/// PEWPEWPWEPWEPPEWWPEWPEEPPWPEPWEPWEPWPEPWEPWPEWPEWPEPWEPWEPWEPWPEWP
-//		autos::GalyaFull(def::mriFolder +
-//						 "/" + guy +
-//						 "/" + guy + "_winds_cleaned");
+#if 0
+		/////// PEWPEWPWEPWEPPEWWPEWPEEPPWPEPWEPWEPWPEPWEPWPEWPEWPEPWEPWEPWEPWPEWP
+		autos::GalyaFull(def::mriFolder +
+						 "/" + guy +
+						 "/" + guy + "_winds_cleaned");
+#endif
 
 		QString outPath = def::mriFolder + "/OUT/" + guy;
 		QString dropPath = "/media/Files/Dropbox/DifferentData/EEG-MRI/Results";
@@ -779,7 +785,6 @@ void Xenia_TBI(const QString & tbi_path)
 			repair::deleteSpacesFolders(workPath + "/" + guy);
 //			repair::toLatinDir(workPath + "/" + guy, {});
 //			repair::toLowerDir(workPath + "/" + guy, {});
-
 //			continue;
 
 
@@ -929,7 +934,6 @@ void Xenia_TBI_final(const QString & finalPath,
 	/// count
 	for(QString subdir : subdirs)
 	{
-//		break;
 		const QString groupPath = finalPath + "/" + subdir;
 
 		repair::toLatinDir(groupPath, {});
@@ -1314,13 +1318,13 @@ void cutOneFile(const QString & filePath,
 #endif
 
 	/// generality experimental
-	if(initEdf.getEdfPlusFlag()) // if annotations
+	if(initEdf.getEdfPlusFlag()) /// if annotations
 	{
-		initEdf.removeChannels(std::vector<uint>{initEdf.getMarkChan()}); // remove Annotations
+		initEdf.removeChannels(std::vector<int>{initEdf.getMarkChan()}); /// remove Annotations
 	}
 
 	int fr = initEdf.getFreq();
-	const int numOfWinds = ceil(initEdf.getDataLen() / fr / wndLen);
+	const int numOfWinds = std::ceil(initEdf.getDataLen() / fr / wndLen);
 
 
 	for(int i = 0; i < numOfWinds; ++i)
@@ -1335,7 +1339,7 @@ void cutOneFile(const QString & filePath,
 							+ "/" + initEdf.getExpName()
 							+ "_wnd_" + rn(
 								i + 1,
-								floor(log10(numOfWinds)) + 1)
+								floor(std::log10(numOfWinds)) + 1)
 							+ ".edf"));
 	}
 }
@@ -1763,4 +1767,4 @@ void ProcessByFolders(const QString & inPath,
 }
 
 
-} // namespace autos
+} /// namespace autos

@@ -24,6 +24,6 @@ std::vector<std::tuple<matrix, uint, QString>> sliceWindows(
 		const int numBinsSkipRest = 0,
 		const std::vector<int> & separators = std::vector<int>{241, 247, 254});
 
-} // end namespace myLib
+} /// end namespace myLib
 
-#endif // HIGHLEVEL_H
+#endif /// HIGHLEVEL_H

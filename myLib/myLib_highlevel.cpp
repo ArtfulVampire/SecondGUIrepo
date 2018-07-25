@@ -36,9 +36,13 @@ std::vector<std::vector<matrix>> sliceData(const matrix & inData,
 	{
 		if((*it).second == 254)
 		{
-//			res[2].push_back(inData.subCols((*it).first, (*(it + 1)).first)); break;
-			/// magic constant 8 seconds 250 srate
+#if 0
+			/// all the rest period
+			res[2].push_back(inData.subCols((*it).first, (*(it + 1)).first)); break;
+#else
+			/// rest period 8 seconds 250 srate - magic constant
 			res[2].push_back(inData.subCols((*it).first, (*it).first + 8 * 250.)); break;
+#endif
 		}
 	}
 	return res;
@@ -46,6 +50,7 @@ std::vector<std::vector<matrix>> sliceData(const matrix & inData,
 
 /// introduce into FBedf::FBedf(...), Net::successiveByEDFfinal, MainWindow::sliceWinds()
 /// CHECK THIS FUNCTION
+/// (data, type, name)
 std::vector<std::tuple<matrix, uint, QString>> sliceWindows(
 		const matrix & inData,
 		const std::vector<std::pair<int, int> > & markers,
@@ -120,4 +125,4 @@ std::vector<std::tuple<matrix, uint, QString>> sliceWindows(
 	return res;
 }
 
-} // end namespace myLib
+} /// end namespace myLib

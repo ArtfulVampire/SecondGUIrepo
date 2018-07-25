@@ -8,4 +8,4 @@ std::ostream & myWrite2 (std::ostream & os);
 template<class input, class... inputs>
 std::ostream & myWrite2 (std::ostream & os, input in, inputs... ins);
 
-#endif // TEMP_H
+#endif /// TEMP_H

@@ -40,17 +40,17 @@ public:
 	void keyPressEvent(QKeyEvent *event) override;
 
 public slots:
-	// other widgets
+	/// other widgets
     void showNet();
     void showCountSpectra();
     void showCut();
 
-	// parameters processing
+	/// parameters processing
 	void setFileMarkers();
 	void changeRedNsLine(int a);
 
-	// in-window calculations, substantional actions
-	// files
+	/// in-window calculations, substantional actions
+	/// files
 	void sliceAll();
 	void sliceWinds();
 	void sliceJustWinds();
@@ -64,7 +64,7 @@ public slots:
 	void reduceChannelsEDFSlot() const;
 	void cleanEdfFromEyesSlot();
 
-	// mati
+	/// mati
     void markerSaveEdf();
     void markerGetSlot();
     void markerSetSlot();
@@ -73,19 +73,19 @@ public slots:
     void markerSetBinValueSlot();
 	void matiPreprocessingSlot();
 
-	// signals
+	/// signals
     void processEyes();
     void ICA();
     void refilterDataSlot();
     void rereferenceDataSlot();
 	void rereferenceCARSlot();
 
-	// other
+	/// other
     void stop();
 
 
 public:
-	// mati
+	/// mati
 	void sliceMati();
     void sliceMatiPieces(bool plainFlag = true);
     void sliceMatiSimple();
@@ -129,8 +129,6 @@ public:
 	void testSuccessive(const std::vector<double> & vals = std::vector<double>{});
 	void testSuccessive2();
 
-//	static Classifier::avType classifyOneFile(const QString & filePath);
-
 private:
     Ui::MainWindow *ui;
 	bool stopFlag{false};
@@ -142,4 +140,4 @@ private:
 
 };
 
-#endif // MAINWINDOW_H
+#endif /// MAINWINDOW_H

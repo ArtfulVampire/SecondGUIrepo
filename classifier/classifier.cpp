@@ -20,7 +20,7 @@ void Classifier::setClassifierData(ClassifierData & in)
 {
 	if(&in != myClassData)
 	{
-		myClassData = &in;
+		myClassData = &in; //// pointer may overlive object in !!!!
 
 		confusionMatrix = matrix(myClassData->getNumOfCl(), myClassData->getNumOfCl(), 0.);
 		outputLayer = std::valarray<double>(0., myClassData->getNumOfCl());
@@ -51,15 +51,17 @@ void Classifier::deleteFile(uint vecNum, uint predType)
     }
 }
 
+#if 0
 /// TEMPORARY, will be virtual=0
 /// SHOULD OVERRIDE FOR ALL CLASSIFIERS
-// void Classifier::classifyDatum1(uint vecNum)
-// {
-//	/// ALWAYS TRUE WITH ZERO ERROR
-//	this->confusionMatrix[myClassData->getTypes()[vecNum]][myClassData->getTypes()[vecNum]] += 1.;
-//	outputLayer = clLib::oneHot(myClassData->getNumOfCl(),
-//								myClassData->getTypes()[vecNum]);
-// }
+void Classifier::classifyDatum1(uint vecNum)
+{
+	/// ALWAYS TRUE WITH ZERO ERROR
+	this->confusionMatrix[myClassData->getTypes()[vecNum]][myClassData->getTypes()[vecNum]] += 1.;
+	outputLayer = clLib::oneHot(myClassData->getNumOfCl(),
+								myClassData->getTypes()[vecNum]);
+}
+#endif
 
 Classifier::classOneType Classifier::classifyDatum(uint vecNum)
 {
@@ -93,7 +95,6 @@ void Classifier::classifyDatumLast1()
 		fbVal = 0.;
 		curType = myClassData->getTypes().back();
 	}
-//	fbVal *= inertiaCoef;
 	fbVal *= suc::inertiaCoef;
 	fbVal += outputLayer;
 #else
@@ -150,15 +151,13 @@ void Classifier::testAll()
 void Classifier::successiveRelearn()
 {
     this->resetFlag = false;
-    learnAll(); // relearn w/o weights reset
+	learnAll(); /// relearn w/o weights reset
     this->resetFlag = true;
 }
 
 void Classifier::printParams()
 {
-//	std::cout << typeString << std::endl;
 }
-
 
 Classifier::avType Classifier::averageClassification(std::ostream & os)
 {
@@ -205,7 +204,7 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
     const double S = confusionMatrix.sum();
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
-        pE += (confusionMatrix[i].sum() * confusionMatrix.getCol(i).sum()) / pow(S, 2);
+		pE += (confusionMatrix[i].sum() * confusionMatrix.getCol(i).sum()) / std::pow(S, 2);
     }
     kappa = 1. - (1. - corrSum / wholeNum) / (1. - pE);
 
@@ -295,15 +294,16 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 		zSets[guy].push_back(i);
 	}
 
-//	for(const QString & guy : people)
-//	{
-//		for(auto in : zSets[guy])
-//		{
-//			std::cout << this->myClassData->getFileNames()[in] << std::endl;
-//		}
-//		std::cout << std::endl;
-//	}
-
+#if 0
+	for(const QString & guy : people)
+	{
+		for(auto in : zSets[guy])
+		{
+			std::cout << this->myClassData->getFileNames()[in] << std::endl;
+		}
+		std::cout << std::endl;
+	}
+#endif
 
 	if(indZ)
 	{
@@ -312,7 +312,6 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 		{
 			this->myClassData->z_transformSubset(zSets[guy]);
 		}
-
 	}
 
 	std::vector<uint> learnSet{};	learnSet.reserve(size);
@@ -340,18 +339,6 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 				learnSet.push_back(i);
 			}
 		}
-//		for(auto i : learnSet)
-//		{
-//			std::cout << this->myClassData->getFileNames()[i] << std::endl;
-//		}
-//		std::cout << std::endl;
-
-//		for(auto i : testSet)
-//		{
-//			std::cout << this->myClassData->getFileNames()[i] << std::endl;
-//		}
-//		std::cout << std::endl << std::endl << std::endl;
-
 		this->learn(learnSet);
 		this->test(testSet);
 
@@ -368,7 +355,7 @@ void Classifier::crossClassification(int numOfPairs, int fold, std::ostream & os
 	const matrix & dataMatrix = this->myClassData->getData();
 	const auto & types = this->myClassData->getTypes();
 
-	std::vector<std::vector<uint>> arr; // [class][index]
+	std::vector<std::vector<uint>> arr; /// [class][index]
 	arr.resize(this->myClassData->getNumOfCl());
 	for(int i = 0; i < dataMatrix.rows(); ++i)
 	{
@@ -387,7 +374,7 @@ void Classifier::crossClassification(int numOfPairs, int fold, std::ostream & os
 		for(int numFold = 0; numFold < fold; ++numFold)
 		{
 			os << numFold + 1 << " ";  os.flush();
-			auto sets = this->makeIndicesSetsCross(arr, fold, numFold); // on const arr
+			auto sets = this->makeIndicesSetsCross(arr, fold, numFold); /// on const arr
 			this->learn(sets.first);
 			this->test(sets.second);
 		}
@@ -450,14 +437,13 @@ void Classifier::cleaningNfold(int num)
 	std::function<bool(void)> pred;
 	if(num > 0)
 	{
-		pred = [&counter, num](){ return counter < num; };
+		pred = [&counter, num]() { return counter < num; };
 	}
 	else
 	{
-		pred = [&hazWrong](){ return hazWrong; };
+		pred = [&hazWrong]() { return hazWrong; };
 	}
 
-//	int co = 1;
 	do
 	{
 		hazWrong = false;
@@ -524,7 +510,6 @@ void Classifier::cleaningKfold(int num, int fold)
 				exclude.push_back(i);
 			}
 		}
-//		std::cout << exclude.size() << std::endl;
 		if(!exclude.empty())
 		{
 			this->myClassData->erase(exclude);
@@ -537,6 +522,8 @@ void Classifier::cleaningKfold(int num, int fold)
 	confusionMatrix.fill(0.);
 	outputLayer = 0.;
 
+#if 0
 	/// classify - what for?
-//	this->crossClassification(3, fold, DEVNULL);
+	this->crossClassification(3, fold, DEVNULL);
+#endif
 }

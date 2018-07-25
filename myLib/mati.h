@@ -22,4 +22,4 @@ inline bool matiCountBit(double const & marker, int num)
 
 }
 
-#endif // MATI_H
+#endif /// MATI_H

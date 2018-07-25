@@ -1,4 +1,3 @@
-// #pragma once
 #ifndef SMALLLIB_H
 #define SMALLLIB_H
 
@@ -53,7 +52,7 @@ inline double doubleRoundFraq(double in, int denom)
 
 inline double gaussian(double x, double sigma = 1.) // N(0,1)
 {
-	return 1./(sigma * std::sqrt(2. * pi)) * std::exp(-x * x / (2. * sigma * sigma) );
+	return 1./(sigma * std::sqrt(2. * pi)) * std::exp( x * x / (2. * sigma * sigma) );
 }
 
 inline constexpr int fftL(int in)
@@ -101,4 +100,4 @@ template void eraseItems(std::vector<double> & inVect, const std::vector<uint> &
 } // namespace smLib
 
 
-#endif // SMALLLIB_H
+#endif /// SMALLLIB_H

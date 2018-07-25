@@ -11,33 +11,31 @@ SVM::SVM() : Classifier()
 
 void SVM::learn(std::vector<uint> & indices)
 {
-    makeFile(indices, learnFileName);
-//    std::cout << std::endl << "LEARN start" << std::endl << std::endl;
+	makeFile(indices, learnFileName);
     QString helpString = "cd "
                          + workDir
                          + " && svm-train "
                          + " -s " + nm(svmType)
-//                         + " -v " + fold
+					 #if 0
+						 + " -v " + fold
+					 #endif
                          + " -t " + nm(kernelNum) + " -q "
                          + learnFileName;
 	system(helpString.toStdString().c_str());
-//    std::cout << std::endl << "LEARN finish" << std::endl << std::endl;
 }
 
 void SVM::classifyDatum1(uint vecNum)
 {
     /// to write!
     const QString fileName = "oneVec";
-    makeFile({vecNum}, fileName);
-//    std::cout << std::endl << "Test start" << std::endl << std::endl;
+	makeFile({vecNum}, fileName);
     QString helpString = "cd "
                          + workDir
                          + " && svm-predict "
                          + fileName + " "
                          + learnFileName + ".model "
                          + outputFileName + " >> /dev/null";
-    system(helpString.toStdString().c_str());
-//    std::cout << std::endl << "Test finish" << std::endl << std::endl;
+	system(helpString.toStdString().c_str());
 
     uint outClass;
     std::ifstream inStr;

@@ -22,8 +22,7 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
     switch(Mode)
     {
     case myMode::k_fold:
-    {
-//		this->crossClassification();
+	{
 		myModel->crossClassification(ui->numOfPairsBox->value(),
 									 ui->foldSpinBox->value());
 		break;
@@ -44,7 +43,7 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
     {
 		myModel->halfHalfClassification(); break;
     }
-    default: {break; }
+	default: { break; }
 	}
 	std::cout << "autoClassification: time elapsed = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
@@ -86,7 +85,6 @@ void Net::leaveOneOutClassification()
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
 //		std::cout << i + 1 << " "; std::cout.flush();
-
         learnIndices.clear();
         learnIndices.resize(dataMatrix.rows() - 1);
         std::iota(std::begin(learnIndices),
@@ -99,6 +97,7 @@ void Net::leaveOneOutClassification()
 		myModel->learn(learnIndices);
 		myModel->test({i});
 	}
+//	std::cout << std::endl;
 }
 
 void Net::crossClassification()
@@ -109,7 +108,7 @@ void Net::crossClassification()
     const int numOfPairs = ui->numOfPairsBox->value();
     const int fold = ui->foldSpinBox->value();
 
-    std::vector<std::vector<uint>> arr; // [class][index]
+    std::vector<std::vector<uint>> arr; /// [class][index]
     arr.resize(DEFS.numOfClasses());
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
@@ -121,7 +120,7 @@ void Net::crossClassification()
     {
         std::cout << i + 1 << " "; std::cout.flush();
 
-        // mix arr for one "pair"-iteration
+        /// mix arr for one "pair"-iteration
         for(int i = 0; i < DEFS.numOfClasses(); ++i)
         {
 			smLib::mix(arr[i]);
@@ -129,7 +128,7 @@ void Net::crossClassification()
 
         for(int numFold = 0; numFold < fold; ++numFold)
         {
-            auto sets = makeIndicesSetsCross(arr, numFold); // on const arr
+            auto sets = makeIndicesSetsCross(arr, numFold); /// on const arr
             myModel->learn(sets.first);
             myModel->test(sets.second);
         }
@@ -250,7 +249,7 @@ void Net::customF()
 #if 0
     /// search optimal params
     QString outFileName;
-//    for(QString cls : {"DIST", "WARD", "KNN", "NBC"}) /// recheck
+	for(QString cls : {"DIST", "WARD", "KNN", "NBC"}) /// recheck
     QString cls = "RDA";
     {
         setClassifier(cls);
@@ -264,8 +263,7 @@ void Net::customF()
         std::sort(std::begin(results), std::end(results),
                   [accNum](const std::vector<double> & in1, const std::vector<double> & in2)
         {
-			/// comment to sort
-//            return true;
+			return true; /// comment to sort
             if(in1[accNum] == in2[accNum]) return in1[accNum + 1] > in2[accNum + 1]; /// by kappa
             return in1[accNum] > in2[accNum];
         });
@@ -279,7 +277,7 @@ void Net::customF()
         for(auto vec : results)
         {
             /// comment for all results
-//            if(vec[accNum] < results[0][accNum] - 2.5 || num == 20) break;
+//			if(vec[accNum] < results[0][accNum] - 2.5 || num == 20) break;
             outStr << vec << std::endl;
             ++num;
         }

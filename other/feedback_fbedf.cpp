@@ -28,14 +28,14 @@ namespace fb
 
 /// from 0 - for dispersion, distance, etc
 const std::vector<int> FBedf::chansToProcess{
-//	0, 1,		// Fp1,	Fp2
-//	2, 6,		// F7,	F8
-	3, 4, 5,	// F3,	Fz,	F4
-//	7, 11,		// T3, T4
-	8, 9, 10,	// C3,	Cz,	C4
-//	12, 16,		// T5,	T6
-	13, 14, 15,	// P3,	Pz,	P4
-//	17, 18		// O1,	O2
+//	0, 1,		/// Fp1,	Fp2
+//	2, 6,		/// F7,	F8
+	3, 4, 5,	/// F3,	Fz,	F4
+//	7, 11,		/// T3, T4
+	8, 9, 10,	/// C3,	Cz,	C4
+//	12, 16,		/// T5,	T6
+	13, 14, 15,	/// P3,	Pz,	P4
+//	17, 18		/// O1,	O2
 };
 
 FBedf::FBedf(const QString & edfPath,
@@ -218,7 +218,6 @@ double FBedf::partOfCleanedWinds()
 
 	ANN * ann = new ANN();
 	ann->setClassifierData(clData);
-//	int counter = 0;
 	do
 	{
 		clData = *(ann->getClassifierData());
@@ -226,7 +225,6 @@ double FBedf::partOfCleanedWinds()
 //		ann->cleaningNfold(2);
 //		ann->cleaningNfold(-1);
 		ann->cleaningKfold(3, 2);
-//		std::cout << counter++ << " "; std::cout.flush();
 	}
 	while(ann->averageClassification(DEVNULL).first != 100.);
 
@@ -412,7 +410,6 @@ void FBedf::calculateICA() const
 	/// draw
 	icaItem.drawMaps();
 	icaItem.drawSpectraWithMaps();
-//	exit(0);
 }
 
 int FBedf::individualAlphaPeakIndexWind() const
@@ -752,10 +749,7 @@ Classifier::avType FBedf::classifyReals(bool alphaFlag) const
 	net->setClassifierData(dt);
 
 	net->adjustLearnRate(DEVNULL);
-//	net->adjustLearnRate();
 	net->crossClassification(10, 5, DEVNULL);
-//	net->leaveOneOutClassification(DEVNULL);
-//	net->leaveOneOutClassification();
 	auto res = net->averageClassification(DEVNULL);
 
 	delete net;
@@ -797,7 +791,6 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 
 	/// arguments of wrong size
 	net->setClassifierData(dt);
-
 	net->adjustLearnRate(DEVNULL);
 	net->crossClassification(10, 5, DEVNULL);
 //	net->leaveOneOutClassification(DEVNULL);
@@ -807,4 +800,4 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 	return res;
 }
 
-} // end namespace fb
+} /// end namespace fb

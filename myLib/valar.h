@@ -10,7 +10,7 @@
 #include <iostream>
 #include <chrono>
 #include <random>
-#include <other/consts.h> // for uint
+#include <other/consts.h> /// for uint
 
 namespace smLib
 {
@@ -18,7 +18,7 @@ namespace smLib
 /// any Container
 /// usually std::vector<double> and std::valarray<double>
 template <class Container = std::valarray<double>>
-Container range(int beg, int en); // [beg, en)
+Container range(int beg, int en); /// [beg, en)
 
 template <class Container = std::valarray<double>>
 Container unite(const std::vector<Container> & ranges);
@@ -170,11 +170,6 @@ inline std::valarray<double> randomValar(int size)
 inline double distance(const std::valarray<double> & in1,
 					   const std::valarray<double> & in2)
 {
-//	if(in1.size() != in2.size())
-//	{
-//		std::cout << "distance: std::valarray<double>s of different size" << std::endl;
-//		return 0.; /// exception
-//	}
 	return norma(std::valarray<double>(in1 - in2));
 }
 
@@ -202,4 +197,4 @@ inline std::valarray<double> valarPushBack(const std::valarray<double> & in, dou
 
 } /// end of namespace
 
-#endif // VALAR_H
+#endif /// VALAR_H

@@ -16,7 +16,7 @@
 namespace myLib
 {
 
-// jet
+/// jet
 const double defV = 1.;
 const std::vector<double> colDots_2 = {1/9., 3.25/9., 5.5/9., 7.75/9.};
 
@@ -84,16 +84,17 @@ QPixmap drawTemplate(const QString & outPath = QString(),
 				  int width = 1600,
 				  int height = 1600);
 
+///               const spectraNorming normType = 0, ////// TO DO
 void drawArray(const QString & templPath,
 			   const matrix & inData,
-//               const spectraNorming normType = 0, ////// TO DO
 			   const QString & color = "black",
 			   double scaling = 1.,
 			   int lineWidth = 3);
 
+
+///               const spectraNorming normType = 0, ////// TO DO
 void drawArray(const QString & templPath,
 			   const std::valarray<double> & inData,
-//               const spectraNorming normType = 0, ////// TO DO
 			   const QString & color = "black",
 			   double scaling = 1.,
 			   int lineWidth = 3);
@@ -105,7 +106,7 @@ void drawArrayWithSigma(const QString & templPath,
 						const QString & color = "blue",
 						int lineWidth = 3);
 
-// inMatrix supposed to be spLength * 19 size
+/// inMatrix supposed to be spLength * 19 size
 double drawArrays(const QString & templPath,
 				const matrix & inMatrix,
 				const bool weightsFlag = false,
@@ -183,4 +184,4 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath,
 					   const QString & mapsNames);
 }
 
-#endif // DRAWS_H
+#endif /// DRAWS_H

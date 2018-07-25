@@ -26,7 +26,7 @@ void writePlainData(const QString outPath,
 
 matrix readMatrixFile(const QString & filePath);
 
-matrix readMatrixFileRaw(const QString & filePath); // without head line "rows, cols"
+matrix readMatrixFileRaw(const QString & filePath); /// without head line "rows, cols"
 
 
 void writeMatrixFile(const QString & filePath,
@@ -57,4 +57,4 @@ void writeFileInLine(const QString & filePath,
 
 }
 
-#endif // DATAHANDLERS_H
+#endif /// DATAHANDLERS_H

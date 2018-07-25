@@ -29,4 +29,4 @@ template std::vector<QCheckBox*> widgetsOfLayout(QLayout * lay);
 
 
 
-} // end namespace qtLib
+} /// end namespace qtLib

@@ -40,7 +40,7 @@ matrix calculateMatrixW(const matrix & dataICA,
 
 	matrix res(numOfICs, dataICA.rows(), 0.); /// matrix of row-vectors wt
 
-	for(int numVec = 0; numVec < numOfICs; ++numVec) // number of current vectorW
+	for(int numVec = 0; numVec < numOfICs; ++numVec) /// number of current vectorW
 	{
 		myTime.restart();
 
@@ -202,7 +202,7 @@ eigenValuesSVD(const matrix & initialData,
 /// icaResult class
 void icaResult::order(std::function<double(int)> func)
 {
-	std::vector<std::pair <double, int>> colsNorms; // dispersion, numberOfComponent
+	std::vector<std::pair <double, int>> colsNorms; /// dispersion, numberOfComponent
 	for(int i = 0; i < matrixA.rows(); ++i)
 	{
 		double val = func(i);
@@ -214,12 +214,12 @@ void icaResult::order(std::function<double(int)> func)
 			  [](const auto & i, const auto & j)
 	{ return i.first > j.first; });
 
-	for(int i = 0; i < matrixA.cols() - 1; ++i) // the last is already on place
+	for(int i = 0; i < matrixA.cols() - 1; ++i) /// the last is already on place
 	{
 		matrixA.swapCols(i, colsNorms[i].second);
 		components.swapRows(i, colsNorms[i].second);
 
-		// swap i and colsNorms[i].second values in colsNorms
+		/// swap i and colsNorms[i].second values in colsNorms
 		auto it1 = std::find_if(std::begin(colsNorms),
 								std::end(colsNorms),
 								[i](const auto & in)
@@ -247,8 +247,8 @@ void icaResult::calculateExplVar()
 
 void icaResult::orderIcaLen()
 {
-	// norm components - to equal dispersion
-	// sort by maps length
+	/// norm components - to equal dispersion
+	/// sort by maps length
 
 	for(int i = 0; i < components.rows(); ++i)
 	{
@@ -435,8 +435,6 @@ void ICAclass::drawSpectraWithMaps() const
 						);
 	const double lf = fb::FBedf::leftFreq;
 	const double rf = fb::FBedf::rightFreq;
-//	const double lf = 5.;
-//	const double rf = 20.;
 
 	/// magic const
 	const int lef = fftLimit(lf, 250., fftLenLoc);
@@ -489,4 +487,4 @@ void ICAclass::setOutPaths(const QString & inHelpPath)
 	drawMapsWMPath = inHelpPath + "/wm/" + locExpName + "_wm.jpg";
 }
 
-} // end namespace myLib
+} /// end namespace myLib

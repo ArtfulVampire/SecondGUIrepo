@@ -45,20 +45,20 @@ using uint = unsigned int;
 namespace coords
 {
 
-// relative coords
+/// relative coords
 const double scale = 250./1600.;
 
 /// + 2 EOG
-const int numOfChan = 19; // for drawTemplate - move to draw namespace
+const int numOfChan = 19; /// for drawTemplate - move to draw namespace
 const int manyChannels = 100; /// replace with geodesicsFlag in edfFile
-// 1/32 + n * 6/32
+/// 1/32 + n * 6/32
 const std::vector<double> x {0.21875, 0.59375,
 							 0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
 							 0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
 							 0.03125, 0.21875, 0.40625, 0.59375, 0.78125,
 							 0.21875, 0.59375,
 							 0.03125, 0.78125};
-// 6/32 * n = 3/16 * n
+/// 6/32 * n = 3/16 * n
 const std::vector<double> y {0.1875, 0.1875,
 							 0.375, 0.375, 0.375, 0.375, 0.375,
 							 0.5625, 0.5625, 0.5625, 0.5625, 0.5625,
@@ -205,15 +205,18 @@ namespace def
 	const QString iitpResFolder			{"/media/Files/Data/iitp/Results"};
 	const QString matiFolder			{"/media/Files/Data/Mati"};
 
-//	const std::pair<double, double> deltaRhythm{1., 4.};
-//	const std::pair<double, double> thetaRhythm{4., 8.};
-//	const std::pair<double, double> alphaRhythm{8., 13.};
-//	const std::pair<double, double> lowAlphaRhythm{8., 10.5};
-//	const std::pair<double, double> highAlphaRhythm{10.5, 13.};
-//	const std::pair<double, double> betaRhythm{13., 40.};
-//	const std::pair<double, double> lowBetaRhythm{13., 25.};
-//	const std::pair<double, double> highBetaRhythm{25., 40.};
-//	const std::pair<double, double> gammaRhythm{40., 70.};
+#if 0
+	/// rhythms
+	const std::pair<double, double> deltaRhythm{1., 4.};
+	const std::pair<double, double> thetaRhythm{4., 8.};
+	const std::pair<double, double> alphaRhythm{8., 13.};
+	const std::pair<double, double> lowAlphaRhythm{8., 10.5};
+	const std::pair<double, double> highAlphaRhythm{10.5, 13.};
+	const std::pair<double, double> betaRhythm{13., 40.};
+	const std::pair<double, double> lowBetaRhythm{13., 25.};
+	const std::pair<double, double> highBetaRhythm{25., 40.};
+	const std::pair<double, double> gammaRhythm{40., 70.};
+#endif
 
 	const std::map<QString, std::pair<double, double>> rhythms
 	{
@@ -227,10 +230,6 @@ namespace def
 		{"betaHigh", {25., 40.}},
 		{"gamma", {40., 70.}}
 	};
-
-
-
-
 } /// end namespace def
 
 namespace coords

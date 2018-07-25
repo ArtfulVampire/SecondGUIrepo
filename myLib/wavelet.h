@@ -18,15 +18,15 @@
 
 namespace wvlt
 {
-#define WAVELET_FREQ_STEP_TYPE 1 // 0 for multiplicative 1 for additive
+#define WAVELET_FREQ_STEP_TYPE 1 /// 0 for multiplicative 1 for additive
 
 extern const int timeStep;
-extern const double freqMax; // DEFS.getRightFreq()
-extern const double freqMin; // DEFS.getLeftFreq()
+extern const double freqMax; /// DEFS.getRightFreq()
+extern const double freqMin; /// DEFS.getLeftFreq()
 extern const double freqStep;
 extern const int range;
 extern const int numberOfFreqs;
-// wavelets
+/// wavelets
 
 double morletCos(double const freq1, double const timeShift, double const pot, double const time);
 double morletSin(double const freq1, double const timeShift, double const pot, double const time);
@@ -68,4 +68,4 @@ void drawWaveletMtlb(const matrix & inData,
 #endif
 }
 
-#endif // WAVELET_H
+#endif /// WAVELET_H

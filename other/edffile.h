@@ -110,15 +110,12 @@ public:
     }
 
 	edfChannel & operator=(const edfChannel & other)=default;
-//	edfChannel & operator=(edfChannel && other)=default;
-
-
 };
 
 
 enum class inst {mati, iitp};
 enum class eogType {cross, correspond};
-//enum class reference{A1, A2, Ar, CAR, Base};
+//enum class reference{A1, A2, Ar, CAR, Base}; //// TO DO
 #define EDFSTREAM 01
 
 
@@ -195,7 +192,7 @@ public:
 
 	/// need check
 	edfFile rereferenceData(const QString & newRef) const;
-//	edfFile rereferenceData(reference newRef) const;
+//	edfFile rereferenceData(reference newRef) const; /// To DO
 	/// need check
 	edfFile rereferenceDataCAR() const;
 
@@ -221,11 +218,10 @@ public:
 
 	int findChannel(const QString & str) const;
 	int findChannel(int num) const { return num; }
-//	std::vector<uint> findChannels(const QString & filter) const;
 	std::vector<int> findChannels(const QString & filter) const;
 	std::vector<int> findChannels(const std::vector<QString> & strs) const;
 
-	uint countMarker(int mrk) const;
+	int countMarker(int mrk) const;
 	std::vector<uint> countMarkers(const std::vector<int> & mrks) const;
 
     void setLabels(const std::vector<QString> & inLabels);
@@ -295,7 +291,7 @@ protected:
 	/// EOG1 is on the right side (horizontal) and EOG2 on the left (vertical)
 	eogType edfEogType = eogType::correspond; /// true story, 21.07.17
 
-	// channels arrays start
+	/// channels arrays start
 	std::vector<QString> labels;
 	std::vector<QString> transducerType;
 	std::vector<QString> physDim;
@@ -304,17 +300,17 @@ protected:
 	std::valarray<double> digMax;
 	std::valarray<double> digMin;
 	std::vector<QString> prefiltering;
-	std::valarray<double> nr; // it is int really
+	std::valarray<double> nr; /// it is int really
 	std::vector<QString> reserved;
 	std::vector<QString> annotations;
-	// channels arrays end
+	/// channels arrays end
 
 
 	/// my fields
-	matrix edfData; // matrix.cpp
-	std::vector<std::valarray<double>> fftData{}; // mutable?
+	matrix edfData; /// matrix.cpp
+	std::vector<std::valarray<double>> fftData{}; /// mutable?
 
-	// fast access for slicing (time-bin, marker)
+	/// fast access for slicing (time-bin, marker)
 	std::vector<std::pair<int, int>> markers{};
 	int markerChannel = -1;
 
@@ -322,7 +318,7 @@ protected:
 
 	bool matiFlag{false};
 	bool ntFlag{false};
-    bool edfPlusFlag = false; // to detect
+    bool edfPlusFlag = false; /// to detect
 	bool filterIITPflag = true;
 
 	bool writeMarkersFlag = true;
@@ -361,21 +357,21 @@ public:
 	QString getExpNameShort() const				{ return ExpName.left(ExpName.indexOf('_')); }
 	QString getFileNam() const					{ return myLib::getFileName(filePath); }
 
-	// flags
-	// gets
+	/// flags
+	/// gets
 	bool getMatiFlag() const							{ return matiFlag; }
 	bool getNtFlag() const								{ return ntFlag; }
 	bool getEdfPlusFlag() const							{ return edfPlusFlag; }
 	eogType getEogType() const							{ return this->edfEogType; }
-	// sets
+	/// sets
 	void setMatiFlag(bool newFlag)						{ matiFlag = newFlag; }
 	void setNtFlag(bool newFlag)						{ ntFlag = newFlag; }
 	void setEdfPlusFlag(bool newFlag)					{ edfPlusFlag = newFlag; }
 	void setFilterIITPFlag(bool newFlag)				{ filterIITPflag = newFlag; }
 	void setEogType(eogType in)							{ this->edfEogType = in; }
 
-    // operations with data
-	// gets
+    /// operations with data
+	/// gets
 	const matrix & getData() const						{ return edfData; }
 	const std::valarray<double> & getData(int i) const	{ return edfData[i]; }
 	const std::valarray<double> & getMarkArr() const	{ return edfData[markerChannel]; }
@@ -384,14 +380,11 @@ public:
 	const std::valarray<double> & getData(const QString & ch) const;
 
 	/// make edfFile &
-	// sets
+	/// sets
 	void setData(int chanNum, int timeBin, double val)	{ edfData[chanNum][timeBin] = val; }
 	void setData(int chanNum, const std::valarray<double> & newChan) { edfData[chanNum] = newChan; }
 
-//	void setData(const matrix & newData) { edfData = newData; } /// DANGER ndr ddr and shit
-
 	const std::valarray<double> & operator [](int i) const { return edfData[i]; }
-
 
 public:
     static void transformEdfMatrix(const QString & inEdfPath,
@@ -424,7 +417,7 @@ void channelsOrderDir(const QString & inDirPath,
                       const QString & outDirPath,
 					  const std::vector<QString> & standard = coords::lbl31_more_withEOG);
 
-// void invertEogs(const QString & inFilePath);
+/// void invertEogs(const QString & inFilePath);
 void holesFile(const QString & inFilePath, int numChan,
 			   QString outFilePath = QString());
 void holesDir(const QString & inDirPath,
@@ -451,4 +444,4 @@ void fullRepairDir(const QString & dirPath, const QStringList & filters = def::e
 void testArtifacts(const QString & dirPath, const QStringList & filters = def::edfFilters);
 }
 
-#endif // EDFFILE_H
+#endif /// EDFFILE_H

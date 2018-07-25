@@ -19,17 +19,17 @@ namespace drw {
 /// consts
 const int templateWidth = 1600;
 const int templateHeight = 1600;
-const int gap = 20; // for template - from bottom to Hz axis
+const int gap = 20; /// for template - from bottom to Hz axis
 const int fontSizeChan = 24;
 const int fontSizeHz = 12;
 const double graphHeight = 250.;
 const double graphWidth = 250.;
-const int lineWidth = 3; // for arrays
-const int penWidth = 3; // for signals
+const int lineWidth = 3; /// for arrays
+const int penWidth = 3; /// for signals
 const double offsetYinLine = 1 - 0.1;
 const int eegPicHeight = 600;
 const int mapSize = 240;
-// Mann-Witney
+/// Mann-Witney
 const double barWidth = 1/2.;
 const int barHeight = 5;
 const int barHeightStart = 18;
@@ -110,7 +110,7 @@ QPixmap drawTemplate(const bool channelsFlag = true,
 					 const double rightF = 20.0,
 					 const int numOfChannels = 19);
 
-// inData[numOfChans][chanLength]
+/// inData[numOfChans][chanLength]
 QPixmap drawArray(const QPixmap & templatePic,
 				  const matrix & inData,
 				  const QColor & color = QColor("black"),
@@ -230,8 +230,8 @@ QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
 
 QPixmap drawColorScale(int range, ColorScale type, bool full);
 
-} // namespace drw
+} /// namespace drw
 
-} // namespace myLib
+} /// namespace myLib
 
-#endif // DRW_H
+#endif /// DRW_H

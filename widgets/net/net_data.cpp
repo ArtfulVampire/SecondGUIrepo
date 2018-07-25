@@ -16,7 +16,7 @@ void Net::loadDataUCI(const QString & setName)
 	myClassifierData = ClassifierData(uciData, uciTypes);
 }
 
-// like readPaFile from library.cpp
+/// like readPaFile from library.cpp
 void Net::loadData(const QString & spectraPath,
 				   const QStringList & filters)
 {
@@ -52,17 +52,17 @@ void Net::pca()
 
 	matrix centeredMatrix;
 	centeredMatrix = matrix::transposed(dataMatrix);
-	// now rows = spectral points/features, cols - vectors
+	/// now rows = spectral points/features, cols - vectors
 
-	// count covariations
-	// centered matrix
+	/// count covariations
+	/// centered matrix
 	for(int i = 0; i < NetLength; ++i)
 	{
-		// should be already zero because if loadData centering is on
+		/// should be already zero because if loadData centering is on
 		centeredMatrix[i] -= smLib::mean(centeredMatrix[i]);
 	}
 
-	// covariation between different spectra-bins
+	/// covariation between different spectra-bins
 	double trace = 0.;
 	for(int i = 0; i < NetLength; ++i)
 	{
@@ -70,9 +70,9 @@ void Net::pca()
 	}
 	std::cout << "trace covMatrix = " << trace << std::endl;
 
-	// count eigenvalue decomposition
+	/// count eigenvalue decomposition
 
-	const double eigenValuesTreshold = pow(10., -8.);
+	const double eigenValuesTreshold = std::pow(10., -8.);
 	const int numOfPc = this->ui->pcaNumberSpinBox->value();
 
 	/// auto [eigenVectors, eigenValues] =

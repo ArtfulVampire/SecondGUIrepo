@@ -9,103 +9,103 @@ namespace iitp
 /// [numFile] - interestingChannels
 /// commented wrists and ankles - letter 7-Nov-17
 const std::vector<std::valarray<int>> interestGonios{
-	// 0 eyes closed
+	/// 0 eyes closed
 	{},
-	// 1 eyes open
+	/// 1 eyes open
 	{},
-	// 2 legs
+	/// 2 legs
 	{/*Ankle_l, Ankle_r,*/ Knee_l, Knee_r}, /// commented Ankles 17.02.18 (Alex2)
-	// 3 legs imaginary
+	/// 3 legs imaginary
 	{},
-	// 4 feet
+	/// 4 feet
 	{Ankle_l, Ankle_r},
-	// 5 feet imaginary
+	/// 5 feet imaginary
 	{},
-	// 6 wrists
+	/// 6 wrists
 	{Wrist_l, Wrist_r},
-	// 7 wrists imaginary
+	/// 7 wrists imaginary
 	{},
-	// 8 feet + wrists
+	/// 8 feet + wrists
 	{Ankle_l, Ankle_r, Wrist_l, Wrist_r},
-	// 9 feet + wrists imaginary
+	/// 9 feet + wrists imaginary
 	{},
-	// 10 legs + wrists
+	/// 10 legs + wrists
 	{ /*Ankle_l, Ankle_r, */ Knee_l, Knee_r, Wrist_l, Wrist_r},
-	// 11 legs + wrists imaginary
+	/// 11 legs + wrists imaginary
 	{},
-	// 12 static stress
+	/// 12 static stress
 	{},
-	// 13 middle eyes closed
+	/// 13 middle eyes closed
 	{},
-	// 14 middle eyes open
+	/// 14 middle eyes open
 	{},
-	// 15 arms
+	/// 15 arms
 	{Elbow_l, Elbow_r /*, Wrist_l, Wrist_r*/ },
-	// 16 arms imaginary
+	/// 16 arms imaginary
 	{},
-	// 17 arms + legs
+	/// 17 arms + legs
 	{Elbow_l, Elbow_r, Knee_l, Knee_r /*, Ankle_l, Ankle_r, Wrist_l, Wrist_r*/ },
-	// 18 arms + legs imaginagy
+	/// 18 arms + legs imaginagy
 	{},
-	// 19 legs passive
+	/// 19 legs passive
 	{Knee_l, Knee_r  /*,Ankle_l, Ankle_r*/ },
-	// 20 arms passive
+	/// 20 arms passive
 	{Elbow_l, Elbow_r /*, Wrist_l, Wrist_r*/ },
-	// 21 arms+legs passive
+	/// 21 arms+legs passive
 	{Elbow_l, Elbow_r, Knee_l, Knee_r /*, Wrist_l, Wrist_r, Ankle_l, Ankle_r*/ },
-	// 22 final eyes closed
+	/// 22 final eyes closed
 	{},
-	// 23 final eyes open
+	/// 23 final eyes open
 	{},
-	// 24 weak Ta_l
+	/// 24 weak Ta_l
 	{},
-	// 25 weak Ta_r
+	/// 25 weak Ta_r
 	{},
-	// 26 weak Fcr_l
+	/// 26 weak Fcr_l
 	{},
-	// 27 weak Fcr_r
+	/// 27 weak Fcr_r
 	{},
-	// 28 weak Ecr_l
+	/// 28 weak Ecr_l
 	{},
-	// 29 weak Ecr_r
+	/// 29 weak Ecr_r
 	{},
 
 		/// VR
-	// 30 VR + legs slow
+	/// 30 VR + legs slow
 	{Knee_l, Knee_r},
-	// 31 VR + legs fast
+	/// 31 VR + legs fast
 	{Knee_l, Knee_r},
-	// 32 VR + arms slow
+	/// 32 VR + arms slow
 	{Elbow_l, Elbow_r},
-	// 33 VR + arms fast
+	/// 33 VR + arms fast
 	{Elbow_l, Elbow_r},
-	// 34 VR + arms, legs slow
+	/// 34 VR + arms, legs slow
 	{Knee_l, Knee_r, Elbow_l, Elbow_r},
-	// 35 VR + arms, legs fast
+	/// 35 VR + arms, legs fast
 	{Knee_l, Knee_r, Elbow_l, Elbow_r}
 };
 
 
 const std::vector<int> interestEeg{
-//	0,	// Fp1
-//	1,	// Fp2,
-	2,	// F7
-	3,	// F3
-	4,	// Fz
-	5,	// F4 - usually bad
-	6,	// F8
-	7,	// T3
-	8,	// C3
-	9,	// Cz
-	10,	// C4
-	11,	// T4
-	12,	// T5
-	13,	// P3
-	14,	// Pz
-	15,	// P4 - usually bad
-	16,	// T5
-	17,	// O1
-	18	// O2
+//	0,	/// Fp1
+//	1,	/// Fp2,
+	2,	/// F7
+	3,	/// F3
+	4,	/// Fz
+	5,	/// F4 - usually bad
+	6,	/// F8
+	7,	/// T3
+	8,	/// C3
+	9,	/// Cz
+	10,	/// C4
+	11,	/// T4
+	12,	/// T5
+	13,	/// P3
+	14,	/// Pz
+	15,	/// P4 - usually bad
+	16,	/// T5
+	17,	/// O1
+	18	/// O2
 };
 
 /// all with 12th
@@ -132,6 +132,6 @@ const std::map<QString, std::vector<int>> badFiles{
 };
 
 
-} // end of namespace iitp
+} /// end of namespace iitp
 
-#endif // IITP_VARIABLES_H
+#endif /// IITP_VARIABLES_H

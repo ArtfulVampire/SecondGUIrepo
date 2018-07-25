@@ -27,7 +27,7 @@ std::valarray<double> makeNoise(int numPoints = 4096);
 
 
 /// chnage to std::vector<matrix> inputData and matrix output
-void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, // 19 eeg, 2 help, form zero
+void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, /// 19 eeg, 2 help, form zero
 						  const std::vector<int> eegChannels = coords::leest19,
 						  const QString & windsDir = DEFS.dirPath()
 													   + "/winds",
@@ -236,27 +236,29 @@ void splineCoeffCount(const std::valarray<double> & inX,
 					  const std::valarray<double> & inY,
 					  int dim,
 					  std::valarray<double> & outA,
-					  std::valarray<double> & outB); // [inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
+					  std::valarray<double> & outB); /// [inX[i-1]...inX[i]] - q[i] = (1-t) * inY[i-1] + t * inY[i] + t * (1-t) * (outA[i] * (1-t) + outB[i] * t));
 double splineOutput(const std::valarray<double> & inX,
 					const std::valarray<double> & inY,
 					int dim,
 					const std::valarray<double> & A,
 					const std::valarray<double> & B,
 					double probeX);
+#if 0
+/// tested - quite bad
+double fractalDimensionBySpectre(const std::valarray<double> &arr,
+						const QString & picPath = QString());
+#endif
 
 
-
-//double fractalDimensionBySpectre(const std::valarray<double> &arr,
-//						const QString & picPath = QString());
-
-
+#if 0
 /// UNUSED - MUST CHECK BEFORE USE
-// std::valarray<double> hilbert(const std::valarray<double> & arr,
-//							  double lowFreq = DEFS.getLeftFreq(),
-//							  double highFreq = DEFS.getRightFreq(),
-//							  QString picPath  = QString());
+std::valarray<double> hilbert(const std::valarray<double> & arr,
+							  double lowFreq = DEFS.getLeftFreq(),
+							  double highFreq = DEFS.getRightFreq(),
+							  QString picPath  = QString());
+#endif
 
-} // namespace myLib
+} /// namespace myLib
 
 
 
@@ -274,7 +276,7 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 									 double srate,
 									 double lowFreq,
 									 double highFreq);
-} // namespace btr
+} /// namespace btr
 
 namespace butter
 {
@@ -333,7 +335,7 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 
 
 
-} // namespace butter
+} /// namespace butter
 
 
 namespace myLib
@@ -357,4 +359,4 @@ std::valarray<double> (* const highPass)(const std::valarray<double> & inputSign
 }
 
 
-#endif // SIGNALPROCESSING_H
+#endif /// SIGNALPROCESSING_H

@@ -4,8 +4,6 @@ using namespace myOut;
 
 NBC::NBC() : Classifier()
 {
-//	std::cout << myClassData->getNumOfCl() << std::endl;
-
     myType = ModelType::NBC;
     typeString = "NBC";
 }
@@ -14,8 +12,10 @@ void NBC::adjustToNewData()
 {
 	centers.resize(myClassData->getNumOfCl());
 	sigmas.resize(myClassData->getNumOfCl());
-	/// make something with apriori
-//	myClassData->setApriori();
+#if 0
+	//// make something with apriori
+	myClassData->setApriori();
+#endif
 }
 
 void NBC::learn(std::vector<uint> & indices)
@@ -45,7 +45,7 @@ void NBC::classifyDatum1(uint vecNum)
 		vec[i] = myClassData->getData()[vecNum] - centers[i];
 		outputLayer[i] = myClassData->getApriori()[i]; /// ???
         std::valarray<double> pewpew = 1. / sigmas[i]
-                                       * exp( - pow(vec[i], 2.) / (2. * pow(sigmas[i], 2.)));
+                                       * exp( - std::pow(vec[i], 2.) / (2. * std::pow(sigmas[i], 2.)));
         for(double item : pewpew)
         {
 			outputLayer[i] *= item;

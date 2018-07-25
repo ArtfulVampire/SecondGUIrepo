@@ -100,7 +100,6 @@ void Cut::findPrevMark(double mark)
 
 		int index = std::distance(beg, it);
 		ui->paintStartDoubleSpinBox->setValue(std::max(0., index / edfFil.getFreq() - 0.5));
-//		ui->leftLimitSpinBox->setValue(index);
 		showDerivatives();
 		paint();
 	}
@@ -137,7 +136,6 @@ void Cut::findNextMark(int mark)
 
 		int index = std::distance(std::begin(markArr), it);
 		ui->paintStartDoubleSpinBox->setValue(std::max(0., index / edfFil.getFreq() - 0.5));
-//		ui->leftLimitSpinBox->setValue(index);
 		showDerivatives();
 		paint();
 	}

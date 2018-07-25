@@ -81,4 +81,4 @@ private:
 
 }
 
-#endif // QTLIB_H
+#endif /// QTLIB_H

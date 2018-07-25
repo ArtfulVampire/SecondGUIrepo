@@ -24,7 +24,7 @@ Cut::Cut() :
 	ui->subdirComboBox->addItem("");
 	ui->subdirComboBox->addItem("Reals");
 	ui->subdirComboBox->addItem("winds");
-	ui->subdirComboBox->addItem("winds/fromreal"); // generality
+	ui->subdirComboBox->addItem("winds/fromreal"); /// generality
 	ui->subdirComboBox->setCurrentText(""); /// me
 
 	ui->suffixComboBox->addItem("");
@@ -36,7 +36,10 @@ Cut::Cut() :
 	ui->suffixComboBox->addItem("car");
 	ui->suffixComboBox->addItem("stag");
 	ui->suffixComboBox->setCurrentText("");
-//	ui->suffixComboBox->setCurrentText("sum"); /// iitp
+	if(DEFS.getUser() == username::IITP)
+	{
+		ui->suffixComboBox->setCurrentText("sum");
+	}
 
 	/// draws
 	ui->yNormDoubleSpinBox->setDecimals(2);
@@ -52,11 +55,8 @@ Cut::Cut() :
     ui->paintLengthDoubleSpinBox->setDecimals(1);
 	ui->paintLengthDoubleSpinBox->setSingleStep(0.2);
 
-//	drawSamples();
-
     ui->scrollArea->setWidget(ui->picLabel);
-    ui->scrollArea->installEventFilter(this);
-//	ui->picLabel->installEventFilter(this);
+	ui->scrollArea->installEventFilter(this);
 
 	ui->color1LineEdit->setText("blue");
 	ui->color2LineEdit->setText("red");
@@ -237,7 +237,6 @@ Cut::Cut() :
 		{
 			this->paramAbsThreshold.push_back(p->value()); /// CARE ABOUT ORDER
 		}
-//		std::cout << "smartFindAbsThrSet: " << this->paramAbsThreshold << std::endl;
 	});
 
 	/// IITP
@@ -274,38 +273,36 @@ void Cut::timesAndDiffSlot()
 	paintLimits();
 }
 
-//void Cut::drawSamples()
-//{
-//	std::vector<QLabel *> picLabels{
-//		ui->hz5Label,
-//				ui->hz10Label,
-//				ui->hz15Label,
-//				ui->hz20Label,
-//				ui->hz25Label,
-//				ui->hz30Label
-//	};
+#if 0
+void Cut::drawSamples()
+{
+	std::vector<QLabel*> picLabels
+	{
+		ui->hz5Label,
+				ui->hz10Label,
+				ui->hz15Label,
+				ui->hz20Label,
+				ui->hz25Label,
+				ui->hz30Label,
+	};
 
-//	std::valarray<double> seen(150);
-//	for(int num = 0; num < 6; ++num)
-//	{
-//		int freq = 5 * (num + 1);
-//		seen = myLib::makeSine(150, freq);
-//		QPixmap pic = myLib::drawOneSignal(seen, 50);
+	std::valarray<double> seen(150);
+	for(int num = 0; num < 6; ++num)
+	{
+		int freq = 5 * (num + 1);
+		seen = myLib::makeSine(150, freq);
+		QPixmap pic = myLib::drawOneSignal(seen, 50);
 
-//		picLabels[num]->setPixmap(pic);
-////		picLabels[num]->setPixmap(pic.scaledToHeight(picLabels[num]->height()));
-//	}
-////	ui->hzLayout->setGeometry(QRect(ui->hzLayout->geometry().x(),
-////									ui->hzLayout->geometry().y(),
-////									ui->hzLayout->sizeHint().width(),
-////									ui->hzLayout->sizeHint().height()));
-//}
+		picLabels[num]->setPixmap(pic);
+	}
+}
+#endif
 
 void Cut::resizeEvent(QResizeEvent * event)
 {
 	if(event->size() == event->oldSize()) { return; }
 
-    // adjust scrollArea size
+    /// adjust scrollArea size
 	double newLen = smLib::doubleRound((event->size().width() - scrollAreaGapX) / edfFil.getFreq(),
 									   ui->paintLengthDoubleSpinBox->decimals());
 	double newHei = std::max(int(smLib::doubleRound(event->size().height(), -1)),
@@ -324,7 +321,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 		{
 			paint();
 		}
-		else // if(event->size().height() != event->oldSize().height())
+		else /// if(event->size().height() != event->oldSize().height())
 		{
 			paintLimits();
 		}
@@ -429,7 +426,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				}
 				else
 				{
-//					this->drawSpectre();
 					this->mousePressSlot(clickEvent->button(),
 										 clickEvent->x());
 				}
@@ -437,7 +433,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			}
 			case Qt::RightButton:
 			{
-//				this->drawSpectre();
 				this->mousePressSlot(clickEvent->button(),
 									 clickEvent->x());
 				break;
@@ -748,7 +743,6 @@ matrix Cut::makeDrawData()
 /// check - works not especially accurate
 int Cut::getDrawedChannel(QMouseEvent * clickEvent)
 {
-//	std::cout << 1 << std::endl;
 	auto vals = this->drawData.getCol(clickEvent->x());
 	const double norm = normCoeff();
 	double dist = 1000;
@@ -804,7 +798,6 @@ void Cut::manualDraw(QMouseEvent * mouseMoveEvent)
 				/ (norm * ui->scrollArea->height() / currentPic.height() ); /// norm
 	}
 	drawData = this->makeDrawData();
-//	paintData(drawData);
 	repaintData(drawData, sta.x(), fin.x());
 	manualDrawStart = mouseMoveEvent->pos();
 }

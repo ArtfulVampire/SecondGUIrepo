@@ -94,7 +94,6 @@ public:
 		 inputData = inData;
 		 numIC = inData.rows();
 	}
-//	ICAclass(matrix && inData): inputData(inData), numIC(inData.rows()) {}
 
 	/// main function
 	void calculateICA();
@@ -126,13 +125,16 @@ public:
 	void setNumIC(int in)							{ numIC = in; }
 
 	void setOutPaths(const QString & inHelpPath);
-	/// all inside
-//	void setEigMatPath(const QString & in)			{ eigMatPath = in; }
-//	void setEigValPath(const QString & in)			{ eigValPath = in; }
-//	void setExplVarPath(const QString & in)			{ explVarPath = in; }
-//	void setMapsFilePath(const QString & in)		{ mapsFilePath = in; }
-//	void setDrawMapsPath(const QString & in)		{ drawMapsPath = in; }
-//	void setDrawMapsWMPath(const QString & in)		{ drawMapsWMPath = in; }
+
+#if 0
+	/// all inside setOutPaths
+	void setEigMatPath(const QString & in)			{ eigMatPath = in; }
+	void setEigValPath(const QString & in)			{ eigValPath = in; }
+	void setExplVarPath(const QString & in)			{ explVarPath = in; }
+	void setMapsFilePath(const QString & in)		{ mapsFilePath = in; }
+	void setDrawMapsPath(const QString & in)		{ drawMapsPath = in; }
+	void setDrawMapsWMPath(const QString & in)		{ drawMapsWMPath = in; }
+#endif
 
 };
 
@@ -140,7 +142,7 @@ public:
 
 
 
-} // end namespace myLib
+} /// end namespace myLib
 
 
-#endif // ICA_H
+#endif /// ICA_H

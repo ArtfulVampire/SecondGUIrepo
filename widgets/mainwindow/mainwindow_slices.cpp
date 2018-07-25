@@ -17,7 +17,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	{
 		if(ui->matiCheckBox->isChecked())
 		{
-			// almost equal time, should use sessionEdges
+			/// almost equal time, should use sessionEdges
 #if 1
 			sliceMati();
 			sliceMatiPieces(true);
@@ -29,17 +29,26 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 		{
 			if(ui->windsButton->isChecked())
 			{
-				sliceWinds();
-//				sliceJustWinds(); /// IITP
+				if(DEFS.getUser() == username::IITP)
+				{
+					sliceJustWinds();
+				}
+				else
+				{
+					sliceWinds();
+				}
 			}
-//			else if(ui->pauseRadioButton->isChecked())
-//			{
-//				bool a = ui->typeCheckButton->isChecked();
-//				pausePieces(a);
-//			}
+#if 0
+			/// Polina
+			else if(ui->pauseRadioButton->isChecked())
+			{
+				bool a = ui->typeCheckButton->isChecked();
+				pausePieces(a);
+			}
+#endif
 			else if(ui->realsButton->isChecked())
 			{
-				if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) // generality
+				if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) /// generality
 				{
 					sliceBak(1, 60, "241");
 					sliceBak(61, 120, "247");
@@ -104,15 +113,23 @@ void MainWindow::sliceWinds()
 
 	const edfFile & fil = globalEdf;
 
+#if 1
 	const int windLen = std::round(fil.getFreq() * ui->windowLengthSpinBox->value());
 	const int windStep = std::round(fil.getFreq() * ui->timeShiftSpinBox->value());
-//	const int windLen = 1024;
-//	const int windStep = 1024;
+#else
+	const int windLen = 1024;
+	const int windStep = 1024;
+#endif
+
 	const auto & markers = fil.getMarkers();
 
 	const int numSkipStartWinds = 2;				/// magic constant
-//	const int restSkipTime = 1.5 * fil.getFreq();	/// in time-bins, magic constant
+#if 1
 	const int restSkipTime = 0;	/// in time-bins, magic constant
+#else
+	const int restSkipTime = 1.5 * fil.getFreq();	/// in time-bins, magic constant
+#endif
+
 	int numReal = 0;
 
 	std::vector<std::tuple<int, int, QString>> forSave; /// start, typ, filepath
@@ -144,7 +161,6 @@ void MainWindow::sliceWinds()
 								 + "_" + marker
 								 + "." + rn(windowCounter++, 2);
 			forSave.push_back(std::tuple<int, int, QString>(startWind, typ, helpString));
-//			fil.saveSubsection(startWind, startWind + windLen, helpString, true);
 		}
 
 		itSta = itEnd;											/// new real/rest start
@@ -171,7 +187,6 @@ void MainWindow::sliceWinds()
 							 + "_" + "254"
 							 + "." + rn(windowCounter++, 2);
 		forSave.push_back(std::tuple<int, int, QString>(startWind, 2, helpString));
-//		fil.saveSubsection(startWind, startWind + windLen, helpString, true);
 	}
 
 
@@ -248,10 +263,16 @@ void MainWindow::sliceElena()
 		{20, 24}
 	};
 	const std::vector<std::vector<QString>> integrChans
-	{{"F3", "F7"}, {"F4", "F8"}, {"T3", "T5"}, {"C3"}, {"C4"}, {"T4", "T6"},
-		{"P3"}, {"P4"}, {"O1"}, {"O2"}};
+	{
+		{"F3", "F7"},
+		{"F4", "F8"},
+		{"T3", "T5"},
+		{"C3"}, {"C4"},
+		{"T4", "T6"},
+		{"P3"}, {"P4"},
+		{"O1"}, {"O2"},
+	};
 
-//	matrix table(numOfTasks, 1);
 	matrix table{};
 	std::vector<QString> tableCols
 	{
@@ -263,7 +284,7 @@ void MainWindow::sliceElena()
 		"RDfreq",
 		"PPGampl",
 		"PPGfreq",
-		"reacTime"
+		"reacTime",
 	};
 	/// alpha peak
 	for(int i : eegChannels)
@@ -326,7 +347,6 @@ void MainWindow::sliceElena()
 		/// check bad file
 		if(spec.isEmpty() || edaBase.size() < fil.getFreq())
 		{
-//			outStream << "sliceElena: too short file " << pieceNumber << std::endl;
 			return;
 		}
 
@@ -367,12 +387,7 @@ void MainWindow::sliceElena()
 						   + "_t_" + operMark
 				+ "." + def::spectraDataExtension;
 
-//		myLib::writeFileInLine(savePath, outVector);
 		myLib::writeMatrixFile(savePath, spec.subCols(DEFS.left(), DEFS.right()));
-
-
-
-
 
 		/// for tables
 		if(0)
@@ -527,8 +542,8 @@ void MainWindow::sliceElena()
 	bool startFlag = false;
 
 	/// slice all tasks
-	// (241-244) - instruction, (1-240) - number(start), (255) - optional click,
-	// (245-254) - operational, 255 - ready for next task
+	/// (241-244) - instruction, (1-240) - number(start), (255) - optional click,
+	/// (245-254) - operational, 255 - ready for next task
 	for(int i = 0; i < fil.getDataLen(); ++i)
 	{
 		if(!startFlag)
@@ -546,17 +561,17 @@ void MainWindow::sliceElena()
 			}
 			else
 			{
-				// 0 or 255 - do nothing
+				/// 0 or 255 - do nothing
 			}
 		}
-		else // if(startFlag)
+		else /// if(startFlag)
 		{
-			if(1 <= markChanArr[i] && markChanArr[i] <= 240) // task number
+			if(1 <= markChanArr[i] && markChanArr[i] <= 240) /// task number
 			{
 				number = markChanArr[i];
 				start = i;
 			}
-			else if(245 <= markChanArr[i] && markChanArr[i] <= 254) // task end
+			else if(245 <= markChanArr[i] && markChanArr[i] <= 254) /// task end
 			{
 				QString helpString = DEFS.dirPath()
 									 + "/Reals"
@@ -621,7 +636,6 @@ void MainWindow::sliceElena()
 	/// table into file
 	std::ofstream tableStream((fil.getDirPath() + "/" + "table.txt").toStdString());
 	tableStream << tableCols << "\r\n";
-//	tableStream << std::fixed;
 	tableStream.precision(4);
 
 	/// sort by pieceNumber?
@@ -647,16 +661,16 @@ void MainWindow::sliceElena()
 	}
 }
 
-// beginning - from mark1 to mark 2, end 250 Marker - included in filename
+/// beginning - from mark1 to mark 2, end 250 Marker - included in filename
 void MainWindow::sliceBak(int marker1, int marker2, QString marker)
 {
-    // for Baklushev
+    /// for Baklushev
     QString helpString;
 
     int number = 0;
     int k;
-	int j = 0;                                     // flag of marker1 read
-	int h = 0;                                     // flag of marker2 read
+	int j = 0;                                     /// flag of marker1 read
+	int h = 0;                                     /// flag of marker2 read
     const edfFile & fil = globalEdf;
 	const auto & markerChan = fil.getData()[fil.getMarkChan()];
 
@@ -684,7 +698,7 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker)
                     + "_" + marker
 					+ "." + rn(number, 4);
 
-            // to test?
+            /// to test?
             fil.saveSubsection(j, k, helpString, true);
 
             i += 17;
@@ -711,7 +725,7 @@ void MainWindow::sliceOneByOne()
 	const std::valarray<double> & markChanArr = fil.getMarkArr();
 #endif
 
-    // 200, (241||247, (1), 254, 255)
+    /// 200, (241||247, (1), 254, 255)
 #if USE_MARKERS
 	for(const std::pair<int, int> & in : markers)
 #else
@@ -770,11 +784,13 @@ void MainWindow::sliceOneByOne()
                     }
                     else
                     {
+#if 0
 						/// why do I need this?
-//						helpString += "_" + marker;
-//						matrix tempData(fil.getNs(), 100, 0.);
-//						tempData[fil.getMarkChan()][0] = markChanArr[start];
-//						myLib::writePlainData(helpString, tempData);
+						helpString += "_" + marker;
+						matrix tempData(fil.getNs(), 100, 0.);
+						tempData[fil.getMarkChan()][0] = markChanArr[start];
+						myLib::writePlainData(helpString, tempData);
+#endif
                     }
 				}
 			}
@@ -824,30 +840,33 @@ void MainWindow::sliceOneByOne()
             }
             else /// not to loose the last marker
             {
-//				helpString += "_" + marker;
-//				matrix tempData(fil.getNs(), 100, 0.);
-//				tempData[fil.getMarkChan()][0] = markChanArr[start];
-//				myLib::writePlainData(helpString, tempData);
+#if 0
+				/// ???
+				helpString += "_" + marker;
+				matrix tempData(fil.getNs(), 100, 0.);
+				tempData[fil.getMarkChan()][0] = markChanArr[start];
+				myLib::writePlainData(helpString, tempData);
+#endif
             }
         }
     }
 }
 
-// deprecated numChanWrite - always with markers
+/// deprecated numChanWrite - always with markers
 void MainWindow::sliceOneByOneNew()
 {
     QString helpString;
     int number = 0;
     int j = 0;
-	int h = 0; // h == 0 - 241, h == 1 - 247
+	int h = 0; /// h == 0 - 241, h == 1 - 247
     QString marker = "000";
 
     const edfFile & fil = globalEdf;
 
     const std::valarray<double> & markChanArr = fil.getData()[fil.getMarkChan()];
 
-    // 200, 255, (241||247, num, 254, 255)
-    // with feedback 200 (241||247, num, 231||237, (234), 254, 255)
+    /// 200, 255, (241||247, num, 254, 255)
+    /// with feedback 200 (241||247, num, 231||237, (234), 254, 255)
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
         if(markChanArr[i] == 0.)
@@ -857,7 +876,7 @@ void MainWindow::sliceOneByOneNew()
         else if((markChanArr[i] > 200 && markChanArr[i] < 241) ||
 				markChanArr[i] == 255 ||
                 markChanArr[i] == 250 ||
-				markChanArr[i] == 251) // all not interesting markers
+				markChanArr[i] == 251) /// all not interesting markers
         {
             continue;
         }
@@ -866,9 +885,9 @@ void MainWindow::sliceOneByOneNew()
             marker = "254";
             if(markChanArr[i] == 241) h = 0;
             else if (markChanArr[i] == 247) h = 1;
-            continue; // wait for num marker
+            continue; /// wait for num marker
         }
-		else if(true) // marker can be num <= 200, ==254, smth else
+		else if(true) /// marker can be num <= 200, ==254, smth else
         {
             if(marker.isEmpty())
             {
@@ -879,7 +898,6 @@ void MainWindow::sliceOneByOneNew()
 						 + "/Reals"
 						 + "/" + fil.getExpName()
 						 + "." + rn(number++, 4);
-//			outStream << helpString << std::endl;
             if(i > j)
             {
 				if(i - j <= DEFS.getFreq() * 60) /// const generality limit
@@ -962,7 +980,7 @@ void MainWindow::sliceMatiSimple()
     std::vector<bool> markers;
     bool state[3];
     QString fileMark;
-	int session[4]; // generality
+	int session[4]; /// generality
     int type = 3;
 
     for(int i = 0; i < 4; ++i)
@@ -985,48 +1003,48 @@ void MainWindow::sliceMatiSimple()
         else
         {
 			markers = myLib::matiCountByte(currMarker);
-			// decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
+			/// decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
             for(int i = 0; i < 3; ++i)
             {
-				state[i] = markers[i + 8]; // always elder byte is for count adn type of the session
+				state[i] = markers[i + 8]; /// always elder byte is for count adn type of the session
             }
 
-            if(!(state[0] || state[1] || state[2])) continue; // if all are zeros
+            if(!(state[0] || state[1] || state[2])) continue; /// if all are zeros
 
-			if(state[2] == 1) // the end of a session
+			if(state[2] == 1) /// the end of a session
             {
-				if(state[1] == 0 && state[0] == 1) // end of a counting session
+				if(state[1] == 0 && state[0] == 1) /// end of a counting session
                 {
                     type = 0;
-					fileMark = "241"; // count
+					fileMark = "241"; /// count
                 }
-				if(state[1] == 1 && state[0] == 0) // end of a tracking session
+				if(state[1] == 1 && state[0] == 0) /// end of a tracking session
                 {
                     type = 1;
-					fileMark = "247"; // follow
+					fileMark = "247"; /// follow
                 }
-				if(state[1] == 1 && state[0] == 1) // end of a composed session
+				if(state[1] == 1 && state[0] == 1) /// end of a composed session
                 {
                     type = 2;
-					fileMark = "244"; // composed
+					fileMark = "244"; /// composed
                 }
             }
-			else // if the start of a session
+			else /// if the start of a session
             {
                 type = 3;
-				fileMark = "254"; // rest. start of the session is sliced too
+				fileMark = "254"; /// rest. start of the session is sliced too
             }
-            end = i + 1; // end marker should be included
+            end = i + 1; /// end marker should be included
         }
 
-		// save session edf
+		/// save session edf
         if(end > start)
         {
-            if(state[2]) // if not rest
+            if(state[2]) /// if not rest
             {
-                number = int(ceil((end-start)/double(piece)));
+                number = int(std::ceil((end-start)/double(piece)));
 
-                for(int j = 0; j < number; ++j) // num of pieces
+                for(int j = 0; j < number; ++j) /// num of pieces
                 {
 					helpString = (DEFS.dirPath()
 														  + "/Reals"
@@ -1045,7 +1063,7 @@ void MainWindow::sliceMatiSimple()
                 ++session[type];
             }
 
-            start = end - 1; // = i // start marker should be included
+            start = end - 1; /// = i /// start marker should be included
             end = -1;
         }
         ui->progressBar->setValue(end * 100. / fil.getDataLen());
@@ -1074,7 +1092,7 @@ void MainWindow::sliceMati()
     std::vector<bool> markers;
     bool state[3];
     QString fileMark;
-	int session[4]; // generality
+	int session[4]; /// generality
     int type = 3;
 
     for(int i = 0; i < 4; ++i)
@@ -1096,44 +1114,44 @@ void MainWindow::sliceMati()
         else
         {
 			markers = myLib::matiCountByte(currMarker);
-			// decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
+			/// decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
             for(int i = 0; i < 3; ++i)
             {
-				state[i] = markers[i + 8]; // always elder byte is for count adn type of the session
+				state[i] = markers[i + 8]; /// always elder byte is for count adn type of the session
             }
 
-            if(!(state[0] || state[1] || state[2])) continue; // if all are zeros
+            if(!(state[0] || state[1] || state[2])) continue; /// if all are zeros
 
-			if(state[2] == 1) // the end of a session
+			if(state[2] == 1) /// the end of a session
             {
-				if(state[1] == 0 && state[0] == 1) // end of a counting session
+				if(state[1] == 0 && state[0] == 1) /// end of a counting session
                 {
                     type = 0;
-					fileMark = "241"; // count
+					fileMark = "241"; /// count
                 }
-				if(state[1] == 1 && state[0] == 0) // end of a tracking session
+				if(state[1] == 1 && state[0] == 0) /// end of a tracking session
                 {
                     type = 1;
-					fileMark = "247"; // follow
+					fileMark = "247"; /// follow
                 }
-				if(state[1] == 1 && state[0] == 1) // end of a composed session
+				if(state[1] == 1 && state[0] == 1) /// end of a composed session
                 {
                     type = 2;
-					fileMark = "244"; // composed
+					fileMark = "244"; /// composed
                 }
             }
-			else // if the start of a session
+			else /// if the start of a session
             {
                 type = 3;
-				fileMark = "254"; // rest. start of the session is sliced too
+				fileMark = "254"; /// rest. start of the session is sliced too
             }
-            end = i + 1; // end marker should be included
+            end = i + 1; /// end marker should be included
         }
 
-		// save session edf
+		/// save session edf
         if(end > start)
         {
-            if(type != 3) // dont write rests
+            if(type != 3) /// dont write rests
             {
 				helpString = DEFS.dirPath()
 							 + "/auxEdfs"
@@ -1147,7 +1165,7 @@ void MainWindow::sliceMati()
                                    helpString);
             }
 
-			start = end - 1; // start marker should be included
+			start = end - 1; /// start marker should be included
             end = -1;
             ++session[type];
         }
@@ -1196,7 +1214,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     {
 		for(int session = 0; session < 15; ++session) /// magic const
         {
-            // edf session path
+            /// edf session path
 			helpString = DEFS.dirPath()
 						 + "/auxEdfs"
 						 + "/" + globalEdf.getExpName()
@@ -1210,7 +1228,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
                 dataLen = fil.getDataLen();
                 pieceNum = 0;
                 currStart = 0;
-                currEnd = -1; // [currStart, currEnd)
+                currEnd = -1; /// [currStart, currEnd)
 
 				switch(type)
 				{
@@ -1228,27 +1246,27 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 
                         if(type == 0 || type == 2)
                         {
-                            // std::search
+                            /// std::search
 							while ( ! (myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 14) ||
-									   myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) // while not (given answer OR session End)
+									   myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) /// while not (given answer OR session End)
                             {
                                 --currEnd;
                             }
                         }
-                        else if(currEnd == dataLen) // should do nothing due to edfFile::cutZerosAtEnd
+                        else if(currEnd == dataLen) /// should do nothing due to edfFile::cutZerosAtEnd
                         {
-							while ( ! (myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10)) ) // while not session end
+							while ( ! (myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10)) ) /// while not session end
                             {
                                 --currEnd;
                             }
                         }
 
-                        if(currEnd <= currStart) // no count answers during pieceLength seconds
+                        if(currEnd <= currStart) /// no count answers during pieceLength seconds
                         {
 							currEnd = std::min(int(currStart + pieceLength * DEFS.getFreq()), dataLen);
                         }
 
-                        // type and session already in the fil.ExpName
+                        /// type and session already in the fil.ExpName
 
 						helpString = DEFS.dirPath()
 									 + "/" + folder
@@ -1283,43 +1301,3 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
     }
 	outStream << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
-
-//void MainWindow::pausePieces(bool in)
-//{
-
-//	std::function<bool(char)> cond1;
-//	std::function<bool(char)> cond2;
-//	std::function<bool(char)> cond3;
-//	QString mark1;
-//	QString mark2;
-//	QString mark3;
-
-//	if(in)	/// in == true - ans/noans
-//	{
-//		cond1 = [](char a) -> bool { return a == '0'; };
-//		mark1 = "260";
-//		cond2 = [](char a) -> bool { return a == '1' || a == '2'; };
-//		mark2 = "261";
-//		cond3 = [](char a) -> bool { return true; };
-//		mark3 = "000";
-//	}
-//	else /// in == false - right/wrong
-//	{
-//		cond1 = [](char a) -> bool { return a == '1'; };
-//		mark1 = "262";
-//		cond2 = [](char a) -> bool { return a == '2'; };
-//		mark2 = "263";
-//		cond3 = [](char a) -> bool { return a == '0'; };
-//		mark3 = "264";
-//	}
-
-//	for(...)
-//	{
-//		char h;
-//		fin >> h;
-//		if(cond1(h)) { marker = mark1; }
-//		else if(cond2(h)) { marker = mark2; }
-//		else if(cond3(h)) { marker = mark3; }
-//	}
-
-//}

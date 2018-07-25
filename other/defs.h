@@ -6,7 +6,7 @@
 #include <omp.h>
 #endif
 
-#include <other/consts.h> // for uint and dataFolder
+#include <other/consts.h> /// for uint and dataFolder
 
 #include <cmath>
 #include <QString>
@@ -87,32 +87,6 @@ private:
 	defs(const defs &)=delete;
 	defs & operator=(const defs &)=delete;
 	/// Singleton end
-
-//public:
-//	/// consts
-//	static const bool withMarkersFlag{true};	/// remove everywhere as true
-
-//	static const bool writeLongStartEnd{true};	/// don't know, do I need it?
-//	static const bool redirectStdOutFlag{false};/// check how to operator<< to NotificationArea
-
-//	static const QString plainDataExtension;
-//	static const QString spectraDataExtension;
-//	static const QStringList edfFilters;
-//	static const QStringList plainFilters;
-//	static const std::vector<QColor> colours;
-
-//	static const QString XeniaFolder;
-//	static const QString mriFolder;
-//	static const QString matiFolder;
-//	static const QString GalyaFolder;
-//	static const QString DashaFolder;
-//	static const QString uciFolder;
-//	static const QString helpPath;
-
-
-//	static const QString iitpFolder;
-//	static const QString iitpSyncFolder;
-//	static const QString iitpResFolder;
 
 
 public:

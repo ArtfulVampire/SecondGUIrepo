@@ -35,7 +35,7 @@ void KNN::learn(std::vector<uint> & indices)
 
 void KNN::classifyDatum1(uint vecNum)
 {
-	std::vector<std::pair<double, int>> toSort; // [otherVecNum][distance, otherVecType]
+	std::vector<std::pair<double, int>> toSort; /// [otherVecNum][distance, otherVecType]
 
 	/// fill toSort
 	for(int i = 0; i < myClassData->getData().rows(); ++i)

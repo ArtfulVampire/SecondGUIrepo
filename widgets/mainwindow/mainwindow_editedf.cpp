@@ -144,17 +144,17 @@ void MainWindow::rereferenceData(const QString & newRef)
 {
 	/// globalEdf is const
 
-	// A1, A2, Ar, N
-	// A1-A2, A1-N
-    // Ar means 0.5*(A1+A2)
+	/// A1, A2, Ar, N
+	/// A1-A2, A1-N
+    /// Ar means 0.5*(A1+A2)
 
 
 
-	int groundChan = -1;	// A1-N
-	int earsChan1 = -1;		// A1-A2
-	int earsChan2 = -1;		// A2-A1
-	int eog1 = -1;			// EOG1
-	int eog2 = -1;			// EOG2
+	int groundChan = -1;	/// A1-N
+	int earsChan1 = -1;		/// A1-A2
+	int earsChan2 = -1;		/// A2-A1
+	int eog1 = -1;			/// EOG1
+	int eog2 = -1;			/// EOG2
 
 	auto label = globalEdf.getLabels();
 	for(int i = 0; i < globalEdf.getNs(); ++i)
@@ -227,7 +227,7 @@ void MainWindow::rereferenceData(const QString & newRef)
 		}
 		else /// EEG and usual EOG
         {
-            // define current ref
+            /// define current ref
             QRegExp forRef(R"([\-].{1,4}[ ])");
             forRef.indexIn(label[i]);
             QString refName = forRef.cap();
@@ -308,7 +308,7 @@ void MainWindow::rereferenceData(const QString & newRef)
 		outStream << "rereferenceData: no bipolar EOG" << std::endl;
 	}
 
-	// set back channels string
+	/// set back channels string
 	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->currentData().toString());
 }
 
@@ -386,8 +386,9 @@ void MainWindow::reduceChannelsEDFSlot() const
 
 	/// why is there error here ???????????????????????
 	/// "string literal doesn't decay into pointer"
-//	outStream << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 //	outStream << "reduceChannelsEDF: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+	/// but this kinda works
+//	outStream << "refilterDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 /// Ossadtchi only ?

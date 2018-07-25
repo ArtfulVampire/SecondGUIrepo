@@ -24,7 +24,7 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 							   [](const std::pair<int, int> & in)
 	{ return (in.second == 241) || (in.second == 247); });
 
-	int sta1 = (*staIt1).first;
+	int sta1 = (*staIt1).first;		/// time-bin of the first task
 
 	fb::taskType typ = fb::taskType::rest;
 	if((*staIt1).second == 241.)		{ typ = fb::taskType::spat; }
@@ -32,29 +32,36 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 
 	myClassifierData = ClassifierData();
 
-	matrix dt1 = file1.getData().subRows(smLib::range<std::vector<uint>>(0, 18 + 1));
+	matrix dt1 = file1.getData().subRows(smLib::range<std::vector<int>>(0, 18 + 1));
 
-	for(uint i = sta1; i < dt1.cols() - suc::windLength * freq1; i += freq1 * suc::shiftLearn)
+	/// i - windStart
+	for(uint windStart = sta1;
+		windStart < dt1.cols() - suc::windLength * freq1;
+		windStart += freq1 * suc::shiftLearn)
 	{
-		auto mark = smLib::contSubsec(markArr1, i, i + suc::windLength * freq1);
+		/// markers channel of the wind
+		auto mark = smLib::contSubsec(markArr1, windStart, windStart + suc::windLength * freq1);
+
 		std::pair<bool, double> a = myLib::contains(mark, std::vector<double>{241., 247., 254.});
-		if(a.first)
+		if(a.first) /// is there any markers of task start/end
 		{
 			if(a.second == 241.)		{ typ = fb::taskType::spat; }
 			else if(a.second == 247.)	{ typ = fb::taskType::verb; }
 			else if(a.second == 254.)	{ typ = fb::taskType::rest; }
-			i = i + myLib::indexOfVal(mark, a.second) + 1
-				+ 1. * freq1 /// to loose some first windows
+
+			windStart = windStart + myLib::indexOfVal(mark, a.second) + 1
+				+ 1. * freq1 /// to skip first windows
 				;
 			continue;
 		}
-		matrix wind = dt1.subCols(i, i + suc::windLength * freq1);
+		matrix wind = dt1.subCols(windStart, windStart + suc::windLength * freq1);
 		matrix spec = myLib::countSpectre(wind, 1024, suc::numSmooth);
 
 		if(spec.isEmpty()) continue;
+
 		spec = spec.subCols(fftLimit(5., freq1, 1024),
 							fftLimit(20., freq1, 1024) + 1);
-		myClassifierData.push_back(spec.toValarByRows(), int(typ), "L " + nm(i));
+		myClassifierData.push_back(spec.toValarByRows(), int(typ), "L " + nm(windStart));
 	}
 	myClassifierData.reduceSize(suc::learnSetStay);
 	myClassifierData.z_transform();
@@ -82,7 +89,6 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 
 	this->passed.resize(this->myClassifierData.getNumOfCl());
 	this->passed = 0.;
-
 
 
 	const auto & markers2 = file2.getMarkers();
@@ -126,6 +132,92 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 
 	return myModel->averageClassification();
 }
+
+/// without correctness
+Classifier::avType Net::successiveByEDF(const fb::FBedf & file1,
+										const fb::FBedf & file2)
+{
+	DEFS.setFftLen(fb::FBedf::windFftLen);
+	const QString localExpName = file1.getExpNameShort();
+
+	myClassifierData = ClassifierData();
+	/// not via constructor because of norming
+	for(int i = 0; i < file1.getWindTypes().size(); ++i)
+	{
+		myClassifierData.push_back(file1.getWindSpectra(i),
+								   uint(static_cast<int>(file1.getWindTypes(i))),
+								   "L " + nm(i));
+	}
+	myClassifierData.reduceSize(suc::learnSetStay);
+	myClassifierData.z_transform();
+	myClassifierData.adjust(); /// sets numOfClasses and stuff
+
+	this->setClassifier(ModelType::NBC);
+	this->setClassifier(ModelType::ANN);
+	ANN * myANN = dynamic_cast<ANN *>(myModel);
+	if(!myANN)
+	{
+		std::cout << "Net::successiveByEDF: ANN bad cast" << std::endl;
+		return {};
+	}
+
+	/// get initial weights on the train set
+	myANN->setCritError(0.05);
+	myANN->setLrate(0.002);
+	myANN->learnAll();
+
+	/// save these weights
+	myANN->writeWeight(def::helpPath + "/" + localExpName + "_init.wts");
+	myANN->drawWeight(def::helpPath + "/" + localExpName + "_init.wts",
+					  def::helpPath + "/" + localExpName + "_init.jpg");
+
+	/// consts - set postlearn
+	myANN->setCritError(0.01);
+	myANN->setLrate(0.005);
+
+
+	this->passed.resize(this->myClassifierData.getNumOfCl());
+	this->passed = 0.;
+
+	QDir(def::helpPath).mkdir(localExpName);
+
+	/// slice winds with overlap !!!!!1
+	auto secondData = myLib::sliceWindows(file2.getData().subRows(19),
+										  file2.getMarkers(),
+										  1000,
+										  3.5 / 4.0,
+										  0, 0);
+	matrix secondWindSpec{};
+	std::vector<fb::taskType> secondWindTypes{};
+
+	int leftLim = fftLimit(fb::FBedf::leftFreq, file2.getFreq(), fb::FBedf::windFftLen);
+	int rightLim = fftLimit(fb::FBedf::rightFreq, file2.getFreq(), fb::FBedf::windFftLen);
+
+	for(const auto & datum : secondData)
+	{
+		auto spec = myLib::countSpectre(std::get<0>(datum),
+										fb::FBedf::windFftLen,
+										suc::numSmooth); ///
+		if(!spec.isEmpty())
+		{
+			secondWindSpec.push_back(spec.subCols(leftLim, rightLim).toValarByRows());
+			secondWindTypes.push_back(static_cast<fb::taskType>(std::get<1>(datum)));
+		}
+	}
+
+	for(int i = 0; i < secondWindTypes.size(); ++i)
+	{
+		successiveLearning(secondWindSpec[i],
+						   uint(static_cast<int>(secondWindTypes[i])),
+						   localExpName);
+	}
+	myANN->writeWeight(def::helpPath + "/" + localExpName + "_last_pre.wts");
+	myANN->drawWeight(def::helpPath + "/" + localExpName + "_last_pre.wts",
+					  def::helpPath + "/" + localExpName + "_last_pre.jpg");
+
+	return myANN->averageClassification(DEVNULL);
+}
+
 
 /// with correctness, etc
 Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
@@ -192,7 +284,7 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 	{
 		auto spec = myLib::countSpectre(std::get<0>(datum),
 										fb::FBedf::windFftLen,
-										5); ///
+										suc::numSmooth); ///
 		if(!spec.isEmpty())
 		{
 			secondWindSpec.push_back(spec.subCols(leftLim, rightLim).toValarByRows());
@@ -205,7 +297,7 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 	matrix relearn{};
 	for(int i = 1; i < secondWindTypes.size(); ++i)
 	{
-		if(secondWindTypes[i] != prevType)
+		if(secondWindTypes[i] != prevType) /// new condition
 		{
 			if(!relearn.isEmpty())
 			{
@@ -220,6 +312,7 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 
 		if(prevType == fb::taskType::rest || file2.getAns(numTask) == fb::ansType::correct)
 		{
+			/// classification correctness is checken in successiveLearningFinal
 			relearn.push_back(secondWindSpec[i]);
 		}
 	}
@@ -228,6 +321,133 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 					  def::helpPath + "/" + localExpName + "_last.jpg");
 
 	return myANN->averageClassification(DEVNULL);
+}
+
+std::pair<Classifier::avType, Classifier::avType>
+Net::successiveByEDFfinalBoth(const fb::FBedf & file1,
+							  const fb::FBedf & file2)
+{
+	DEFS.setFftLen(fb::FBedf::windFftLen);
+	const QString localExpName = file1.getExpNameShort();
+
+	myClassifierData = ClassifierData();
+
+	/// not via constructor because of norming
+	for(int i = 0; i < file1.getWindTypes().size(); ++i)
+	{
+		myClassifierData.push_back(file1.getWindSpectra(i),
+								   uint(static_cast<int>(file1.getWindTypes(i))),
+								   "L " + nm(i));
+	}
+	myClassifierData.reduceSize(suc::learnSetStay);
+	myClassifierData.z_transform();
+	myClassifierData.adjust(); /// sets numOfClasses and stuff
+
+	this->setClassifier(ModelType::NBC);
+	this->setClassifier(ModelType::ANN);
+	ANN * myANN = dynamic_cast<ANN *>(myModel);
+	if(!myANN)
+	{
+		std::cout << "Net::successiveByEDF: ANN bad cast" << std::endl;
+		return {};
+	}
+
+	/// get initial weights on the train set
+	myANN->setCritError(0.05);
+	myANN->setLrate(0.002);
+	myANN->learnAll();
+
+	/// save these weights
+	myANN->writeWeight(def::helpPath + "/" + localExpName + "_init.wts");
+	myANN->drawWeight(def::helpPath + "/" + localExpName + "_init.wts",
+					  def::helpPath + "/" + localExpName + "_init.jpg");
+
+	/// consts - set postlearn
+	myANN->setCritError(0.01);
+	myANN->setLrate(0.005);
+
+
+	this->passed.resize(this->myClassifierData.getNumOfCl());
+	this->passed = 0.;
+
+	QDir(def::helpPath).mkdir(localExpName);
+
+	/// slice winds with overlap !!!!!1
+	auto secondData = myLib::sliceWindows(file2.getData().subRows(19),
+										  file2.getMarkers(),
+										  1000,
+										  3.5 / 4.0,
+										  0, 0);
+	matrix secondWindSpec{};
+	std::vector<fb::taskType> secondWindTypes{};
+
+	int leftLim = fftLimit(fb::FBedf::leftFreq, file2.getFreq(), fb::FBedf::windFftLen);
+	int rightLim = fftLimit(fb::FBedf::rightFreq, file2.getFreq(), fb::FBedf::windFftLen);
+
+	for(const auto & datum : secondData)
+	{
+		auto spec = myLib::countSpectre(std::get<0>(datum),
+										fb::FBedf::windFftLen,
+										suc::numSmooth); ///
+		if(!spec.isEmpty())
+		{
+			secondWindSpec.push_back(spec.subCols(leftLim, rightLim).toValarByRows());
+			secondWindTypes.push_back(static_cast<fb::taskType>(std::get<1>(datum)));
+		}
+	}
+
+	/// backup ClassifierData
+	auto clDataBC = myClassifierData;
+
+	/// New
+	for(int i = 0; i < secondWindTypes.size(); ++i)
+	{
+		successiveLearning(secondWindSpec[i],
+						   uint(static_cast<int>(secondWindTypes[i])),
+						   localExpName);
+	}
+	myANN->writeWeight(def::helpPath + "/" + localExpName + "_last_pre.wts");
+	myANN->drawWeight(def::helpPath + "/" + localExpName + "_last_pre.wts",
+					  def::helpPath + "/" + localExpName + "_last_pre.jpg");
+	auto res1 =  myANN->averageClassification(DEVNULL);
+
+	/// "clean" and restore ClassifierData
+	/// NumGoodNew plays no role anymore
+	this->passed = 0.;
+	myClassifierData = clDataBC;
+	myANN->setClassifierData(myClassifierData);
+
+	/// Final
+	fb::taskType prevType = secondWindTypes[0];
+	int numTask = 0;
+	matrix relearn{};
+	for(int i = 1; i < secondWindTypes.size(); ++i)
+	{
+		if(secondWindTypes[i] != prevType) /// new condition
+		{
+			if(!relearn.isEmpty())
+			{
+				successiveLearningFinal(relearn, uint(static_cast<int>(prevType)), localExpName);
+				relearn.clear();
+			}
+			if(prevType != fb::taskType::rest) { ++numTask; }
+
+			prevType = secondWindTypes[i];
+			continue;
+		}
+
+		if(prevType == fb::taskType::rest || file2.getAns(numTask) == fb::ansType::correct)
+		{
+			/// classification correctness is checken in successiveLearningFinal
+			relearn.push_back(secondWindSpec[i]);
+		}
+	}
+	myANN->writeWeight(def::helpPath + "/" + localExpName + "_last.wts");
+	myANN->drawWeight(def::helpPath + "/" + localExpName + "_last.wts",
+					  def::helpPath + "/" + localExpName + "_last.jpg");
+	auto res2 =  myANN->averageClassification(DEVNULL);
+
+	return {res1, res2};
 }
 
 void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ansType howSolved)
@@ -364,7 +584,7 @@ void Net::successiveProcessing()
     myModel->learnAll(); /// get initial weights on train set
 
 	ANN * myANN = dynamic_cast<ANN *>(myModel);
-	if(!myANN) { std::cout << "Net::successiveProcessing: ANN bad cast" << std::endl; } // return?
+	if(!myANN) { std::cout << "Net::successiveProcessing: ANN bad cast" << std::endl; } /// return?
 
 	myANN->writeWeight("/media/Files/Data/Feedback/SuccessClass/1.txt");
 	myANN->drawWeight("/media/Files/Data/Feedback/SuccessClass/1.txt",
@@ -391,11 +611,13 @@ void Net::successiveProcessing()
     myModel->averageClassification();
 }
 
+
+////////////// To Do, chech
 void Net::successivePreclean(const QString & spectraPath, const QStringList & filters)
 {
 //	QStringList leest = myLib::makeFullFileList(spectraPath, filters);
 
-//	std::cout << "clean first 2 winds" << std::endl;
+	/// clean first 2 winds
 //	for(const QString & str : leest)
 //	{
 //		if(str.contains(QRegExp("\\.0[0-1]\\."))) /// change to 0-x for x first winds to delete
@@ -404,9 +626,8 @@ void Net::successivePreclean(const QString & spectraPath, const QStringList & fi
 //		}
 //	}
 
-//	std::cout << "clean by learnSetStay" << std::endl;
+	/// clean by learnSetStay
 //	auto leest2 = myLib::makeFileLists(spectraPath);
-
 //	for(int j = 0; j < leest2.size(); ++j)
 //	{
 //		auto it = std::begin(leest2[j]);
@@ -423,8 +644,6 @@ void Net::successivePreclean(const QString & spectraPath, const QStringList & fi
 
     setErrCrit(0.05);
 
-	std::cout << "N-fold cleaning" << std::endl;
-
     myModel->setTestCleanFlag(true);
 	for(int i = 0; i < 5; ++i)
     {
@@ -440,10 +659,10 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
 	static int numGoodNew = 0;
 	myClassifierData.addItem(newSpectre, newType, newFileName);
 
-	// take the last and increment confusion matrix
+	/// take the last and increment confusion matrix
 	const Classifier::classOneType outType = myModel->classifyDatumLast();
 
-	if((std::get<0>(outType) && std::get<2>(outType) < suc::errorThreshold)
+	if((std::get<0>(outType) && std::get<2>(outType) < suc::errorThreshold) /// correct class
 	   || passed[newType] < suc::learnSetStay /// add first learnSetStay windows unconditionally
 	   )
 	{
@@ -460,10 +679,8 @@ void Net::successiveLearning(const std::valarray<double> & newSpectre,
 	if(numGoodNew >= suc::numGoodNewLimit)
 	{
 		myModel->successiveRelearn();
-		ANN * myANN = dynamic_cast<ANN *>(myModel);
-
+		ANN * myANN = dynamic_cast<ANN*>(myModel);
 		myANN->writeWeight();
-
 		numGoodNew = 0;
 	}
 }
@@ -480,7 +697,7 @@ void Net::successiveLearningFinal(const matrix & newSpectra,
 		/// take the last and increment confusion matrix
 		const Classifier::classOneType outType = myModel->classifyDatumLast();
 
-		if((std::get<0>(outType) && std::get<2>(outType) < suc::errorThreshold)
+		if((std::get<0>(outType) && std::get<2>(outType) < suc::errorThreshold) /// correct class
 		   || passed[newType] < suc::learnSetStay /// add first learnSetStay windows unconditionally
 		   )
 		{

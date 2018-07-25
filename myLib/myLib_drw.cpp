@@ -90,7 +90,7 @@ QPixmap drawOneTemplate(const QString & chanName,
 {
 
 	QPixmap pic(myLib::drw::graphWidth + 2 * myLib::drw::gap,
-				myLib::drw::graphHeight + 2 * myLib::drw::gap); // second gaps for chanNum and 20 Hz
+				myLib::drw::graphHeight + 2 * myLib::drw::gap); /// second gaps for chanNum and 20 Hz
 	QPainter paint;
 	pic.fill();
 	paint.begin(&pic);
@@ -99,7 +99,7 @@ QPixmap drawOneTemplate(const QString & chanName,
 	const double X = myLib::drw::gap;
 	const double Y = pic.height() - myLib::drw::gap;
 
-	// draw axes
+	/// draw axes
 	paint.setPen("black");
 	paint.drawLine(QPointF(X,
 						   Y),
@@ -110,7 +110,7 @@ QPixmap drawOneTemplate(const QString & chanName,
 				   QPointF(X + myLib::drw::graphWidth,
 						   Y));
 
-	// draw Herzes
+	/// draw Herzes
 	const double unit = (rightF - leftF) / myLib::drw::graphWidth;
 	auto currFreq = [unit, leftF](int in) -> double { return leftF + in * unit; };
 	const int lineLen = 5;
@@ -194,7 +194,7 @@ QPixmap drawArray(const QPixmap & templatePic,
 		maxVal = inData.maxAbsVal();
 	}
 
-	for(int chanNum = 0; chanNum < inData.rows(); ++chanNum)  // exept markers channel
+	for(int chanNum = 0; chanNum < inData.rows(); ++chanNum)  /// exept markers channel
 	{
 
 		pic = myLib::drw::drawOneArray(pic,
@@ -266,7 +266,6 @@ QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 		maxVal = (inData + inSigma).max();
 	}
 	const double norm = myLib::drw::graphHeight / maxVal;
-//	std::cout << norm << std::endl;
 
 	const auto lowLine = inData - inSigma;
 	const auto highLine = inData + inSigma;
@@ -283,7 +282,7 @@ QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 									false,
 									maxVal,
 									lineWidth_);
-		lineWidth_ = 1; // for lowLine and highLine
+		lineWidth_ = 1; /// for lowLine and highLine
 	}
 
 
@@ -327,14 +326,15 @@ QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 	}
 	paint.setOpacity(1.0);
 
-
-	// returning norm = max magnitude
-//	paint.setPen("black");
-//	paint.setFont(QFont("Helvetica", myLib::drw::fontSizeChan));
-//	paint.drawText(QPointF(myLib::drw::templateWidth * myLib::drw::c(4),
-//						   myLib::drw::templateHeight * myLib::drw::c(0)
-//						   + myLib::drw::graphHeight / 2),
-//				   nm(maxVal) + " mcV^2/Hz");
+#if 0
+	/// print magnitude on the picture
+	paint.setPen("black");
+	paint.setFont(QFont("Helvetica", myLib::drw::fontSizeChan));
+	paint.drawText(QPointF(myLib::drw::templateWidth * myLib::drw::c(4),
+						   myLib::drw::templateHeight * myLib::drw::c(0)
+						   + myLib::drw::graphHeight / 2),
+				   nm(maxVal) + " mcV^2/Hz");
+#endif
 
 	paint.end();
 	return pic;
@@ -551,7 +551,6 @@ QPixmap drawOneSpectrum(const std::valarray<double> & inSignal,
 										leftFr,
 										rightFr,
 										srate);
-//	std::cout << drawArr << std::endl;
 	return myLib::drw::drawOneArray(myLib::drw::drawOneTemplate("", leftFr, rightFr),
 									drawArr,
 									drawArr.max(),
@@ -579,7 +578,6 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 
 	paint.setPen(QPen(QBrush(color), lineWidth_));
 
-//	std::cout << Y << std::endl;
 	if(inData.size() < myLib::drw::graphWidth)
 	{
 		const double indexScale = myLib::drw::graphWidth / inData.size();
@@ -616,12 +614,14 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 	}
 	else
 	{
-		/// draw max
-//		QFont tmpF = QFont("Helvetica", 12);
-//		paint.setFont(tmpF);
-//		paint.drawText(QPointF(myLib::drw::graphWidth,
-//							   myLib::drw::gap + myLib::drw::graphHeight / 2),
-//					   nm(maxVal) + " mcV^2/Hz");
+#if 0
+		/// print max amplitude
+		QFont tmpF = QFont("Helvetica", 12);
+		paint.setFont(tmpF);
+		paint.drawText(QPointF(myLib::drw::graphWidth,
+							   myLib::drw::gap + myLib::drw::graphHeight / 2),
+					   nm(maxVal) + " mcV^2/Hz");
+#endif
 	}
 	paint.end();
 	return pic;
@@ -642,16 +642,16 @@ QPixmap drawMannWitney(const QPixmap & templatePic,
 	const int spLength = inMW[0][0].size() / numOfChannels;
 	const double normX = myLib::drw::graphWidth / spLength;
 
-	for(int chanNum = 0; chanNum < numOfChannels; ++chanNum)  // exept markers channel
+	for(int chanNum = 0; chanNum < numOfChannels; ++chanNum)  /// exept markers channel
 	{
 		const int offset = chanNum * spLength;
 
-		// statistic difference bars
+		/// statistic difference bars
 		int barCounter = 0;
-		for(int h = 0; h < numOfClasses; ++h) // class1
+		for(int h = 0; h < numOfClasses; ++h) /// class1
 		{
 
-			for(int l = h + 1; l < numOfClasses; ++l) // class2
+			for(int l = h + 1; l < numOfClasses; ++l) /// class2
 			{
 				QColor color1 = QColor(inColors[h]);
 				QColor color2 = QColor(inColors[l]);
@@ -661,7 +661,7 @@ QPixmap drawMannWitney(const QPixmap & templatePic,
 				{
 					if(inMW[h][l - h][j] == 0) continue;
 
-					if(inMW[h][l - h][j] == 1) // if class1 spectre is bigger
+					if(inMW[h][l - h][j] == 1) /// if class1 spectre is bigger
 					{
 						paint.setPen(color1);
 						paint.setBrush(QBrush(color1));
@@ -678,7 +678,7 @@ QPixmap drawMannWitney(const QPixmap & templatePic,
 								   2 * barWidth * normX,
 								   barHeight);
 				}
-				++barCounter; // height shift of bars
+				++barCounter; /// height shift of bars
 			}
 		}
 	}
@@ -880,7 +880,7 @@ QPixmap drawEeg(const matrix & inData,
 }
 
 
-// hot-to-cold, http:// stackoverflow.com/questions/7706339/grayscale-to-red-green-blue-matlab-jet-color-scale
+/// hot-to-cold, http:/// stackoverflow.com/questions/7706339/grayscale-to-red-green-blue-matlab-jet-color-scale
 double redOld(int range, int j)
 {
 	double part = j / double(range);
@@ -918,7 +918,7 @@ QColor hueOld(int range, int j)
 double redMatlab(int range, int j, double V, double S)
 {
 	double part = j / double(range);
-	// matlab
+	/// matlab
 	if    (0. <= part && part <= myLib::drw::colDots[0]) return V*(1.-S);
 	else if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S);
 	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[1]) / (myLib::drw::colDots[2] - myLib::drw::colDots[1]);
@@ -930,7 +930,7 @@ double redMatlab(int range, int j, double V, double S)
 double greenMatlab(int range, int j, double V, double S)
 {
 	double part = j / double(range);
-	// matlab
+	/// matlab
 	if    (0.0 <= part && part <= myLib::drw::colDots[0]) return V*(1.-S);
 	else if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[0])/(myLib::drw::colDots[1] - myLib::drw::colDots[0]);
 	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V;
@@ -942,7 +942,7 @@ double greenMatlab(int range, int j, double V, double S)
 double blueMatlab(int range, int j, double V, double S)
 {
 	double part = j / double(range);
-	// matlab
+	/// matlab
 	if    (0.0 <= part && part <= myLib::drw::colDots[0]) return V -V*S/2. + V*S*(part)/(myLib::drw::colDots[0] - 0.0)/2.;
 	else if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V;
 	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V - V*S*(part-myLib::drw::colDots[1])/(myLib::drw::colDots[2] - myLib::drw::colDots[1]);
@@ -965,7 +965,7 @@ double redJet(int range, int j, double V, double S)
 {
 	double part = j / double(range);
 
-	// old
+	/// old
 	if    (0.000 <= part && part <= 0.167) return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.;
 	else if(0.167 < part && part <= 0.400) return V*(1.-S);
 	else if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
@@ -980,7 +980,7 @@ double greenJet(int range, int j, double V, double S)
 	double part = j / double(range);
 	double hlp = 1.0;
 
-	// old
+	/// old
 	if    (0.000 <= part && part <= 0.167) return V*(1.-S);
 	else if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
 	else if(0.400 < part && part <= 0.500) return V-V*S*(1.-hlp);
@@ -993,7 +993,7 @@ double greenJet(int range, int j, double V, double S)
 double blueJet(int range, int j, double V, double S)
 {
 	double part = j / double(range);
-	// old
+	/// old
 	if    (0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
 	else if(0.167 < part && part <= 0.400) return V;
 	else if(0.400 < part && part <= 0.500) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
@@ -1085,7 +1085,7 @@ QPixmap drawColorScale(int range, ColorScale type, bool full)
 			painter.drawRect(0,
 							 (1. - (i + 1) / double(range)) * pic.height(),
 							 pic.width(),
-							 (1. / double(range)) * pic.height()); // vertical
+							 (1. / double(range)) * pic.height()); /// vertical
 		}
 
 	}
@@ -1198,17 +1198,17 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		const int rest = i % dim;
 		const int quot = i / dim;
 
-		if(quot % (dim - 1) == 0|| rest % (dim-1) == 0)  // set 0 to all edge values
+		if(quot % (dim - 1) == 0|| rest % (dim-1) == 0)  /// set 0 to all edge values
 		{
 			helpMatrix[quot][rest] = 0.;
 		}
 		else if(quot == 1
-				&& (rest - 1) * (rest - 3) * (rest - 5) == 0) // ~Fp3, Fpz, Fp4
+				&& (rest - 1) * (rest - 3) * (rest - 5) == 0) /// ~Fp3, Fpz, Fp4
 		{
 			helpMatrix[quot][rest] = 0.;
 		}
 		else if(quot == 5
-				&& (rest - 1) * (rest - 3) * (rest - 5) == 0) // ~O3, Oz, O4
+				&& (rest - 1) * (rest - 3) * (rest - 5) == 0) /// ~O3, Oz, O4
 		{
 			helpMatrix[quot][rest] = 0.;
 		}
@@ -1218,7 +1218,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		}
 	}
 
-	// some approximation for square - Fp3, Fpz, Fp, O3, Oz, O4
+	/// some approximation for square - Fp3, Fpz, Fp, O3, Oz, O4
 	auto & a = helpMatrix;
 	const double c1 = 1 / 2.;
 	const double c2 = 1 / 1.2;
@@ -1240,19 +1240,19 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	std::valarray<double> inYv(dim);
 	std::valarray<double> Av(dim - 1);
 	std::valarray<double> Bv(dim - 1);
-	std::iota(std::begin(inX), std::end(inX), 0); // hope, it's constant
+	std::iota(std::begin(inX), std::end(inX), 0); /// hope, it's constant
 
-	for(int i = 1; i < dim - 1; ++i) // number of helpMatrix row
+	for(int i = 1; i < dim - 1; ++i) /// number of helpMatrix row
 	{
 		inY = helpMatrix[i];
-		myLib::splineCoeffCount(inX, inY, dim, Ah[i - 1], Bh[i - 1]); // horizontal splines coeffs
+		myLib::splineCoeffCount(inX, inY, dim, Ah[i - 1], Bh[i - 1]); /// horizontal splines coeffs
 	}
 
 	for(int x = 0; x < mapSize; ++x)
 	{
 		for(int k = 1; k < dim - 1; ++k)
 		{
-			inY = helpMatrix[k]; // set inX and inY for k'th row of helpMatrix
+			inY = helpMatrix[k]; /// set inX and inY for k'th row of helpMatrix
 			inYv[k] = myLib::splineOutput(inX, inY, dim, Ah[k - 1], Bh[k - 1], x * scale);
 		}
 		inYv[0] = 0.;
@@ -1263,28 +1263,29 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		{
 			/// round shape
 			if(smLib::distance(x, y, mapSize / 2, mapSize / 2) >
-			   mapSize * 2. * sqrt(2.) / (dim - 1) ) continue;
+			   mapSize * 2. * std::sqrt(2.) / (dim - 1) ) continue;
 
 			val = myLib::splineOutput(inX, inYv, dim, Av, Bv, y * scale);
 			if(maxAbs == 0.)
 			{
-				// "private" limits
-				// each map from deep blue to deep red
+				/// "private" limits
+				/// each map from deep blue to deep red
 				drawArg = (val - minMagn)
 						  / (maxMagn - minMagn) * drawRange;
 			}
 			else
 			{
-				// global limits
-				// current variant
-
-
-				// deep blue ~ -maxAbs, deep red ~ +maxAbs
-//				drawArg = (val + maxAbs)
-//						  / (2 * maxAbs) * drawRange;
-
-				// deep blue ~ 0, deep red ~ +maxAbs
+				/// global limits
+				/// current variant
+#if 0
+				/// deep blue ~ -maxAbs, deep red ~ +maxAbs
+				drawArg = (val + maxAbs)
+						  / (2 * maxAbs) * drawRange;
+#else
+				/// deep blue ~ 0, deep red ~ +maxAbs
 				drawArg = val / maxAbs * drawRange;
+#endif
+
 			}
 
 			QColor (*colorFunc)(int, int) = myLib::drw::colorFunction(colorTheme);
@@ -1298,9 +1299,9 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		}
 	}
 
-	if(1) // draw channels locations
+	if(1) /// draw channels locations
 	{
-		// zero for absent electrodes
+		/// zeros for absent electrodes
 		helpMatrix[1][1] = 0.;
 		helpMatrix[1][3] = 0.;
 		helpMatrix[1][5] = 0.;
@@ -1348,8 +1349,8 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 			/// draw maxMagn line
 			pnt.setPen(QPen(QBrush("black"), 2));
 			const int h = values.height() * (1. - maxMagn / maxAbs);
-			pnt.drawLine(0, h, /// what about minMagn ?
-						 pnt.device()->width(), h);
+
+			pnt.drawLine(0, h, pnt.device()->width(), h);		/// what about minMagn ?
 //			pnt.drawText(2, h + fontSize + 2, nm(smLib::doubleRound(maxMagn, 3)));
 		}
 
@@ -1373,7 +1374,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	paint1.end();
 	paint2.end();
 
-	// +- solver
+	/// +- solver
 	if(std::abs(maxMagn) > 1.5 * std::abs(minMagn))
 	{
 		return pic1;
@@ -1429,10 +1430,10 @@ QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
 	QRect earRect;
 
 	const double offsetX = 0.7;
-	const int earSize = 8; // generality
-	const double shitCoeff = 1.05; // smth about width of map on spectra pic
+	const int earSize = 8; /// generality
+	const double shitCoeff = 1.05; /// smth about width of map on spectra pic
 
-	for(int i = 0; i < 21; ++i) // not more than
+	for(int i = 0; i < 21; ++i) /// not more than
 	{
 		helpString = mapPath(mapsDirPath, mapsName, i);
 		if(!QFile::exists(helpString))
@@ -1454,32 +1455,32 @@ QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
 
 		paint.setPen(QPen(QBrush("black"), 2));
 
-		// draw the nose
-		// left side
+		/// draw the nose
+		/// left side
 		paint.drawLine(X + coeff - 4,
 					   Y + 2,
 					   X + coeff,
 					   Y - 6);
-		// right side
+		/// right side
 		paint.drawLine(X + coeff + 4,
 					   Y + 2,
 					   X + coeff,
 					   Y - 6);
 
 
-		// left ear
+		/// left ear
 		earRect = QRect(X - 0.5 * earSize,
 						Y + coeff - earSize,
 						earSize,
 						2 * earSize);
-		paint.drawArc(earRect, 60 * 16, 240 * 16); // degrees
+		paint.drawArc(earRect, 60 * 16, 240 * 16); /// degrees
 
-		// right ear
+		/// right ear
 		earRect = QRect(X + 2 * coeff - 0.5 * earSize,
 						Y + coeff - earSize,
 						earSize,
 						2 * earSize);
-		paint.drawArc(earRect, 240 * 16, 240 * 16); // degrees
+		paint.drawArc(earRect, 240 * 16, 240 * 16); /// degrees
 
 	}
 	paint.end();
@@ -1487,5 +1488,5 @@ QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
 }
 
 
-} // namespace drw
-} // namespace myLib
+} /// namespace drw
+} /// namespace myLib

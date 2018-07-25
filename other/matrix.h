@@ -23,7 +23,7 @@
 #include <QString>
 #include <QDir>
 
-// omp not effective
+/// omp not effective
 #define MATRIX_OMP _OPENMP&&0
 
 using matrixType = std::vector<std::valarray<double>>;
@@ -52,8 +52,8 @@ public:
 	matrix(const std::valarray<double> & vect, char orient);
 	matrix(const std::valarray<double> & vect, int rows);
 
-	matrix(const std::valarray<double> & vect); // diagonal
-	matrix(std::initializer_list<double> lst); // diagonal
+	matrix(const std::valarray<double> & vect); /// diagonal
+	matrix(std::initializer_list<double> lst); /// diagonal
 
 	matrix(std::initializer_list<std::valarray<double>> lst);
 
@@ -100,7 +100,7 @@ public:
 	matrix & push_back(const std::valarray<double> &in);
 	matrix & push_back(const std::vector<double> &in);
 
-	// for compability with vector< std::vector<Type> >
+	/// for compability with vector< std::vector<Type> >
 	void clear() { this->myData.clear(); }
 
 	matrix & resize(int rows, int cols, double val);
@@ -149,21 +149,19 @@ public:
 	matrix integrate(const std::vector<std::pair<int, int>> & intervals) const;
 
 
-	// "static"
+	/// "static"
 	static matrix transposed(const matrix & input);
 	static matrix inverted(const matrix & input);
 	static matrix ident(int dim);
 	static matrix vertCat(const matrix & upper, const matrix & lower);
 	static matrix horzCat(const matrix & left, const matrix & right);
 
-	// "private"
+	/// "private"
 	double trace() const;
 	matrix & transpose();
 	matrix & invert(double * det = nullptr);
 	matrix & normColsLastRowOne(); /// what is that?
 
-//	matrix & zero();
-//	matrix & one();
 	matrix & random(double low = 0., double high = 1.);
 	matrix & vertCat(matrix && other);
 	matrix & horzCat(const matrix & other);
@@ -175,7 +173,7 @@ public:
 	matrix & eraseCol(int j);
 	matrix subCols(int beginCol, int endCol) const;			/// submatrix
 	matrix subCols(int newCol) const;						/// submatrix
-	matrix subCols(const std::vector<std::pair<int, int>> & intervals) const; /// to do
+	matrix subCols(const std::vector<std::pair<int, int>> & intervals) const;
 
 	/// rows operations
 	matrix & swapRows(int i, int j);
@@ -183,10 +181,10 @@ public:
 	matrix & centerRows(int numRows = 0);
 	matrix & eraseRow(int i);
 	matrix subRows(int newRows) const;						/// submatrix
-//	matrix subRows(int begRow, int endRow) const; /// to do
+//	matrix subRows(int begRow, int endRow) const;			//// to do
 	matrix subRows(const std::vector<int> & inds) const;	/// submatrix
 	matrix subRows(const std::vector<uint> & inds) const;	/// submatrix
-//	matrix subRows(const std::vector<std::pair<int, int>> & intervals) const; /// to do
+//	matrix subRows(const std::vector<std::pair<int, int>> & intervals) const; //// to do
 
 	template <typename Typ>
 	matrix & eraseRows(const std::vector<Typ> & indices)
@@ -220,4 +218,4 @@ std::valarray<double> operator * (const std::valarray<double> & lhs, const matri
 matrix operator - (const matrix & lhs, const matrix & rhs);
 matrix operator - (const matrix & lhs, double val);
 
-#endif // MATRIX_H
+#endif /// MATRIX_H

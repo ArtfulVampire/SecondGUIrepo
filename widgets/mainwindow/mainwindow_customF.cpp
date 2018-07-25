@@ -18,7 +18,7 @@ void MainWindow::customFunc()
 {
 
 
-#if 01
+#if 0
 	/// count correctness, average times, ICA
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
@@ -75,6 +75,27 @@ void MainWindow::customFunc()
 		fil.concatFile(mpiPath + "/" + "MPI_" + rn(i, 2) + ".edf");
 	}
 	fil.writeEdfFile(mpiPath + "/" + "MPI.edf");
+	exit(0);
+#endif
+
+#if 0
+	/// copy fin files
+	QDir from("/media/Files/Data/FeedbackNewMark");
+	QDir to("/media/michael/Seagate Expansion Drive/Michael/Data/FeedbackNewMark");
+	for(const QString & dr : from.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+	{
+		to.mkdir(dr);
+		auto lst = QDir(from.absolutePath() + "/" + dr).entryList({
+																	  "*_good.edf",
+//																	  "*_fin.edf",
+																	  "*_ans?.txt",
+																  });
+		for(const QString fn : lst)
+		{
+			QFile::copy(from.absolutePath() + "/" + dr + "/" + fn,
+						to.absolutePath() + "/" + dr + "/" + fn);
+		}
+	}
 	exit(0);
 #endif
 
@@ -1489,7 +1510,7 @@ void MainWindow::customFunc()
 
 
 	/// from Higichi 1998 FD = 1.5
-	int N = pow(2, 17);
+	int N = std::pow(2, 17);
 	std::valarray<double> Y(N);
 	/// count
 	if(0)
@@ -1505,9 +1526,9 @@ void MainWindow::customFunc()
 
 		for(int i = 1; i < N; ++i)
 		{
-			if( (i - 1) % int(pow(2, 12)) == 0)
+			if( (i - 1) % int(std::pow(2, 12)) == 0)
 			{
-				std::cout << (i - 1) / pow(2, 12) << std::endl;
+				std::cout << (i - 1) / std::pow(2, 12) << std::endl;
 			}
 			Y[i] = Y[i-1] + getNum();
 			ostr << Y[i] << "\n";
@@ -1553,7 +1574,7 @@ void MainWindow::customFunc()
 			std::valarray<double> powLam2(M+1);
 			for(int i = 0; i <= M; ++i)
 			{
-				powLam1[i] = pow(lambda, i);
+				powLam1[i] = std::pow(lambda, i);
 			}
 
 			std::valarray<double> FDarr(9);
@@ -2461,7 +2482,7 @@ exit(0);
 		if(matiCountBit(firstMarker, 10) != matiCountBit(lastMarker, 10)) // if not one of them is the end of some session
         {
             lastMarker = firstMarker
-				+ pow(2, 10) * (matiCountBit(firstMarker, 10) ? -1 : 1); // adjust the last marker
+				+ std::pow(2, 10) * (matiCountBit(firstMarker, 10) ? -1 : 1); // adjust the last marker
         }
         matiPrintMarker(lastMarker, "last");
         matiPrintMarker(doub2, "newData");

@@ -80,8 +80,7 @@ void WARD::learn(std::vector<uint> & indices)
     }
 
     for(uint i = 0; i < clusts.size(); ++i)
-    {
-//        myLib::operator <<(std::cout, clusts[i]); std::cout << std::endl;
+	{
 		centers[i] = (myClassData->getData().subRows(clusts[i])).averageRow();
     }
 }
@@ -89,16 +88,11 @@ void WARD::learn(std::vector<uint> & indices)
 void WARD::merge(const uint one, const uint two)
 {
 
-//    std::cout << one << "\t" << two << std::endl;
     const uint A = std::min(one, two);
     const uint B = std::max(one, two);
 
-//    std::cout << A << "\t" << B << std::endl;
-
     const uint U = clusts[A].size();
     const uint V = clusts[B].size();
-
-//    std::cout << U << "\t" << V << std::endl << std::endl;
 
     for(uint i = 0; i < clusts.size(); ++i)
     {
