@@ -13,7 +13,7 @@ taskType operator ++(taskType & in, int); /// postfix
 enum class fileNum  : int {first = 0, third = 1, second = 2};
 
 
-/// bit structure is used in FBedf::isGoodAns
+/// bit structure is used in fb::isGoodAns
 enum class ansType : int {skip		= 0b0001,					/// 1
 						  correct	= 0b0010,					/// 2
 						  notwrong	= correct | skip,			/// 3
@@ -25,8 +25,6 @@ enum class ansType : int {skip		= 0b0001,					/// 1
 QString toStr(taskType in);
 QString toStr(fileNum in);
 QString toStr(ansType in);
-
-
 
 
 /// omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg
@@ -167,7 +165,7 @@ public:
 				  const QString & postfix_);
 
 	~FeedbackClass() {}
-	void setOstream(std::ostream & in) { ostr = &in; }
+	void setOstream(std::ostream & in) { ostr = &in; } /// DANGER ostr can overlive in
 
 
 	void writeStat();
@@ -222,6 +220,10 @@ std::map<QString, QString> coutAllFeatures(const QString & dear,
 void calculateICA(const QString & dear,
 				  const std::vector<std::pair<QString, QString>> & guysList,
 				  const QString & postfix);
+std::vector<std::pair<Classifier::avType, Classifier::avType>>
+calculateSuccessiveBoth(const QString & dear,
+						const std::vector<std::pair<QString, QString>> & guysList,
+						const QString & postfix);
 
 void createAnsFiles(const QString & guyPath, QString guyName);
 void checkMarkFBfinal(const QString & filePath);

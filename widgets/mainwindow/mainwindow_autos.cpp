@@ -109,7 +109,7 @@ void MainWindow::testSuccessive2()
 
 		std::cout << name << std::endl;
 		res.push_back(
-					net->successiveByEDF(path + name + "_train" + ".edf", "",
+					net->successiveByEDFnew(path + name + "_train" + ".edf", "",
 										 path + name + "_test" + ".edf", "")
 					.first);
 		delete net;

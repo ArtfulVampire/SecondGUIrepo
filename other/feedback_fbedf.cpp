@@ -286,6 +286,13 @@ void FBedf::remakeWindows(double overlapPart, int numSkipStartWinds)
 										 5);
 		if(!pew.isEmpty())
 		{
+#if 0
+			/// zero uninteresting channels
+			for(int i = 0; i < 19; ++i)
+			{
+				if(!myLib::contains(FBedf::chansToProcess, i)) { pew[i] = 0; }
+			}
+#endif
 			this->windSpectra.push_back(pew.subCols(leftLim, rightLim).toValarByRows());
 			this->windTypes.push_back(windSigTypes[i]);
 			this->windAns.push_back(windSigAns[i]);

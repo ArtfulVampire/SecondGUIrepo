@@ -9,8 +9,8 @@
 using namespace myOut;
 
 
-Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString & ansPath1,
-										const QString & edfPath2, const QString & ansPath2)
+Classifier::avType Net::successiveByEDFnew(const QString & edfPath1, const QString & ansPath1,
+										   const QString & edfPath2, const QString & ansPath2)
 {
 	fb::FBedf file1(edfPath1, ansPath1);
 	fb::FBedf file2(edfPath2, ansPath2);
@@ -134,10 +134,11 @@ Classifier::avType Net::successiveByEDF(const QString & edfPath1, const QString 
 }
 
 /// without correctness
-Classifier::avType Net::successiveByEDF(const fb::FBedf & file1,
-										const fb::FBedf & file2)
+Classifier::avType Net::successiveByEDFnew(const fb::FBedf & file1,
+										   const fb::FBedf & file2)
 {
 	DEFS.setFftLen(fb::FBedf::windFftLen);
+	DEFS.setDir(file1.getDirPath());
 	const QString localExpName = file1.getExpNameShort();
 
 	myClassifierData = ClassifierData();
@@ -328,6 +329,7 @@ Net::successiveByEDFfinalBoth(const fb::FBedf & file1,
 							  const fb::FBedf & file2)
 {
 	DEFS.setFftLen(fb::FBedf::windFftLen);
+	DEFS.setDir(file1.getDirPath());
 	const QString localExpName = file1.getExpNameShort();
 
 	myClassifierData = ClassifierData();

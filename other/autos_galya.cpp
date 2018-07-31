@@ -120,7 +120,19 @@ void calculateFeatures(const QString & pathWithEdfs,
 		}
 		case autosUser::XeniaFinalest:
 		{
-			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq());	/// not resizeCols
+//			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq());	/// not resizeCols
+			if(tmpData.cols() >= 60 * initEdf.getFreq())
+			{
+				tmpData = tmpData.subCols(30 * initEdf.getFreq(), 60 * initEdf.getFreq());
+			}
+			else if (tmpData.cols() >= 30 * initEdf.getFreq())
+			{
+				tmpData = tmpData.subCols(tmpData.cols() - 30 * initEdf.getFreq(), tmpData.cols());
+			}
+			else
+			{
+				/// as is
+			}
 			tmpData.eraseRows({4, 9, 14});							/// skip Fz, Cz, Pz
 			break;
 		}
@@ -1130,9 +1142,8 @@ void Xenia_TBI_finalest(const QString & finalPath,
 //			myLib::cleanDir(outPath);
 
 			/// process?
-			if(0)
+			if(01)
 			{
-//				DEFS.setAutosMask(featuresMask::logFFT);
 				autos::calculateFeatures(guyPath, 19, outPath);
 			}
 		}

@@ -56,7 +56,6 @@ QString toStr(ansType in)
 	}
 }
 
-/// make return
 std::map<QString, QString>
 coutAllFeatures(const QString & dear,
 				const std::vector<std::pair<QString, QString>> & guysList,
@@ -64,18 +63,19 @@ coutAllFeatures(const QString & dear,
 {
 	const QString guysPath = DEFS.dirPath() + "/" + dear;
 
-	std::map<QString, QString> results{};
+	std::map<QString, QString> results{}; ///
 
 	Net * net = new Net();
 
-	bool pass = true;
+//	bool pass = true;
 	for(const auto & in : guysList)
 	{
 		const QString guyPath = guysPath + "/" + in.first;
 		if(!QDir(guyPath).exists()) { continue; }
 
-		if(in.second == "BDA") { pass = false; }
-		if(pass) { continue; }
+
+//		if(in.second == "BDA") { pass = false; }
+//		if(pass) { continue; }
 
 //		if(in.second = "AKV") { continue; }
 
@@ -101,7 +101,7 @@ coutAllFeatures(const QString & dear,
 //		fbItem.writeStat();											std::cout.flush(); /// 23 vals
 //		fbItem.writeDists();										std::cout.flush(); /// 6 vals
 //		fbItem.writeClass();										std::cout.flush(); /// 6 vals
-//		fbItem.writeSuccessive();									std::cout.flush(); /// 1 val
+		fbItem.writeSuccessive();									std::cout.flush(); /// 1 val
 //		fbItem.writeLearnedPatterns();								std::cout.flush(); /// 2 vals
 //		fbItem.writeSuccessive3();									std::cout.flush(); /// 1 val
 //		fbItem.writePartOfCleaned();								std::cout.flush(); /// 1 val
@@ -115,7 +115,7 @@ coutAllFeatures(const QString & dear,
 //		fbItem.writeBackgroundCompare(fb::taskType::verb, fb::ansType::correct);		/// 3 pics
 
 		/// normalized dispersions
-		fbItem.writeDispersions(ansType::correct);		std::cout.flush();	/// 18 vals
+//		fbItem.writeDispersions(ansType::correct);		std::cout.flush();	/// 18 vals
 
 		/// classify winds/reals by alpha
 //		fbItem.writeClass(false);						std::cout.flush();	/// 6 vals
@@ -134,7 +134,10 @@ coutAllFeatures(const QString & dear,
 			{
 				for(fb::ansType ansT : {fb::ansType::correct, fb::ansType::all} )
 				{
-//					continue; /// dont do histograms
+#if 1
+					/// dont do histograms
+					continue;
+#endif
 
 					if(fbItem.getFile(fileN).getNum(taskT, ansT) == 0) { continue; }
 
@@ -149,6 +152,39 @@ coutAllFeatures(const QString & dear,
 	delete net;
 	return results;
 }
+
+
+std::vector<std::pair<Classifier::avType, Classifier::avType>>
+calculateSuccessiveBoth(const QString & dear,
+						const std::vector<std::pair<QString, QString>> & guysList,
+						const QString & postfix)
+{
+	std::vector<std::pair<Classifier::avType, Classifier::avType>> res{};
+
+	const QString guysPath = DEFS.dirPath() + "/" + dear;
+	for(const auto & in : guysList)
+	{
+		const QString guyPath = guysPath + "/" + in.first;
+		if(!QDir(guyPath).exists()) { continue; }
+
+		fb::FeedbackClass fbItem(guyPath, in.second, postfix); if(!fbItem) { continue; }
+		Net * ann = new Net();
+//		res.push_back(ann->successiveByEDFfinalBoth(
+//						  fbItem.getFile(fileNum::first),
+//						  fbItem.getFile(fileNum::third)));
+		res.push_back({ann->successiveByEDFnew(
+					   fbItem.getFile(fileNum::first),
+					   fbItem.getFile(fileNum::third)),
+					   ann->successiveByEDFfinal(
+					   fbItem.getFile(fileNum::first),
+					   fbItem.getFile(fileNum::third))});
+
+		delete ann;
+//		return res; /// calculate only first guy
+	}
+	return res;
+}
+
 
 void calculateICA(const QString & dear,
 				  const std::vector<std::pair<QString, QString>> & guysList,

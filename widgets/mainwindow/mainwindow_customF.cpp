@@ -18,8 +18,9 @@ void MainWindow::customFunc()
 {
 
 
-#if 0
+#if 01
 	/// count correctness, average times, ICA
+
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
@@ -30,10 +31,21 @@ void MainWindow::customFunc()
 //	const QString postfix = "";
 	const auto & guysList = subj::guysFBfinal.at(subj::fbGroup::all);
 #endif
-	auto results = fb::coutAllFeatures(dear, guysList, postfix);
+
+#if 0
+	/// calculate successive for "New" and "Final" schemes on "New" data
+	auto res = fb::calculateSuccessiveBoth(dear, guysList, postfix);
+	for(const auto & in : res)
+	{
+		std::cout << in.first.first << "\t" << in.second.first << std::endl;
+	}
+	exit(0);
+#endif
+
 //	fb::calculateICA(dear, guysList, postfix);
 
-
+#if 01
+	auto results = fb::coutAllFeatures(dear, guysList, postfix);
 	for(const subj::fbGroup & group :
 	{
 		subj::fbGroup::experiment,
@@ -48,9 +60,12 @@ void MainWindow::customFunc()
 		}
 		outStream << std::endl << std::endl;
 	}
-
-	exit(0);
 #endif
+
+	exit(0);	
+#endif
+
+
 
 #if 0
 	/// reref to Cz

@@ -91,12 +91,12 @@ public:
     /// NEED CHECK
     void successiveProcessing();
 	/// to compare FeedbackNew and FeedbackFinal
-	Classifier::avType successiveByEDF(const fb::FBedf & file1,
-									   const fb::FBedf & file2);
-	Classifier::avType successiveByEDF(const QString & edfPath,
-									   const QString & ansPath1,
-									   const QString & edfPath2,
-									   const QString & ansPath2);
+	Classifier::avType successiveByEDFnew(const fb::FBedf & file1,
+										  const fb::FBedf & file2);
+	Classifier::avType successiveByEDFnew(const QString & edfPath,
+										  const QString & ansPath1,
+										  const QString & edfPath2,
+										  const QString & ansPath2);
 	Classifier::avType successiveByEDFfinal(const fb::FBedf & file1,
 											const fb::FBedf & file2);
 	Classifier::avType successiveByEDFfinal(const QString & edfPath1,

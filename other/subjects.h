@@ -11,7 +11,7 @@ namespace subj
 {
 
 const std::vector<std::pair<QString, QString>> guysFBnew {
-	std::make_pair("CDV_n", "CDV"),
+//	std::make_pair("CDV_n", "CDV"),		/// bad EEG
 			std::make_pair("KKS_n", "KKS"),
 			std::make_pair("KNL", "KNL"),
 			std::make_pair("MSM", "MSM"),
