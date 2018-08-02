@@ -8,11 +8,12 @@
 namespace myLib
 {
 
-/// [separator][numFile][[data]]
-std::vector<std::vector<matrix>> sliceData(const matrix & inData,
-										   const std::vector<std::pair<int, int> > & markers,
-										   const std::vector<int> & separators
-										   = std::vector<int>{241, 247, 254});
+/// {[separator][numFile][[data]], [separator][numFile][startBin]}
+std::pair<std::vector<std::vector<matrix>>, std::vector<std::vector<int>>>
+sliceData(const matrix & inData,
+		  const std::vector<std::pair<int, int> > & markers,
+		  const std::vector<int> & separators
+		  = std::vector<int>{241, 247, 254});
 
 /// vector(data, type, filename)
 std::vector<std::tuple<matrix, uint, QString>> sliceWindows(

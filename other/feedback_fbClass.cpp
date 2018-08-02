@@ -32,7 +32,7 @@ FeedbackClass::FeedbackClass(const QString & guyPath_,
 		}
 		auto & fil = files[fileNumber];
 
-		fil = FBedf(filePath(i), ansPath(i));
+		fil = FBedf(filePath(i), ansPath(i), 0., 0); //// or suc::overlap125 ?????
 
 		if(!fil)
 		{
@@ -241,7 +241,7 @@ void FeedbackClass::writeClass(bool aplhaOnly)
 
 void FeedbackClass::remakeWindows(fileNum num, double overlapPart)
 {
-	this->files[static_cast<int>(num)].remakeWindows(overlapPart);
+	this->files[static_cast<int>(num)].remakeWindows((1. - overlapPart) * fb::FBedf::windLen, 0);
 }
 
 ClassifierData FeedbackClass::prepareClDataWinds(fileNum num, bool reduce)
@@ -263,7 +263,9 @@ void FeedbackClass::writeLearnedPatterns()
 
 	ANN * ann = new ANN();
 
-	this->files[static_cast<int>(fileNum::first)].remakeWindows(3.5 / 4.0);
+
+	auto & fil1 = this->files[int(fileNum::first)];
+	fil1.remakeWindows(0.5 * fil1.getFreq(), 0); /// magic const
 
 	auto clData = prepareClDataWinds(fileNum::first, true);
 
@@ -276,14 +278,17 @@ void FeedbackClass::writeLearnedPatterns()
 	wtsPath.replace(".edf", ".wts");
 	ann->writeWeight(wtsPath);
 
-	this->files[static_cast<int>(fileNum::second)].remakeWindows(3.5 / 4.0);
+
+	auto & fil2 = this->files[int(fileNum::second)];
+	fil2.remakeWindows(0.5 * fil2.getFreq(), 0); /// magic const
 	auto clData2 = prepareClDataWinds(fileNum::second, false);
 	ann->setClassifierData(clData2);
 	ann->readWeight(wtsPath);
 	ann->testAll();
 	auto res1 = ann->averageClassification(DEVNULL);
 
-	this->files[int(fileNum::third)].remakeWindows(3.5 / 4.0);
+	auto & fil3 = this->files[int(fileNum::third)];
+	fil3.remakeWindows(0.5 * fil3.getFreq(), 0); /// magic const
 	auto clData3 = prepareClDataWinds(fileNum::third, false);
 	ann->setClassifierData(clData3);
 	ann->readWeight(wtsPath);
@@ -312,7 +317,8 @@ void FeedbackClass::writeSuccessive()
 void FeedbackClass::writeSuccessive3()
 {
 	ANN * ann = new ANN();
-	this->files[static_cast<int>(fileNum::third)].remakeWindows(3.5 / 4.0);
+	auto fil3 = this->files[static_cast<int>(fileNum::third)];
+	fil3.remakeWindows(0.5 * fil3.getFreq(), 0); /// magic const
 	auto clData3 = prepareClDataWinds(fileNum::third, false);
 	ann->setClassifierData(clData3);
 	ann->readWeight(def::helpPath

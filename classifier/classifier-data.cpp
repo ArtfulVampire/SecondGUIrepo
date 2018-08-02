@@ -12,11 +12,14 @@ using namespace myOut;
 
 void ClassifierData::adjust()
 {	
-
 	std::set<int> typesSet{};
 	for(auto in : this->types) { typesSet.emplace(in); }
+
 #if MAP
-	/// fill the map
+	/// fill the map:
+	/// classMarkers[ typesSet[0] ] = 0
+	/// classMarkers[ typesSet[1] ] = 1 etc
+
 	int clCounter = 0;
 	for(auto in : typesSet)
 	{
@@ -33,7 +36,7 @@ void ClassifierData::adjust()
 
 std::valarray<double> ClassifierData::getClassCount() const
 {
-	std::valarray<double> res(numOfCl);
+	std::valarray<double> res(classMarkers.size());
 	int co = 0;
 	for(const auto & in : indices)
 	{
@@ -49,7 +52,9 @@ void ClassifierData::calculateApriori()
 
 void ClassifierData::recountIndices()
 {
-	this->indices.resize(numOfCl, std::vector<uint>{});
+	this->indices.resize(numOfCl);
+	for(auto & in : indices) { in.clear(); }
+
 	for(uint i = 0; i < this->types.size(); ++i)
 	{
 #if MAP

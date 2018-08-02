@@ -39,6 +39,9 @@ private:
 	/// [type][numReal] = realMatrix
 	std::vector<std::vector<matrix>> realsSignals; /// w/o markers
 
+	/// [type][numReal] = startBin
+	std::vector<std::vector<int>> realsStarts;
+
 	/// [type][numOfReal] = spectre[channel][freq] (whole frequency range)
 	std::vector<std::vector<matrix>> realsSpectra; /// with empty spectra for short reals
 
@@ -61,6 +64,9 @@ private:
 	/// [numWind]
 	std::vector<ansType> windAns;
 
+	/// [numWind]
+	std::vector<int> windStarts;
+
 public:
 	static const std::vector<int> chansToProcess;
 
@@ -74,6 +80,7 @@ public:
 	static constexpr double leftFreq = 5.;
 	static constexpr double rightFreq = 20.;
 
+	/// ~static but srate is not
 	int getLeftLimWind() const { static int leftLim{-1}; return (leftLim == -1)
 				? fftLimit(leftFreq, srate, windFftLen) : leftLim; }
 	int getRightLimWind() const { static int rightLim{-1}; return (rightLim == -1)
@@ -97,15 +104,17 @@ private:
 public:
 	/// solvTime? ans spectre inside
 	FBedf() {}
-	FBedf(const QString & edfPath, const QString & ansPath,
-		  double overlapPart = 0.0,
-		  int numSkipStartWinds = 0);
+	FBedf(const QString & edfPath,
+		  const QString & ansPath,
+		  double overlapPart,
+		  int numSkipStartWinds);
+
 	FBedf(const FBedf & other)=default;			/// used in Net::innerClassHistogram
 	FBedf & operator=(FBedf && other)=default;	/// used in FeedbackClass constructor
 	FBedf & operator=(const FBedf & other)=default;
 	operator bool() const	{ return isGood; }
 
-	void remakeWindows(double overlapPart = 0.0, int numSkipStartWinds = 0);
+	void remakeWindows(int windStep, int numSkipStartWinds);
 
 	ClassifierData prepareClDataWinds(bool reduce);
 	double partOfCleanedWinds();
@@ -133,9 +142,11 @@ public:
 
 	const matrix & getWindSpectra() const						{ return windSpectra; }
 	const std::vector<taskType> & getWindTypes() const			{ return windTypes; }
+	const std::vector<int> & getWindStarts() const				{ return windStarts; }
 	const std::valarray<double> & getWindSpectra(int i) const	{ return windSpectra[i]; }
 	taskType getWindTypes(int i) const							{ return windTypes[i]; }
 	ansType getWindAns(int i) const								{ return windAns[i]; }
+	int getWindStarts(int i) const								{ return windStarts[i]; }
 
 
 private:

@@ -6,24 +6,30 @@ using namespace myOut;
 namespace myLib
 {
 
-std::vector<std::vector<matrix>> sliceData(const matrix & inData,
-										   const std::vector<std::pair<int, int>> & markers,
-										   const std::vector<int> & separators)
+std::pair<std::vector<std::vector<matrix>>, std::vector<std::vector<int>>>
+sliceData(const matrix & inData,
+		  const std::vector<std::pair<int, int>> & markers,
+		  const std::vector<int> & separators)
 {
 	std::vector<std::vector<matrix>> res(separators.size());
+	std::vector<std::vector<int>> starts(separators.size());
 
 	int sta = -1;
 	int currMrk = -1;
 	int prevMrk = -1;
-	for(auto mrk : markers)
+	for(const auto & mrk : markers)
 	{
 		currMrk = myLib::indexOfVal(separators, mrk.second);
 
-		if(currMrk == -1) { continue; }
+		if(currMrk == -1) { continue; } /// not interesting marker
 		else
 		{
 			/// save real
-			if(sta != -1) { res[prevMrk].push_back(inData.subCols(sta, mrk.first)); }
+			if(sta != -1 && prevMrk != -1)
+			{
+				res[prevMrk].push_back(inData.subCols(sta, mrk.first));
+				starts[prevMrk].push_back(sta);
+			}
 
 			/// set sta and currMrk
 			prevMrk = currMrk;
@@ -38,14 +44,17 @@ std::vector<std::vector<matrix>> sliceData(const matrix & inData,
 		{
 #if 0
 			/// all the rest period
-			res[2].push_back(inData.subCols((*it).first, (*(it + 1)).first)); break;
+			res[2].push_back(inData.subCols((*it).first, (*(it + 1)).first));
+			 break;
 #else
 			/// rest period 8 seconds 250 srate - magic constant
-			res[2].push_back(inData.subCols((*it).first, (*it).first + 8 * 250.)); break;
+			res[2].push_back(inData.subCols((*it).first, (*it).first + 8 * 250.));
+			starts[2].push_back((*it).first);
+			break;
 #endif
 		}
 	}
-	return res;
+	return {res, starts};
 }
 
 /// introduce into FBedf::FBedf(...), Net::successiveByEDFfinal, MainWindow::sliceWinds()

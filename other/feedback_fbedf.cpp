@@ -65,8 +65,10 @@ FBedf::FBedf(const QString & edfPath,
 	this->ans[2] = std::vector<ansType>(80, ansType::correct);
 
 	/// divide to reals w/o markers
-	this->realsSignals = myLib::sliceData(this->getData().subRows(-1), /// drop markers
+	auto realsD = myLib::sliceData(this->getData().subRows(19), /// drop markers
 										  this->getMarkers());
+	this->realsSignals = realsD.first;
+	this->realsStarts = realsD.second;
 	if(01)
 	{
 		/// cout if wrong number of reals
@@ -101,7 +103,7 @@ FBedf::FBedf(const QString & edfPath,
 		}
 	}
 #if 01
-	this->remakeWindows(overlapPart, numSkipStartWinds);
+	this->remakeWindows((1. - overlapPart) * windLen, numSkipStartWinds);
 	/// make windSignals and spectra
 #else
 	const int windStep = (1. - overlapPart) * windLen;		/// = windLen
@@ -212,7 +214,7 @@ ClassifierData FBedf::prepareClDataWinds(bool reduce)
 
 double FBedf::partOfCleanedWinds()
 {
-	this->remakeWindows(0.0);
+	this->remakeWindows(windFftLen, 0);
 	auto clData = this->prepareClDataWinds(false);
 	const double init = clData.size();
 
@@ -233,17 +235,17 @@ double FBedf::partOfCleanedWinds()
 	return (init - last) / init;
 }
 
-void FBedf::remakeWindows(double overlapPart, int numSkipStartWinds)
+void FBedf::remakeWindows(int windStep, int numSkipStartWinds)
 {
 	/// make windSignals
-	const int windStep = (1. - overlapPart) * windLen;
-	const int maxNumWinds = (this->getData().cols() - windLen) / windStep;
+	const int maxNumWinds = (edfData.cols() - windLen) / windStep; /// a little bit excessive
 
 	std::vector<matrix> windSigData{};		windSigData.reserve(maxNumWinds);
 	std::vector<taskType> windSigTypes{};	windSigTypes.reserve(maxNumWinds);
 	std::vector<ansType> windSigAns{};		windSigAns.reserve(maxNumWinds);
+	std::vector<int> windSta{};				windSta.reserve(maxNumWinds);
 
-	for(int i = 0; i < realsSignals.size(); ++i)
+	for(int i = 0; i < realsSignals.size(); ++i) /// i - type (0 - spat, 1 - verb, 2 - rest)
 	{
 		/// is rest?
 		int skipStart = (i == static_cast<int>(taskType::rest))
@@ -251,15 +253,17 @@ void FBedf::remakeWindows(double overlapPart, int numSkipStartWinds)
 
 		for(int j = 0; j < realsSignals[i].size(); ++j)
 		{
-			for(int windStart = 0 + skipStart;
-				windStart < int(realsSignals[i][j].cols()) - windLen;
+			for(int windStart = 1 + skipStart;
+				windStart < realsSignals[i][j].cols() - windLen;
 				windStart += windStep)
 			{
 				windSigData.push_back(realsSignals[i][j].subCols(windStart,
 																 windStart + windLen));
 				windSigTypes.push_back(static_cast<taskType>(i));
+				windSta.push_back(realsStarts[i][j] + windStart);
 
-				if(i != static_cast<int>(taskType::rest))
+
+				if(i != static_cast<int>(taskType::rest)) /// if not rest
 				{
 					windSigAns.push_back(this->ans[i][j]);
 				}
@@ -275,15 +279,13 @@ void FBedf::remakeWindows(double overlapPart, int numSkipStartWinds)
 	this->windSpectra.clear();		this->windSpectra.reserve(windSigData.size());
 	this->windTypes.clear();		this->windTypes.reserve(windSigTypes.size());
 	this->windAns.clear();			this->windAns.reserve(windSigAns.size());
-
-	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), windFftLen);
-	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), windFftLen);
+	this->windStarts.clear();		this->windStarts.reserve(windSigAns.size());
 
 	for(int i = 0; i < windSigData.size(); ++i)
 	{
 		matrix pew = myLib::countSpectre(windSigData[i],
 										 windFftLen,
-										 5);
+										 5); /// magic const
 		if(!pew.isEmpty())
 		{
 #if 0
@@ -293,9 +295,11 @@ void FBedf::remakeWindows(double overlapPart, int numSkipStartWinds)
 				if(!myLib::contains(FBedf::chansToProcess, i)) { pew[i] = 0; }
 			}
 #endif
-			this->windSpectra.push_back(pew.subCols(leftLim, rightLim).toValarByRows());
+			this->windSpectra.push_back(pew.subCols(getLeftLimWind(),
+													getRightLimWind()).toValarByRows());
 			this->windTypes.push_back(windSigTypes[i]);
 			this->windAns.push_back(windSigAns[i]);
+			this->windStarts.push_back(windSta[i]);
 		}
 	}
 }

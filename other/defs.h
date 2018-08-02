@@ -29,6 +29,7 @@ extern double inertiaCoeff;
 
 /// new successive by edf files
 extern double windLength;
+extern double overlap125;
 extern double shiftLearn;
 extern double shiftTest;
 extern double numSmooth;

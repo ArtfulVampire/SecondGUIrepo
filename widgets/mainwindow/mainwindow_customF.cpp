@@ -17,8 +17,23 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 
+//	return;
+	const QString fp1 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_1_fin.edf";
+	const QString fp2 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_3_fin.edf";
+	const QString ans1 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_ans1.txt";
+	const QString ans2 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_ans3.txt";
 
-#if 01
+	Net * ann = new Net();
+
+	std::cout
+			<< ann->successiveByEDFnew(fp1, ans1, fp2, ans2).first << "\t"
+			<< ann->successiveByEDFnew(fb::FBedf(fp1, ans1, suc::overlap125, 0),
+									   fb::FBedf()).first << "\t"
+			<< std::endl;
+	exit(0);
+
+
+#if 0
 	/// count correctness, average times, ICA
 
 #if 0 /// new (~10 people)

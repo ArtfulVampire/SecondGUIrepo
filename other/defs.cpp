@@ -143,5 +143,6 @@ double inertiaCoef = std::exp(-5. / 7);
 double windLength = 4.;
 double shiftLearn = 0.5;
 double shiftTest = 0.5;
-double numSmooth = 8;
+double overlap125 = (1024 - 125) / 1024.;
+double numSmooth = 5;
 }
