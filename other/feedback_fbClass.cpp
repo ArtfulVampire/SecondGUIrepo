@@ -32,7 +32,7 @@ FeedbackClass::FeedbackClass(const QString & guyPath_,
 		}
 		auto & fil = files[fileNumber];
 
-		fil = FBedf(filePath(i), ansPath(i), 0., 0); //// or suc::overlap125 ?????
+		fil = FBedf(filePath(i), ansPath(i), suc::overlap125, 0); //// 0. or suc::overlap125 ?????
 
 		if(!fil)
 		{

@@ -69,6 +69,7 @@ private:
 
 public:
 	static const std::vector<int> chansToProcess;
+	static const std::vector<int> chansToZero;
 
 	static const int numTasks = 40;
 	static constexpr double solveThres = 40.;			/// 40 sec for a task

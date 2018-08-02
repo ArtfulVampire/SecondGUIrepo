@@ -106,6 +106,11 @@ edfFile::edfFile(const edfFile &other, bool noData)
 	this->writeHeaderFlag = other.writeHeaderFlag;
 }
 
+edfFile::edfFile(const QString & edfPath)
+{
+	this->readEdfFile(edfPath, false);
+}
+
 edfFile::edfFile(const QString & txtFilePath, inst which)
 {
 	if(which == inst::mati)
@@ -370,21 +375,16 @@ edfFile & edfFile::reOpen()
 	return this->readEdfFile(this->filePath, false);
 }
 
-edfFile & edfFile::readEdfFile(QString EDFpath, bool headerOnly)
+edfFile & edfFile::readEdfFile(const QString & EDFpath, bool headerOnly)
 {
-    QTime myTime;
-    myTime.start();
-
-	*this = edfFile{}; /// pewpewpewpewpepw
+	*this = edfFile{}; //// pewpewpewpewpepew
 
     handleEdfFile(EDFpath, true, headerOnly);
 
 	/// experimental, to deprecate
-
 	DEFS.setNs(this->ns);
 	DEFS.setFreq(srate);
 	DEFS.setExpName(myLib::getExpNameLib(this->filePath, false));
-
 	return *this;
 }
 
@@ -416,7 +416,7 @@ void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
 }
 
 /// readFlag: 1 - read, 0 - write
-void edfFile::handleEdfFile(QString EDFpath, bool readFlag, bool headerOnly)
+void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerOnly)
 {
 	/// a = a0 + (a1-a0) * (d-d0) / (d1-d0).
 
@@ -1528,11 +1528,11 @@ edfFile edfFile::vertcatFile(QString addEdfPath, QString outPath) const
 	return temp;
 }
 
-edfFile & edfFile::zeroChannels(const std::vector<uint> & chanNums)
+edfFile & edfFile::zeroChannels(const std::vector<int> & chanNums)
 {
-	for(uint chan : chanNums)
+	for(int chan : chanNums)
 	{
-		this->edfData[chan] = 0;
+		edfData[chan] = 0;
 	}
 	return *this;
 }

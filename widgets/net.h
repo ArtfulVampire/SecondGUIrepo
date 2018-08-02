@@ -99,6 +99,11 @@ public:
 										  const QString & ansPath2);
 	Classifier::avType successiveByEDFfinal(const fb::FBedf & file1,
 											const fb::FBedf & file2);
+
+	Classifier::avType successiveByEDFfinal(const QString & edfPath1,
+											const QString & ansPath1,
+											const QString & edfPath2,
+											const QString & ansPath2);
 	std::pair<Classifier::avType, Classifier::avType>
 	successiveByEDFfinalBoth(const fb::FBedf & file1,
 							 const fb::FBedf & file2);

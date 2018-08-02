@@ -128,7 +128,8 @@ public:
 	~edfFile() {}
 
 	edfFile(const edfFile & other, bool noData = false);
-	edfFile(const QString & txtFilePath, inst which = inst::mati);
+	edfFile(const QString & txtFilePath, inst which);
+	edfFile(const QString & edfPath);
 
 //	edfFile & operator=(const edfFile & other)=default;
 	edfFile & operator=(edfFile && other)=default;
@@ -137,7 +138,7 @@ public:
 	bool isEmpty() { return edfData.isEmpty(); }
 
 	/// read/write
-	edfFile & readEdfFile(QString EDFpath, bool headerOnly = false);
+	edfFile & readEdfFile(const QString & EDFpath, bool headerOnly = false);
 	edfFile & reOpen();
     void writeEdfFile(QString EDFpath, bool asPlain = false);
 	void rewriteEdfFile();
@@ -148,9 +149,9 @@ public:
 	void drawSubsection(int startBin, int finishBin, QString outPath) const;
 
 
-    void handleEdfFile(QString EDFpath,
-                       bool readFlag,
-                       bool headerOnly = false);
+	void handleEdfFile(const QString & EDFpath,
+					   bool readFlag,
+					   bool headerOnly = false);
 	void handleData(bool readFlag,
 					std::fstream & edfForData);
 	void handleDatum(int currNs,
@@ -214,7 +215,8 @@ public:
 	edfFile & divideChannel(uint chanNum, double denom);
 	edfFile & divideChannels(std::vector<uint> chanNums, double denom);
 
-	edfFile & zeroChannels(const std::vector<uint> & chanNums);
+	edfFile & zeroChannel(int chanNum) { edfData[chanNum] = 0.; return *this; }
+	edfFile & zeroChannels(const std::vector<int> & chanNums);
 
 	int findChannel(const QString & str) const;
 	int findChannel(int num) const { return num; }
@@ -381,8 +383,9 @@ public:
 
 	/// make edfFile &
 	/// sets
-	void setData(int chanNum, int timeBin, double val)	{ edfData[chanNum][timeBin] = val; }
+	void setData(int chanNum, int timeBin, double val)		{ edfData[chanNum][timeBin] = val; }
 	void setData(int chanNum, const std::valarray<double> & newChan) { edfData[chanNum] = newChan; }
+
 
 	const std::valarray<double> & operator [](int i) const { return edfData[i]; }
 

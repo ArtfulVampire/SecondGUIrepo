@@ -164,20 +164,23 @@ calculateSuccessiveBoth(const QString & dear,
 	const QString guysPath = DEFS.dirPath() + "/" + dear;
 	for(const auto & in : guysList)
 	{
+		/// skip all guys
+		if(in.second != "SKI") { continue; }
+
 		const QString guyPath = guysPath + "/" + in.first;
 		if(!QDir(guyPath).exists()) { continue; }
 
 		fb::FeedbackClass fbItem(guyPath, in.second, postfix); if(!fbItem) { continue; }
 		Net * ann = new Net();
-//		res.push_back(ann->successiveByEDFfinalBoth(
-//						  fbItem.getFile(fileNum::first),
-//						  fbItem.getFile(fileNum::third)));
-		res.push_back({ann->successiveByEDFnew(
-					   fbItem.getFile(fileNum::first),
-					   fbItem.getFile(fileNum::third)),
-					   ann->successiveByEDFfinal(
-					   fbItem.getFile(fileNum::first),
-					   fbItem.getFile(fileNum::third))});
+		res.push_back(ann->successiveByEDFfinalBoth(
+						  fbItem.getFile(fileNum::first),
+						  fbItem.getFile(fileNum::third)));
+//		res.push_back({ann->successiveByEDFnew(
+//					   fbItem.getFile(fileNum::first),
+//					   fbItem.getFile(fileNum::third)),
+//					   ann->successiveByEDFfinal(
+//					   fbItem.getFile(fileNum::first),
+//					   fbItem.getFile(fileNum::third))});
 
 		delete ann;
 //		return res; /// calculate only first guy

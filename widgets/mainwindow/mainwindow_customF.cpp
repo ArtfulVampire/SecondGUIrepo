@@ -17,7 +17,7 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 
-//	return;
+#if 0
 	const QString fp1 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_1_fin.edf";
 	const QString fp2 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_3_fin.edf";
 	const QString ans1 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_ans1.txt";
@@ -25,18 +25,21 @@ void MainWindow::customFunc()
 
 	Net * ann = new Net();
 
+	auto a = fb::FBedf(fp1, ans1, suc::overlap125, 0);
+	auto b = fb::FBedf(fp2, ans2, suc::overlap125, 0);
+
 	std::cout
-			<< ann->successiveByEDFnew(fp1, ans1, fp2, ans2).first << "\t"
-			<< ann->successiveByEDFnew(fb::FBedf(fp1, ans1, suc::overlap125, 0),
-									   fb::FBedf()).first << "\t"
+			<< ann->successiveByEDFnew(a, b).first << "\t"
+			<< ann->successiveByEDFfinal(a, b).first << "\t"
 			<< std::endl;
 	exit(0);
+#endif
 
 
-#if 0
+#if 01
 	/// count correctness, average times, ICA
 
-#if 0 /// new (~10 people)
+#if 01 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
 	const QString postfix = "_good";
@@ -47,7 +50,7 @@ void MainWindow::customFunc()
 	const auto & guysList = subj::guysFBfinal.at(subj::fbGroup::all);
 #endif
 
-#if 0
+#if 01
 	/// calculate successive for "New" and "Final" schemes on "New" data
 	auto res = fb::calculateSuccessiveBoth(dear, guysList, postfix);
 	for(const auto & in : res)

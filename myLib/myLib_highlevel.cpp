@@ -76,17 +76,25 @@ std::vector<std::tuple<matrix, uint, QString>> sliceWindows(
 	res.reserve(maxNumWinds);
 
 	int numReal = 0;
-	auto itSta = std::find_if(std::begin(markers), std::end(markers), [&separators](const auto & in)
+
+	/// iterator pointing at first task marker
+	auto itSta = std::find_if(std::begin(markers),
+							  std::end(markers),
+							  [&separators](const auto & in)
 	{ return myLib::contains(separators, in.second); });
+
 	for(auto itMark = itSta + 1; itMark != std::end(markers); /*nothing*/++numReal)
 	{
-		auto itEnd = std::find_if(itMark, std::end(markers), [&separators](const auto & in)
+		/// find nearest task/rest marker
+		auto itEnd = std::find_if(itMark,
+								  std::end(markers),
+								  [&separators](const auto & in)
 		{ return myLib::contains(separators, in.second); });
 
-		if(itEnd == std::end(markers)) { break; } /// end of file, cut later
+		if(itEnd == std::end(markers)) { break; } /// end of file (last rest), slice later
 
-		int typ = myLib::indexOfVal(separators, (*itSta).second);	/// new typ
-		QString marker = nm((*itSta).second);						/// new marker
+		int typ = myLib::indexOfVal(separators, (*itSta).second);	/// type of current real
+		QString marker = nm((*itSta).second);
 
 		int windowCounter = numSkipStartWinds;
 		int skipStart = numSkipStartWinds * windStep;
@@ -110,16 +118,17 @@ std::vector<std::tuple<matrix, uint, QString>> sliceWindows(
 		itMark = itSta + 1;										/// new start to look for itEnd
 	}
 
-	/// cut last rest
+	/// slice last rest
 	auto itLast = std::end(markers) - 1;
 	for(; itLast != std::begin(markers); --itLast)
 	{
 		if((*itLast).second == 254) { break; } /// should be == itSta but not necessary
 	}
+
 	int windowCounter = 0;
 	for(int startWind = (*itLast).first + numBinsSkipRest;
 		startWind < std::min(int(inData.cols()),
-							 (*itLast).first + 8 * 250) - windLen; /// 8 sec 250 Hz
+							 (*itLast).first + 8 * 250) - windLen; /// 8 sec 250 Hz magic const
 		startWind += windStep)
 	{
 		QString appendName = "." + rn(numReal, 4)
