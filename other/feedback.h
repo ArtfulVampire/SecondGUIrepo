@@ -14,18 +14,19 @@ enum class fileNum  : int {first = 0, third = 1, second = 2};
 
 
 /// bit structure is used in fb::isGoodAns
-enum class ansType : int {skip		= 0b0001,					/// 1
-						  correct	= 0b0010,					/// 2
-						  notwrong	= correct | skip,			/// 3
-						  wrong		= 0b0100,					/// 4
-						  bad		= wrong | skip,				/// 5
-						  answrd	= correct | wrong,			/// 6
-						  all		= correct | wrong | skip	/// 7
+enum class ansType : int {skip		= 0b0001,											/// 1
+						  correct	= 0b0010,											/// 2
+						  notwrong	= ansType::correct | ansType::skip,					/// 3
+						  wrong		= 0b0100,											/// 4
+						  bad		= ansType::wrong | ansType::skip,					/// 5
+						  answrd	= ansType::correct | ansType::wrong,				/// 6
+						  all		= ansType::correct | ansType::wrong | ansType::skip	/// 7
 						 };
 QString toStr(taskType in);
 QString toStr(fileNum in);
 QString toStr(ansType in);
 
+bool isGoodAns(ansType real, ansType expected);
 
 /// omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg omg
 const int numOfClasses = 3;
@@ -159,7 +160,6 @@ private:
 };
 
 
-bool isGoodAns(ansType real, ansType expected);
 
 
 
@@ -225,22 +225,6 @@ private:
 
 
 
-
-std::map<QString, QString> coutAllFeatures(const QString & dear,
-					 const std::vector<std::pair<QString, QString>> & guysList,
-					 const QString & postfix);
-void calculateICA(const QString & dear,
-				  const std::vector<std::pair<QString, QString>> & guysList,
-				  const QString & postfix);
-std::vector<std::pair<Classifier::avType, Classifier::avType>>
-calculateSuccessiveBoth(const QString & dear,
-						const std::vector<std::pair<QString, QString>> & guysList,
-						const QString & postfix);
-
-void createAnsFiles(const QString & guyPath, QString guyName);
-void checkMarkFBfinal(const QString & filePath);
-void repairMarkersInNewFB(QString edfPath, int numSession);
-void successiveNetPrecleanWinds(const QString & windsPath);
 
 
 

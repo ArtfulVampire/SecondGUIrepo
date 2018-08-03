@@ -181,8 +181,74 @@ Classifier::avType Net::successiveByEDFnew(const QString & edfPath1, const QStri
 	return myModel->averageClassification(DEVNULL);
 }
 
+Classifier::avType Net::notSuccessive(const fb::FBedf & file1,
+									  const fb::FBedf & file2)
+{
+	DEFS.setFftLen(fb::FBedf::windFftLen);
+	DEFS.setDir(file1.getDirPath());		/// for writeWeights
+	const QString localExpName = file1.getExpNameShort();
+
+	myClassifierData = ClassifierData();
+	/// not via constructor because of special norming
+	for(int i = 0; i < file1.getWindTypes().size(); ++i)
+	{
+		myClassifierData.push_back(file1.getWindSpectra(i),
+								   uint(static_cast<int>(file1.getWindTypes(i))),
+								   nm(file1.getWindStarts(i)));
+	}
+	myClassifierData.reduceSize(suc::learnSetStay);
+	myClassifierData.z_transform();
+	myClassifierData.adjust(); /// sets numOfClasses and stuff
+
+	this->setClassifier(ModelType::NBC);
+	this->setClassifier(ModelType::ANN);
+	ANN * myANN = dynamic_cast<ANN *>(myModel);
+	if(!myANN)
+	{
+		std::cout << "Net::successiveByEDF: ANN bad cast" << std::endl;
+		return {};
+	}
+
+	/// get initial weights on the train set
+	myANN->setCritError(0.05);
+	myANN->setLrate(0.002);
+	myANN->learnAll();
+
+	/// save these weights
+	myANN->writeWeight(def::helpPath + "/" + localExpName + "_init_1.wts");
+	myANN->drawWeight(def::helpPath + "/" + localExpName + "_init_1.wts",
+					  def::helpPath + "/" + localExpName + "_init_1.jpg");
+
+	/// consts - set postlearn
+	myANN->setCritError(0.01);
+	myANN->setLrate(0.005);
+
+	this->passed.resize(this->myClassifierData.getNumOfCl());
+	this->passed = 0.;
+
+	QDir(def::helpPath).mkdir(localExpName);
+
+	const int prevSize = myClassifierData.size();
+	for(int i = 0; i < file2.getWindTypes().size(); ++i)
+	{
+		myClassifierData.addItem(file2.getWindSpectra(i),
+								 static_cast<uint>(file2.getWindTypes(i)),
+								 nm(file2.getWindStarts(i)));
+	}
+	myANN->test(smLib::range<std::vector<uint>>(prevSize, myClassifierData.size()));
+
+//	myClassifierData = ClassifierData(file2.getWindSpectra(),
+//									  static_cast<std::vector<uint>>(file2.getWindTypes()));
+//	myANN->testAll();
+
+	myANN->writeWeight(def::helpPath + "/" + localExpName + "_last_pre_1.wts");
+	myANN->drawWeight(def::helpPath + "/" + localExpName + "_last_pre_1.wts",
+					  def::helpPath + "/" + localExpName + "_last_pre_1.jpg");
+
+	return myANN->averageClassification(DEVNULL);
+}
+
 /// without correctness
-///////// WRONG
 Classifier::avType Net::successiveByEDFnew(const fb::FBedf & file1,
 										   const fb::FBedf & file2)
 {
@@ -389,9 +455,8 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 	return myANN->averageClassification(DEVNULL);
 }
 
-std::pair<Classifier::avType, Classifier::avType>
-Net::successiveByEDFfinalBoth(const fb::FBedf & file1,
-							  const fb::FBedf & file2)
+Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
+										const fb::FBedf & file2)
 {
 	DEFS.setFftLen(fb::FBedf::windFftLen);
 	DEFS.setDir(file1.getDirPath());
@@ -459,21 +524,47 @@ Net::successiveByEDFfinalBoth(const fb::FBedf & file1,
 			secondWindTypes.push_back(static_cast<fb::taskType>(std::get<1>(datum)));
 		}
 	}
-
 	/// backup ClassifierData
 	auto clDataBC = myClassifierData;
 
-	/// New
-	for(int i = 0; i < secondWindTypes.size(); ++i)
+
+
+	if(01)
 	{
-		successiveLearning(secondWindSpec[i],
-						   uint(static_cast<int>(secondWindTypes[i])),
-						   localExpName);
+		/// NOT SUCCESSIVE
+		const int prevSize = myClassifierData.size();
+		for(int i = 0; i < file2.getWindTypes().size(); ++i)
+		{
+			myClassifierData.addItem(file2.getWindSpectra(i),
+									 static_cast<uint>(file2.getWindTypes(i)),
+									 nm(file2.getWindStarts(i)));
+		}
+		myANN->test(smLib::range<std::vector<uint>>(prevSize, myClassifierData.size()));
 	}
-	myANN->writeWeight(def::helpPath + "/" + localExpName + "_last_pre.wts");
-	myANN->drawWeight(def::helpPath + "/" + localExpName + "_last_pre.wts",
-					  def::helpPath + "/" + localExpName + "_last_pre.jpg");
-	auto res1 =  myANN->averageClassification(DEVNULL);
+	auto res3 = myANN->averageClassification(DEVNULL);
+
+
+	/// "clean" and restore ClassifierData
+	this->passed = 0.;
+	myClassifierData = clDataBC;
+	myANN->setClassifierData(myClassifierData);
+
+	if(0)
+	{
+		/// NEW
+		for(int i = 0; i < secondWindTypes.size(); ++i)
+		{
+			successiveLearning(secondWindSpec[i],
+							   uint(static_cast<int>(secondWindTypes[i])),
+							   localExpName);
+		}
+		myANN->writeWeight(def::helpPath + "/" + localExpName + "_last_pre.wts");
+		myANN->drawWeight(def::helpPath + "/" + localExpName + "_last_pre.wts",
+						  def::helpPath + "/" + localExpName + "_last_pre.jpg");
+	}
+	auto res1 = myANN->averageClassification(DEVNULL);
+
+
 
 	/// "clean" and restore ClassifierData
 	/// NumGoodNew plays no role anymore
@@ -481,40 +572,43 @@ Net::successiveByEDFfinalBoth(const fb::FBedf & file1,
 	myClassifierData = clDataBC;
 	myANN->setClassifierData(myClassifierData);
 
-	/// Final
-	fb::taskType prevType = secondWindTypes[0];
-	int numTask = 0; /// increments when the task ends
-
-	matrix relearn{};
-	for(int i = 1; i < secondWindTypes.size(); ++i)
+	if(0)
 	{
-		if(secondWindTypes[i] != prevType) /// new task/rest
+		/// FINAL
+		fb::taskType prevType = secondWindTypes[0];
+		int numTask = 0; /// increments when the task ends
+
+		matrix relearn{};
+		for(int i = 1; i < secondWindTypes.size(); ++i)
 		{
-			if(!relearn.isEmpty())
+			if(secondWindTypes[i] != prevType) /// new task/rest
 			{
-				successiveLearningFinal(relearn,
-										uint(static_cast<int>(prevType)),
-										localExpName);
-				relearn.clear();
+				if(!relearn.isEmpty())
+				{
+					successiveLearningFinal(relearn,
+											uint(static_cast<int>(prevType)),
+											localExpName);
+					relearn.clear();
+				}
+				if(prevType != fb::taskType::rest) { ++numTask; }
+
+				prevType = secondWindTypes[i];
+				continue;
 			}
-			if(prevType != fb::taskType::rest) { ++numTask; }
 
-			prevType = secondWindTypes[i];
-			continue;
+			if(prevType == fb::taskType::rest || file2.getAns(numTask) == fb::ansType::correct)
+			{
+				/// classification correctness is checked inside successiveLearningFinal
+				relearn.push_back(secondWindSpec[i]);
+			}
 		}
-
-		if(prevType == fb::taskType::rest || file2.getAns(numTask) == fb::ansType::correct)
-		{
-			/// classification correctness is checked inside successiveLearningFinal
-			relearn.push_back(secondWindSpec[i]);
-		}
+		myANN->writeWeight(def::helpPath + "/" + localExpName + "_last.wts");
+		myANN->drawWeight(def::helpPath + "/" + localExpName + "_last.wts",
+						  def::helpPath + "/" + localExpName + "_last.jpg");
 	}
-	myANN->writeWeight(def::helpPath + "/" + localExpName + "_last.wts");
-	myANN->drawWeight(def::helpPath + "/" + localExpName + "_last.wts",
-					  def::helpPath + "/" + localExpName + "_last.jpg");
 	auto res2 =  myANN->averageClassification(DEVNULL);
 
-	return {res1, res2};
+	return {res1, res2, res3};
 }
 
 void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ansType howSolved)

@@ -8,6 +8,7 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/qtlib.h>
 #include <other/feedback.h>
+#include <other/feedback_autos.h>
 
 using namespace myOut;
 

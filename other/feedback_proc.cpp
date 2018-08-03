@@ -1,5 +1,4 @@
-#include <other/feedback.h>
-#include <widgets/net.h>
+#include <other/feedback_autos.h>
 #include <sstream>
 
 namespace fb
@@ -19,42 +18,6 @@ taskType operator ++(taskType & in, int) /// postfix
 	return res;
 }
 
-QString toStr(taskType in)
-{
-	static const std::map<taskType, QString> res
-	{
-		{taskType::spat, "spat"},
-		{taskType::verb, "verb"},
-		{taskType::rest, "rest"},
-	};
-	return res.at(in);
-}
-QString toStr(fileNum in)
-{
-	static const std::map<fileNum, QString> res
-	{
-		{fileNum::first, "1"},
-		{fileNum::second, "2"},
-		{fileNum::third, "3"},
-	};
-	return res.at(in);
-}
-QString toStr(ansType in)
-{
-	{
-		static const std::map<ansType, QString> res
-		{
-			{ansType::skip,		"skip"},
-			{ansType::correct,	"correct"},
-			{ansType::notwrong,	"notwrong"},
-			{ansType::wrong,	"wrong"},
-			{ansType::bad,		"bad"},
-			{ansType::answrd,	"answrd"},
-			{ansType::all,		"all"},
-		};
-		return res.at(in);
-	}
-}
 
 std::map<QString, QString>
 coutAllFeatures(const QString & dear,
@@ -154,33 +117,27 @@ coutAllFeatures(const QString & dear,
 }
 
 
-std::vector<std::pair<Classifier::avType, Classifier::avType>>
+std::vector<Net::sucAllType>
 calculateSuccessiveBoth(const QString & dear,
 						const std::vector<std::pair<QString, QString>> & guysList,
 						const QString & postfix)
 {
-	std::vector<std::pair<Classifier::avType, Classifier::avType>> res{};
+	std::vector<Net::sucAllType> res{};
 
 	const QString guysPath = DEFS.dirPath() + "/" + dear;
 	for(const auto & in : guysList)
 	{
 		/// skip all guys
-		if(in.second != "SKI") { continue; }
+//		if(in.second != "SKI") { continue; }
 
 		const QString guyPath = guysPath + "/" + in.first;
 		if(!QDir(guyPath).exists()) { continue; }
 
 		fb::FeedbackClass fbItem(guyPath, in.second, postfix); if(!fbItem) { continue; }
 		Net * ann = new Net();
-		res.push_back(ann->successiveByEDFfinalBoth(
+		res.push_back(ann->successiveByEDFall(
 						  fbItem.getFile(fileNum::first),
 						  fbItem.getFile(fileNum::third)));
-//		res.push_back({ann->successiveByEDFnew(
-//					   fbItem.getFile(fileNum::first),
-//					   fbItem.getFile(fileNum::third)),
-//					   ann->successiveByEDFfinal(
-//					   fbItem.getFile(fileNum::first),
-//					   fbItem.getFile(fileNum::third))});
 
 		delete ann;
 //		return res; /// calculate only first guy

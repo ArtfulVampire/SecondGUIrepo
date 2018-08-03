@@ -104,9 +104,13 @@ public:
 											const QString & ansPath1,
 											const QString & edfPath2,
 											const QString & ansPath2);
-	std::pair<Classifier::avType, Classifier::avType>
-	successiveByEDFfinalBoth(const fb::FBedf & file1,
-							 const fb::FBedf & file2);
+
+	Classifier::avType notSuccessive(const fb::FBedf & file1,
+									 const fb::FBedf & file2);
+
+	using sucAllType = std::tuple<Classifier::avType, Classifier::avType, Classifier::avType>;
+	sucAllType successiveByEDFall(const fb::FBedf & file1,
+								  const fb::FBedf & file2);
 
 
 	void successivePreclean(const QString & spectraPath,

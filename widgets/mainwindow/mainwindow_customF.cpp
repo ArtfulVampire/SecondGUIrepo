@@ -10,6 +10,7 @@
 #include <myLib/statistics.h>
 #include <myLib/wavelet.h>
 #include <other/subjects.h>
+#include <other/feedback_autos.h>
 #include <thread>
 
 using namespace myOut;
@@ -29,8 +30,9 @@ void MainWindow::customFunc()
 	auto b = fb::FBedf(fp2, ans2, suc::overlap125, 0);
 
 	std::cout
-			<< ann->successiveByEDFnew(a, b).first << "\t"
-			<< ann->successiveByEDFfinal(a, b).first << "\t"
+//			<< ann->successiveByEDFnew(a, b).first << "\t"
+//			<< ann->successiveByEDFfinal(a, b).first << "\t"
+			<< ann->notSuccessive(a, b).first << "\t"
 			<< std::endl;
 	exit(0);
 #endif
@@ -39,7 +41,7 @@ void MainWindow::customFunc()
 #if 01
 	/// count correctness, average times, ICA
 
-#if 01 /// new (~10 people)
+#if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
 	const QString postfix = "_good";
@@ -55,7 +57,11 @@ void MainWindow::customFunc()
 	auto res = fb::calculateSuccessiveBoth(dear, guysList, postfix);
 	for(const auto & in : res)
 	{
-		std::cout << in.first.first << "\t" << in.second.first << std::endl;
+		std::cout
+				<< std::get<0>(in).first << "\t"
+				<< std::get<1>(in).first << "\t"
+				<< std::get<2>(in).first << "\t"
+				<< std::endl;
 	}
 	exit(0);
 #endif

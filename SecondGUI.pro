@@ -134,7 +134,8 @@ other/subjects.h \
 other/feedback.h \
 other/defs.h \
 other/consts.h \
-    myLib/ica.h
+    myLib/ica.h \
+    other/feedback_autos.h
 
 FORMS +=\
 mainwindow.ui \

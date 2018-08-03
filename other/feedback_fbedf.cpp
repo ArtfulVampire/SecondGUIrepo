@@ -24,6 +24,48 @@ using namespace myOut;
 
 namespace fb
 {
+
+QString toStr(taskType in)
+{
+	static const std::map<taskType, QString> res
+	{
+		{taskType::spat, "spat"},
+		{taskType::verb, "verb"},
+		{taskType::rest, "rest"},
+	};
+	return res.at(in);
+}
+QString toStr(fileNum in)
+{
+	static const std::map<fileNum, QString> res
+	{
+		{fileNum::first, "1"},
+		{fileNum::second, "2"},
+		{fileNum::third, "3"},
+	};
+	return res.at(in);
+}
+QString toStr(ansType in)
+{
+	static const std::map<ansType, QString> res
+	{
+		{ansType::skip,		"skip"},
+		{ansType::correct,	"correct"},
+		{ansType::notwrong,	"notwrong"},
+		{ansType::wrong,	"wrong"},
+		{ansType::bad,		"bad"},
+		{ansType::answrd,	"answrd"},
+		{ansType::all,		"all"},
+	};
+	return res.at(in);
+}
+
+bool isGoodAns(ansType real, ansType expected)
+{
+	return (static_cast<int>(real) & static_cast<int>(expected));
+}
+
+
 /// FBedf
 
 /// from 0 - for dispersion, distance, etc
@@ -344,10 +386,6 @@ std::vector<ansType> FBedf::readAns(const QString & ansPath)
 	return res;
 }
 
-bool isGoodAns(ansType real, ansType expected)
-{
-	return (static_cast<int>(real) & static_cast<int>(expected));
-}
 
 bool FBedf::isGoodAns(taskType typ, int numReal, ansType expected) const
 {
