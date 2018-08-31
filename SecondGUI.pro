@@ -19,8 +19,8 @@ QMAKE_CXXFLAGS += -Wno-unused-function
 LIBS += -fopenmp
 #QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
 
-CONFIG += c++14
-#CONFIG += c++1z
+#CONFIG += c++14
+CONFIG += c++1z
 #for c++1z
 INCLUDEPATH += /usr/local/include/c++/7.2.0
 INCLUDEPATH += /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.2.0/include
@@ -32,15 +32,15 @@ INCLUDEPATH += /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.2.0/include
 #INCLUDEPATH += ./matlab/for_testing
 #DEPENDPATH += ./matlab/for_testing
 #INCLUDEPATH += ./matlab/mcr_extern_include
-#LIBS += -L../SecondGUI/matlab/for_testing -lcwt_r
+LIBS += -L../SecondGUI/matlab/for_testing -lcwt_r
 
 #linux-only
-#LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -lm -lmwcpp11compat
-#LIBS += -L/media/Files/Matlab/MCR/v83/runtime/glnxa64 -lmwmclmcrrt
-#INCLUDEPATH += /media/Files/Matlab/MCR/v83/extern/include
-#LIBS += -L/media/Files/Matlab/Projects/libcwt_r/for_testing -lcwt_r
-#INCLUDEPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
-#DEPENDPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
+LIBS += -L/media/Files/Matlab/MCR/v83/bin/glnxa64 -lm -lmwcpp11compat
+LIBS += -L/media/Files/Matlab/MCR/v83/runtime/glnxa64 -lmwmclmcrrt
+INCLUDEPATH += /media/Files/Matlab/MCR/v83/extern/include
+LIBS += -L/media/Files/Matlab/Projects/libcwt_r/for_testing -lcwt_r
+INCLUDEPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
+DEPENDPATH += /media/Files/Matlab/Projects/libcwt_r/for_testing
 
 SOURCES += \
 main.cpp\

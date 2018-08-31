@@ -13,6 +13,7 @@ void defs::setAutosUser(autosUser in)
 					featuresMask::Hilbert |
 					featuresMask::fracDim |
 					featuresMask::Hjorth |
+					featuresMask::wavelet |
 					featuresMask::logFFT
 			   ;
 		break;

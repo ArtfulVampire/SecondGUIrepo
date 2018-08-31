@@ -2031,7 +2031,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
     {
 
 		/// start check draw - OK
-		QPixmap pic(inLength, 600);
+		QPixmap pic(inLength, 120);
         QPainter pnt;
         pic.fill();
         pnt.begin(&pic);
@@ -2057,7 +2057,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 		}
 #endif
 
-        pnt.setPen("green");
+		pnt.setPen(QPen(QBrush("black"), 2));
 		for(int i = 0; i < pic.width() - 1; ++i)
         {
 			/// draw the envelope?
@@ -2076,11 +2076,14 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 #endif
         }
 
+#if 0
+		//// draw replace line
         pnt.setPen("blue");
         pnt.drawLine(startReplace,
                      pic.height(),
                      startReplace,
                      0.);
+#endif
 
         pnt.end();
         pic.save(picPath, 0, 100);

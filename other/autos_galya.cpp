@@ -120,7 +120,11 @@ void calculateFeatures(const QString & pathWithEdfs,
 		}
 		case autosUser::XeniaFinalest:
 		{
-//			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq());	/// not resizeCols
+#if 01
+			/// first 30 seconds
+			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq());	/// not resizeCols
+#else
+			/// second 30 secods
 			if(tmpData.cols() >= 60 * initEdf.getFreq())
 			{
 				tmpData = tmpData.subCols(30 * initEdf.getFreq(), 60 * initEdf.getFreq());
@@ -133,6 +137,7 @@ void calculateFeatures(const QString & pathWithEdfs,
 			{
 				/// as is
 			}
+#endif
 			tmpData.eraseRows({4, 9, 14});							/// skip Fz, Cz, Pz
 			break;
 		}
@@ -343,11 +348,12 @@ void countHilbert(const matrix & inData,
 	std::valarray<double> envSpec;
 
 	std::vector<std::pair<double, double>> filters{
-				std::make_pair(0.5, 70),	/// [0] no filter
+				std::make_pair(0, 0),		/// [0] no filter
 				std::make_pair(4, 6),		/// [1] theta
 				std::make_pair(8, 13),		/// [2] alpha
 				std::make_pair(8, 10),		/// [3] low_alpha
-				std::make_pair(10, 13)		/// [4] high_alpha
+				std::make_pair(10, 13),		/// [4] high_alpha
+				std::make_pair(2, 20)		/// [5] band of interest
 	};
 
 	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); /// [filter][chan][0-carr, 1-SD]
@@ -356,11 +362,20 @@ void countHilbert(const matrix & inData,
 	{
 		std::pair<double, double> filterLims = filters[numFilt];
 
-		matrix currMat = myLib::refilterMat(inData,
-											filterLims.first,
-											filterLims.second,
-											false,
-											srate);
+		matrix currMat{};
+		if(filterLims != std::pair<double,double>(0, 0))
+		{
+			currMat = myLib::refilterMat(inData,
+										 filterLims.first,
+										 filterLims.second,
+										 false,
+										 srate);
+		}
+		else
+		{
+			currMat = inData;
+		}
+
 		hilb[numFilt].resize(inData.rows());
 		for(int i = 0; i < inData.rows(); ++i)
 		{
@@ -423,8 +438,9 @@ void countHilbert(const matrix & inData,
 	{
 		for(int ch = 0; ch < inData.rows(); ++ch)
 		{
-			for(int filt : {0, 1, 2, 3, 4}) /// whole, theta, alpha, low-alpha, high-alpha
+			for(int filt : {0, 1, 2, 3, 4,  5}) /// whole, theta, alpha, low-alpha, high-alpha, 2-20
 //			for(int filt : {3, 4}) /// 8-10, 10-13
+//			int filt = 5; /// 2-20
 			{
 				for(int func : {0, 1})  /// carr or SD
 				{
@@ -449,16 +465,16 @@ void countWavelet(const matrix & inData,
 #if WAVELET_MATLAB
 	const int numOfFreqs = wvlt::cwt(inData[0], srate).rows(); /// pewpew
 
+
 	using funcPtr = double(*)(const std::valarray<double> &);
-
-
+//	using funcPtr = std::function<double(const std::valarray<double> &)>;
 	std::vector< funcPtr > funcs;
-	funcs.push_back(static_cast<funcPtr>(&smLib::mean<double>));
+//	funcs.push_back(static_cast<funcPtr>(&smLib::mean<double>));
 	funcs.push_back(static_cast<funcPtr>(&smLib::sigma<std::valarray<double>>));
-	funcs.push_back(static_cast<funcPtr>(&smLib::median<std::valarray<double>>));
+//	funcs.push_back(static_cast<funcPtr>(&smLib::median<std::valarray<double>>));
 
 	std::vector<matrix> outData{};
-	for(std::function<double(const std::valarray<double> &)> func : funcs)
+	for(const auto & func : funcs)
 	{
 		matrix dataToWrite(numOfFreqs, inData.rows()); /// [freq][chan]
 
@@ -1644,7 +1660,7 @@ void ProcessByFolders(const QString & inPath,
 	QTime myTime;
 	myTime.start();
 
-	const int numChan = 19;
+	const int numChan = 16;
 //	const int numChan = 31; /// MRI and other
 
 	if(!QDir(inPath + "_out").exists())
@@ -1681,7 +1697,7 @@ void ProcessByFolders(const QString & inPath,
 		/// rereference
 		if(0)
 		{
-			autos::rereferenceFolder(guyPath, "Ar");
+			autos::rereferenceFolder(guyPath, "Ar"); /// check Ar
 		}
 
 		/// filter?
@@ -1735,7 +1751,7 @@ void ProcessByFolders(const QString & inPath,
 							for(int i = 0; i < autos::getFileLength(func); ++i)
 							{
 								outStr << " " << '\t';
-								//									outStr << 0 << '\t';
+//								outStr << 0 << '\t';
 							}
 							outStr.close();
 						}
@@ -1763,6 +1779,7 @@ void ProcessByFolders(const QString & inPath,
 		/// copy files into _out
 		if(1)
 		{
+			QFile::remove(inPath + "_out/" + ExpName + ".txt");
 			QFile::copy(guyOutPath + "/" + ExpName + ".txt",
 						inPath + "_out/" + ExpName + ".txt");
 		}

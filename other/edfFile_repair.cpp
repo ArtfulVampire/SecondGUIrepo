@@ -304,17 +304,18 @@ void toLowerFileOrFolder(const QString & fileOrFolderPath)
 	QString newFileName = fileName.toLower();
 
 	newFileName[0] = newFileName[0].toUpper();
-	for(int i = 1; i < newFileName.length(); ++i)
-	{
-		/// care about fileMarkers - not replace the last "_**" in edf-files
-		if(newFileName[i - 1] == '_' &&
-		   !(newFileName.contains(".edf", Qt::CaseInsensitive) &&
-			 i - 1 == newFileName.lastIndexOf("_"))
-		   )
-		{
-			newFileName[i] = newFileName[i].toUpper();
-		}
-	}
+//	for(int i = 1; i < newFileName.length(); ++i)
+//	{
+//		/// care about fileMarkers - not replace the last "_**" in edf-files
+//		if(newFileName[i - 1] == '_' &&
+//		   !(newFileName.contains(".edf", Qt::CaseInsensitive) &&
+//			 i - 1 == newFileName.lastIndexOf("_"))
+//		   )
+//		{
+//			newFileName[i] = newFileName[i].toUpper();
+//		}
+//	}
+
 	QDir tmp(fileOrFolderPath);
 	tmp.rename(fileOrFolderPath, dirName + "/" + newFileName);
 }

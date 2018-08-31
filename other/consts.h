@@ -15,7 +15,7 @@ using uint = unsigned int;
 #endif
 
 #ifndef WAVELET_MATLAB
-#define WAVELET_MATLAB 0
+#define WAVELET_MATLAB 01
 #endif
 
 /// iitp

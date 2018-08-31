@@ -19,26 +19,18 @@ void MainWindow::customFunc()
 {
 
 #if 0
-	const QString fp1 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_1_fin.edf";
-	const QString fp2 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_3_fin.edf";
-	const QString ans1 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_ans1.txt";
-	const QString ans2 = "/media/Files/Data/FeedbackFinalMark/Burtcev/BAV_ans3.txt";
-
-	Net * ann = new Net();
-
-	auto a = fb::FBedf(fp1, ans1, suc::overlap125, 0);
-	auto b = fb::FBedf(fp2, ans2, suc::overlap125, 0);
-
-	std::cout
-//			<< ann->successiveByEDFnew(a, b).first << "\t"
-//			<< ann->successiveByEDFfinal(a, b).first << "\t"
-			<< ann->notSuccessive(a, b).first << "\t"
-			<< std::endl;
+	/// draw the picture
+	const QString gh = "/media/Files/Data/Xenia/FINAL/Healthy/Truhanov_Petr/Truhanov_Petr_fon.edf";
+	const QString fff = "/media/Files/Data/env.jpg";
+	edfFile fl;
+	fl.readEdfFile(gh);
+	std::valarray<double> arr = fl.getData("Pz");
+	myLib::hilbertPieces(smLib::contSubsec(arr, 0, 250 * 2.5), fff);
 	exit(0);
 #endif
 
 
-#if 01
+#if 0
 	/// count correctness, average times, ICA
 
 #if 0 /// new (~10 people)
@@ -139,6 +131,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
+	/// rename some files in a dir
 	{
 		const QString workPath = "/media/Files/Data/Geodesics/MPI_128";
 		for(const QString & fileName : QDir(workPath).entryList(def::edfFilters))
@@ -628,11 +621,11 @@ void MainWindow::customFunc()
 		DEFS.setAutosUser(autosUser::XeniaFinalest);
 		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
 		DEFS.setAutosMask(0
-						  | featuresMask::alpha
-						  | featuresMask::fracDim
+//						  | featuresMask::alpha
+//						  | featuresMask::fracDim
 						  | featuresMask::Hilbert
-						  | featuresMask::spectre
-						  | featuresMask::logFFT
+//						  | featuresMask::spectre
+//						  | featuresMask::logFFT
 						  );
 		autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
 	}
@@ -657,11 +650,11 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// Galya processing things
 
 //	const QString workPath = def::GalyaFolder + "/24Apr18Tankina";
-	const QString workPath = def::GalyaFolder + "/RhythmAdoption11May18";
+	const QString workPath = def::GalyaFolder + "/all_buben";
 
 	/// tactile
 //	const std::vector<QString> usedMarkers{"_buk", "_kis", "_rol", "_sch", "_fon"};
@@ -680,18 +673,51 @@ void MainWindow::customFunc()
 //										   "_og", "_rv", "_sm", "_zg"};
 
 	/// rhythm adoption
-	const std::vector<QString> usedMarkers{"_2sv", "_2zv",
-										   "_4sv", "_4zv",
-										   "_8sv", "_8zv",
-										   "_16sv", "_16zv"
-										   , "_fon"
-//										   , "_og"
-//										   , "_zg"
+//	const std::vector<QString> usedMarkers{"_2sv", "_2zv",
+//										   "_4sv", "_4zv",
+//										   "_8sv", "_8zv",
+//										   "_16sv", "_16zv"
+//										   , "_fon"
+////										   , "_og"
+////										   , "_zg"
+//										  };
+
+	/// buben
+	const std::vector<QString> usedMarkers{"_bub",
+										   "_bubAfter",
+										   "_bubAud",
+										   "_bubAudAfter",
+										   "_time",
+										   "_og",
+										   "_ogAfter",
+										   "_zg",
 										  };
+
+	if(0)
+	{
+		/// compose a list of markers
+		std::set<QString> markers{};
+		for(const QString & fn : QDir(workPath).entryList(def::edfFilters))
+		{
+			int a = fn.lastIndexOf('_');
+			int b = fn.lastIndexOf('.');
+			QString mrk = fn.mid(a + 1, b - a - 1);
+			markers.emplace(mrk);
+		}
+		for(const auto & mrk : markers)
+		{
+//			std::cout << R"(")" << mrk << R"(", )";
+			std::cout << mrk << " ";
+		}
+		std::cout << std::endl;
+		exit(0);
+	}
+
 
 	/// groups
 //	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-	const QStringList subdirs{"young"};
+//	const QStringList subdirs{"young"};
+	const QStringList subdirs{""};
 
 
 	if(0)
@@ -706,14 +732,15 @@ void MainWindow::customFunc()
 			for(const QString & fileName : QDir(workPath + "/" + subdir).entryList(def::edfFilters))
 			{
 				QString newName = fileName;
-				newName.replace("_dl.edf", ".edf", Qt::CaseInsensitive);
-				newName.replace("_dl_", "_", Qt::CaseInsensitive);
-				newName.replace("_PR.", ".", Qt::CaseInsensitive);
-				newName.replace("_PR_", "_", Qt::CaseInsensitive);
-				newName.replace("_2_", "_2", Qt::CaseInsensitive);
-				newName.replace("_4_", "_4", Qt::CaseInsensitive);
-				newName.replace("_8_", "_8", Qt::CaseInsensitive);
-				newName.replace("_16_", "_16", Qt::CaseInsensitive);
+				newName.replace("_new.edf", ".edf", Qt::CaseInsensitive);
+				newName.replace("_bub_after", "_bubAfter", Qt::CaseInsensitive);
+				newName.replace("_bub_aud", "_bubAud", Qt::CaseInsensitive);
+				newName.replace("_bubAud_after", "_bubAudAfter", Qt::CaseInsensitive);
+				newName.replace("_bub_aud_after", "_bubAudAfter", Qt::CaseInsensitive);
+				newName.replace("_og_after", "_ogAfter", Qt::CaseInsensitive);
+//				newName.replace("_4_", "_4", Qt::CaseInsensitive);
+//				newName.replace("_8_", "_8", Qt::CaseInsensitive);
+//				newName.replace("_16_", "_16", Qt::CaseInsensitive);
 
 				bool p = false;
 				for(auto mrk : usedMarkers)
@@ -742,6 +769,7 @@ void MainWindow::customFunc()
 
 	if(0)
 	{
+		/// each subject into his/her own folder
 		for(const QString & subdir : subdirs)
 		{
 //			autos::rewriteNew(workPath + "/" + subdir);
@@ -754,11 +782,16 @@ void MainWindow::customFunc()
 	if(0)
 	{
 		/// checks and corrects channels order consistency
+
+		edfFile labels;
+		labels.readEdfFile(workPath + "/labels.edf");
+
 		QString str19;
 		for(int i = 0; i < 19; ++i)
 		{
-			str19 += nm(i + 1) + " ";
+			str19 += nm(labels.findChannel(coords::lbl19[i]) + 1) + " ";
 		}
+		std::cout << str19 << std::endl;
 
 		for(const QString & subdir : subdirs)
 		{
@@ -790,45 +823,26 @@ void MainWindow::customFunc()
 		exit(0);
 	}
 
-	if(0)
-	{
-		/// compose a list of markers
-		std::set<QString> markers{};
-		for(const QString & fn : QDir(workPath).entryList(def::edfFilters))
-		{
-			int a = fn.lastIndexOf('_');
-			int b = fn.lastIndexOf('.');
-			QString mrk = fn.mid(a + 1, b - a - 1);
-			markers.emplace(mrk);
-		}
-		for(const auto & mrk : markers)
-		{
-//			std::cout << R"(")" << mrk << R"(", )";
-			std::cout << mrk << " ";
-		}
-		std::cout << std::endl;
-		exit(0);
-	}
+
 
 	if(0)
 	{
 		/// calculation itself
+		DEFS.setAutosUser(autosUser::Galya);
 
 		for(const QString & subdir : subdirs)
 		{
-			DEFS.setAutosUser(autosUser::Galya);
-
 			/// usual processing
-//			autos::ProcessByFolders(workPath + "/" + subdir,
-//									usedMarkers);
+			autos::ProcessByFolders(workPath + "/" + subdir,
+									usedMarkers);
 
 			/// rhythm adoption
-			for(const QString & stimType : {"sv", "zv"})
-			{
-				autos::rhythmAdoptionGroup(workPath + "/" + subdir,
-										   "_fon",
-										   stimType);
-			}
+//			for(const QString & stimType : {"sv", "zv"})
+//			{
+//				autos::rhythmAdoptionGroup(workPath + "/" + subdir,
+//										   "_fon",
+//										   stimType);
+//			}
 		}
 		exit(0);
 	}
@@ -888,20 +902,29 @@ void MainWindow::customFunc()
 		const QString sep{"\t"};
 //		const QString sep{"\r\n"};
 
-		std::ofstream lab;
-		lab.open((workPath + "/labels.txt").toStdString());
+		edfFile labels;
+		labels.readEdfFile(workPath + "/labels.edf");
 
-		std::vector<QString> labels1 = coords::lbl19;
-		for(QString & in : labels1) { in = in.toLower(); }
+		std::vector<QString> labels1 = labels.getLabels();
+		labels1.resize(16);
+
+		for(QString & in : labels1)
+		{
+			in = in.mid(in.indexOf(' ') + 1,
+						in.indexOf('-') - in.indexOf(' ') - 1).toLower();
+		}
 
 		const QString initFreq = "_1.6_30";
 
+		std::ofstream lab;
+		lab.open((workPath + "/labels.txt").toStdString());
 		for(QString mark : usedMarkers)
 		{
 			mark.remove('_');
 
 			/// FFT
 			/// 18 ranges 1-Hz-wide, 19 channels = 342 values
+			/// 18 ranges 1-Hz-wide, 16 channels = 288 values
 			for(int i = 2; i < 20; ++i)
 			{
 				for(QString lbl : labels1)
@@ -924,6 +947,7 @@ void MainWindow::customFunc()
 			}
 
 			/// Hilbert and Fractal Dimension 5*19 = 95 values
+			/// Hilbert and Fractal Dimension 5*16 = 80 values
 			for(QString fir : {
 				QString("fd")		+ initFreq,
 				QString("hilbcarr")	+ initFreq,
@@ -943,7 +967,8 @@ void MainWindow::customFunc()
 			}
 
 			/// HJORTH
-			/// 38 values
+			/// 2 * 19 = 38 values
+			/// 2 * 16 = 32 values
 			for(QString fir : {"hjmob", "hjcom"})
 			{
 				for(QString lbl : labels1)
@@ -956,14 +981,16 @@ void MainWindow::customFunc()
 
 			}
 
-#if 0
+#if 01
 			/// WAVELET
-			/// 19*19 = 361 values
-			for(int i = 0; i < 19; ++i)
+			/// 19 freqs * 19 channels = 361 values
+			/// 19 freqs * 16 channels = 304 values
+			for(int i = 0; i < 19; ++i) /// freqs
 			{
 				for(QString lbl : labels1)
 				{
 					lab << mark
+						<< "_wavSD"
 						<< "_" << nm(i + 2)
 						<< "_" << lbl << sep;
 				}
@@ -972,7 +999,8 @@ void MainWindow::customFunc()
 
 
 			/// logFFT
-			/// 18*19 = 342 values
+			/// 18 freqs * 19 chans = 342 values
+			/// 18 freqs * 16 chans = 288 values
 			for(int i = 2; i < 20; ++i)
 			{
 				for(QString lbl : labels1)
@@ -989,7 +1017,7 @@ void MainWindow::customFunc()
 		exit(0);
 	}
 
-	if(0)
+	if(01)
 	{
 		if(01)
 		{
