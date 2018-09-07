@@ -2039,6 +2039,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 										  std::end(inArr)) * 1.1;
 
         pnt.setPen("black");
+		/// initial signal
         for(int i = 0; i < pic.width()-1; ++i)
         {
             pnt.drawLine(i,
@@ -2046,18 +2047,37 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
                          i+1,
 						 pic.height()/2. * (1. - inArr[i + 1] / maxVal)
                     );
-        }
+		}
+
+
 
 #if 0
-		/// ???
-		pnt.setPen("blue");
-		for(int i = 0; i < pic.width()-1; ++i)
+		pnt.setPen("gray");
+		/// imaginary
+		/// first part
+		for(int i = 0; i < startReplace; ++i)
 		{
-			pnt.drawLine(i, pic.height()/2. - enlarge * tempArr[i], i+1, pic.height()/2. - enlarge * tempArr[i+1]);
+			pnt.drawLine(i,
+						 pic.height()/2. * (1. - tempArr[0][i] / maxVal),
+						 i+1,
+						 pic.height()/2. * (1. - tempArr[0][i + 1] / maxVal)
+					);
 		}
+		/// second part
+		for(int i = startReplace; i < inLength; ++i)
+		{
+			/// draw the imaginary part of the signal
+			pnt.drawLine(i,
+						 pic.height()/2. * (1. - tempArr[1][i] / maxVal),
+						 i+1,
+						 pic.height()/2. * (1. - tempArr[1][i + 1] / maxVal)
+					);
+        }
 #endif
 
+
 		pnt.setPen(QPen(QBrush("black"), 2));
+		/// envelope
 		for(int i = 0; i < pic.width() - 1; ++i)
         {
 			/// draw the envelope?
@@ -2066,24 +2086,35 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 						 i+1,
 						 pic.height()/2. * (1. - outHilbert[i + 1] / maxVal)
 					);
-#if 0
-			/// draw the signal?
-			pnt.drawLine(i,
-						 pic.height()/2. * (1. - fftLen * tempArr[0][i] / maxVal),
-						 i+1,
-						 pic.height()/2. * (1. - fftLen * tempArr[0][i + 1] / maxVal)
-					);
-#endif
+
         }
 
-#if 0
-		//// draw replace line
-        pnt.setPen("blue");
-        pnt.drawLine(startReplace,
-                     pic.height(),
-                     startReplace,
-                     0.);
+#if 01
+		/// draw the envelope mean
+		const double M = smLib::mean(outHilbert);
+		const double S = smLib::sigma(outHilbert);
+
+		pnt.setPen(QPen(QBrush("black"), 1, Qt::DashLine));
+		pnt.drawLine(0,
+					 pic.height()/2. * (1. - M / maxVal),
+					 pic.width(),
+					 pic.height()/2. * (1. - M / maxVal)
+				);
+
+		pnt.setPen(QPen(QBrush("black"), 1, Qt::DotLine));
+		pnt.drawLine(0,
+					 pic.height()/2. * (1. - (M + S) / maxVal),
+					 pic.width(),
+					 pic.height()/2. * (1. - (M + S) / maxVal)
+				);
+
+		pnt.drawLine(0,
+					 pic.height()/2. * (1. - (M - S) / maxVal),
+					 pic.width(),
+					 pic.height()/2. * (1. - (M - S) / maxVal)
+				);
 #endif
+
 
         pnt.end();
         pic.save(picPath, 0, 100);

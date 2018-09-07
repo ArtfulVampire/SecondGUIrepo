@@ -18,14 +18,16 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 
-#if 0
+//	return;
+#if 01
 	/// draw the picture
-	const QString gh = "/media/Files/Data/Xenia/FINAL/Healthy/Truhanov_Petr/Truhanov_Petr_fon.edf";
-	const QString fff = "/media/Files/Data/env.jpg";
+	const QString gh = "/media/Files/Data/Galya/15Mar18/Ilja_Tarotin/Ilja_Tarotin_zg.edf";
+	const QString fff = "/media/Files/Data/env_8_13.jpg";
 	edfFile fl;
 	fl.readEdfFile(gh);
-	std::valarray<double> arr = fl.getData("Pz");
-	myLib::hilbertPieces(smLib::contSubsec(arr, 0, 250 * 2.5), fff);
+	std::valarray<double> arr = smLib::contSubsec(fl.getData("Pz"), 5.6 * 250, (5.6 + 7) * 250);
+	arr = myLib::refilter(arr, 8, 13, false, 250);
+	myLib::hilbertPieces(arr, fff);
 	exit(0);
 #endif
 
