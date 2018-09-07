@@ -128,7 +128,7 @@ calculateSuccessiveBoth(const QString & dear,
 	for(const auto & in : guysList)
 	{
 		/// skip all guys
-//		if(in.second != "SKI") { continue; }
+		if(in.second != "KKS") { continue; }
 
 		const QString guyPath = guysPath + "/" + in.first;
 		if(!QDir(guyPath).exists()) { continue; }

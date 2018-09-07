@@ -531,7 +531,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 
 	if(01)
 	{
-		/// NOT SUCCESSIVE
+		/// NOT SUCCESSIVE, BASE
 		const int prevSize = myClassifierData.size();
 		for(int i = 0; i < file2.getWindTypes().size(); ++i)
 		{
@@ -549,7 +549,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 	myClassifierData = clDataBC;
 	myANN->setClassifierData(myClassifierData);
 
-	if(0)
+	if(01)
 	{
 		/// NEW
 		for(int i = 0; i < secondWindTypes.size(); ++i)
@@ -572,7 +572,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 	myClassifierData = clDataBC;
 	myANN->setClassifierData(myClassifierData);
 
-	if(0)
+	if(01)
 	{
 		/// FINAL
 		fb::taskType prevType = secondWindTypes[0];

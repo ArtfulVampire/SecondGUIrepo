@@ -17,10 +17,8 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-
-//	return;
-#if 01
-	/// draw the picture
+#if 0
+	/// draw the envelope picture
 	const QString gh = "/media/Files/Data/Galya/15Mar18/Ilja_Tarotin/Ilja_Tarotin_zg.edf";
 	const QString fff = "/media/Files/Data/env_8_13.jpg";
 	edfFile fl;
@@ -31,14 +29,13 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
 #if 0
 	/// count correctness, average times, ICA
 
-#if 0 /// new (~10 people)
+#if 01 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
-	const QString postfix = "_good";
+	const QString postfix = "_fin";
 #else /// final (~16 people)
 	const QString dear = "FeedbackFinalMark";
 	const QString postfix = "_fin";
@@ -49,6 +46,11 @@ void MainWindow::customFunc()
 #if 01
 	/// calculate successive for "New" and "Final" schemes on "New" data
 	auto res = fb::calculateSuccessiveBoth(dear, guysList, postfix);
+	std::cout
+			<< "NEW" << "\t"
+			<< "FINAL" << "\t"
+			<< "BASE" << "\t"
+			<< std::endl;
 	for(const auto & in : res)
 	{
 		std::cout
@@ -161,7 +163,7 @@ void MainWindow::customFunc()
 	exit(0);
 
 	/// check all fin files presence
-	for(const auto & sub : subj::guysFBfinal)
+	for(const auto & sub : subj::guysFBnew)
 	{
 		const QString path = "/media/Files/Data/FeedbackFinalMark/" + sub.first;
 		for(int i = 1; i <= 3; ++i)
@@ -177,10 +179,10 @@ void MainWindow::customFunc()
 
 #if 0
 	/// prepare FeedbackFinalMark for eyes clean
-	const QString path = DEFS.dirPath() + "/FeedbackFinalMark";
+	const QString path = DEFS.dirPath() + "/FeedbackNewMark";
 
 	Cut * cut = new Cut();
-	for(auto in : subj::guysFBfinal)
+	for(auto in : subj::guysFBnew)
 	{
 		const QString dr = std::get<0>(in);
 		const QString ExpName = std::get<1>(in);
@@ -188,7 +190,8 @@ void MainWindow::customFunc()
 
 		for(int i : {1, 2, 3})
 		{
-			QString fn = path + "/" + dr + "/" + ExpName + "_" + nm(i);
+//			if(!(ExpName == "TAA" && i == 2)) continue;
+			QString fn = path + "/" + dr + "/" + ExpName + "_" + nm(i) + "_good";
 
 			std::cout << std::endl << ExpName << " " << i << std::endl;
 
@@ -652,7 +655,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// Galya processing things
 
 //	const QString workPath = def::GalyaFolder + "/24Apr18Tankina";
