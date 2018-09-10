@@ -635,28 +635,26 @@ void IITPconcat(const QString & guyName,
 		const QString ExpNamePre = def::iitpFolder + "/" +
 								   guyName + "/" +
 								   guyName + "_" + rn(fileNum, 2);
-		QString filePath;
-		edfFile fil;
 
 #if 01
 		/// resample
 #if UP_DOWN_S
 		/// upsample EEGs
-		filePath = ExpNamePre + eegPostfix + ".edf";
+		QString filePath = ExpNamePre + eegPostfix + ".edf";
 		if(QFile::exists(filePath))
 		{
+			edfFile fil;
 			fil.readEdfFile(filePath);
-			filePath = ExpNamePre + eegPostfix + "_up.edf";
-			fil.upsample(1000., filePath);
+			fil.upsample(1000.).writeEdfFile(ExpNamePre + eegPostfix + "_up.edf");
 		}
 #else
 		/// downsample EMGs
-		filePath = ExpNamePre + emgPostfix +".edf";
+		QString filePath = ExpNamePre + emgPostfix +".edf";
 		if(QFile::exists(filePath))
 		{
+			edfFile fil;
 			fil.readEdfFile(filePath);
-			filePath = ExpNamePre + emgPostfix + "_down.edf";
-			fil.downsample(250., filePath);
+			fil.downsample(250.).writeEdfFile(ExpNamePre + emgPostfix + "_down.edf");
 		}
 #endif
 
@@ -670,6 +668,7 @@ void IITPconcat(const QString & guyName,
 		filePath = ExpNamePre + eegPostfix + "_up.edf";
 		if(QFile::exists(filePath))
 		{
+			edfFile fil;
 			fil.readEdfFile(filePath);
 			filePath = ExpNamePre + emgPostfix + ".edf";
 			if(QFile::exists(filePath))
@@ -682,6 +681,7 @@ void IITPconcat(const QString & guyName,
 		filePath = ExpNamePre + eegPostfix + ".edf";
 		if(QFile::exists(filePath))
 		{
+			edfFile fil;
 			fil.readEdfFile(filePath);
 			filePath = ExpNamePre + emgPostfix + "_down.edf";
 			if(QFile::exists(filePath))
@@ -930,8 +930,7 @@ void IITPpre2(const QString & guyName)
 			if(QFile::exists(filePath))
 			{
 				fil.readEdfFile(filePath);
-				filePath = ExpNamePre + "_eeg_" + addName + "_up.edf";
-				fil.upsample(1000., filePath);
+				fil.upsample(1000.).writeEdfFile(ExpNamePre + "_eeg_" + addName + "_up.edf");
 			}
 
 			/// downsample EMGs
@@ -939,8 +938,7 @@ void IITPpre2(const QString & guyName)
 			if(QFile::exists(filePath))
 			{
 				fil.readEdfFile(filePath);
-				filePath = ExpNamePre + "_emg_" + addName + "_down.edf";
-				fil.downsample(250., filePath);
+				fil.downsample(250.).writeEdfFile(ExpNamePre + "_emg_" + addName + "_down.edf");
 			}
 		}
 #endif

@@ -815,13 +815,15 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 
 	if(readFlag) { this->cutZerosAtEnd(); }
 
+#if 0
 	/// experimental annotations - just delete
-    if(this->edfPlusFlag)
-    {
+	if(this->edfPlusFlag)
+	{
 		this->removeChannel(this->markerChannel);
-        this->edfPlusFlag = false;
-        this->markerChannel = -1;
-    }
+		this->edfPlusFlag = false;
+		this->markerChannel = -1;
+	}
+#endif
 
 	/// ddr to 1
     {
@@ -837,20 +839,15 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
         }
         ndr = std::ceil(ndr * oldDdr); /// ceil or round?
     }
-
-
 }
 
 void edfFile::handleData(bool readFlag,
 						 std::fstream & edfForData)
 {
-	int currTimeIndex;
-	QString helpString;
 	if(readFlag)
 	{
 		/// will fail when different frequencies. nr.max() could heal it
 		this->edfData = matrix(ns, ndr * ddr * srate, 0.);
-
 		this->channels.clear();
 		for(int i = 0; i < this->ns; ++i)
 		{
@@ -869,15 +866,26 @@ void edfFile::handleData(bool readFlag,
 		}
 	}
 
+
+	int annotationsWriteCounter = 0;
 	for(int i = 0; i < ndr; ++i)
 	{
 		for(int currNs = 0; currNs < ns; ++currNs)
 		{
-			helpString.clear();
+			/// EDF+ annotations workaround
+			if(!readFlag && this->edfPlusFlag && currNs == markerChannel)
+			{
+				edfForData.write(annotations[annotationsWriteCounter].toLatin1(),
+								 nr[markerChannel] * 2);
+				++annotationsWriteCounter;
+				continue;
+			}
+
+
+			QString helpString;
 			for(int k = 0; k < nr[currNs]; ++k)
 			{
-				currTimeIndex = i * nr[currNs] + k;
-
+				int currTimeIndex = i * nr[currNs] + k;
 				handleDatum(currNs, currTimeIndex, readFlag, helpString, edfForData);
 				/// use annotations
 			}
@@ -887,18 +895,25 @@ void edfFile::handleData(bool readFlag,
 			}
 		}
 	}
-	if(writeMarkersFlag && !edfPlusFlag)
+	if(writeMarkersFlag)
 	{
-		writeMarkers();
+		if(edfPlusFlag)
+		{
+//			handleAnnotations();
+//			writeAnnotations();
+		}
+		else
+		{
+			writeMarkers();
+		}
 	}
 }
 void edfFile::handleDatum(int currNs,
 						  int currTimeIndex,
 						  bool readFlag,
-						  QString & ntAnnot,
+						  QString & annotation,
 						  std::fstream & edfForDatum)
 {
-	char helpChar = '0';
 	qint16 a = 0;
 	quint16 markA = 0;
 
@@ -924,11 +939,11 @@ void edfFile::handleDatum(int currNs,
 			if(this->edfPlusFlag)
 			{
 				/// edf+
-				edfForDatum >> helpChar;
-				ntAnnot += helpChar;
-
-				edfForDatum >> helpChar;
-				ntAnnot += helpChar;
+				char helpChar;
+				edfForDatum.read(&helpChar, 1);
+				annotation += helpChar;
+				edfForDatum.read(&helpChar, 1);
+				annotation += helpChar;
 			}
 			else if(this->matiFlag)
 			{
@@ -1072,6 +1087,7 @@ void edfFile::handleData(bool readFlag,
             }
             if(currNs == markerChannel && this->edfPlusFlag)
             {
+				std::cout << helpString.size() << std::endl;
                 annotations.push_back(helpString);
             }
         }
@@ -1201,6 +1217,17 @@ void edfFile::handleDatum(int currNs,
     }
 }
 
+void edfFile::writeAnnotations() const
+{
+	std::ofstream annotStream((dirPath + "/" + ExpName + "_annotations.txt").toStdString());
+	for(const QString & annot : annotations)
+	{
+		auto a = annot.left(myLib::edfPlusLen(annot));
+		annotStream << a << std::endl;
+//		std::cout << a << std::endl;
+	}
+	annotStream.close();
+}
 
 void edfFile::writeMarkers() const
 {
@@ -1338,58 +1365,105 @@ void edfFile::writeMarker(double currDatum,
 	fprintf(markers, "\n");
 	fclose(markers);
 #endif
-
 }
 
-void edfFile::handleAnnotations(int currNs,
-                                int currentTimeIndex,
-                                QString helpString,
-								std::vector<QString> annotations)
+/// time and string (discard duration and epoch start)
+std::vector<std::pair<double, QString>> edfFile::handleAnnotation(const QString & annot) const
 {
-#if 0
-    currStart = 0;
-    for(int l = 0; l < len(helpString); ++l)
-    {
-        if(int(helpString.toStdString()[l])== 0 || (int(helpString.toStdString()[l])==20 && (int(helpString.toStdString()[l+1])== 0 || int(helpString.toStdString()[l+1])==20)))
-        {
-            for(int p=currStart; p < l; ++p)
-            {
-                annotations[numOfAnn].append(helpString[p]);
-            }
-            ++numOfAnn;
-            while((int(helpString.toStdString()[l])== 0 || int(helpString.toStdString()[l])==20) && l < len(helpString)) ++l;
-            currStart = l;
-        }
-	}
+	const QChar ch00 = QChar(0);
+	const QChar ch20 = QChar(20);
+//	const QChar ch21 = QChar(21);
+	const QString sep1 = QString(ch20) + QString(ch00);
+	const QString sep2 = QString(ch20) + QString(ch20);
 
+	std::vector<std::pair<double, QString>> res{};
+
+	/// chop epoch time start
+	int start{0};
+	for(int i = 0; i < annot.size() - 1; ++i)
+	{
+		if(annot[i].unicode() == 20 && annot[i + 1].unicode() != 20) { start = i; break; }
+	}
+	QString tmp = annot.mid(start + 2);
+
+	auto marks = tmp.split(sep1, QString::SkipEmptyParts);
+	for(auto & mark : marks)
+	{
+		auto par = mark.split(sep2, QString::SkipEmptyParts);
+		if(par.size() < 2 || par[1] != "stimPresentation") { continue; } /////////////////
+
+		res.push_back({par[0].remove('+').toDouble(), par[1]});
+	}
+	return res;
+}
+
+std::vector<std::pair<double, QString>> edfFile::handleAnnotations() const
+{
+	std::vector<std::pair<double, QString>> res{};
+
+	for(const QString & annot : annotations)
+	{
+		QString tmp = annot.left(myLib::edfPlusLen(annot));
+		for(auto && in : handleAnnotation(tmp))
+		{
+			res.push_back(in);
+		}
+	}
+	return res;
+#if 0
+	/// WTF was here?
+	for(QString & annot : annotations)
+	{
+		auto charNum = [annot](int i) -> int { return int(annot.toStdString()[i]); };
+
+		int currStart = 0;
+		for(int l = 0; l < myLib::edfPlusLen(annot); ++l)
+		{
+			if(charNum(l) == 0 ||
+			   (charNum(l) == 20 && (charNum(l + 1) == 0 || charNum(l + 1) == 20))
+			   )
+			{
+				for(int p = currStart; p < l; ++p)
+				{
+					annotations[numOfAnn].append(helpString[p]);
+				}
+				++numOfAnn;
+
+				while((charNum(l) == 0 || charNum(l) == 20) && l < myLib::edfPlusLen(annot))
+				{
+					++l;
+				}
+				currStart = l;
+			}
+		}
+	}
     if(this->ntFlag)
     {
         double markTime;
-        char * markNum = new char[60];
         QString markValue;
-        for(int j = 0; j < numOfAnn; ++j)
+		for(int j = 0; j < annotations.size(); ++j)
         {
-			markNum[0] = '\0';
+			char * markNum = new char[60];
 			markValue.clear();
-            sscanf(annotations[j].toStdString().c_str(), "+%lf\24", &markTime);
+			std::sscanf(annotations[j].toStdString().c_str(), "+%lf\24", &markTime);
+
 			/// set time into helpString with 3 float numbers
-            helpString.setNum(markTime);
-			if(helpString[helpString.length() - 3]=='.') helpString.append("0"); /// float part - 2 or 3 signs
-            else
-            {
-				if(helpString[helpString.length() - 2]=='.') helpString.append("00");
-                else helpString.append(".000");
-            }
-			for(int i = helpString.length() + 2; i < annotations[j].length(); ++i) /// +2 because of '+' and '\24'
-            {
-                markValue.append(annotations[j][i]);
-            }
-            sscanf(annotations[j].toStdString().c_str(), "+%lf\24%s", &markTime, markNum);
-			data[ns - 1][int(markTime * nr[ns - 1] / ddr)] = atoi(markNum);
+			QString helpString{nm(markTime)};
+
+//			if(helpString[helpString.length() - 3] == '.') { helpString.append("0"); }
+//			else if(helpString[helpString.length() - 2] == '.') { helpString.append("00"); }
+//			else helpString.append(".000");
+
+			markValue += annotations[j].mid(helpString.size() + 2);/// +2 because of '+' and '\24'
+
+			std::sscanf(annotations[j].toStdString().c_str(), "+%lf\24%s", &markTime, markNum);
+
+			this->edfData[markerChannel][int(markTime * nr[markerChannel] / ddr)] = markNum;
+			delete[] markNum;
         }
-//        nr[ns - 1] = this->srate; /// generality.getFreq() change
-    }
-	#endif
+	}
+	nr[ns - 1] = this->srate;
+#endif
 }
 
 /// useful for reduceChannels
@@ -1676,92 +1750,76 @@ edfFile & edfFile::concatFile(QString addEdfPath, QString outPath) /// assume on
 }
 
 
-void edfFile::downsample(double newFreq,
-						 QString outPath,
-						 std::vector<int> chanList) const
+edfFile & edfFile::downsample(double newFreq,
+							  std::vector<int> chanList)
 {
-	edfFile temp(*this);
-	if(newFreq > temp.getFreq()) /// or not integer ratio
+	if(newFreq > srate) /// or not integer ratio
 	{
 		std::cout << "edfFile::downsample: wrong newFreq" << std::endl;
-		return;
+		return *this;
 	}
 	if(chanList.empty())
 	{
-		chanList.resize(temp.ns);
+		chanList.resize(this->ns);
 		std::iota(std::begin(chanList), std::end(chanList), 0);
 
-#if 0
 		/// not downsample markers channel - really needed?
-		auto it = std::find(std::begin(chanList), std::end(chanList), temp.markerChannel);
+		auto it = std::find(std::begin(chanList), std::end(chanList), this->markerChannel);
 		if(it != std::end(chanList))
 		{
 			chanList.erase(it);
 		}
-#endif
 
 	}
 	for(int numChan : chanList)
 	{
-		if(nr[numChan] == newFreq) continue;
+		if(getFreq(numChan) == newFreq) continue;
 
-		temp.edfData[numChan] = myLib::downsample(temp.edfData[numChan],
-												  temp.nr[numChan],
-												  newFreq);
+		edfData[numChan] = myLib::downsample(edfData[numChan],
+											 getFreq(numChan),
+											 newFreq);
 		/// no need to adjustArraysByChannels
-		temp.nr[numChan] = newFreq;
-		temp.channels[numChan].nr = newFreq;
-		temp.srate = newFreq;
+		nr[numChan] = newFreq;
+		channels[numChan].nr = newFreq;
+		srate = newFreq;
 	}
-
-	if(outPath.isEmpty())
-	{
-		outPath = temp.getFilePath();
-		outPath.insert(outPath.lastIndexOf('.'), "_downsampled");
-	}
-	temp.writeEdfFile(outPath);
+	return *this;
 }
 
-void edfFile::upsample(double newFreq,
-					   QString outPath,
-					   std::vector<int> chanList) const
+edfFile & edfFile::upsample(double newFreq,
+							std::vector<int> chanList)
 {
-	edfFile temp(*this);
-	if(newFreq < temp.getFreq()) /// or not integer ratio
+	if(newFreq < srate) /// or not integer ratio
 	{
-		std::cout << "edfFile::upsample: wrong newFreq" << std::endl;
-		return;
+		std::cout << "edfFile::downsample: wrong newFreq" << std::endl;
+		return *this;
 	}
 	if(chanList.empty())
 	{
-		chanList.resize(temp.ns);
+		chanList.resize(this->ns);
 		std::iota(std::begin(chanList), std::end(chanList), 0);
 
-		/// really needed?
-		auto it = std::find(std::begin(chanList), std::end(chanList), temp.markerChannel);
+		/// not downsample markers channel - really needed?
+		auto it = std::find(std::begin(chanList), std::end(chanList), this->markerChannel);
 		if(it != std::end(chanList))
 		{
 			chanList.erase(it);
 		}
+
 	}
 	for(int numChan : chanList)
 	{
 		if(nr[numChan] == newFreq) continue;
 
-		temp.edfData[numChan] = myLib::upsample(temp.edfData[numChan],
-												temp.nr[numChan],
-												newFreq);
+		edfData[numChan] = myLib::upsample(edfData[numChan],
+										   getFreq(numChan),
+										   newFreq);
 		/// no need to adjustArraysByChannels
-		temp.nr[numChan] = newFreq;
-		temp.channels[numChan].nr = newFreq;
-		temp.srate = newFreq;
+		nr[numChan] = newFreq;
+		channels[numChan].nr = newFreq;
 	}
-	if(outPath.isEmpty())
-	{
-		outPath = temp.getFilePath();
-		outPath.insert(outPath.lastIndexOf('.'), "_upsampled");
-	}
-	temp.writeEdfFile(outPath);
+	srate = newFreq;
+	return *this;
 }
 
 int edfFile::findJump(int channel,

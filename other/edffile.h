@@ -172,11 +172,10 @@ public:
     void writeMarker(double currDatum,
 					 int currTimeIndex) const; /// deprecated
 
+	void writeAnnotations() const;
 	void writeMarkers() const;
-    void handleAnnotations(int currNs,
-                           int currentTimeIndex,
-                           QString helpString,
-						   std::vector<QString> annotations);
+	std::vector<std::pair<double, QString> > handleAnnotations() const;
+	std::vector<std::pair<double, QString> > handleAnnotation(const QString & annot) const;
 
 	/// make edfFile & func(...);
 	/// and  edfFile   func(...) const;
@@ -239,13 +238,11 @@ public:
 
 
 	/// for iitp - remake into edfFile &
-	void downsample(double newFreq,
-					QString outPath = QString(),
-					std::vector<int> chanList = std::vector<int>{}) const;
+	edfFile & downsample(double newFreq,
+					std::vector<int> chanList = std::vector<int>{});
 
-	void upsample(double newFreq,
-				  QString outPath = QString(),
-				  std::vector<int> chanList = std::vector<int>{}) const;
+	edfFile & upsample(double newFreq,
+					   std::vector<int> chanList = std::vector<int>{});
 
 	int findJump(int channel,
 				 int startPoint,
@@ -335,6 +332,7 @@ public:
 	double getDdr() const										{ return ddr; }
 	int getNs() const											{ return ns; }
 	double getFreq() const										{ return srate; } /// wow wow
+	double getFreq(int numChan) const							{ return nr[numChan] / ddr; }
 
 	const std::vector<QString> & getLabels() const					{ return labels; }
 	const QString & getLabels(int i) const							{ return labels[i]; }

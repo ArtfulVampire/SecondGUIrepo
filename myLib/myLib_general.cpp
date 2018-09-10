@@ -350,20 +350,26 @@ void writeBytes(FILE * fil, int value, int numBytes)
 	}
 }
 
-
-int len(const QString & s) /// lentgh till double \0-byte for EDF+annotations
+/// lentgh till \0\0
+int edfPlusLen(const QString & s)
 {
-	int l = 0;
-	for(int i = 0; i < 100500; ++i)
+	int res = 0;
+	for(int i = 0; i < s.size(); ++i)
 	{
-		if(s[i]!='\0') ++l;
+		if(s[i] != '\0')
+		{
+			++res;
+		}
 		else
 		{
-			if(s[i+1]!='\0') ++l;
-			if(s[i+1]=='\0')
+			if(s[i + 1] != '\0')
 			{
-				++l;
-				return l;
+				++res;
+			}
+			else
+			{
+				++res;
+				return res;
 			}
 		}
 	}

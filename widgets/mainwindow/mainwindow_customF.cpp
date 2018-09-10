@@ -17,6 +17,44 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
+
+#if 0
+	/// EDF+ test
+	edfFile feel;
+//	feel.readEdfFile("/media/Files/Data/Galya/Burd/Data/04/04_shkatova.edf");
+//	feel.writeEdfFile("/media/Files/Data/Galya/Burd/Data/04/04_shkatova__.edf");
+	feel.readEdfFile("/media/Files/Data/Galya/Burd/Data/04/04_shkatova__.edf");
+//	std::cout << myLib::areEqualFiles("/media/Files/Data/Galya/Burd/Data/04/04_shkatova.edf",
+//									  "/media/Files/Data/Galya/Burd/Data/04/04_shkatova__.edf")
+//			  << std::endl;
+	exit(0);
+#endif
+
+
+#if 0
+	edfFile fil;
+	fil.readEdfFile("/media/Files/Data/Galya/Burd/Data/19/19_savchenko.edf");
+	fil.downsample(500);
+	fil.writeEdfFile("/media/Files/Data/Galya/Burd/Data/19/19_savchenko_ds.edf");
+	exit(0);
+#endif
+
+#if 01
+	/// downsample for Burdenko
+	const QString fold = "/media/Files/Data/Galya/Burd/Data";
+	for(int i = 19; i <= 34; ++i) /// 19-34
+	{
+		QDir dr = QDir(fold + "/" + nm(i));
+		edfFile fil;
+		const QString fn = dr.entryList({"*" + nm(i) + "_*.edf"})[0];
+		fil.readEdfFile(dr.absolutePath() + "/" + fn);
+		QString outPath = fil.getFilePath();
+		outPath.replace(".edf", "_ds.edf");
+		fil.downsample(500).refilter(0.5, 35).writeEdfFile(outPath);
+	}
+	exit(0);
+#endif
+
 #if 0
 	/// draw the envelope picture
 	const QString gh = "/media/Files/Data/Galya/15Mar18/Ilja_Tarotin/Ilja_Tarotin_zg.edf";
