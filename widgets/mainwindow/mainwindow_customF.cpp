@@ -138,6 +138,14 @@ void MainWindow::customFunc()
 		auto mrks = fil.getMarkers();
 		for(int i = 0; i < mrks.size(); ++i)
 		{
+			if(mrks[i].second == 11 && mrks[i + 2].second != 20)
+			{
+				outStr
+						<< mrks[i + 1].second << "\t" /// picNum
+						<< (mrks[i + 2].first - mrks[i + 1].first) / fil.getFreq() << "\t" /// time
+						<< "false-negative" << "\t"
+						<< std::endl;
+			}
 			if(mrks[i].second == 20)
 			{
 				outStr
@@ -146,6 +154,7 @@ void MainWindow::customFunc()
 						<< ((mrks[i - 2].second == 11) ? "correct" : "wrong") << "\t"
 						<< std::endl;
 			}
+
 		}
 		outStr.close();
 	}
