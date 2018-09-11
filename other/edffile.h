@@ -97,16 +97,16 @@ public:
                double in_nr,
 			   QString in_reserved)
     {
-        this->label = in_label;
-        this->transducerType = in_transducerType;
-        this->physDim = in_physDim;
-        this->physMax = in_physMax;
-        this->physMin = in_physMin;
-        this->digMax = in_digMax;
-        this->digMin = in_digMin;
-        this->prefiltering = in_prefiltering;
-        this->nr = in_nr;
-        this->reserved = in_reserved;
+		this->label				= in_label;
+		this->transducerType	= in_transducerType;
+		this->physDim			= in_physDim;
+		this->physMax			= in_physMax;
+		this->physMin			= in_physMin;
+		this->digMax			= in_digMax;
+		this->digMin			= in_digMin;
+		this->prefiltering		= in_prefiltering;
+		this->nr				= in_nr;
+		this->reserved			= in_reserved;
     }
 
 	edfChannel & operator=(const edfChannel & other)=default;
@@ -207,6 +207,7 @@ public:
 	edfFile & removeChannel(const QString & nam);
 
 	edfFile & insertChannel(int num, const std::valarray<double> & dat, edfChannel ch);
+	edfFile & addChannel(const std::valarray<double> & dat, edfChannel ch);
 
 	edfFile & multiplyChannel(uint chanNum, double mult);
 	edfFile & multiplyChannels(std::vector<uint> chanNums, double mult);
@@ -348,6 +349,7 @@ public:
 	const QString & getHeaderRest() const							{ return headerRest; }
 
 	const std::vector<std::pair<int, int>> & getMarkers() const		{ return markers; }
+	const std::vector<QString> & getAnnotations() const				{ return annotations; }
 	const std::vector<edfChannel> & getChannels() const				{ return channels; }
 	const edfChannel & getChannels(int i) const						{ return channels[i]; }
 

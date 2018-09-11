@@ -99,7 +99,8 @@ widgets/cut/cut_modify.cpp \
 widgets/cut/cut_navi.cpp \
 widgets/cut/cut_iitp.cpp \
 widgets/cut/cut_files.cpp \
-    myLib/myLib_ica.cpp
+    myLib/myLib_ica.cpp \
+    myLib/myLib_adhoc.cpp
 
 HEADERS += \
 myLib/drw.h \
@@ -135,7 +136,8 @@ other/feedback.h \
 other/defs.h \
 other/consts.h \
     myLib/ica.h \
-    other/feedback_autos.h
+    other/feedback_autos.h \
+    myLib/adhoc.h
 
 FORMS +=\
 mainwindow.ui \

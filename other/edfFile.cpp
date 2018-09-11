@@ -900,7 +900,7 @@ void edfFile::handleData(bool readFlag,
 		if(edfPlusFlag)
 		{
 //			handleAnnotations();
-//			writeAnnotations();
+			writeAnnotations();
 		}
 		else
 		{
@@ -1219,12 +1219,17 @@ void edfFile::handleDatum(int currNs,
 
 void edfFile::writeAnnotations() const
 {
-	std::ofstream annotStream((dirPath + "/" + ExpName + "_annotations.txt").toStdString());
+	std::ofstream annotStream((dirPath + "/" + ExpName + "_annots.txt").toStdString());
 	for(const QString & annot : annotations)
 	{
 		auto a = annot.left(myLib::edfPlusLen(annot));
-		annotStream << a << std::endl;
-//		std::cout << a << std::endl;
+		for(QChar & ch : a)
+		{
+			if(ch.unicode() == 0 ||
+			   ch.unicode() == 20 ||
+			   ch.unicode() == 21) ch = ' ';
+		}
+		annotStream << a.toLatin1().toStdString() << std::endl;
 	}
 	annotStream.close();
 }
@@ -2536,6 +2541,11 @@ edfFile & edfFile::insertChannel(int num, const std::valarray<double> & dat, edf
 	this->edfData.myData.insert(std::begin(this->edfData.myData) + num, dat);
 	this->adjustArraysByChannels();
 	return *this;
+}
+
+edfFile & edfFile::addChannel(const std::valarray<double> & dat, edfChannel ch)
+{
+	return this->insertChannel(this->getNs(), dat, ch);
 }
 
 /// exceptions

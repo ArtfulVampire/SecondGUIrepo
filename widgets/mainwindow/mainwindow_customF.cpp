@@ -9,6 +9,7 @@
 #include <myLib/temp.h>
 #include <myLib/statistics.h>
 #include <myLib/wavelet.h>
+#include <myLib/adhoc.h>
 #include <other/subjects.h>
 #include <other/feedback_autos.h>
 #include <thread>
@@ -17,7 +18,6 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-
 #if 0
 	/// EDF+ test
 	edfFile feel;
@@ -30,7 +30,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
 #if 0
 	edfFile fil;
 	fil.readEdfFile("/media/Files/Data/Galya/Burd/Data/19/19_savchenko.edf");
@@ -39,7 +38,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// downsample for Burdenko
 	const QString fold = "/media/Files/Data/Galya/Burd/Data";
 	for(int i = 19; i <= 34; ++i) /// 19-34
@@ -51,6 +50,104 @@ void MainWindow::customFunc()
 		QString outPath = fil.getFilePath();
 		outPath.replace(".edf", "_ds.edf");
 		fil.downsample(500).refilter(0.5, 35).writeEdfFile(outPath);
+	}
+	exit(0);
+#endif
+
+#if 0
+	/// copy files Burdenko
+	const QString fold = "/media/Files/Data/Galya/Burd/Data";
+	for(int i = 24; i <= 34; ++i) /// 19-34
+	{
+		QDir dr = QDir(fold + "/" + nm(i));
+
+	}
+	exit(0);
+#endif
+
+#if 0
+	/// Burdenko Edf+ and log to simple EDF
+	const QString fold = "/media/Files/Data/Galya/Burd/Data";
+	for(int i = 4; i <= 34; ++i) /// 19-34
+	{
+		const QString wrk = fold + "/" + rn(i, 2);
+		QDir dr(wrk);
+		const auto log = dr.entryList({"*.log"})[0];
+		auto picNums = myLib::readBurdenkoLog(wrk + "/" + log);
+
+		const auto edfPlus = dr.entryList({"*.edf"})[0];
+		edfFile fil(wrk + "/" + edfPlus);
+
+		auto annots = myLib::handleAnnots(fil.getAnnotations(), 500);
+
+
+		auto it1 = std::begin(annots);
+		for(auto picNum : picNums)
+		{
+			auto itNext = std::find_if(it1, std::end(annots),
+									   [](const auto & ann)
+			{ return ann.second == 15; });
+			(*itNext).second = picNum.toInt();
+			it1 = itNext + 1;
+		}
+
+		fil.removeChannel(fil.getMarkChan());
+		edfChannel newMarkChan("Markers",
+							   "AgAgCl",
+							   "uV",
+							   4096,
+							   0,
+							   4096,
+							   0,
+							   "",
+							   500,
+							   "");
+		std::valarray<double> newMarkData(fil.getDataLen());
+		for(const auto & mrk : annots)
+		{
+			newMarkData[mrk.first] = mrk.second;
+		}
+
+		fil.addChannel(newMarkData, newMarkChan);
+
+		QString edfName = edfPlus;
+		edfName.replace(".edf", "_new.edf");
+		fil.writeEdfFile(wrk + "/" + edfName);
+
+//		break;
+
+	}
+	exit(0);
+#endif
+
+#if 0
+	/// Burdenko reaction Time
+	const QString fold = "/media/Files/Data/Galya/Burd/Data";
+	for(int i = 4; i <= 34; ++i) /// 19-34
+	{
+		const QString wrk = fold + "/" + rn(i, 2);
+		QDir dr(wrk);
+
+		const auto edf = dr.entryList({"*_new.edf"})[0];
+		QString log = edf;
+		log.replace(".edf", "_reac.txt");
+
+		edfFile fil(wrk + "/" + edf);
+		std::ofstream outStr((wrk + "/" + log).toStdString());
+
+		auto mrks = fil.getMarkers();
+		for(int i = 0; i < mrks.size(); ++i)
+		{
+			if(mrks[i].second == 20)
+			{
+				outStr
+						<< mrks[i - 1].second << "\t" /// picNum
+						<< (mrks[i].first - mrks[i-1].first) / fil.getFreq() << "\t" /// time
+						<< ((mrks[i - 2].second == 11) ? "correct" : "wrong") << "\t"
+						<< std::endl;
+			}
+		}
+		outStr.close();
 	}
 	exit(0);
 #endif
