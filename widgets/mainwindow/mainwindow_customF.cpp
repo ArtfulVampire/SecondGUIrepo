@@ -173,7 +173,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// count correctness, average times, ICA
 
 #if 01 /// new (~10 people)

@@ -160,6 +160,7 @@ private:
 	bool drawFlag{false}; /// to prevent many redraws in e.g. setValuesByEdf()
 	std::vector<int> marksToDraw{};
 
+	/// manual signal draw
 	bool manualDrawFlag{false};						/// manual signal draw
 	QPoint manualDrawStart{};						/// manual signal draw
 	matrix manualDrawDataBackup;					/// manual signal draw
@@ -178,11 +179,13 @@ private:
 	QString currentFile; /// deprecate to edfFile filePath (as fileType::real will be deprecated)
 	int addNum = 0; /// for cut() winds
 
+	/// markers
+	static constexpr double findNextGap = 0.5; /// sec
+
 	/// copy, split, paste, undo
 	matrix copyData{};
 	std::vector<matrix> undoData;
 	std::vector<std::function<void(void)>> undoActions;
-
 
 	/// for auto lookup for bad points
 	const int smartFindNumCh = 19;

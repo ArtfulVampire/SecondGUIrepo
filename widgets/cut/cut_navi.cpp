@@ -99,7 +99,8 @@ void Cut::findPrevMark(double mark)
 		}
 
 		int index = std::distance(beg, it);
-		ui->paintStartDoubleSpinBox->setValue(std::max(0., index / edfFil.getFreq() - 0.5));
+		ui->paintStartDoubleSpinBox->setValue(
+					std::max(0., index / edfFil.getFreq() - findNextGap * 0.8));
 		showDerivatives();
 		paint();
 	}
@@ -117,13 +118,13 @@ void Cut::findNextMark(int mark)
 		auto it = std::begin(markArr);
 		if(mark > 0)
 		{
-			it = std::find(std::begin(markArr) + leftDrawLimit + 150,
+			it = std::find(std::begin(markArr) + leftDrawLimit + int(findNextGap * edfFil.getFreq()),
 						   std::end(markArr),
 						   mark);
 		}
 		else
 		{
-			it = std::find_if(std::begin(markArr) + leftDrawLimit + 150,
+			it = std::find_if(std::begin(markArr) + leftDrawLimit + int(findNextGap * edfFil.getFreq()),
 							  std::end(markArr),
 							  [](double in){ return in != 0.; });
 		}
@@ -135,7 +136,8 @@ void Cut::findNextMark(int mark)
 		}
 
 		int index = std::distance(std::begin(markArr), it);
-		ui->paintStartDoubleSpinBox->setValue(std::max(0., index / edfFil.getFreq() - 0.5));
+		ui->paintStartDoubleSpinBox->setValue(
+					std::max(0., index / edfFil.getFreq() - findNextGap * 0.8));
 		showDerivatives();
 		paint();
 	}
