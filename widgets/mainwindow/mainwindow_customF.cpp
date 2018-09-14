@@ -18,6 +18,91 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
+
+#if 0
+	edfFile fil;
+	fil.readEdfFile("/media/Files/Data/Galya/all_buben/B04_0000002/B04_0000002_bub.edf");
+//	std::ofstream outStr1("/media/Files/Data/1.txt");
+	std::ofstream outStr2("/media/Files/Data/2.txt");
+//	auto sig = fil.getData(10);
+//	autos::countFFT(fil.getData(), fil.getFreq(), outStr1);
+	autos::countFFT(fil.getData(), fil.getFreq(), outStr2);
+//	outStr1.close();
+	outStr2.close();
+	exit(0);
+#endif
+
+
+
+#if 0
+	/// draw the envelope picture
+	const QString gh = "/media/Files/Data/Galya/15Mar18/Ilja_Tarotin/Ilja_Tarotin_zg.edf";
+	const QString fff = "/media/Files/Data/env_8_13.jpg";
+	edfFile fl;
+	fl.readEdfFile(gh);
+	std::valarray<double> arr = smLib::contSubsec(fl.getData("Pz"), 5.6 * 250, (5.6 + 7) * 250);
+	arr = myLib::refilter(arr, 8, 13, false, 250);
+	myLib::hilbertPieces(arr, fff);
+	exit(0);
+#endif
+
+#if 0
+	/// count correctness, average times, ICA
+
+#if 01 /// new (~10 people)
+	const QString dear = "FeedbackNewMark";
+	const auto & guysList = subj::guysFBnew;
+	const QString postfix = "_fin";
+#else /// final (~16 people)
+	const QString dear = "FeedbackFinalMark";
+	const QString postfix = "_fin";
+//	const QString postfix = "";
+	const auto & guysList = subj::guysFBfinal.at(subj::fbGroup::all);
+#endif
+
+#if 01
+	/// calculate successive for "New" and "Final" schemes on "New" data
+	std::cout
+			<< "NEW" << "\t"
+			<< "FINAL" << "\t"
+			<< "BASE" << "\t"
+			<< std::endl;
+	auto res = fb::calculateSuccessiveBoth(dear, guysList, postfix);
+
+	for(const auto & in : res)
+	{
+		std::cout
+				<< std::get<0>(in).first << "\t"
+				<< std::get<1>(in).first << "\t"
+				<< std::get<2>(in).first << "\t"
+				<< std::endl;
+	}
+	exit(0);
+#endif
+
+//	fb::calculateICA(dear, guysList, postfix);
+
+#if 01
+	auto results = fb::coutAllFeatures(dear, guysList, postfix);
+	for(const subj::fbGroup & group :
+	{
+		subj::fbGroup::experiment,
+		subj::fbGroup::control,
+		subj::fbGroup::improved,
+		subj::fbGroup::not_improved}
+		)
+	{
+		for(const auto & in : subj::guysFBfinal.at(group))
+		{
+			outStream << in.second << "\t" << results[in.second] << std::endl;
+		}
+		outStream << std::endl << std::endl;
+	}
+#endif
+
+	exit(0);	
+#endif
+
 #if 0
 	/// EDF+ test
 	edfFile feel;
@@ -160,76 +245,6 @@ void MainWindow::customFunc()
 	}
 	exit(0);
 #endif
-
-#if 0
-	/// draw the envelope picture
-	const QString gh = "/media/Files/Data/Galya/15Mar18/Ilja_Tarotin/Ilja_Tarotin_zg.edf";
-	const QString fff = "/media/Files/Data/env_8_13.jpg";
-	edfFile fl;
-	fl.readEdfFile(gh);
-	std::valarray<double> arr = smLib::contSubsec(fl.getData("Pz"), 5.6 * 250, (5.6 + 7) * 250);
-	arr = myLib::refilter(arr, 8, 13, false, 250);
-	myLib::hilbertPieces(arr, fff);
-	exit(0);
-#endif
-
-#if 01
-	/// count correctness, average times, ICA
-
-#if 01 /// new (~10 people)
-	const QString dear = "FeedbackNewMark";
-	const auto & guysList = subj::guysFBnew;
-	const QString postfix = "_fin";
-#else /// final (~16 people)
-	const QString dear = "FeedbackFinalMark";
-	const QString postfix = "_fin";
-//	const QString postfix = "";
-	const auto & guysList = subj::guysFBfinal.at(subj::fbGroup::all);
-#endif
-
-#if 01
-	/// calculate successive for "New" and "Final" schemes on "New" data
-	auto res = fb::calculateSuccessiveBoth(dear, guysList, postfix);
-	std::cout
-			<< "NEW" << "\t"
-			<< "FINAL" << "\t"
-			<< "BASE" << "\t"
-			<< std::endl;
-	for(const auto & in : res)
-	{
-		std::cout
-				<< std::get<0>(in).first << "\t"
-				<< std::get<1>(in).first << "\t"
-				<< std::get<2>(in).first << "\t"
-				<< std::endl;
-	}
-	exit(0);
-#endif
-
-//	fb::calculateICA(dear, guysList, postfix);
-
-#if 01
-	auto results = fb::coutAllFeatures(dear, guysList, postfix);
-	for(const subj::fbGroup & group :
-	{
-		subj::fbGroup::experiment,
-		subj::fbGroup::control,
-		subj::fbGroup::improved,
-		subj::fbGroup::not_improved}
-		)
-	{
-		for(const auto & in : subj::guysFBfinal.at(group))
-		{
-			outStream << in.second << "\t" << results[in.second] << std::endl;
-		}
-		outStream << std::endl << std::endl;
-	}
-#endif
-
-	exit(0);	
-#endif
-
-
 
 #if 0
 	/// reref to Cz
@@ -799,7 +814,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// Galya processing things
 
 //	const QString workPath = def::GalyaFolder + "/24Apr18Tankina";
@@ -974,10 +989,12 @@ void MainWindow::customFunc()
 
 
 
-	if(0)
+	if(01)
 	{
 		/// calculation itself
 		DEFS.setAutosUser(autosUser::Galya);
+
+		DEFS.setAutosMask(featuresMask::spectre);
 
 		for(const QString & subdir : subdirs)
 		{

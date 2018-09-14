@@ -1685,7 +1685,7 @@ void ProcessByFolders(const QString & inPath,
 		ExpName = ExpName.left(ExpName.lastIndexOf('_'));
 
 		/// physMinMax & holes
-		if(01)
+		if(0)
 		{
 			repair::physMinMaxDir(guyPath);
 			repair::holesDir(guyPath,
@@ -1701,7 +1701,7 @@ void ProcessByFolders(const QString & inPath,
 		}
 
 		/// filter?
-		if(01)
+		if(0)
 		{
 			/// already done ?
 			autos::refilterFolder(guyPath,

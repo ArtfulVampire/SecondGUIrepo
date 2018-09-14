@@ -1611,7 +1611,7 @@ edfFile & edfFile::zeroChannels(const std::vector<int> & chanNums)
 {
 	for(int chan : chanNums)
 	{
-		edfData[chan] = 0;
+		edfData[chan] = 0.;
 	}
 	return *this;
 }

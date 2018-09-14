@@ -105,7 +105,13 @@ FBedf::FBedf(const QString & edfPath,
 	}
 
 	this->readEdfFile(edfPath);
+
+	/// doesn't work
 //	zeroChannels(FBedf::chansToZero); ///////////////////// zero uninteresting channels
+	auto a = def::chansToClassify;
+	a.push_back(this->markerChannel);
+//	*this = this->reduceChannels(a); /// except chansToClassify
+	this->removeChannels(std::vector<int>{0, 1, 17, 18});
 
 	/// arrange ans
 	this->ansInRow = this->readAns(ansPath);
@@ -119,7 +125,7 @@ FBedf::FBedf(const QString & edfPath,
 	this->ans[2] = std::vector<ansType>(80, ansType::correct);
 
 	/// divide to reals w/o markers
-	auto realsD = myLib::sliceData(this->getData().subRows(19), /// drop markers
+	auto realsD = myLib::sliceData(this->getData().subRows(def::chansToClassify.size()), /// drop markers
 										  this->getMarkers());
 	this->realsSignals = realsD.first;
 	this->realsStarts = realsD.second;
@@ -316,7 +322,6 @@ void FBedf::remakeWindows(int windStep, int numSkipStartWinds)
 				windSigTypes.push_back(static_cast<taskType>(i));
 				windSta.push_back(realsStarts[i][j] + windStart);
 
-
 				if(i != static_cast<int>(taskType::rest)) /// if not rest
 				{
 					windSigAns.push_back(this->ans[i][j]);
@@ -443,6 +448,7 @@ double FBedf::insightPartOfSolved(double thres) const
 
 void FBedf::calculateICA() const
 {
+	////////////////////////////////// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa
 	myLib::ICAclass icaItem(this->getData().subRows(19));		/// magic const
 	icaItem.setNumIC(19);										/// magic const
 	icaItem.setEigValThreshold(1e-10);
@@ -827,7 +833,7 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 	const int twoHzRange = fftLimit(2., srate, windFftLen);
 
 	std::vector<std::pair<int, int>> alphaRange{};
-	for(int i = 0; i < 19; ++i) /// magic const num of channels
+	for(int i = 0; i < def::chansToClassify.size(); ++i) /// 19 magic const num of channels
 	{
 		alphaRange.push_back({i * getSpLenWind() + alphaIndex - twoHzRange,
 							  i * getSpLenWind() + alphaIndex + twoHzRange});

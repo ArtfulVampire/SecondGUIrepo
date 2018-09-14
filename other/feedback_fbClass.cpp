@@ -30,11 +30,13 @@ FeedbackClass::FeedbackClass(const QString & guyPath_,
 		case 2: { fileNumber = static_cast<int>(fileNum::second);		break; }	/// 2
 		case 3: { fileNumber = static_cast<int>(fileNum::third);		break; }	/// 1
 		}
-		auto & fil = files[fileNumber];
 
-		fil = FBedf(filePath(i), ansPath(i), suc::overlap125, 0); //// 0. or suc::overlap125 ?????
+		files[fileNumber] = FBedf(filePath(i),
+								  ansPath(i),
+								  suc::overlap125,
+								  0); //// 0. or suc::overlap125 ?????
 
-		if(!fil)
+		if(!files[fileNumber])
 		{
 			std::cout << "badFile: " << filePath(i) << std::endl;
 			this->isGood = false;
@@ -51,9 +53,9 @@ void FeedbackClass::checkStatTimes(taskType typ, ansType howSolved)
 
 	switch(myLib::MannWhitney(vals1, vals2, 0.05))
 	{
-	case 0: { (*ostr) << "0"; break; }
-	case 1: { (*ostr) << "1"; break; }
-	case 2: { (*ostr) << "-1"; break; }
+	case 0: { (*ostr) << "0";	break; }
+	case 1: { (*ostr) << "1";	break; }
+	case 2: { (*ostr) << "-1";	break; }
 	default: { break; }
 	}
 	(*ostr) << "\t";

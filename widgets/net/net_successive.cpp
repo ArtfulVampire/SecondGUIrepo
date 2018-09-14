@@ -73,7 +73,7 @@ Classifier::avType Net::successiveByEDFnew(const QString & edfPath1, const QStri
 
 		matrix wind = file1.getData()
 					  .subCols(windStart, windStart + fb::FBedf::windLen)
-					  .subRows(19);
+					  .subRows(19); /// magic const
 		matrix spec = myLib::countSpectre(wind,
 										  fb::FBedf::windFftLen,
 										  suc::numSmooth);
@@ -162,7 +162,7 @@ Classifier::avType Net::successiveByEDFnew(const QString & edfPath1, const QStri
 
 		matrix wind = file2.getData()
 					  .subCols(windStart, windStart + fb::FBedf::windLen)
-					  .subRows(19);
+					  .subRows(19); /// magic const
 
 		matrix spec = myLib::countSpectre(wind, fb::FBedf::windFftLen, suc::numSmooth);
 		if(!spec.isEmpty())
@@ -298,7 +298,7 @@ Classifier::avType Net::successiveByEDFnew(const fb::FBedf & file1,
 #if 01
 	/// don't use slicing by FBedf constructor
 	/// it violates the sequence of winds (and the classification becomes too well)
-	auto secondData = myLib::sliceWindows(file2.getData().subRows(19),
+	auto secondData = myLib::sliceWindows(file2.getData().subRows(19), /// magic const
 										  file2.getMarkers(),
 										  fb::FBedf::windLen,
 										  suc::overlap125,
@@ -398,7 +398,7 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 	/// TILL NOW IS LIKE successiveByEdfNew(FBedf, FDedf)
 
 	/// slice winds with overlap !!!!!1
-	auto secondData = myLib::sliceWindows(file2.getData().subRows(19),
+	auto secondData = myLib::sliceWindows(file2.getData().subRows(19),  /// magic const
 										  file2.getMarkers(),
 										  fb::FBedf::windLen,
 										  suc::overlap125,
@@ -504,7 +504,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 	QDir(def::helpPath).mkdir(localExpName);
 
 	/// slice winds with overlap !!!!!1
-	auto secondData = myLib::sliceWindows(file2.getData().subRows(19),
+	auto secondData = myLib::sliceWindows(file2.getData().subRows(-1), /// drop markers
 										  file2.getMarkers(),
 										  fb::FBedf::windLen,
 										  suc::overlap125,
@@ -528,7 +528,6 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 	auto clDataBC = myClassifierData;
 
 
-
 	if(01)
 	{
 		/// NOT SUCCESSIVE, BASE
@@ -542,6 +541,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 		myANN->test(smLib::range<std::vector<uint>>(prevSize, myClassifierData.size()));
 	}
 	auto res3 = myANN->averageClassification(DEVNULL);
+//	std::cout << res3.first << "\t"; std::cout.flush();
 
 
 	/// "clean" and restore ClassifierData
@@ -563,7 +563,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 						  def::helpPath + "/" + localExpName + "_last_pre.jpg");
 	}
 	auto res1 = myANN->averageClassification(DEVNULL);
-
+//	std::cout << res1.first << "\t"; std::cout.flush();
 
 
 	/// "clean" and restore ClassifierData
@@ -607,6 +607,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 						  def::helpPath + "/" + localExpName + "_last.jpg");
 	}
 	auto res2 =  myANN->averageClassification(DEVNULL);
+//	std::cout << res2.first << std::endl;
 
 	return {res1, res2, res3};
 }

@@ -197,6 +197,7 @@ public:
 	edfFile rereferenceDataCAR() const;
 
 	/// channels modify
+	/// retain
 	edfFile reduceChannels(const std::vector<int> & chanList) const;
 	edfFile reduceChannels(const QString & chanString) const;
 
@@ -205,6 +206,13 @@ public:
 	edfFile & removeChannels(const QStringList & chanList);
 	edfFile & removeChannel(int num);
 	edfFile & removeChannel(const QString & nam);
+
+	/// To Do
+//	edfFile & retainChannels(const std::vector<int> & chanList);
+//	edfFile & retainChannels(const std::vector<uint> & chanList);
+//	edfFile & retainChannels(const QStringList & chanList);
+//	edfFile & retainChannel(int num);
+//	edfFile & retainChannel(const QString & nam);
 
 	edfFile & insertChannel(int num, const std::valarray<double> & dat, edfChannel ch);
 	edfFile & addChannel(const std::valarray<double> & dat, edfChannel ch);
