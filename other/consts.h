@@ -205,17 +205,6 @@ namespace def
 	const QString iitpResFolder			{"/media/Files/Data/iitp/Results"};
 	const QString matiFolder			{"/media/Files/Data/Mati"};
 
-	const std::vector<int> chansToClassify{
-//		0, 1,		/// Fp1,	Fp2
-		2, 6,		/// F7,	F8
-		3, 4, 5,	/// F3,	Fz,	F4
-		7, 11,		/// T3, T4
-		8, 9, 10,	/// C3,	Cz,	C4
-		12, 16,		/// T5,	T6
-		13, 14, 15,	/// P3,	Pz,	P4
-//		17, 18		/// O1,	O2
-	};
-
 #if 0
 	/// rhythms
 	const std::pair<double, double> deltaRhythm{1., 4.};

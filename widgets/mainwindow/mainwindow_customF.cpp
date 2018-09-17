@@ -46,10 +46,10 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
+#if 01
 	/// count correctness, average times, ICA
 
-#if 01 /// new (~10 people)
+#if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
 	const QString postfix = "_fin";
@@ -69,14 +69,14 @@ void MainWindow::customFunc()
 			<< std::endl;
 	auto res = fb::calculateSuccessiveBoth(dear, guysList, postfix);
 
-	for(const auto & in : res)
-	{
-		std::cout
-				<< std::get<0>(in).first << "\t"
-				<< std::get<1>(in).first << "\t"
-				<< std::get<2>(in).first << "\t"
-				<< std::endl;
-	}
+//	for(const auto & in : res)
+//	{
+//		std::cout
+//				<< std::get<0>(in).first << "\t"
+//				<< std::get<1>(in).first << "\t"
+//				<< std::get<2>(in).first << "\t"
+//				<< std::endl;
+//	}
 	exit(0);
 #endif
 

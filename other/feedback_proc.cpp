@@ -138,6 +138,11 @@ calculateSuccessiveBoth(const QString & dear,
 		res.push_back(ann->successiveByEDFall(
 						  fbItem.getFile(fileNum::first),
 						  fbItem.getFile(fileNum::third)));
+		std::cout
+				  << std::get<0>(res.back()).first << "\t"
+				  << std::get<1>(res.back()).first << "\t"
+				  << std::get<2>(res.back()).first << "\t"
+				  << std::endl;
 
 		delete ann;
 //		return res; /// calculate only first guy

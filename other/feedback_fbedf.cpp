@@ -91,6 +91,17 @@ const std::vector<int> FBedf::chansToZero{
 	17, 18		/// O1,	O2
 };
 
+const std::vector<int> chansToClassify{
+	0, 1,		/// Fp1,	Fp2
+	2, 6,		/// F7,	F8
+	3, 4, 5,	/// F3,	Fz,	F4
+	7, 11,		/// T3, T4
+	8, 9, 10,	/// C3,	Cz,	C4
+	12, 16,		/// T5,	T6
+	13, 14, 15,	/// P3,	Pz,	P4
+	17, 18		/// O1,	O2
+};
+
 FBedf::FBedf(const QString & edfPath,
 			 const QString & ansPath,
 			 double overlapPart,
@@ -108,9 +119,11 @@ FBedf::FBedf(const QString & edfPath,
 
 	/// doesn't work
 //	zeroChannels(FBedf::chansToZero); ///////////////////// zero uninteresting channels
-	auto a = def::chansToClassify;
-	a.push_back(this->markerChannel);
+
+//	auto a = chansToClassify;
+//	a.push_back(this->markerChannel);
 //	*this = this->reduceChannels(a); /// except chansToClassify
+
 	this->removeChannels(std::vector<int>{0, 1, 17, 18});
 
 	/// arrange ans
@@ -125,7 +138,7 @@ FBedf::FBedf(const QString & edfPath,
 	this->ans[2] = std::vector<ansType>(80, ansType::correct);
 
 	/// divide to reals w/o markers
-	auto realsD = myLib::sliceData(this->getData().subRows(def::chansToClassify.size()), /// drop markers
+	auto realsD = myLib::sliceData(this->getData().subRows(-1), /// drop markers chansToClassify.size()
 										  this->getMarkers());
 	this->realsSignals = realsD.first;
 	this->realsStarts = realsD.second;
@@ -833,7 +846,7 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 	const int twoHzRange = fftLimit(2., srate, windFftLen);
 
 	std::vector<std::pair<int, int>> alphaRange{};
-	for(int i = 0; i < def::chansToClassify.size(); ++i) /// 19 magic const num of channels
+	for(int i = 0; i < this->getNs() - 1; ++i) /// magic const num of channels chansToClassify.size()
 	{
 		alphaRange.push_back({i * getSpLenWind() + alphaIndex - twoHzRange,
 							  i * getSpLenWind() + alphaIndex + twoHzRange});
