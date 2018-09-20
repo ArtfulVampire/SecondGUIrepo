@@ -831,8 +831,6 @@ QPixmap drawEeg(const matrix & inData,
 	pic.fill();
 	paint.begin(&pic);
 
-	const double norm = 1.;
-
 	for(int chanNum = 0; chanNum < inData.rows(); ++chanNum)
 	{
 		auto it = std::find_if(std::begin(colouredChans), std::end(colouredChans),
@@ -850,13 +848,13 @@ QPixmap drawEeg(const matrix & inData,
 			paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth)); /// default color
 		}
 
-		const double offsetY = (chanNum + 1) * pic.height() / (inData.rows() + 2);
+		const double offsetY = (chanNum + 1) * pic.height() / (inData.rows() + 2.);
 		for(int currX = 0; currX < pic.width() - 1; ++currX)
 		{
 			paint.drawLine(currX,
-						   offsetY + inData[chanNum][currX] * norm,
+						   offsetY + inData[chanNum][currX],
 						   currX + 1,
-						   offsetY + inData[chanNum][currX + 1] * norm);
+						   offsetY + inData[chanNum][currX + 1]);
 		}
 	}
 	/// paint seconds marks

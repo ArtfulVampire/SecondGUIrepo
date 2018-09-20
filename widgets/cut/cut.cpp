@@ -387,6 +387,37 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			else { return false; }
 			break;
 		}
+		case QEvent::MouseButtonPress:
+		{
+			QMouseEvent * ev = static_cast<QMouseEvent*>(event);
+			if(!ev->modifiers().testFlag(Qt::ShiftModifier))
+			{
+				return false;
+			}
+			else
+			{
+				/// start manualDraw
+				int numChan = ui->color3SpinBox->value();
+				if(numChan == -1) { return true; } /// do nothing
+				{
+					manualDrawFlag = true;
+					manualDrawStart = ev->pos();
+					manualDrawDataBackup = drawData;
+					return true;
+				}
+			}
+		}
+		case QEvent::MouseMove:
+		{
+			/// draw some orange signal
+			QMouseEvent * mouseMoveEvent = static_cast<QMouseEvent*>(event);
+			if((mouseMoveEvent->buttons() & Qt::LeftButton) && manualDrawFlag)
+			{
+				manualDraw(mouseMoveEvent->pos());
+				return true;
+			}
+			return false;
+		}
 		case QEvent::MouseButtonRelease:
 		{
 			if(manualDrawFlag)
@@ -401,28 +432,36 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			{
 			case Qt::BackButton:
 			{
-				if(!clickEvent->modifiers().testFlag(Qt::ShiftModifier))
-				{ this->backwardFrameSlot(); }
-				else
+				if(clickEvent->modifiers().testFlag(Qt::ShiftModifier)) /// to the beginning
 				{ ui->paintStartDoubleSpinBox->setValue(0.); }
+				else
+				{ this->backwardFrameSlot(); }
 				break;
 			}
 			case Qt::ForwardButton:
 			{
-				if(!clickEvent->modifiers().testFlag(Qt::ShiftModifier))
-				{ this->forwardFrameSlot(); }
-				else
+				if(clickEvent->modifiers().testFlag(Qt::ShiftModifier)) /// to the end
 				{ ui->paintStartDoubleSpinBox->setValue(
 								this->dataCutLocal.cols() / edfFil.getFreq() -
 								ui->paintLengthDoubleSpinBox->value()); }
+				else
+				{ this->forwardFrameSlot(); }
 				break;
 			}
 			case Qt::LeftButton:
 			{
 				if(clickEvent->modifiers().testFlag(Qt::ControlModifier))
 				{
-					/// choose a channel and make it orange
-					ui->color3SpinBox->setValue(this->getDrawedChannel(clickEvent));
+					if(clickEvent->modifiers().testFlag(Qt::AltModifier))
+					{
+						/// choose a channel to track amplitudes
+						ui->derivChan1SpinBox->setValue(this->getDrawnChannel(clickEvent->pos()));
+					}
+					else
+					{
+						/// choose a channel and make it orange
+						ui->color3SpinBox->setValue(this->getDrawnChannel(clickEvent->pos()));
+					}
 				}
 				else
 				{
@@ -452,36 +491,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			default: { return false; }
 			}
 			return true;
-		}
-		case QEvent::MouseButtonPress:
-		{
-			/// start manualDraw
-			QMouseEvent * ev = static_cast<QMouseEvent*>(event);
-			int numChan = ui->color3SpinBox->value();
-			if(numChan == -1) { return true; } /// do nothing
-
-			if(ev->modifiers().testFlag(Qt::ShiftModifier))
-			{
-				manualDrawFlag = true;
-				manualDrawStart = ev->pos();
-				manualDrawDataBackup = drawData;
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		case QEvent::MouseMove:
-		{
-			/// draw some orange signal
-			QMouseEvent * mouseMoveEvent = static_cast<QMouseEvent*>(event);
-			if((mouseMoveEvent->buttons() & Qt::LeftButton) && manualDrawFlag)
-			{
-				manualDraw(mouseMoveEvent);
-				return true;
-			}
-			return false;
 		}
 		case QEvent::KeyPress:
 		{
@@ -741,22 +750,43 @@ matrix Cut::makeDrawData()
 }
 
 /// check - works not especially accurate
-int Cut::getDrawedChannel(QMouseEvent * clickEvent)
+int Cut::getDrawnChannel(const QPoint & clickPos)
 {
-	auto vals = this->drawData.getCol(clickEvent->x());
-	const double norm = normCoeff();
+	auto vals = this->drawData.getCol(clickPos.x());
+	const double norm = normCoeff()
+						* (ui->scrollArea->height() / double(myLib::drw::eegPicHeight));
 	double dist = 1000;
 	int num = -1;
+
+	std::cout << "Y = " << clickPos.y() << "\t"
+			  << "scrH = " << ui->scrollArea->height() << "\t"
+			  << "picL = " << ui->picLabel->height() << "\t"
+			  << "pic = " << ui->picLabel->pixmap()->height() << "\t"
+			  << std::endl;
 	for(int i = 0; i < drawData.rows(); ++i)
 	{
-		const double offsetY = (i + 1) * ui->scrollArea->height() / double(drawData.rows() + 2);
-		const double D = std::abs(offsetY + vals[i] * norm - clickEvent->y());
+		/// look myLib_drw.cpp, drawEeg(...), offsetY
+		const double offsetY = (i + 1)
+							   * ui->scrollArea->height()
+							   / (drawData.rows() + 2.);
+
+		const double D = std::abs(offsetY
+								  + vals[i] * norm
+
+								  - clickPos.y());
+		std::cout << i + 1 << "\t"
+				  << "val = " << vals[i] << "\t"
+				  << "norm = " << norm << "\t"
+				  << "offset = " << offsetY << "\t"
+				  << "sig = " << offsetY + vals[i] * norm << "\t"
+				  << "D = " << D << std::endl;
 		if(D < dist)
 		{
 			dist = D;
 			num = i;
 		}
 	}
+	std::cout << std::endl;
 	return num;
 }
 
@@ -775,37 +805,38 @@ void Cut::manualDrawAddUndo()
 	undoActions.push_back(undoAction);
 }
 
-void Cut::manualDraw(QMouseEvent * mouseMoveEvent)
+void Cut::manualDraw(const QPoint & fin)
 {
 	const int numChan = ui->color3SpinBox->value();
 	if(numChan == -1) { return; }
 
-
-	const double offsetY = (numChan + 1) * ui->scrollArea->height() / (drawData.rows() + 2);
+	/// like in myLib_drw.cpp, function drawEeg, variable offsetY
+	const double offsetY = (numChan + 1)
+						   * ui->scrollArea->height()
+						   / (drawData.rows() + 2.);
 	const double norm = normCoeff();
 
 	QPoint sta = manualDrawStart;
-	QPoint fin = mouseMoveEvent->pos();
 	if(sta.x() == fin.x()) { return; }
-	if(manualDrawStart.x() > mouseMoveEvent->x()) { std::swap(sta, fin); }
+	if(manualDrawStart.x() > fin->x()) { std::swap(sta, fin); }
 
 	for(int x = sta.x(); x <= fin.x(); ++x) /// [sta, fin]
 	{
 		dataCutLocal[numChan][x + leftDrawLimit] =
 				((sta.y() - offsetY)										/// init value
-				 + (x - sta.x()) / double(fin.x() - sta.x())				/// inclination
-				 * (fin.y() - sta.y()))										/// range
+				 + (fin.y() - sta.y())) / double(fin.x() - sta.x())			/// inclination
+				 * (x - sta.x())											/// range
 				/ (norm * ui->scrollArea->height() / currentPic.height() ); /// norm
 	}
 	drawData = this->makeDrawData();
 	repaintData(drawData, sta.x(), fin.x());
-	manualDrawStart = mouseMoveEvent->pos();
+	manualDrawStart = fin;
 }
 
 double Cut::normCoeff()
 {
 	return ui->yNormDoubleSpinBox->value()
-			* ((ui->yNormInvertCheckBox->isChecked())? -1 : 1);
+			* ((ui->yNormInvertCheckBox->isChecked()) ? -1 : 1);
 }
 
 void Cut::repaintData(matrix & drawDataLoc, int sta, int fin)

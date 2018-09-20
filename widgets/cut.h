@@ -59,8 +59,8 @@ private:
 	matrix makeDrawData();
 
 	/// manual signal draw
-	int getDrawedChannel(QMouseEvent * clickEvent);
-	void manualDraw(QMouseEvent * mouseMoveEvent);
+	int getDrawnChannel(const QPoint & clickPos);
+	void manualDraw(const QPoint & fin);
 	void manualDrawAddUndo();
 
 	void colorSpinSlot(QSpinBox * spin, QLineEdit * lin);
@@ -169,9 +169,9 @@ private:
 	fileType myFileType{fileType::edf}; /// to deprecate, leave edf only
 	edfFile edfFil{};
 	bool fileOpened{false};
-	matrix dataCutLocal{};
-	matrix dataCutLocalBackup{}; /// for reset filtering
-	matrix drawData{};
+	matrix dataCutLocal{};				/// eegData of the whole file
+	matrix dataCutLocalBackup{};		/// edfData backup for reset filtering
+	matrix drawData{};					/// a piece of data to be drawn
 
 	/// next/prev
 	QStringList filesList;
