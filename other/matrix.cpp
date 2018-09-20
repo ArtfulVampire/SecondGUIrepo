@@ -204,9 +204,6 @@ matrix matrix::operator = (const matrixType & other)
     return *this;
 }
 
-
-
-
 std::ostream & operator<< (std::ostream & os, const matrix & toOut)
 {
 	for(const auto & row : toOut)
@@ -463,7 +460,6 @@ bool matrix::operator != (const matrix & other)
 {
 	return !(this->operator==(other));
 }
-
 
 matrix matrix::apply(std::function<std::valarray<double>(const std::valarray<double> &)> func) const
 {

@@ -182,7 +182,7 @@ void countFFT(const matrix & inData,
 			  std::ostream & outStr)
 {
 
-	std::vector<std::vector<double>> spectra(inData.rows()); /// [chan][freq]
+	matrix spectra(inData.rows(), 1); /// [chan][freq]
 	for(int i = 0; i < inData.rows(); ++i)
 	{
 		/// norming is necessary
@@ -193,8 +193,10 @@ void countFFT(const matrix & inData,
 												  srate),
 							   -1);
 		spectra[i] = myLib::integrateSpectre(helpSpectre,
-											 inData.cols(),
-											 srate);
+											 srate,
+											 2,
+											 19,
+											 1);
 	}
 
 
@@ -202,7 +204,7 @@ void countFFT(const matrix & inData,
 	{
 	case autosUser::XeniaFinalest:
 	{
-		for(uint i = 0; i < spectra.size(); ++i)
+		for(uint i = 0; i < spectra.rows(); ++i)
 		{
 			for(uint j = 0; j < spectra[i].size(); ++j)
 			{
@@ -230,7 +232,7 @@ void countLogFFT(const matrix & inData,
 				 double srate,
 				 std::ostream & outStr)
 {
-	std::vector<std::vector<double>> spectra(inData.rows()); /// [chan][freq]
+	matrix spectra(inData.rows(), 1); /// [chan][freq]
 	for(int i = 0; i < inData.rows(); ++i)
 	{
 		/// norming is necessary
@@ -241,15 +243,17 @@ void countLogFFT(const matrix & inData,
 												  srate),
 							   -1);
 		spectra[i] = myLib::integrateSpectre(helpSpectre,
-											 inData.cols(),
-											 srate);
+											 srate,
+											 2,
+											 19,
+											 1);
 	}
 
 	switch(DEFS.getAutosUser())
 	{
 	case autosUser::XeniaFinalest:
 	{
-		for(uint i = 0; i < spectra.size(); ++i)
+		for(uint i = 0; i < spectra.rows(); ++i)
 		{
 			for(uint j = 0; j < spectra[i].size(); ++j)
 			{

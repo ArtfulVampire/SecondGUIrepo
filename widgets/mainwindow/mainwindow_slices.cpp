@@ -230,37 +230,51 @@ void MainWindow::sliceWinds()
 	}
 }
 
+
+
 void MainWindow::sliceElena()
 {
+	/// CONSTS START
 	const edfFile & fil = globalEdf;
 	const int numOfTasks = 180;
 
+	/// rest "task codes"
+	/// 210 - closed start, 211 - closed end
+	/// 212 - open start, 213 - open end
 	const std::vector<std::vector<int>> eyesMarks{{210, 211}, {212, 213}};
+	/// rest "operational codes"
 	const std::vector<int> eyesCodes{214, 215};
 
 	const double restWindow = 10.;	/// window length in seconds
-	const int windFft = smLib::fftL(restWindow * fil.getFreq());
-	DEFS.setFftLen(windFft);
 	const double restShift = 7.;	/// time shift between windows in seconds
 	const int numSmoothWind = 15;
 
-	const std::valarray<double> & markChanArr = fil.getMarkArr();
-	const auto & marks = fil.getMarkers();
+	const int windFft = smLib::fftL(restWindow * fil.getFreq());
+	DEFS.setFftLen(windFft);
 
 	const auto eegChannels = fil.findChannels(coords::lbl19);
+	const auto & marks = fil.getMarkers();
 
 	/// for table 13-Mar-18
 	const std::vector<std::pair<double, double>> integrLimits
 	{
-//		{4, 8},
-		{4, 6}, {6, 8},
-
-//		{8, 12},
-		{8, 10}, {10, 12},
-
+		/// 4-Hz wide
+		{4, 8},
+		{8, 12},
 		{12, 16},
 		{16, 20},
-		{20, 24}
+		{20, 24},
+
+		/// 2-Hz wide
+		{4, 6}, {6, 8},
+		{8, 10}, {10, 12},
+
+		/// 1-Hz wide
+		{4, 5}, {5, 6}, {6, 7}, {7, 8},
+		{8, 9}, {9, 10}, {10, 11}, {11, 12},
+		{12, 13}, {13, 14}, {14, 15}, {15, 16},
+		{16, 17}, {17, 18}, {18, 19}, {19, 20},
+		{20, 21}, {21, 22}, {22, 23}, {23, 24},
 	};
 	const std::vector<std::vector<QString>> integrChans
 	{
@@ -273,7 +287,6 @@ void MainWindow::sliceElena()
 		{"O1"}, {"O2"},
 	};
 
-	matrix table{};
 	std::vector<QString> tableCols
 	{
 		"taskNum",
@@ -308,6 +321,10 @@ void MainWindow::sliceElena()
 	}
 
 	/// new 6-Mar-18
+	/// RD - rekoorseeya dyihaniya (don't know how it's called in English)
+	/// FPG - FotoPletizmoGramma (really PPG - PhotoPlethismoGram)
+	/// KGR - Kozhno Galvanicheskaya Reakciya (really SGR - Skin Galvanic Reaction
+	/// or EDA - ElectroDermal Activity)
 	const QString RDstring{"RD"};
 	const QString PPGstring{"FPG"};
 	const QString EDAstring{"KGR"};
@@ -315,22 +332,77 @@ void MainWindow::sliceElena()
 	const int RDnum = fil.findChannel(RDstring);
 	const int PPGnum = fil.findChannel(PPGstring);
 	const int EDAnum = fil.findChannel(EDAstring);
+	const bool writePoly = ui->elenaPolyCheckBox->isChecked();
 
-	if(RDnum == -1 || PPGnum == -1 || EDAnum == -1)
+	/// make a set of all task numbers (to check later which ones were not processed)
+	/// really should use smLib::range and std::set(iter1, iter2);
+	std::set<int> allNumbers;
+	for(int i = 1; i <= numOfTasks; ++i)
 	{
-		outStream << "sliceElena: some of vegetative channels is absent" << std::endl;
+		allNumbers.emplace(i);
+	}
+	/// CONSTS END
+
+
+
+
+
+
+
+	for(const auto & A :
+		std::vector<std::pair<int, QString>>{
+	{RDnum, RDstring},
+	{EDAnum, EDAstring},
+	{PPGnum, PPGstring},
+})
+	{
+#if CPP17
+		const auto & [a, b] = A;
+		#else
+		const auto & a = A.first;
+		const auto & b = A.second;
+#endif
+		if(a == -1)
+		{
+			outStream << "sliceElena: " << b << " channel is absent" << std::endl;
+		}
 	}
 
-	bool writePoly = ui->elenaPolyCheckBox->isChecked();
-
+	/// SHOULD SPECIFY PARAMETERS TO CAPTURE
+	/// DON'T USE GENERAL "BY REFERENCE"
 	auto saveSpecPoly = [&](int startBin,
 						int finBin,
 						const QString & pieceNumber,
 						const QString & taskMark,
-						const QString & operMark)
+						const QString & operMark) -> std::valarray<double>
 	{
+
+
 		/// save spectre+polygraph
 		const matrix subData = fil.getData().subCols(startBin, finBin);
+
+		/// count spectra
+		matrix spec = myLib::countSpectre(subData.subRows(eegChannels),
+										  windFft,
+										  numSmoothWind);
+
+		/// check bad file
+		if(spec.isEmpty())
+		{
+			return {};
+		}
+
+		/// write spectre to file
+		QString savePath = fil.getDirPath()
+						   + "/SpectraSmooth"
+						   + "/" + fil.getExpName()
+						   + "_n_" + pieceNumber
+						   + "_m_" + taskMark
+						   + "_t_" + operMark
+				+ "." + def::spectraDataExtension;
+		myLib::writeMatrixFile(savePath,
+							   spec.subCols(DEFS.left(),
+											DEFS.right()));
 
 		std::valarray<double> edaBase{};
 		if(EDAnum != -1)
@@ -340,22 +412,17 @@ void MainWindow::sliceElena()
 										startBin);
 		}
 
-		/// count spectra
-		matrix spec = myLib::countSpectre(subData.subRows(eegChannels),
-										  windFft,
-										  numSmoothWind);
 		/// check bad file
-		if(spec.isEmpty() || edaBase.size() < fil.getFreq())
+		if(edaBase.size() < fil.getFreq())
 		{
-			return;
+			return {};
 		}
 
-
-		std::vector<double> outVector = spec.subCols(DEFS.left(), DEFS.right()).toVectorByRows();
-
+		/// breathing frequency
 		double RDfr{};
 		if(RDnum != -1) { RDfr = myLib::RDfreq(subData[RDnum], windFft); }
 
+		/// amplitude and frequency of PPG
 		double PPGampl{};
 		double PPGfreq{};
 		if(PPGnum != -1)
@@ -363,47 +430,15 @@ void MainWindow::sliceElena()
 			PPGampl = myLib::PPGrange(subData[PPGnum]);
 			PPGfreq = myLib::RDfreq(subData[PPGnum], windFft);
 		}
+
+		/// Electrodermal activity
 		std::pair<double, double> EDAval{};
 		if(EDAnum != -1) { EDAval = myLib::EDAmax(subData[EDAnum], edaBase); }
 
-
-		/// temporarily turn off poly to file
-		if(0)
-		{
-
-			outVector.push_back(RDfr);
-			outVector.push_back(PPGampl);
-			outVector.push_back(PPGfreq);
-			outVector.push_back(EDAval.first);						/// value of max EDA
-//			outVector.push_back(EDAval.second);						/// latency in bins
-//			outVector.push_back(EDAval.second / fil.getFreq());		/// latency in seconds
-		}
-		/// write to file
-		QString savePath = fil.getDirPath()
-						   + "/SpectraSmooth"
-						   + "/" + fil.getExpName()
-						   + "_n_" + pieceNumber
-						   + "_m_" + taskMark
-						   + "_t_" + operMark
-				+ "." + def::spectraDataExtension;
-
-		myLib::writeMatrixFile(savePath, spec.subCols(DEFS.left(), DEFS.right()));
-
-		/// for tables
-		if(0)
-		{
-			/// skip rests
-			bool ok = false;
-			pieceNumber.toInt(&ok);
-			if(!ok) { return; }
-		}
-
-
-		/// calculate integrated spectra
+		/// calculate integrated spectra (averaged over limits or not - look inside)
 		matrix integratedSpectra = myLib::integrateSpectra(spec, fil.getFreq(), integrLimits);
 
-
-		/// integrate over channels
+		/// average over channels
 		matrix integratedSpectraOut(integrChans.size(), integratedSpectra.cols());
 		int counter = 0;
 		for(const auto & chs : integrChans) /// each subset
@@ -418,38 +453,45 @@ void MainWindow::sliceElena()
 		}
 
 
-		/// magic constant
-		std::vector<double> forTable{}; forTable.reserve(20 + integrChans.size() * integrLimits.size());
+		/// a row that will be pushed into table
+		std::vector<double> forTable{};
 
+		/// magic constant for veget and additional info
+		forTable.reserve(30 + integrChans.size() * integrLimits.size());
+
+		/// process pieceNumber (for rest windows)
 		if(1)
 		{
-			/// process rests numbers
 			bool ok = false;
 			pieceNumber.toInt(&ok);
-			if(!ok)
-			{
-				/// pieceNumbers end with a number
-				int a = pieceNumber.lastIndexOf(QRegExp(R"(\D)"));
-				forTable.push_back(pieceNumber.mid(a + 1).toInt() + 1000);
-			}
-			else
+
+			if(ok) /// regular case - a task or a whole rest
 			{
 				forTable.push_back(pieceNumber.toInt());
+			}
+			else /// a rest window
+			{
+				/// in this case pieceNumber should end with a number like 0_137
+				int a = pieceNumber.lastIndexOf(QRegExp(R"(\D)"));
+				forTable.push_back(pieceNumber.mid(a + 1).toInt() + 1000);
 			}
 		}
 		forTable.push_back(taskMark.toInt());
 		forTable.push_back(operMark.toInt());
-		if(1) /// for table
+
+		/// veget data into table
+		if(1)
 		{
 			forTable.push_back(EDAval.first);						/// value of max EDA
-//			forTable.push_back(EDAval.second);						/// latency in bins
-			forTable.push_back(EDAval.second / fil.getFreq());		/// latency in seconds
-			forTable.push_back(RDfr);
-			forTable.push_back(PPGampl);
-			forTable.push_back(PPGfreq);
-			forTable.push_back(subData.cols() / fil.getFreq());
+//			forTable.push_back(EDAval.second);						/// EDAmax latency in bins
+			forTable.push_back(EDAval.second / fil.getFreq());		/// EDAmax latency in seconds
+			forTable.push_back(RDfr);								/// breathing frequency
+			forTable.push_back(PPGampl);							/// PPG pulse wave max amplitude
+			forTable.push_back(PPGfreq);							/// PPG frequency
+			forTable.push_back(subData.cols() / fil.getFreq());		/// peice length in seconds
 			for(int i : eegChannels)
 			{
+				/// could use spec here (already calculated subData spectra)
 				forTable.push_back(myLib::alphaPeakFreq(
 									   myLib::smoothSpectre(myLib::spectreRtoR(subData[i])),
 									   subData.cols(),
@@ -460,80 +502,86 @@ void MainWindow::sliceElena()
 		}
 
 
-		/// push_back spectra
+		/// resize to final size (we've already reserved the memory, so no realloc should occur)
 		const int prevSize = forTable.size();
 		forTable.resize(prevSize + integrChans.size() * integrLimits.size());
-		const std::vector<double> specRow = integratedSpectraOut.toVectorByRows();
-		std::copy(std::begin(specRow), std::end(specRow),
-				  std::begin(forTable) + prevSize);
-//		table[pieceNumber.toInt() - 1] = smLib::vecToValar(forTable); /// careful with rests
-		table.push_back(smLib::vecToValar(forTable));
-	};
 
+		/// "push_back" spectra
+		const std::vector<double> specRow = integratedSpectraOut.toVectorByRows();
+		std::copy(std::begin(specRow),
+				  std::end(specRow),
+				  std::begin(forTable) + prevSize);
+
+		return smLib::vecToValar(forTable);
+	};
+	/// saveSpecPoly finish
+
+
+	/// resulting table
+	matrix table{};
 
 	/// slice rest backgrounds
 	for(int typ = 0; typ < 2; ++typ)	/// 0 - closed, 1 - open
 	{
+		/// start iterator
 		auto eyesSta = std::find_if(std::begin(marks),
 									std::end(marks),
 									[eyesMarks, typ](const auto & in)
-		{ return in.second == eyesMarks[typ][0]; }); /// [0] - start
+		{ return in.second == eyesMarks[typ][0]; });
 
+		/// finish iterator
 		auto eyesFin = std::find_if(std::begin(marks),
 									std::end(marks),
 									[eyesMarks, typ](const auto & in)
-		{ return in.second == eyesMarks[typ][1]; }); /// [1] - finish
+		{ return in.second == eyesMarks[typ][1]; });
 
+		/// if not found both markers - do nothing
+		if(eyesSta == std::end(marks) || eyesFin == std::end(marks)) { continue; }
 
-		/// if found such markers
-		if(eyesSta != std::end(marks) && eyesFin != std::end(marks))
+		/// save values for whole rest piece
+		if(writePoly)
 		{
-			/// save values for whole rest
+			table.push_back(
+						saveSpecPoly((*eyesSta).first,
+									 (*eyesFin).first,
+									 nm(1500 + typ * 100),		/// taskNumber (1500 - closed, 1600 - open)
+									 nm(eyesMarks[typ][0]),		/// taskMark
+									nm(eyesCodes[typ])			/// operMark
+						)
+					);
+		}
+
+		/// save values for rest windows
+		int windCounter = 0;
+		for(int i = (*eyesSta).first;
+			i < (*eyesFin).first - restWindow * fil.getFreq();
+			i += restShift * fil.getFreq(), ++windCounter)
+		{
+			QString helpString = fil.getDirPath()
+								 + "/Reals"
+								 + "/" + fil.getExpName()
+								 + "_n_0_" + nm(windCounter)		/// _0_ added for rest
+								 + "_m_" + nm(eyesMarks[typ][0])	/// taskMark
+					+ "_t_" + nm(eyesCodes[typ]);					/// operMark
+
+			/// save window signal
+			fil.saveSubsection(i,
+							   i + restWindow * fil.getFreq(),
+							   helpString,
+							   true);
 			if(writePoly)
 			{
-				saveSpecPoly((*eyesSta).first,
-							 (*eyesFin).first,
-							 nm(1500 + typ * 100),			/// restNumber (1500 - closed, 1600 - open)
-							 nm(eyesMarks[typ][0]),			/// taskMark
-						nm(eyesCodes[typ])				/// operMark
+				table.push_back(
+							saveSpecPoly(i,
+										 i + restWindow * fil.getFreq(),
+										 QString("0_" + nm(windCounter)),	/// taskNumber
+										 nm(eyesMarks[typ][0]),				/// taskMark
+										nm(eyesCodes[typ])					/// operMark
+							)
 						);
 			}
-
-
-			/// save values for windows in rest
-			int windCounter = 0;
-			for(int i = (*eyesSta).first;
-				i < (*eyesFin).first - restWindow * fil.getFreq();
-				i += restShift * fil.getFreq(), ++windCounter)
-			{
-				QString helpString = DEFS.dirPath()
-									 + "/Reals"
-									 + "/" + fil.getExpName()
-									 + "_n_0_" + nm(windCounter)
-									 + "_m_" + nm(eyesMarks[typ][0])
-						+ "_t_" + nm(eyesCodes[typ]);
-				/// save window
-				fil.saveSubsection(i,
-								   i + restWindow * fil.getFreq(),
-								   helpString,
-								   true);
-				if(writePoly)
-				{
-					saveSpecPoly(i,
-								 i + restWindow * fil.getFreq(),
-								 QString("0_" + nm(windCounter)),	/// restNumber
-								 nm(eyesMarks[typ][0]),			/// taskMark
-							nm(eyesCodes[typ])				/// operMark
-							);
-				}
-			}
 		}
-	}
 
-	std::set<int> allNumbers;
-	for(int i = 1; i < numOfTasks; ++i)
-	{
-		allNumbers.emplace(i);
 	}
 
 	int marker = -1;
@@ -541,87 +589,92 @@ void MainWindow::sliceElena()
 	int start = -1;
 	bool startFlag = false;
 
-	/// slice all tasks
-	/// (241-244) - instruction, (1-240) - number(start), (255) - optional click,
-	/// (245-254) - operational, 255 - ready for next task
-	for(int i = 0; i < fil.getDataLen(); ++i)
+	/// (241-244) - instruction (task code)
+	/// (1-numOfTasks) - number(start)
+	/// (255) - optional click
+	/// (245-254) - operational code
+	/// 255 - ready for next task
+
+	for(const auto & mark : marks)
 	{
 		if(!startFlag)
 		{
-			if(241 <= markChanArr[i] && markChanArr[i] <= 244)
+			if(241 <= mark.second && mark.second <= 244)
 			{
-				marker = markChanArr[i];
+				marker = mark.second;
 				startFlag = true;
 			}
-			else if(markChanArr[i] != 0 && markChanArr[i] != 255)
+			else if(mark.second == 255)
 			{
-				outStream << "sliceElena: startFlag == false, "
-						  << "bad marker " << markChanArr[i] << ", "
-						  << "time = " << i / fil.getFreq() << " sec" << std::endl;
+				/// 255 - do nothing
 			}
 			else
 			{
-				/// 0 or 255 - do nothing
+				outStream << "sliceElena: startFlag == false, "
+						  << "expecting marker 241-244 or 255, but have "
+						  << mark.second
+						  << ", time = " << mark.first / fil.getFreq() << " sec" << std::endl;
 			}
 		}
 		else /// if(startFlag)
 		{
-			if(1 <= markChanArr[i] && markChanArr[i] <= 240) /// task number
+			if(1 <= mark.second && mark.second <= 240) /// taskNumber - task started
 			{
-				number = markChanArr[i];
-				start = i;
+				number = mark.second;
+				start = mark.first;
 			}
-			else if(245 <= markChanArr[i] && markChanArr[i] <= 254) /// task end
+			else if(245 <= mark.second && mark.second <= 254) /// operMark - task ended
 			{
 				QString helpString = DEFS.dirPath()
 									 + "/Reals"
 									 + "/" + fil.getExpName()
-									 + "_n_" + nm(number)				/// task number
-									 + "_m_" + nm(marker)				/// task marker
-									 + "_t_" + nm(markChanArr[i]);		/// operational marker
+									 + "_n_" + nm(number)				/// taskNumber
+									 + "_m_" + nm(marker)				/// taskMark
+									 + "_t_" + nm(mark.second);		/// operMark
 
-				if(start != -1)
+				if(start != -1) /// it was already set by task start
 				{
-					if(i - start < 60 * fil.getFreq())
+					if(mark.first - start < 60 * fil.getFreq()) /// task < 1 minute
 					{
+						/// save the task signal
 						fil.saveSubsection(start,
-										   i,
+										   mark.first,
 										   helpString,
 										   true);
 
 						/// new 6-Mar-18
 						if(writePoly)
 						{
-							saveSpecPoly(start,
-										 i,
-										 nm(number),
-										 nm(marker),
-										 nm(markChanArr[i]));
+							table.push_back(
+										saveSpecPoly(start,
+													 mark.first,
+													 nm(number),
+													 nm(marker),
+													 nm(mark.second))
+										);
 						}
 
 						allNumbers.erase(number);
 					}
-					else
+					else /// if the task lasts more than 1 minute
 					{
-						outStream << "sliceElena: too long piece, "
+						outStream << "sliceElena: too long task, "
 								  << "start time = " << start / fil.getFreq() << " sec, "
-								  << "end time = " << i / fil.getFreq() << " sec" << std::endl;
+								  << "end time = " << mark.first / fil.getFreq() << " sec" << std::endl;
 					}
 				}
-				else
+				else /// if start was not set, but we've found task end (operMark)
 				{
-					outStream << "sliceElena: startFlag == true, "
-							  << "end mark = " << markChanArr[i] << ", "
-							  << "start == -1, "
-							  << "end time = " << i / fil.getFreq() << " sec" << std::endl;
+					outStream << "sliceElena: task end (operMark) found but there was no start, "
+							  << "mark = " << mark.second << ", "
+							  << "its time = " << mark.first / fil.getFreq() << " sec" << std::endl;
 				}
 
 				startFlag = false;
 				start = -1;
 				marker = 0;
 
-
-				ui->progressBar->setValue(i * 100. / fil.getDataLen());
+				ui->progressBar->setValue(mark.first * 100. / fil.getDataLen());
 				qApp->processEvents();
 				if(stopFlag)
 				{
@@ -638,18 +691,24 @@ void MainWindow::sliceElena()
 	tableStream << tableCols << "\r\n";
 	tableStream.precision(4);
 
-	/// sort by pieceNumber?
-	std::sort(std::begin(table), std::end(table),
-			  [](const auto & a1, const auto a2)
+	if(01) /// sort the rows of the table by pieceNumber
 	{
-		return a1[0] < a2[0];
-	});
-	for(const auto & row : table)
-	{
-		tableStream << row << "\r\n";
+		std::sort(std::begin(table), std::end(table),
+				  [](const auto & a1, const auto a2)
+		{
+			return a1[0] < a2[0];
+		});
 	}
-	tableStream.flush(); tableStream.close();
 
+	/// remove empty rows
+	std::vector<int> inds{};
+	for(int i = 0; i < table.rows(); ++i) { if(table[i].size() == 0) { inds.push_back(i); } }
+	table.eraseRows(inds);
+
+	tableStream << table;
+	tableStream.close();
+
+	/// cout unprocessed tasks
 	if(!allNumbers.empty())
 	{
 		outStream << "sliceElena: not detected reals:" << std::endl;

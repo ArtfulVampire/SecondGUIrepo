@@ -1465,7 +1465,7 @@ std::pair<double, double> signalBand(const std::valarray<double> & inSignal)
 }
 
 double alphaPeakFreq(const std::valarray<double> & spectreR,
-					 int initSigLen,
+					 int initSigLen, ///
 					 double srate,
 					 double leftLimFreq,
 					 double rightLimFreq)
@@ -1498,28 +1498,20 @@ std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
 
 	std::valarray<double> res(limits.size());
 	int counter = 0;
-
 	for(const auto & limit : limits)
 	{
-		double leftFreq = limit.first;
-		double rightFreq = limit.second;
+		const int leftLimit = fftLimit(limit.first,
+									   srate,
+									   smLib::fftL(initSigLen));
+		const int rightLimit = fftLimit(limit.second,
+										srate,
+										smLib::fftL(initSigLen));
 
-		double helpDouble = 0.;
-		int helpInt = 0;
-		for(int k = fftLimit(leftFreq,
-							 srate,
-							 smLib::fftL(initSigLen));
-			k < fftLimit(rightFreq,
-						 srate,
-						 smLib::fftL(initSigLen));
-			++k)
-		{
-			helpDouble += spectreR[k];
-			++helpInt;
-		}
-
-		/// normalize spectre to unit sum ?
-		res[counter++] = helpDouble / helpInt;	/// mean in band
+		res[counter++] = std::accumulate(std::begin(spectreR) + leftLimit,
+										 std::begin(spectreR) + rightLimit,
+										 0.)
+						 / (rightLimit - leftLimit) /// average in the band
+						 ;
 	}
 
 #if 0
@@ -1549,47 +1541,21 @@ matrix integrateSpectra(const matrix & spectraR,
 	return res;
 }
 
-std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
-									 int initSigLen,
+std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
 									 double srate,
 									 double leftFreqLowLim,
 									 double leftFreqHighLim,
 									 double spectreStepFreq)
 {
-	std::vector<double> res{};
+	std::vector<std::pair<double, double>> lims{};
 	for(double j = leftFreqLowLim;
 		j <= leftFreqHighLim;
 		j += spectreStepFreq)
 	{
-		double helpDouble = 0.;
-		int helpInt = 0;
-		for(int k = fftLimit(j - spectreStepFreq / 2.,
-							 srate,
-							 smLib::fftL(initSigLen));
-			k < fftLimit(j + spectreStepFreq / 2.,
-						 srate,
-						 smLib::fftL(initSigLen));
-			++k)
-		{
-			helpDouble += spectreR[k];
-			++helpInt;
-		}
-		/// normalize spectre to unit sum ?
-		res.push_back(helpDouble / helpInt);
-	}
+		lims.push_back({j - spectreStepFreq / 2., j + spectreStepFreq / 2.});
 
-#if 0
-	/// normalize spectre for unit sum
-	/// 20. for not too small values
-	double helpDouble = 20. / std::accumulate(std::begin(res),
-											  std::end(res),
-											  0.) ;
-	for(auto & in : fullSpectre)
-	{
-		in *= helpDouble;
 	}
-#endif
-	return res;
+	return integrateSpectre(spectreR, srate, lims);
 }
 
 #if 0

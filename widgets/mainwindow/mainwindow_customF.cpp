@@ -46,7 +46,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// count correctness, average times, ICA
 
 #if 0 /// new (~10 people)
@@ -814,7 +814,7 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 01
+#if 0
 	/// Galya processing things
 
 //	const QString workPath = def::GalyaFolder + "/24Apr18Tankina";

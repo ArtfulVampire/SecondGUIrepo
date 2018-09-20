@@ -34,12 +34,6 @@ QString rightNumber(const unsigned int input, int N) /// prepend zeros
 namespace myOut
 {
 
-
-#if CPP17
-#else
-#endif
-
-
 FILE * fopen(QString filePath, const char *__modes)
 {
 	return std::fopen(filePath.toStdString().c_str(), __modes);

@@ -99,8 +99,7 @@ std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 									int numOfSmooth = 0);
 
 /// plus/minus stepFreq
-std::vector<double> integrateSpectre(const std::valarray<double> & spectreR,
-									 int initSigLen,
+std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
 									 double srate,
 									 double leftFreqLowLim = 2.,
 									 double leftFreqHighLim = 19.,
@@ -206,7 +205,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 							   int Kmax,
 							   const QString & picPath);
 
-/// what is the band of the signal - to do
+/// what is the band of the signal - TO DO
 std::pair<double, double> signalBand(const std::valarray<double> & inSignal);
 
 double alphaPeakFreq(const std::valarray<double> & spectreR,
