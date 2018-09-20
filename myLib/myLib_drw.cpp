@@ -736,7 +736,7 @@ QPixmap drawRealisation(const QString & inPath, int srate)
 {
 	matrix inData = myLib::readPlainData(inPath);
 
-	return drawEeg(inData, srate);
+	return drawEeg(inData, srate, myLib::drw::eegPicHeight);
 }
 
 QPixmap redrawEegCopy(const QPixmap & prev,
@@ -824,9 +824,10 @@ void redrawEeg(QPixmap & pic,
 
 QPixmap drawEeg(const matrix & inData,
 				int srate,
+				int picHeight,
 				const std::vector<std::pair<int, QColor>> & colouredChans)
 {
-	QPixmap pic = QPixmap(inData.cols(), myLib::drw::eegPicHeight);
+	QPixmap pic = QPixmap(inData.cols(), picHeight);
 	QPainter paint;
 	pic.fill();
 	paint.begin(&pic);

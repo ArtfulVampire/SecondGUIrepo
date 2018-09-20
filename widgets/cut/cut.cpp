@@ -166,6 +166,14 @@ Cut::Cut() :
 	QObject::connect(ui->findPrevNonzeroMarkPushButton, &QPushButton::clicked,
 					 [this](){ findPrevMark(-1); });
 
+	/// deriv
+	QObject::connect(ui->derivChan1SpinBox,
+					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+					 [this]() { this->showDerivatives(); });
+	QObject::connect(ui->derivChan2SpinBox,
+					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+					 [this]() { this->showDerivatives(); });
+
 
 	/// draws
 	QObject::connect(ui->iitpDisableEcgCheckBox, &QCheckBox::clicked, this, &Cut::paint);
@@ -317,14 +325,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 
 	if(!dataCutLocal.isEmpty())
 	{
-		if(event->size().width() != event->oldSize().width())
-		{
-			paint();
-		}
-		else /// if(event->size().height() != event->oldSize().height())
-		{
-			paintLimits();
-		}
+		paint();
 	}
 }
 
@@ -472,8 +473,17 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			}
 			case Qt::RightButton:
 			{
-				this->mousePressSlot(clickEvent->button(),
-									 clickEvent->x());
+				if(clickEvent->modifiers().testFlag(Qt::ControlModifier)
+				   && clickEvent->modifiers().testFlag(Qt::AltModifier))
+				{
+					/// choose a channel to track amplitudes
+					ui->derivChan2SpinBox->setValue(this->getDrawnChannel(clickEvent->pos()));
+				}
+				else
+				{
+					this->mousePressSlot(clickEvent->button(),
+										 clickEvent->x());
+				}
 				break;
 			}
 			case Qt::MiddleButton:
@@ -635,8 +645,6 @@ void Cut::showDerivatives()
 	{
 		ui->derivSecond2SpinBox->setValue(sig2[ind2 + 2 * st] + sig2[ind2 - 2 * st] - 2 * sig2[ind2]);
 	}
-
-
 }
 
 void Cut::mousePressSlot(Qt::MouseButton btn, int coord)
@@ -753,8 +761,7 @@ matrix Cut::makeDrawData()
 int Cut::getDrawnChannel(const QPoint & clickPos)
 {
 	auto vals = this->drawData.getCol(clickPos.x());
-	const double norm = normCoeff()
-						* (ui->scrollArea->height() / double(myLib::drw::eegPicHeight));
+	const double norm = normCoeff();
 	double dist = 1000;
 	int num = -1;
 
@@ -805,7 +812,7 @@ void Cut::manualDrawAddUndo()
 	undoActions.push_back(undoAction);
 }
 
-void Cut::manualDraw(const QPoint & fin)
+void Cut::manualDraw(QPoint fin)
 {
 	const int numChan = ui->color3SpinBox->value();
 	if(numChan == -1) { return; }
@@ -818,15 +825,16 @@ void Cut::manualDraw(const QPoint & fin)
 
 	QPoint sta = manualDrawStart;
 	if(sta.x() == fin.x()) { return; }
-	if(manualDrawStart.x() > fin->x()) { std::swap(sta, fin); }
 
-	for(int x = sta.x(); x <= fin.x(); ++x) /// [sta, fin]
+	if(manualDrawStart.x() > fin.x()) { std::swap(sta, fin); }
+
+	for(int x = sta.x(); x < fin.x(); ++x) /// [sta, fin]
 	{
 		dataCutLocal[numChan][x + leftDrawLimit] =
 				((sta.y() - offsetY)										/// init value
 				 + (fin.y() - sta.y())) / double(fin.x() - sta.x())			/// inclination
 				 * (x - sta.x())											/// range
-				/ (norm * ui->scrollArea->height() / currentPic.height() ); /// norm
+				/ norm;														/// norm
 	}
 	drawData = this->makeDrawData();
 	repaintData(drawData, sta.x(), fin.x());
@@ -875,6 +883,7 @@ void Cut::paintData(matrix & drawDataLoc)
 
 	currentPic = myLib::drw::drawEeg(drawDataLoc * normCoeff(),
 									 edfFil.getFreq(),
+									 ui->scrollArea->height(),
 									 this->makeColouredChans());
 	paintMarkers(drawDataLoc);
 	paintLimits();

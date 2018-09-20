@@ -2225,7 +2225,8 @@ void edfFile::saveSubsection(int startBin,
 void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
 {
 	myLib::drw::drawEeg(this->edfData.subCols(startBin, finishBin),
-						this->srate).save(outPath, 0, 100);
+						this->srate,
+						myLib::drw::eegPicHeight).save(outPath, 0, 100);
 }
 
 edfFile & edfFile::cleanFromEyes(QString eyesPath,

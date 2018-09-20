@@ -497,6 +497,7 @@ void MainWindow::drawReals()
 		QString outPath = myLib::getPicPath(inPath, fil.getDirPath());
 		myLib::drw::drawEeg(dataD * ui->drawCoeffSpinBox->value(),
 							fil.getFreq(),
+							myLib::drw::eegPicHeight,
 							coloured).save(outPath, 0, 100);
 
 		ui->progressBar->setValue(i++ * 100/ lst.length());

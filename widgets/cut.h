@@ -60,7 +60,7 @@ private:
 
 	/// manual signal draw
 	int getDrawnChannel(const QPoint & clickPos);
-	void manualDraw(const QPoint & fin);
+	void manualDraw(QPoint fin); /// copy parameter - can be changed
 	void manualDrawAddUndo();
 
 	void colorSpinSlot(QSpinBox * spin, QLineEdit * lin);
