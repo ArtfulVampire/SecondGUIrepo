@@ -144,7 +144,7 @@ void drawWaveletMtlb(const matrix & inData, QString picPath)
 						 nm(i));
 
 	}
-	pic.save(picPath, 0, 100);
+	pic.save(picPath, nullptr, 100);
 	painter.end();
 }
 #endif
@@ -347,7 +347,7 @@ void wavelet(QString filePath,
 						 nm(i));
 
 	}
-	pic.save(picPath, 0, 100);
+	pic.save(picPath, nullptr, 100);
 	painter.end();
 }
 
@@ -562,7 +562,7 @@ void drawWavelet(QString picPath,
 						 nm(i));
 
 	}
-	pic.save(picPath, 0, 100);
+	pic.save(picPath, nullptr, 100);
 	painter.end();
 }
 

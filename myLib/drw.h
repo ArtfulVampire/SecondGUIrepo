@@ -187,7 +187,7 @@ void redrawEeg(QPixmap & prev,
 			   int srate,
 			   const std::vector<std::pair<int, QColor> > & colouredChans = {});
 QPixmap drawEeg(const matrix & inData,
-				int srate,
+				double srate,
 				int picHeight,
 				const std::vector<std::pair<int, QColor>> & colouredChans = {});
 

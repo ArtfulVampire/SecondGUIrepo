@@ -548,7 +548,7 @@ void sammonProj(const mat & distOld,
 				const std::vector<int> & types,
                 const QString & picPath)
 {
-    srand(time(NULL));
+	srand(time(nullptr));
     int size = distOld.size();
 
     mat distNew; /// use only higher triangle
@@ -841,7 +841,7 @@ void drawSammon(const coordType & plainCoords,
 						 );
 
 	}
-	pic.save(picPath, 0, 100);
+	pic.save(picPath, nullptr, 100);
 	painter.end();
 	std::cout << "Sammon projection done" << std::endl;
 }
@@ -900,7 +900,7 @@ void drawShepard(const mat & distOld,
 		}
 	}
 	painter.end();
-	pic.save(picPath, 0, 100);
+	pic.save(picPath, nullptr, 100);
 
 }
 

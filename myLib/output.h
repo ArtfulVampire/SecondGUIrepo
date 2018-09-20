@@ -20,7 +20,7 @@
 namespace myLib
 {
 
-QString rightNumber(const unsigned int input, int N);	/// prepend zeros
+QString rightNumber(int input, int N);					/// prepend zeros
 QString fitNumber(double input, int N);					/// append spaces
 QString fitString(const QString & input, int N);		/// append spaces
 
@@ -34,7 +34,7 @@ inline QString nm(Typ in) { return QString::number(in); }
 template QString nm(int in);
 template QString nm(double in);
 
-inline QString rn(double in, int num) { return myLib::rightNumber(in, num); }
+inline QString rn(int in, int num) { return myLib::rightNumber(in, num); }
 
 FILE * fopen(QString filePath, const char *__modes);
 

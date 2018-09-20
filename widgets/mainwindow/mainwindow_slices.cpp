@@ -13,60 +13,57 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	QTime myTime;
 	myTime.start();
 
-	if(ui->sliceCheckBox->isChecked())
+	if(ui->matiCheckBox->isChecked())
 	{
-		if(ui->matiCheckBox->isChecked())
-		{
-			/// almost equal time, should use sessionEdges
+		/// almost equal time, should use sessionEdges
 #if 1
-			sliceMati();
-			sliceMatiPieces(true);
+		sliceMati();
+		sliceMatiPieces(true);
 #else
-			sliceMatiSimple();
+		sliceMatiSimple();
 #endif
-		}
-		else
+	}
+	else /// not MATI
+	{
+		if(ui->windsButton->isChecked())
 		{
-			if(ui->windsButton->isChecked())
+			if(DEFS.getUser() == username::IITP)
 			{
-				if(DEFS.getUser() == username::IITP)
-				{
-					sliceJustWinds();
-				}
-				else
-				{
-					sliceWinds();
-				}
+				sliceJustWinds();
 			}
+			else
+			{
+				sliceWinds();
+			}
+		}
 #if 0
-			/// Polina
-			else if(ui->pauseRadioButton->isChecked())
-			{
-				bool a = ui->typeCheckButton->isChecked();
-				pausePieces(a);
-			}
+		/// Polina
+		else if(ui->pauseRadioButton->isChecked())
+		{
+			bool a = ui->typeCheckButton->isChecked();
+			pausePieces(a);
+		}
 #endif
-			else if(ui->realsButton->isChecked())
+		else if(ui->realsButton->isChecked())
+		{
+			if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) /// generality
 			{
-				if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) /// generality
+				sliceBak(1, 60, "241");
+				sliceBak(61, 120, "247");
+				sliceBak(121, 180, "241");
+				sliceBak(181, 240, "247");
+			}
+			else
+			{
+				if(ui->elenaSliceCheckBox->isChecked())
 				{
-					sliceBak(1, 60, "241");
-					sliceBak(61, 120, "247");
-					sliceBak(121, 180, "241");
-					sliceBak(181, 240, "247");
+					sliceElena();
 				}
 				else
 				{
-					if(ui->elenaSliceCheckBox->isChecked())
-					{
-						sliceElena();
-					}
-					else
-					{
-						/// remake using myLib::sliceData
-						sliceOneByOne();
-//						sliceOneByOneNew(); /// by number after 241/247
-					}
+					/// remake using myLib::sliceData
+					sliceOneByOne();
+					sliceOneByOneNew(); /// by number after 241/247 for early research before 2015
 				}
 			}
 		}
@@ -302,7 +299,10 @@ void MainWindow::sliceElena()
 	/// alpha peak
 	for(int i : eegChannels)
 	{
-		tableCols.push_back("alpha_" + fil.getLabels(i));
+		QString lab = fil.getLabels(i);
+		lab.remove("EEG ");
+		lab.resize(lab.indexOf('-'));
+		tableCols.push_back("alpha_" + lab);
 	}
 	/// add average spectra names
 	for(const auto & chs : integrChans)

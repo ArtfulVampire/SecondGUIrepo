@@ -235,7 +235,7 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath,
 
     }
     paint.end();
-    pic.save(outSpectraFilePath, 0, 100);
+    pic.save(outSpectraFilePath, nullptr, 100);
 
 #if 0
     /// save both jpg and png
@@ -244,12 +244,12 @@ void drawMapsOnSpectra(const QString & inSpectraFilePath,
 		if(helpString.contains(".png"))
 		{
 			helpString.replace(".png", ".jpg");
-			pic.save(helpString, 0, 100);
+			pic.save(helpString, nullptr, 100);
 		}
 		else if(helpString.contains(".jpg"))
 		{
 			helpString.replace(".jpg", ".png");
-			pic.save(helpString, 0, 100);
+			pic.save(helpString, nullptr, 100);
 		}
 	}
 #endif
@@ -441,8 +441,8 @@ void drawMapSpline(const matrix & matrixA,
             }
         }
     }
-    pic.save(savePath1, 0, 100);
-    pic1.save(savePath2, 0, 100);
+    pic.save(savePath1, nullptr, 100);
+    pic1.save(savePath2, nullptr, 100);
 
 
     double sum = 0.;
@@ -500,7 +500,7 @@ QPixmap drawOneSignal(const std::valarray<double> & signal,
 	pnt.end();
 	if(!outPath.isEmpty())
 	{
-		pic.save(outPath, 0, 100);
+		pic.save(outPath, nullptr, 100);
 	}
 	return pic;
 }
@@ -710,7 +710,7 @@ QPixmap drawTemplate(const QString & outPath,
 	paint.end();
 	if(!outPath.isEmpty() && !outPath.contains(".svg"))
     {
-        pic.save(outPath, 0, 100);
+        pic.save(outPath, nullptr, 100);
 	}
 	return pic;
 }
@@ -808,7 +808,7 @@ void drawArray(const QString & templPath,
                    pic.height() * coords::y[1] - graphHeight / 2),
             helpString);
 
-    pic.save(templPath, 0, 100);
+    pic.save(templPath, nullptr, 100);
 }
 
 /// overload matrix/std::valarray<double>
@@ -998,7 +998,7 @@ void drawArrayWithSigma(const QString &templPath,
 				   pic.height() * coords::y[1] - graphHeight / 2),
 			helpString);
 
-	pic.save(templPath, 0, 100);
+	pic.save(templPath, nullptr, 100);
 }
 
 QPixmap drawArrays(const QPixmap & templPixmap,
@@ -1323,7 +1323,7 @@ double drawArrays(const QString & templPath,
     paint.end();
 	if(!templPath.isEmpty())
 	{
-		pic.save(templPath, 0, 100);
+		pic.save(templPath, nullptr, 100);
 	}
 	return res;
 }
@@ -1359,7 +1359,7 @@ void drawArraysInLine(const QString & picPath,
 					 i * pic.width() / DEFS.nsWOM(), 0);
     }
 
-    pic.save(picPath, 0, 100);
+    pic.save(picPath, nullptr, 100);
     pnt.end();
 
 }
@@ -1379,7 +1379,7 @@ void drawCutOneChannel(const QString & inSpectraPath,
                                  250 + 38,
 								 250 + 53)); /// magic constants
 
-    cut.save(outPath, 0, 100);
+    cut.save(outPath, nullptr, 100);
 
 }
 
@@ -1535,7 +1535,7 @@ void drawMannWitney(const QString & templPath,
     }
 
     paint.end();
-    pic.save(templPath, 0, 100);
+    pic.save(templPath, nullptr, 100);
 }
 
 void drawMannWitneyInLine(const QString & picPath,
@@ -1582,7 +1582,7 @@ void drawMannWitneyInLine(const QString & picPath,
             ++num;
         }
     }
-    pic.save(picPath, 0, 100);
+    pic.save(picPath, nullptr, 100);
     pnt.end();
 
 }
@@ -1710,7 +1710,7 @@ void drawColorScale(QString filePath, int range, ColorScale type, bool full)
         }
     }
     painter.end();
-    pic.save(filePath, 0, 100);
+    pic.save(filePath, nullptr, 100);
 
 }
 
@@ -1798,7 +1798,7 @@ QPixmap drawEeg(const matrix & dataD,
 		paint.drawText(c3 * freq, pic.height() - 35, nm(c3));
         norm = 10.;
     }
-    pic.save(picPath, 0, 100);
+    pic.save(picPath, nullptr, 100);
 
     paint.end();
 
@@ -1862,7 +1862,7 @@ QPixmap drawEeg(const matrix & dataD,
 		paint.drawText(c3 * freq, pic.height() - 35, nm(c3));
         norm = 10.;
     }
-    pic.save(picPath, 0, 100);
+    pic.save(picPath, nullptr, 100);
     paint.end();
     return pic;
 }

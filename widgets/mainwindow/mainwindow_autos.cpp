@@ -369,7 +369,7 @@ void MainWindow::BaklushevDraw(const QString & workPath, const QString & edfName
 							   false,
 							   std::vector<QColor>(drawMat[i].rows(), currColor[i]),
 							   std::vector<int>(drawMat[i].rows(), 1)).save(
-					picture[i], 0, 100);
+					picture[i], nullptr, 100);
 
 	}
 }

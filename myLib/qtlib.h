@@ -40,7 +40,7 @@ public:
 		case outputType::cout: { std::cout << std::endl; break; }
 		case outputType::file: { fil << std::endl; break; }
 		case outputType::textEdit: { te->append(""); break; }
-		default: { /* should never get here */ }
+//		default: { /* should never get here */ }
 		}
 		return *this;
 	}
@@ -66,7 +66,7 @@ public:
 			te->moveCursor(QTextCursor::End);
 			break;
 		}
-		default: { /* should never get here */ }
+//		default: { /* should never get here */ }
 		}
 		return *this;
 	}

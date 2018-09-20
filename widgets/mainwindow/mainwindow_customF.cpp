@@ -1,6 +1,8 @@
 #include <widgets/mainwindow.h>
 #include "ui_mainwindow.h"
 
+#include <widgets/choosechans.h>
+
 #include <myLib/drw.h>
 #include <myLib/iitp.h>
 #include <myLib/signalProcessing.h>
@@ -1311,7 +1313,7 @@ void MainWindow::customFunc()
 
 //	myLib::histogram(c1 / m1, 50
 ////					 , std::make_pair(0, 35)
-//					 ).save("/media/Files/Data/hist.jpg", 0, 100);
+//					 ).save("/media/Files/Data/hist.jpg", nullptr, 100);
 	exit(0);
 #endif
 
@@ -1363,9 +1365,9 @@ void MainWindow::customFunc()
 //	std::cout << rat << std::endl;
 //	myLib::histogram(rat, 20
 //					 , std::make_pair(5,20)
-//					 ).save("/media/Files/Data/rat.jpg", 0, 100);
+//					 ).save("/media/Files/Data/rat.jpg", nullptr, 100);
 //	autos::IITPdrawCoh(fromMatlab, m, confidence).
-//			save("/media/Files/Data/mCoh.jpg", 0, 100);
+//			save("/media/Files/Data/mCoh.jpg", nullptr, 100);
 
 	autos::IITPdrawCoh(usual,
 					   8.,
@@ -1374,7 +1376,7 @@ void MainWindow::customFunc()
 					   fftLen,
 					   0.,
 					   confidence).
-			save("/media/Files/Data/cCohUsual.jpg", 0, 100);
+			save("/media/Files/Data/cCohUsual.jpg", nullptr, 100);
 
 
 
@@ -1540,7 +1542,7 @@ void MainWindow::customFunc()
 								  pic.width(),
 								  pic.height() * (1. - confidence));
 					 pnt.end();
-					 pic.save("/media/Files/Data/cCoh" + nam + ".jpg", 0, 100);
+					 pic.save("/media/Files/Data/cCoh" + nam + ".jpg", nullptr, 100);
 
 					 exit(0); / numFreq,
 					 pic.height() * (1. - 0.03) + QFontMetrics(font).xHeight(),
@@ -1552,7 +1554,7 @@ void MainWindow::customFunc()
 				 pic.width(),
 				 pic.height() * (1. - confidence));
 	pnt.end();
-	pic.save("/media/Files/Data/cCoh" + nam + ".jpg", 0, 100);
+	pic.save("/media/Files/Data/cCoh" + nam + ".jpg", nullptr, 100);
 
 	exit(0);
 #endif
@@ -1783,7 +1785,7 @@ void MainWindow::customFunc()
 	if(0)
 	{
 		myLib::drw::drawOneSignal(
-					smLib::valarSubsec(Y, 0, 1000)).save("/media/Files/Data/Y.jpg");
+					smLib::valarSubsec(Y, nullptr, 1000)).save("/media/Files/Data/Y.jpg");
 	}
 
 	if(0)
@@ -2153,9 +2155,9 @@ void MainWindow::customFunc()
 	for(int steps = 12; steps <= 30; steps += 2)
 	{
 		myLib::histogram(res1, steps, {50., 94.}, "blue", norm)
-				.save(DEFS.dirPath() + "/Baklushev/healthy_" + nm(steps) + ".jpg", 0, 100);
+				.save(DEFS.dirPath() + "/Baklushev/healthy_" + nm(steps) + ".jpg", nullptr, 100);
 		myLib::histogram(res2, steps, {50., 94.}, "red", norm)
-				.save(DEFS.dirPath() + "/Baklushev/ill_" + nm(steps) + ".jpg", 0, 100);
+				.save(DEFS.dirPath() + "/Baklushev/ill_" + nm(steps) + ".jpg", nullptr, 100);
 
 	}
 	exit(0);
@@ -2557,7 +2559,7 @@ exit(0);
         color1 = color2;
     }
     pnt.end();
-    pic.save("/media/Files/Data/matlabOut.jpg", 0, 100);
+    pic.save("/media/Files/Data/matlabOut.jpg", nullptr, 100);
 
     exit(0);
 #endif
@@ -2657,7 +2659,6 @@ exit(0);
 
 
 //        ui->matiCheckBox->setChecked(true);
-//        ui->sliceCheckBox->setChecked(true);
 //        ui->sliceWithMarkersCheckBox->setChecked(true);
 //        ui->reduceChannelsCheckBox->setChecked(true);
 //        ui->reduceChannelsComboBox->setCurrentText("Mati");

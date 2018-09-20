@@ -1308,7 +1308,7 @@ double fractalDimension(const std::valarray<double> & arr,
 
 
         pnt.end();
-        pic.save(picPath, 0, 100);
+        pic.save(picPath, nullptr, 100);
 	}
     return -slope;
 }
@@ -1454,7 +1454,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 
 
 		pnt.end();
-		pic.save(picPath, 0, 100);
+		pic.save(picPath, nullptr, 100);
 	}
 	return -slope;
 }
@@ -1661,7 +1661,7 @@ double fractalDimensionBySpectre(const std::valarray<double> & arr,
 					 );
 
 		pnt.end();
-		pic.save(picPath, 0, 100);
+		pic.save(picPath, nullptr, 100);
 	}
 	return (5. + slope) / 2.;
 }
@@ -1915,7 +1915,7 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
                          pic.height() / 2. - enlarge * out[i + 1]);
         }
 
-        pic.save(picPath, 0, 100);
+        pic.save(picPath, nullptr, 100);
         pic.fill();
         pnt.end();
 		std::cout << "hilber drawn" << std::endl;
@@ -2083,7 +2083,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 
 
         pnt.end();
-        pic.save(picPath, 0, 100);
+        pic.save(picPath, nullptr, 100);
 		/// end check draw
     }
     return outHilbert;

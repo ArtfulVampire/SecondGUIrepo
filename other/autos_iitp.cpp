@@ -437,7 +437,7 @@ void IITPtestCoh2(const QString & guyName)
 			}
 			myLib::drw::drawOneArray(myLib::drw::drawOneTemplate("Cz", lowFreq, highFreq),
 									 smLib::vecToValar(outCoh)).save(
-						"/media/Files/Data/iitp/" + names[i] + postfix + ".jpg", 0, 100);
+						"/media/Files/Data/iitp/" + names[i] + postfix + ".jpg", nullptr, 100);
 			std::cout << names[i] << " coh max = " << *std::max_element(std::begin(outCoh), std::end(outCoh)) << std::endl;
 		}
 	}
@@ -1252,7 +1252,7 @@ void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums)
 		outPath = paths[i];
 		outPath.replace("/sp/", "/pic/");
 		outPath.replace("_sp.txt", ".jpg");
-		res[i].save(outPath, 0, 100);
+		res[i].save(outPath, nullptr, 100);
 	}
 }
 
@@ -1694,7 +1694,7 @@ void IITPdrawSpectralMaps(const QString & guyName,
 
 				fileName.remove(".txt");
 				myLib::drw::drawOneMap(drawSpec, 0, myLib::drw::ColorScale::jet, true).save(
-							outPath + fileName + addName + ".jpg", 0, 100);
+							outPath + fileName + addName + ".jpg", nullptr, 100);
 			}
 		}
 	}

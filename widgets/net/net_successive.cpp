@@ -711,11 +711,11 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ans
 
 	myLib::writeFileInLine(savePath + "_data.txt", smLib::vecToValar(res));
 
-	myLib::kernelEst(smLib::vecToValar(res)).save(savePath + "_kde.jpg", 0, 100);
+	myLib::kernelEst(smLib::vecToValar(res)).save(savePath + "_kde.jpg", nullptr, 100);
 
 	std::cout << "kde ready" << std::endl;
 	/// magic const
-	myLib::histogram(smLib::vecToValar(res), 50).save(savePath + "_hist.jpg", 0, 100);
+	myLib::histogram(smLib::vecToValar(res), 50).save(savePath + "_hist.jpg", nullptr, 100);
 	std::cout << "hist ready" << std::endl << std::endl;
 }
 

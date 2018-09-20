@@ -265,8 +265,8 @@ return;
 	}
 
 
-	myLib::kernelEst(smLib::vecToValar(newD)).save("/media/Files/Data/Mati/clust.jpg", 0, 100);
-	myLib::histogram(smLib::vecToValar(newD), 40).save("/media/Files/Data/Mati/clustH.jpg", 0, 100);
+	myLib::kernelEst(smLib::vecToValar(newD)).save("/media/Files/Data/Mati/clust.jpg", nullptr, 100);
+	myLib::histogram(smLib::vecToValar(newD), 40).save("/media/Files/Data/Mati/clustH.jpg", nullptr, 100);
 #endif
 }
 

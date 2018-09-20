@@ -443,7 +443,7 @@ void ICAclass::drawSpectraWithMaps() const
 	matrix drawMatrix = this->getComponents().apply(spectreWelch).subCols(lef, rig);
 
 	myLib::drw::drawArray(myLib::drawTemplate(),
-						  drawMatrix).save(drawMapsWMPath, 0, 100);
+						  drawMatrix).save(drawMapsWMPath, nullptr, 100);
 
 	myLib::drawMapsOnSpectra(drawMapsWMPath,
 							 drawMapsWMPath,

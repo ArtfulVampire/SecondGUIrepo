@@ -109,7 +109,7 @@ const std::vector<int> interestEeg{
 };
 
 /// all with 12th
-const std::valarray<double> fileNums = smLib::range(0, 35 + 1);
+const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 35 + 1);
 //const std::valarray<double> fileNums{1};
 
 

@@ -19,7 +19,7 @@ QString fitString(const QString & input, int N) /// append spaces
 	return h.left(N);
 }
 
-QString rightNumber(const unsigned int input, int N) /// prepend zeros
+QString rightNumber(int input, int N) /// prepend zeros
 {
 	QString h;
 	h.setNum(input);

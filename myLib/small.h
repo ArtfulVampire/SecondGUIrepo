@@ -55,7 +55,7 @@ inline double gaussian(double x, double sigma = 1.) // N(0,1)
 	return 1./(sigma * std::sqrt(2. * pi)) * std::exp( x * x / (2. * sigma * sigma) );
 }
 
-inline constexpr int fftL(int in)
+inline int fftL(int in)
 {
 	return std::pow(2., std::ceil(std::log2(in)));
 }

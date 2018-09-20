@@ -18,7 +18,7 @@ long long combination(int n, int k)
 		ans *= (n - i);
 		ans /= (i + 1);
 	}
-	return (long long)(ans);
+	return static_cast<long long>(ans);
 }
 
 
@@ -257,7 +257,7 @@ void kernelEst(const std::valarray<double> & arr, QString picPath)
 					 pic.height() * 0.95,
 					 nm(i));
 	}
-	pic.save(picPath, 0, 100);
+	pic.save(picPath, nullptr, 100);
 }
 
 
@@ -479,7 +479,7 @@ void drawRCP(const std::valarray<double> & values, const QString & picPath)
 					 coordinate,
 					 pic.height() * 0.9 * ( 1. - line[coordinate]) - 50);
 	}
-	pic.save(picPath, 0, 100);
+	pic.save(picPath, nullptr, 100);
 }
 
 

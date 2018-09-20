@@ -459,7 +459,7 @@ void iitpData::countContiniousTaskSpectra()
 	templ = myLib::drw::drawArray(templ, spectre);
 	templ.save(def::iitpResFolder + "/" + this->getGuy()
 			   + "/pic"
-			   + "/" + this->getInit() + ".jpg", 0, 100);
+			   + "/" + this->getInit() + ".jpg", nullptr, 100);
 #endif
 }
 
@@ -502,7 +502,7 @@ void iitpData::countContiniousTaskSpectraW(const QString & resPath, double overl
 	templ = myLib::drw::drawArray(templ, spectre);
 	templ.save(def::iitpResFolder + "/" + this->getGuy()
 			   + "/pic"
-			   + "/" + this->getInit() + ".jpg", 0, 100);
+			   + "/" + this->getInit() + ".jpg", nullptr, 100);
 #endif
 }
 
@@ -572,7 +572,7 @@ void iitpData::countFlexExtSpectra(int mark1, int mark2)
 	templ = myLib::drw::drawArrays(templ, spectra);
 	templ.save(def::iitpResFolder + "/" + this->getGuy()
 			   + "/pic"
-			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
+			   + "/" + this->getInit() + joint + ".jpg", nullptr, 100);
 }
 
 
@@ -650,7 +650,7 @@ void iitpData::countFlexExtSpectraW(const QString & resPath, int mark1, int mark
 	templ = myLib::drw::drawArrays(templ, spectra);
 	templ.save(def::iitpResFolder + "/" + this->getGuy()
 			   + "/pic"
-			   + "/" + this->getInit() + joint + ".jpg", 0, 100);
+			   + "/" + this->getInit() + joint + ".jpg", nullptr, 100);
 #endif
 }
 
@@ -906,7 +906,7 @@ iitpData & iitpData::staging(const QString & chanName,
 
 	myLib::histogram(firstDeriv,
 					 50,
-	{-25, 25}).save("/media/Files/Data/deriv.jpg", 0, 100);
+	{-25, 25}).save("/media/Files/Data/deriv.jpg", nullptr, 100);
 
 	firstDeriv *= 10;
 	secondDeriv *= 30;

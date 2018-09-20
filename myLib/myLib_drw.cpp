@@ -528,7 +528,7 @@ void cutCentralChannels(const QString & inPath)
 		QString out = inPath + "/" + picPath;
 		out.replace(".jpg", "_cut.jpg");
 		out.replace(".png", "_cut.png");
-		cut.save(out, 0, 100);
+		cut.save(out, nullptr, 100);
 	}
 }
 
@@ -823,7 +823,7 @@ void redrawEeg(QPixmap & pic,
 }
 
 QPixmap drawEeg(const matrix & inData,
-				int srate,
+				double srate,
 				int picHeight,
 				const std::vector<std::pair<int, QColor>> & colouredChans)
 {

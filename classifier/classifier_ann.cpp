@@ -495,7 +495,7 @@ void ANN::drawWeight(QString wtsPath,
 	myLib::drw::drawArrays(myLib::drw::drawTemplate(),
 						   drawWts,
 						   0.,
-						   true).save(picPath, 0, 100);
+						   true).save(picPath, nullptr, 100);
 #endif
 }
 

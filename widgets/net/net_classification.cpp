@@ -95,7 +95,7 @@ void Net::leaveOneOutClassification()
                   i + 1);
 
 		myModel->learn(learnIndices);
-		myModel->test({i});
+		myModel->test(i);
 	}
 //	std::cout << std::endl;
 }

@@ -1,6 +1,8 @@
 #include <widgets/mainwindow.h>
 #include "ui_mainwindow.h"
 
+#include <widgets/choosechans.h>
+
 #include <myLib/drw.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/mati.h>
@@ -61,7 +63,6 @@ MainWindow::MainWindow() :
 	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
 
 	/// slice
-	ui->sliceCheckBox->setChecked(true);
     ui->timeShiftSpinBox->setMinimum(0.1);
     ui->timeShiftSpinBox->setMaximum(32);
     ui->timeShiftSpinBox->setValue(0.5);
@@ -170,11 +171,11 @@ MainWindow::MainWindow() :
 
 
 	/// open other widgets
-	QObject::connect(ui->browseButton, SIGNAL(clicked()),
-					 this, SLOT(setEdfFileSlot()));
+	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(setEdfFileSlot()));
 	QObject::connect(ui->cut_e, SIGNAL(clicked()), this, SLOT(showCut()));
 	QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(showNet()));
 	QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(showCountSpectra()));
+	QObject::connect(ui->reduceChannelsWidgetPushButton, SIGNAL(clicked()), this, SLOT(showReduce()));
 
 	/// small things, ~constant edf
 	QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
@@ -260,7 +261,7 @@ void MainWindow::changeRedNsLine(int a)
 	if(str.startsWith("128"))
 	{
 		outStr.clear();
-		for(const QString & ch : coords::chans128to20str)
+		for(const QString & ch : coords::egi::chans128to20str)
 		{
 			outStr += nm(globalEdf.findChannel(ch) + 1) + " ";
 		}
@@ -301,6 +302,12 @@ void MainWindow::showCountSpectra()
     sp->show();
 }
 
+void MainWindow::showReduce()
+{
+	ChooseChans * ch = new ChooseChans();
+	ch->show();
+}
+
 void MainWindow::processEyes()
 {
 	readData();
@@ -310,7 +317,7 @@ void MainWindow::processEyes()
     std::vector<int> eogs;
     for(int i = 0; i < fil.getNs(); ++i)
     {
-        const auto & labl = fil.getLabels()[i];
+		const auto & labl = fil.getLabels(i);
         if(labl.contains("EOG"))
         {
             eogs.push_back(i);
@@ -345,7 +352,7 @@ void MainWindow::showCut()
 
 void MainWindow::setEdfFileSlot()
 {
-	QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
+	QString helpString = QFileDialog::getOpenFileName(static_cast<QWidget*>(this),
 													  tr("EDF to open"),
 													  DEFS.dirPath(),
 													  tr("EDF files (*.EDF *.edf)"));
@@ -498,7 +505,7 @@ void MainWindow::drawReals()
 		myLib::drw::drawEeg(dataD * ui->drawCoeffSpinBox->value(),
 							fil.getFreq(),
 							myLib::drw::eegPicHeight,
-							coloured).save(outPath, 0, 100);
+							coloured).save(outPath, nullptr, 100);
 
 		ui->progressBar->setValue(i++ * 100/ lst.length());
         qApp->processEvents();

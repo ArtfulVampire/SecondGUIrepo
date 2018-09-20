@@ -45,7 +45,7 @@ void Cut::rewrite()
 	if(myFileType == fileType::real)
 	{
 		myLib::writePlainData(currentFile, dataCutLocal);
-		currentPic.save(myLib::getPicPath(currentFile, this->edfFil.getDirPath()), 0, 100);
+		currentPic.save(myLib::getPicPath(currentFile, this->edfFil.getDirPath()), nullptr, 100);
 	}
 	else if(myFileType == fileType::edf)
 	{
@@ -215,8 +215,8 @@ void Cut::setValuesByEdf()
 
 	const bool iitpFlag = edfFil.getDirPath().contains("iitp", Qt::CaseInsensitive);
 
-	const int localLimit = (edfFil.getNs() >= coords::manyChannels) ?
-						  (coords::chans128to20.size() - 1) : (edfFil.getNs() - 1);
+	const int localLimit = (edfFil.getNs() >= coords::egi::manyChannels) ?
+						  (coords::egi::chans128to20.size() - 1) : (edfFil.getNs() - 1);
 	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
 	{
 		a->setMaximum(localLimit);

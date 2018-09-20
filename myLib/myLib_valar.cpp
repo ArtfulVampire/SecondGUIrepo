@@ -70,7 +70,6 @@ double min(const Container & arr)
 	return res;
 }
 template double min(const std::vector<double> & arr);
-template double min(const std::valarray<double> & arr);
 
 template <> double max(const std::valarray<double> & arr) { return arr.max(); }
 template <class Container>

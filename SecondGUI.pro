@@ -15,6 +15,7 @@ QMAKE_CXXFLAGS += -Wno-sign-compare
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-result
 QMAKE_CXXFLAGS += -Wno-unused-function
+QMAKE_CXXFLAGS += -Wno-invalid-consexpr
 #QMAKE_CXXFLAGS += -Wabi-tag
 LIBS += -fopenmp
 #QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
@@ -100,7 +101,8 @@ widgets/cut/cut_navi.cpp \
 widgets/cut/cut_iitp.cpp \
 widgets/cut/cut_files.cpp \
     myLib/myLib_ica.cpp \
-    myLib/myLib_adhoc.cpp
+    myLib/myLib_adhoc.cpp \
+    widgets/choosechans.cpp
 
 HEADERS += \
 myLib/drw.h \
@@ -137,13 +139,15 @@ other/defs.h \
 other/consts.h \
     myLib/ica.h \
     other/feedback_autos.h \
-    myLib/adhoc.h
+    myLib/adhoc.h \
+    widgets/choosechans.h
 
 FORMS +=\
 mainwindow.ui \
 cut.ui \
 net.ui \
-spectre.ui
+spectre.ui \
+    choosechans.ui
 
 OTHER_FILES +=
 
