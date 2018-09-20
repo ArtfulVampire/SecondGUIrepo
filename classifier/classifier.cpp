@@ -33,11 +33,6 @@ void Classifier::setClassifierData(ClassifierData & in)
 	}
 }
 
-Classifier::~Classifier()
-{
-}
-
-
 void Classifier::setTestCleanFlag(bool inFlag)
 {
     this->testCleanFlag = inFlag;
@@ -113,16 +108,16 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
     QString pew;
 
 	if(predType == myClassData->getTypes()[vecNum])
-    {
-        pew = "";
-    }
-    else
-    {
+	{
+		pew = "";
+	}
+	else
+	{
 		pew = nm(vecNum) + "\n";
 
 		outStr << vecNum + 2 << ":\ttrue = " << myClassData->getTypes()[vecNum] << "\tpred = " << predType << "\n";
-    }
-    outStr.close();
+	}
+	outStr.close();
 }
 
 void Classifier::test(const std::vector<uint> & indices)

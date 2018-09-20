@@ -2,7 +2,7 @@
 
 using namespace myOut;
 
-RDA::RDA() : Classifier()
+RDA::RDA()
 {
     gamma = 0.;
     lambda = 0.;

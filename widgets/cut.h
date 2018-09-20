@@ -78,7 +78,15 @@ private:
 //	bool smartFindCheck(); /// return true if bad window
 
 	std::vector<std::pair<int, QColor>> makeColouredChans();
-	template<class...params> void logAction(const params &... par);
+	template<class...params> void logAction(const params &... par)
+	{
+		std::ofstream outStr;
+		QString name = edfFil.getExpNameShort();
+		outStr.open((edfFil.getDirPath() + "/" +
+					 name + "_cutLog.txt").toStdString(), std::ios_base::app);
+		myWrite(outStr, par...);
+		outStr.close();
+	}
 	void applyLog(const QString & logPath);
 	void iitpLog(const QString & typ, int num = 2, const QString & add = QString()); /// to deprecate
 
@@ -139,10 +147,10 @@ protected:
 private:
 	struct thrParam
 	{
-		double mean;
-		double sigma;
-		int numChan;
-		int numParam;
+		double mean{};
+		double sigma{};
+		int numChan{};
+		int numParam{};
 	};
 	void smartFindSetFuncs();
 
@@ -151,7 +159,7 @@ private:
 
 	/// draw
 	QPixmap currentPic{};
-	int leftDrawLimit; /// in slices	
+	int leftDrawLimit{}; /// in slices
 	std::vector<int> zeroedChannels{};
 	std::vector<std::tuple<QSpinBox*, QLineEdit*, QLineEdit*>> colouredWidgets;
 	static const int scrollAreaGapX = 20;

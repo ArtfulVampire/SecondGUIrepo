@@ -154,11 +154,11 @@ void countFeatures(const matrix & inData,
 				   const QString & preOutPath)
 {
 	/// spectre will be count twice for alpha and FFT but I dont care
-	for(uint num = 0; num < FEATURES.size(); ++num)
+	for(const auto & num : FEATURES)
 	{
-		if(Mask & std::get<0>(FEATURES[num]))
+		if(Mask & std::get<0>(num))
 		{
-			const QString outPath = preOutPath + "_" + std::get<1>(FEATURES[num]) + ".txt";
+			const QString outPath = preOutPath + "_" + std::get<1>(num) + ".txt";
 
 			QFile::remove(outPath);
 			std::ofstream outStr;
@@ -167,7 +167,7 @@ void countFeatures(const matrix & inData,
 			outStr << std::fixed;
 			outStr.precision(4);
 
-			auto f = std::get<2>(FEATURES[num]);
+			const auto& f = std::get<2>(num);
 			f(inData,
 			  srate,
 			  outStr);
@@ -645,7 +645,7 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 {
 	DEFS.setNtFlag(false);
 
-	for(QString guy : guyList)
+	for(const QString& guy : guyList)
 	{
 		if(cutOnlyFlag)
 		{
@@ -667,7 +667,7 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 		/// make archive
 		QString cmd = "cd " + outPath + " && " +
 					  "rar a " + guy + ".rar ";
-		for(QString a : files)
+		for(const QString & a : files)
 		{
 			cmd += a + " ";
 		}
@@ -700,7 +700,7 @@ void EEG_MRI_FD()
 
 	QStringList guyList = QDir(workDir).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 
-	for(QString guy : guyList)
+	for(const QString & guy : guyList)
 	{
 		break;
 		const QString outPath = workDir + "/" + guy + "/out";
@@ -798,7 +798,7 @@ void Xenia_TBI(const QString & tbi_path)
 
 #if 01
 	/// count
-	for(QString subdir : subdirs)
+	for(const QString & subdir : subdirs)
 	{
 		QString workPath = tbi_path + "/" + subdir;
 
@@ -811,7 +811,7 @@ void Xenia_TBI(const QString & tbi_path)
 
 		/// list of guys
 		QStringList guys = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-		for(QString guy : guys)
+		for(const QString & guy : guys)
 		{
 
 			repair::deleteSpacesFolders(workPath + "/" + guy);
@@ -852,7 +852,7 @@ void Xenia_TBI(const QString & tbi_path)
 			}
 
 			QStringList fileNames;
-			for(QString marker : markers)
+			for(const QString & marker : markers)
 			{
 				fileNames.clear();
 				for(featuresMask type : {
@@ -872,7 +872,7 @@ void Xenia_TBI(const QString & tbi_path)
 			}
 
 			fileNames.clear();
-			for(QString marker : markers)
+			for(const QString & marker : markers)
 			{
 				fileNames <<  ExpName + marker + ".txt"; /// guy <-> ExpName
 			}
@@ -964,7 +964,7 @@ void Xenia_TBI_final(const QString & finalPath,
 
 
 	/// count
-	for(QString subdir : subdirs)
+	for(const QString & subdir : subdirs)
 	{
 		const QString groupPath = finalPath + "/" + subdir;
 
@@ -974,7 +974,7 @@ void Xenia_TBI_final(const QString & finalPath,
 
 		/// list of guys
 		QStringList guys = QDir(groupPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-		for(QString guy : guys)
+		for(const QString & guy : guys)
 		{
 			const QString guyPath = groupPath + "/" + guy;
 
@@ -1041,7 +1041,7 @@ void Xenia_TBI_final(const QString & finalPath,
 			/// make one line file for each stimulus
 			if(1)
 			{
-				for(QString mark : tbiMarkers)
+				for(const QString & mark : tbiMarkers)
 				{
 					QStringList fileNamesToArrange;
 					for(featuresMask func : {
@@ -1065,7 +1065,7 @@ void Xenia_TBI_final(const QString & finalPath,
 			if(1)
 			{
 				QStringList fileNamesToArrange;
-				for(QString mark : tbiMarkers)
+				for(const QString & mark : tbiMarkers)
 				{
 					fileNamesToArrange.push_back(ExpName + mark + ".txt");
 				}
@@ -1097,7 +1097,7 @@ void Xenia_TBI_finalest(const QString & finalPath,
 	DEFS.setNtFlag(false);
 	if(!QDir(outPath).exists()) { QDir().mkpath(outPath); }
 
-	for(QString subdir : {"Healthy", "Moderate", "Severe"})
+	for(const QString & subdir : {"Healthy", "Moderate", "Severe"})
 	{
 		const QString groupPath = finalPath + "/" + subdir;
 
@@ -1411,10 +1411,10 @@ void cutFilesInFolder(const QString & path,
 //#pragma omp parallel
 //#pragma omp for nowait
 //#endif
-	for(int i = 0; i < filesVec.size(); ++i)
+	for(const auto & fileName : filesVec)
 	{
-		std::cout << filesVec[i] << std::endl;
-		QString helpString = tmpDir.absolutePath() + "/" + filesVec[i];
+		std::cout << fileName << std::endl;
+		QString helpString = tmpDir.absolutePath() + "/" + fileName;
 		edfFile initEdf;
 		initEdf.readEdfFile(helpString, true);
 
@@ -1492,7 +1492,7 @@ void rewriteNew(const QString & inPath)
 void EdfsToFolders(const QString & inPath)
 {
 	auto lst = QDir(inPath).entryList(def::edfFilters);
-	for(QString in : lst)
+	for(const QString & in : lst)
 	{
 		QString ExpName = in.left(in.lastIndexOf("_"));
 		if(!QDir(inPath + "/" + ExpName).exists())
@@ -1771,7 +1771,7 @@ void ProcessByFolders(const QString & inPath,
 		if(1)
 		{
 			QStringList fileNamesToArrange;
-			for(QString mark : markers)
+			for(const QString & mark : markers)
 			{
 				fileNamesToArrange.push_back(ExpName + mark + ".txt");
 			}

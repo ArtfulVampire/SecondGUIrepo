@@ -22,7 +22,7 @@ QString matiCountByteStr(double marker)
     return result;
 
 }
-void matiPrintMarker(double marker, QString pre)
+void matiPrintMarker(double marker, const QString & pre)
 {
     std::vector<bool> byteMarker;
     byteMarker = matiCountByte(marker);
@@ -36,10 +36,10 @@ void matiPrintMarker(double marker, QString pre)
 
 std::vector<bool> matiCountByte(double marker)
 {
-    std::vector<bool> byteMarker;
+	std::vector<bool> byteMarker(16);
     for(int h = 0; h < 16; ++h)
     {
-        byteMarker.push_back(matiCountBit(marker, h));
+		byteMarker[h] = matiCountBit(marker, h);
     }
     return byteMarker;
 }
@@ -47,7 +47,7 @@ std::vector<bool> matiCountByte(double marker)
 void matiFixMarker(double & marker)
 {
     /// throw 10000000 00000000 and 00000000 10000000 and 00000000 00000000
-    if(marker == std::pow(2, 15) || marker == std::pow(2, 7) || marker == 0)
+	if(marker == std::pow(2, 15) || marker == std::pow(2, 7) || marker == 0.)
     {
         marker = 0;
         return;

@@ -86,7 +86,7 @@ matrix makeTestData(const QString & outPath)
 
 void clustering()
 {
-	srand(time(NULL));
+	srand(time(nullptr));
 
 	int numRow = 300;
 	int numCol = 18;

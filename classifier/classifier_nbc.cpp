@@ -2,7 +2,7 @@
 
 using namespace myOut;
 
-NBC::NBC() : Classifier()
+NBC::NBC()
 {
     myType = ModelType::NBC;
     typeString = "NBC";

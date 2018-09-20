@@ -514,7 +514,7 @@ void MainWindow::drawReals()
     ui->progressBar->setValue(0);
 	outStream << "signals draw completed" << std::endl;
 
-    stopFlag = 0;
+	stopFlag = false;
 	outStream << "drawReals: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
@@ -574,7 +574,7 @@ void MainWindow::drawMapsSlot()
 
 void MainWindow::stop()
 {
-    stopFlag = 1;
+	stopFlag = true;
 }
 
 void MainWindow::setFileMarkers()

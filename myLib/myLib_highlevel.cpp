@@ -22,19 +22,17 @@ sliceData(const matrix & inData,
 		currMrk = myLib::indexOfVal(separators, mrk.second);
 
 		if(currMrk == -1) { continue; } /// not interesting marker
-		else
-		{
-			/// save real
-			if(sta != -1 && prevMrk != -1)
-			{
-				res[prevMrk].push_back(inData.subCols(sta, mrk.first));
-				starts[prevMrk].push_back(sta);
-			}
 
-			/// set sta and currMrk
-			prevMrk = currMrk;
-			sta = mrk.first;
+		/// save real
+		if(sta != -1 && prevMrk != -1)
+		{
+			res[prevMrk].push_back(inData.subCols(sta, mrk.first));
+			starts[prevMrk].push_back(sta);
 		}
+
+		/// set sta and currMrk
+		prevMrk = currMrk;
+		sta = mrk.first;
 	}
 
 	/// add last rest from last 254 + 8 sec

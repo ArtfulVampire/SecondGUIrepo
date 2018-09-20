@@ -200,7 +200,7 @@ eigenValuesSVD(const matrix & initialData,
 
 
 /// icaResult class
-void icaResult::order(std::function<double(int)> func)
+void icaResult::order(const std::function<double(int)> & func)
 {
 	std::vector<std::pair <double, int>> colsNorms; /// dispersion, numberOfComponent
 	for(int i = 0; i < matrixA.rows(); ++i)
@@ -351,6 +351,7 @@ void ICAclass::calculateICA()
 	this->result.orderIcaDisp();
 }
 
+/// TO DO
 void ICAclass::writeNewEDF(const QString & outPath)
 {
 
@@ -425,6 +426,8 @@ void ICAclass::drawMaps() const
 void ICAclass::drawSpectraWithMaps() const
 {
 	const int fftLenLoc = 4096;
+#if 0
+	/// old (20-Sep-18)
 	std::function<std::valarray<double>(const std::valarray<double>&)> spectreWelch
 			= std::bind(myLib::spectreWelchRtoR,
 						std::placeholders::_1,
@@ -433,6 +436,14 @@ void ICAclass::drawSpectraWithMaps() const
 						myLib::windowName::Hamming,
 						fftLenLoc	/// fftLen
 						);
+#endif
+	/// remake with lambda
+	auto spectreWelch =
+			[](const std::valarray<double> & in) -> std::valarray<double>
+	{
+		return myLib::spectreWelchRtoR(in, 0.5, 250, myLib::windowName::Hamming, fftLenLoc);
+	};
+
 	const double lf = fb::FBedf::leftFreq;
 	const double rf = fb::FBedf::rightFreq;
 

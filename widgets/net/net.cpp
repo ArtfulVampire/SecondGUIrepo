@@ -9,7 +9,7 @@ Net::Net() :
     ui->setupUi(this);
 	this->setWindowTitle("Net");
 
-    stopFlag = 0;
+	stopFlag = false;
 
     /// 0
     myButtonGroup.push_back(new QButtonGroup());
@@ -233,25 +233,25 @@ void Net::writeWtsSlot()
     }
     int wtsCounter = 0;
     QString helpString;
-    if(!autoFlag)
-    {
-        helpString = QFileDialog::getSaveFileName((QWidget * )this,
-                                                  tr("wts to save"),
+	if(!autoFlag)
+	{
+		helpString = QFileDialog::getSaveFileName((QWidget * )this,
+												  tr("wts to save"),
 												  DEFS.dirPath(),
-                                                  tr("wts files (*.wts)"));
-        if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
-        {
-            helpString += ".wts";
-        }
-    }
+												  tr("wts files (*.wts)"));
+		if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
+		{
+			helpString += ".wts";
+		}
+	}
 	else
-    {
-        do
-        {
+	{
+		do
+		{
 			helpString = DEFS.dirPath() + "/Help/wts/weight_" + nm(wtsCounter) + ".wts";
-            ++wtsCounter;
-        } while(QFile::exists(helpString));
-    }
+			++wtsCounter;
+		} while(QFile::exists(helpString));
+	}
 
     if(helpString.isEmpty())
     {
@@ -268,7 +268,7 @@ void Net::readWtsSlot()
     {
         return;
     }
-    QString helpString = QFileDialog::getOpenFileName((QWidget * )NULL,
+	QString helpString = QFileDialog::getOpenFileName(nullptr,
                                                       tr("load wts"),
 													  DEFS.dirPath(),
                                                       tr("wts files (*.wts)"));

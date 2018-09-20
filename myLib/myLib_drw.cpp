@@ -148,7 +148,7 @@ QPixmap drawOneTemplate(const QString & chanName,
 	paint.setFont(QFont("Helvetica", int(myLib::drw::fontSizeChan), -1, false));
 	if(!chanName.isEmpty())
 	{
-		paint.drawText(QPointF(X - myLib::drw::fontSizeChan * 2/3,
+		paint.drawText(QPointF(X - myLib::drw::fontSizeChan * 2 / 3,
 							   Y - myLib::drw::graphHeight + myLib::drw::fontSizeChan),
 					   chanName);
 	}
@@ -274,7 +274,7 @@ QPixmap drawArrayWithSigma(const QPixmap & templatePic,
 	int lineWidth_ = myLib::drw::lineWidth;
 
 
-	for(auto drawLine : std::vector<std::valarray<double>>{inData, lowLine, highLine})
+	for(const auto & drawLine : std::vector<std::valarray<double>>{inData, lowLine, highLine})
 	{
 		pic = myLib::drw::drawArray(pic,
 									drawLine,
@@ -653,8 +653,8 @@ QPixmap drawMannWitney(const QPixmap & templatePic,
 
 			for(int l = h + 1; l < numOfClasses; ++l) /// class2
 			{
-				QColor color1 = QColor(inColors[h]);
-				QColor color2 = QColor(inColors[l]);
+				QColor color1 = inColors[h];
+				QColor color2 = inColors[l];
 
 				/// check it is goog with spLength w/o DEFS
 				for(int j = offset; j < offset + spLength; ++j)
@@ -884,25 +884,25 @@ double redOld(int range, int j)
 {
 	double part = j / double(range);
 	if(0.000 <= part && part <= 0.5) return 0.;
-	else if(0.500 < part && part <= 0.800) return (part - 0.5) / (0.8 - 0.5);
-	else if(0.800 < part && part <= 1.000) return 1.;
-	else return 0.0;
+	if(0.500 < part && part <= 0.800) return (part - 0.5) / (0.8 - 0.5);
+	if(0.800 < part && part <= 1.000) return 1.;
+	return 0.0;
 }
 double greenOld(int range, int j)
 {
 	double part = j / double(range);
 	if(0.000 <= part && part <= 0.2) return part * 5;
-	else if(0.200 < part && part <= 0.800) return 1.;
-	else if(0.800 < part && part <= 1.000) return 1. - (part - 0.8) / (1.0 - 0.8);
-	else return 0.0;
+	if(0.200 < part && part <= 0.800) return 1.;
+	if(0.800 < part && part <= 1.000) return 1. - (part - 0.8) / (1.0 - 0.8);
+	return 0.0;
 }
 double blueOld(int range, int j)
 {
 	double part = j / double(range);
 	if(0.000 <= part && part <= 0.2) return 1.;
-	else if(0.200 < part && part <= 0.500) return 1 - (part - 0.2) / (0.5 - 0.2);
-	else if(0.500 < part && part <= 1.000) return 0.;
-	else return 0.0;
+	if(0.200 < part && part <= 0.500) return 1 - (part - 0.2) / (0.5 - 0.2);
+	if(0.500 < part && part <= 1.000) return 0.;
+	return 0.0;
 }
 QColor hueOld(int range, int j)
 {
@@ -919,11 +919,11 @@ double redMatlab(int range, int j, double V, double S)
 	double part = j / double(range);
 	/// matlab
 	if    (0. <= part && part <= myLib::drw::colDots[0]) return V*(1.-S);
-	else if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S);
-	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[1]) / (myLib::drw::colDots[2] - myLib::drw::colDots[1]);
-	else if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V;
-	else if(myLib::drw::colDots[3] < part && part <= 1.) return V - V*S*(part-myLib::drw::colDots[3])/(1 - myLib::drw::colDots[3])/2.;
-	return 0; /// never happens
+	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S);
+	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[1]) / (myLib::drw::colDots[2] - myLib::drw::colDots[1]);
+	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V;
+	if(myLib::drw::colDots[3] < part && part <= 1.) return V - V*S*(part-myLib::drw::colDots[3])/(1 - myLib::drw::colDots[3])/2.;
+	return 0.; /// never happens
 }
 
 double greenMatlab(int range, int j, double V, double S)
@@ -931,11 +931,11 @@ double greenMatlab(int range, int j, double V, double S)
 	double part = j / double(range);
 	/// matlab
 	if    (0.0 <= part && part <= myLib::drw::colDots[0]) return V*(1.-S);
-	else if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[0])/(myLib::drw::colDots[1] - myLib::drw::colDots[0]);
-	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V;
-	else if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V - V*S*(part-myLib::drw::colDots[2])/(myLib::drw::colDots[3] - myLib::drw::colDots[2]);
-	else if(myLib::drw::colDots[3] < part && part <= 1.) return V*(1.-S);
-	return 0; /// never happens
+	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[0])/(myLib::drw::colDots[1] - myLib::drw::colDots[0]);
+	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V;
+	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V - V*S*(part-myLib::drw::colDots[2])/(myLib::drw::colDots[3] - myLib::drw::colDots[2]);
+	if(myLib::drw::colDots[3] < part && part <= 1.) return V*(1.-S);
+	return 0.; /// never happens
 }
 
 double blueMatlab(int range, int j, double V, double S)
@@ -943,11 +943,11 @@ double blueMatlab(int range, int j, double V, double S)
 	double part = j / double(range);
 	/// matlab
 	if    (0.0 <= part && part <= myLib::drw::colDots[0]) return V -V*S/2. + V*S*(part)/(myLib::drw::colDots[0] - 0.0)/2.;
-	else if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V;
-	else if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V - V*S*(part-myLib::drw::colDots[1])/(myLib::drw::colDots[2] - myLib::drw::colDots[1]);
-	else if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V*(1.-S);
-	else if(myLib::drw::colDots[3] < part && part <= 1.) return V*(1.-S);
-	return 0; /// never happens
+	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V;
+	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V - V*S*(part-myLib::drw::colDots[1])/(myLib::drw::colDots[2] - myLib::drw::colDots[1]);
+	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V*(1.-S);
+	if(myLib::drw::colDots[3] < part && part <= 1.) return V*(1.-S);
+	return 0.; /// never happens
 }
 
 
@@ -966,12 +966,12 @@ double redJet(int range, int j, double V, double S)
 
 	/// old
 	if    (0.000 <= part && part <= 0.167) return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.;
-	else if(0.167 < part && part <= 0.400) return V*(1.-S);
-	else if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
-	else if(0.500 < part && part <= 0.600) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
-	else if(0.600 < part && part <= 0.833) return V;
-	else if(0.833 < part && part <= 1.000) return V - V*S*(part-0.833)/(1.000-0.833)/2.;
-	else return 0.0;
+	if(0.167 < part && part <= 0.400) return V*(1.-S);
+	if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
+	if(0.500 < part && part <= 0.600) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
+	if(0.600 < part && part <= 0.833) return V;
+	if(0.833 < part && part <= 1.000) return V - V*S*(part-0.833)/(1.000-0.833)/2.;
+	return 0.0;
 }
 
 double greenJet(int range, int j, double V, double S)
@@ -981,12 +981,12 @@ double greenJet(int range, int j, double V, double S)
 
 	/// old
 	if    (0.000 <= part && part <= 0.167) return V*(1.-S);
-	else if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
-	else if(0.400 < part && part <= 0.500) return V-V*S*(1.-hlp);
-	else if(0.500 < part && part <= 0.600) return V-V*S*(1.-hlp);
-	else if(0.600 < part && part <= 0.833) return V-V*S*(1.-hlp) - V*S*hlp*(part-0.600)/(0.833-0.600);
-	else if(0.833 < part && part <= 1.000) return V*(1.-S);
-	else return 0.0;
+	if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
+	if(0.400 < part && part <= 0.500) return V-V*S*(1.-hlp);
+	if(0.500 < part && part <= 0.600) return V-V*S*(1.-hlp);
+	if(0.600 < part && part <= 0.833) return V-V*S*(1.-hlp) - V*S*hlp*(part-0.600)/(0.833-0.600);
+	if(0.833 < part && part <= 1.000) return V*(1.-S);
+	return 0.0;
 }
 
 double blueJet(int range, int j, double V, double S)
@@ -994,14 +994,12 @@ double blueJet(int range, int j, double V, double S)
 	double part = j / double(range);
 	/// old
 	if    (0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
-	else if(0.167 < part && part <= 0.400) return V;
-	else if(0.400 < part && part <= 0.500) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
-	else if(0.500 < part && part <= 0.600) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
-	else if(0.600 < part && part <= 0.833) return V*(1.-S);
-	else if(0.833 < part && part <= 1.000) return V*(1.-S);
-
-
-	else return 0.0;
+	if(0.167 < part && part <= 0.400) return V;
+	if(0.400 < part && part <= 0.500) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
+	if(0.500 < part && part <= 0.600) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
+	if(0.600 < part && part <= 0.833) return V*(1.-S);
+	if(0.833 < part && part <= 1.000) return V*(1.-S);
+	return 0.0;
 }
 QColor hueJet(int range, int j)
 {
@@ -1041,10 +1039,7 @@ auto colorFunction (ColorScale in) -> QColor (*)(int, int)
 	{
 		return myLib::drw::hueMatlab;
 	}
-	default:
-	{
-		return myLib::drw::grayScale;
-	}
+//	default: { /* can't get here */ return myLib::drw::grayScale; }
 	}
 }
 
@@ -1261,8 +1256,8 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		for(int y = 0; y < mapSize; ++y)
 		{
 			/// round shape
-			if(smLib::distance(x, y, mapSize / 2, mapSize / 2) >
-			   mapSize * 2. * std::sqrt(2.) / (dim - 1) ) continue;
+			if(smLib::distance(x, y, mapSize / 2., mapSize / 2.) >
+			   mapSize * 2. * std::sqrt(2.) / (dim - 1.) ) continue;
 
 			val = myLib::splineOutput(inX, inYv, dim, Av, Bv, y * scale);
 			if(maxAbs == 0.)
@@ -1337,7 +1332,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 
 		int fontSize = 12;
 		pnt.setFont(QFont("Times", fontSize));
-		if(maxAbs == 0)
+		if(maxAbs == 0.)
 		{
 			pnt.drawText(2, fontSize + 2, nm(smLib::doubleRound(maxMagn, 3)));
 		}
@@ -1353,7 +1348,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 //			pnt.drawText(2, h + fontSize + 2, nm(smLib::doubleRound(maxMagn, 3)));
 		}
 
-		if(minMagn != 0)
+		if(minMagn != 0.)
 		{
 			pnt.drawText(2, values.height() - 2, nm(smLib::doubleRound(minMagn, 3)));
 		}

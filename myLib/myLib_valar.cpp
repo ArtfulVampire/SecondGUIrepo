@@ -52,10 +52,8 @@ double median(const Container & arr)
 	{
 		return arr2[arr2.size() / 2];
 	}
-	else
-	{
-		return 0.5 * (arr2[arr2.size() / 2] + arr2[arr2.size() / 2 - 1]);
-	}
+//	else
+	return 0.5 * (arr2[arr2.size() / 2] + arr2[arr2.size() / 2 - 1]);
 }
 template double median(const std::valarray<double> & arr);
 template double median(const std::vector<double> & arr);

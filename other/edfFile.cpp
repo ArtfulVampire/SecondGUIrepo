@@ -125,7 +125,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		FILE* inStr;
 		inStr = fopen(txtFilePath, "r");
 
-		if(inStr == NULL)
+		if(inStr == nullptr)
 		{
 			std::cout << "edfFile(matiLogFile): input file is NULL" << std::endl;
 			return;
@@ -231,13 +231,12 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 	}
 	else if(which == inst::iitp)
 	{
-		matrix iitpData{};
 		std::vector<QString> iitpLabels{};
-		myLib::readIITPfile(txtFilePath, iitpData, iitpLabels);
+		myLib::readIITPfile(txtFilePath, this->edfData, iitpLabels);
 
 		this->srate = 1000;
 
-		int numOfParams = iitpData.rows();
+		int numOfParams = edfData.rows();
 
 		this->headerInitialInfo = myLib::fitString("Edf for IITP EMG Data", 184);
 		this->headerReservedField = myLib::fitString("headerReservedField", 44);
@@ -300,7 +299,6 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 											   myLib::fitString("IITP no prefiltering", 80));
 		this->reserved = std::vector<QString> (this->ns, myLib::fitString("IITP reserved", 32));
 
-		this->edfData = std::move(iitpData);
 		this->fitData(this->edfData.cols());
 
 		for(int i = 0; i < this->ns; ++i)
@@ -337,7 +335,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 
 		/// mix channels
 		std::vector<int> chanList;
-		for(QString lab : {
+		for(const QString & lab : {
 			"Ta",
 			"Bf",
 			"Fcr",
@@ -350,7 +348,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 			"Wrist"
 	})
 		{
-			for(QString post : {"_l", "_r"})
+			for(const QString & post : {"_l", "_r"})
 			{
 				auto i = this->findChannel(lab + post);
 				if(i != -1)
@@ -393,7 +391,7 @@ void edfFile::rewriteEdfFile()
 	this->handleEdfFile(this->getFilePath(), false);
 }
 
-void edfFile::writeEdfFile(QString EDFpath, bool asPlain)
+void edfFile::writeEdfFile(const QString & EDFpath, bool asPlain)
 {
 	if(*this == edfFile{}) { return; }
 
@@ -601,7 +599,7 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 			/// essentially need for edfFile::refilter
 			else
 			{
-				for(auto lbl : coords::lbl_all) /// most wide list of channels
+				for(const QString & lbl : coords::lbl_all) /// most wide list of channels
 				{
 					if(labels[i].contains("EOG") &&
 					   !labels[i].startsWith("EOG "))
@@ -609,20 +607,20 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 						labels[i].prepend("EOG ");
 						continue;
 					}
-					else if(labels[i].contains(lbl) &&
+					if(labels[i].contains(lbl) &&
 							!labels[i].contains(QRegExp("E[OC]G")) &&
 							!labels[i].startsWith("EEG "))
 					{
 						labels[i].prepend("EEG ");
 						continue;
 					}
-					else if(labels[i].startsWith("Chan "))
+					if(labels[i].startsWith("Chan "))
 					{
 //						labels[i].replace("Chan ", "Chan");
 						labels[i].prepend("EEG ");
 						continue;
 					}
-					else if(labels[i].contains(QRegExp(R"((PPG|FPG|SGR|KGR|Resp|RD))"))
+					if(labels[i].contains(QRegExp(R"((PPG|FPG|SGR|KGR|Resp|RD))"))
 							&& !labels[i].startsWith("POLY "))
 					{
 						labels[i].prepend("POLY ");
@@ -635,13 +633,8 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 		if(std::find_if(std::begin(labels),
 						std::end(labels),
 						[](const QString & in)
-		{
-						if(
-							in.contains("Markers")
-							|| in.contains("Annotations")
-							|| in.contains("Status")) { return true; }
-						else { return false; }
-	}) == std::end(labels))
+		{ return in.contains("Markers") || in.contains("Annotations") || in.contains("Status"); })
+		   == std::end(labels))
 		{
 			this->writeMarkersFlag = false;
 		}
@@ -954,7 +947,7 @@ void edfFile::handleDatum(int currNs,
 							/ (digMax[currNs] - digMin[currNs]);
 //				currDatum = markA;
 
-				if(currDatum != 0 )
+				if(currDatum != 0. )
 				{
 					myLib::matiFixMarker(currDatum);
 				}
@@ -1100,62 +1093,62 @@ void edfFile::handleDatum(int currNs,
                           QString & ntAnnot,
                           FILE * edfForDatum)
 {
-    char helpChar = '0';
+	char helpChar = '0';
 	qint16 a = 0;
 	quint16 markA = 0;
 
 	double & currDatum = this->edfData[currNs][currTimeIndex];
 
-    if(readFlag)
-    {
-        if(currNs != markerChannel) /// usual data read
-        {
-            fread(&a, sizeof(qint16), 1, edfForDatum);
-            currDatum = physMin[currNs]
-                    + (physMax[currNs] - physMin[currNs])
-                    * (double(a) - digMin[currNs])
-                    / (digMax[currNs] - digMin[currNs]
-					   + (this->ntFlag ? 0 : 1));
-            /// neurotravel + 0
-            /// encephalan + 1
+	if(readFlag)
+	{
+		if(currNs != markerChannel) /// usual data read
+		{
+			fread(&a, sizeof(qint16), 1, edfForDatum);
+			currDatum = physMin[currNs]
+						+ (physMax[currNs] - physMin[currNs])
+						* (double(a) - digMin[currNs])
+						/ (digMax[currNs] - digMin[currNs]
+						   + (this->ntFlag ? 0 : 1));
+			/// neurotravel + 0
+			/// encephalan + 1
 
-//			currDatum = a * 1./8.; /// generality encephalan
+			//			currDatum = a * 1./8.; /// generality encephalan
 
-        }
+		}
 		else /// if markers channel
-        {
-            if(this->edfPlusFlag)
-            {
+		{
+			if(this->edfPlusFlag)
+			{
 				/// edf+
-                fread(&helpChar, sizeof(char), 1, edfForDatum);
-                ntAnnot += helpChar;
-                fread(&helpChar, sizeof(char), 1, edfForDatum);
-                ntAnnot += helpChar;
-            }
-            else if(this->matiFlag)
-            {
-                fread(&markA, sizeof(quint16), 1, edfForDatum);
-                currDatum = physMin[currNs]
-                        + (physMax[currNs] - physMin[currNs])
-                        * (double(markA) - digMin[currNs])
-                        / (digMax[currNs] - digMin[currNs]);
-//				currDatum = markA;
+				fread(&helpChar, sizeof(char), 1, edfForDatum);
+				ntAnnot += helpChar;
+				fread(&helpChar, sizeof(char), 1, edfForDatum);
+				ntAnnot += helpChar;
+			}
+			else if(this->matiFlag)
+			{
+				fread(&markA, sizeof(quint16), 1, edfForDatum);
+				currDatum = physMin[currNs]
+							+ (physMax[currNs] - physMin[currNs])
+							* (double(markA) - digMin[currNs])
+							/ (digMax[currNs] - digMin[currNs]);
+				//				currDatum = markA;
 
-                if(currDatum != 0 )
-                {
+				if(currDatum != 0.)
+				{
 					myLib::matiFixMarker(currDatum);
-                }
-            }
-            else /// simple edf
-            {
-                fread(&a, sizeof(qint16), 1, edfForDatum);
-                currDatum = physMin[currNs]
-                        + (physMax[currNs] - physMin[currNs])
-                        * (double(a) - digMin[currNs])
-                        / (digMax[currNs] - digMin[currNs]);
+				}
+			}
+			else /// simple edf
+			{
+				fread(&a, sizeof(qint16), 1, edfForDatum);
+				currDatum = physMin[currNs]
+							+ (physMax[currNs] - physMin[currNs])
+							* (double(a) - digMin[currNs])
+							/ (digMax[currNs] - digMin[currNs]);
 
-//				currDatum = a; /// generality encephalan
-            }
+				//				currDatum = a; /// generality encephalan
+			}
 #if 0
 			/// write in file
 			if(writeMarkersFlag &&
@@ -1165,56 +1158,56 @@ void edfFile::handleDatum(int currNs,
 				writeMarker(currDatum, currTimeIndex);
 			}
 #endif
-        }
-    }
+		}
+	}
 	else /// if write
-    {
-        if(currNs != markerChannel) /// usual data write
-        {
-            /// round better to N * 1/8.
-            if(currNs < 21) /// generality bicycle
-            {
+	{
+		if(currNs != markerChannel) /// usual data write
+		{
+			/// round better to N * 1/8.
+			if(currNs < 21) /// generality bicycle
+			{
 				currDatum = smLib::doubleRoundFraq(currDatum,
-													  int( (digMax[currNs] - digMin[currNs] + 1)
-														   / (physMax[currNs] - physMin[currNs]) )
-													  ); /// need for eyes cleaned EEG only
-            }
+												   int( (digMax[currNs] - digMin[currNs] + 1)
+														/ (physMax[currNs] - physMin[currNs]) )
+												   ); /// need for eyes cleaned EEG only
+			}
 
-            a = (qint16)((currDatum - physMin[currNs])
-                        * (digMax[currNs] - digMin[currNs]
-						   + (this->ntFlag ? 0 : 1))
-                        / (physMax[currNs] - physMin[currNs])
-						+ digMin[currNs]);
+			a = ((currDatum - physMin[currNs])
+				 * (digMax[currNs] - digMin[currNs]
+					+ (this->ntFlag ? 0 : 1))
+				 / (physMax[currNs] - physMin[currNs])
+				 + digMin[currNs]);
 
-            fwrite(&a, sizeof(qint16), 1, edfForDatum);
-        }
+			fwrite(&a, sizeof(qint16), 1, edfForDatum);
+		}
 		else /// if markers channel
-        {
-            if(this->edfPlusFlag) ////////////////////////// to do???
-            {
+		{
+			if(this->edfPlusFlag) ////////////////////////// to do???
+			{
 				/// edf+
-//                fwrite(&helpChar, sizeof(char), 1, edfDescriptor);
-            }
-            else if(this->matiFlag)
-            {
-//				markA = (quint16) (currDatum);
-                markA = (quint16)( (currDatum - physMin[currNs])
-                                          * (digMax[currNs] - digMin[currNs])
-                                          / (physMax[currNs] - physMin[currNs])
-                                          + digMin[currNs]);
-                fwrite(&markA, sizeof(quint16), 1, edfForDatum);
-            }
-            else /// simple edf
-            {
-//				a = (qint16) (currDatum);
-                a = (qint16)( (currDatum - physMin[currNs])
-                            * (digMax[currNs] - digMin[currNs])
-                            / (physMax[currNs] - physMin[currNs])
-                            + digMin[currNs]);
-                fwrite(&a, sizeof(qint16), 1, edfForDatum);
-            }
-        }
-    }
+				//                fwrite(&helpChar, sizeof(char), 1, edfDescriptor);
+			}
+			else if(this->matiFlag)
+			{
+				//				markA = (quint16) (currDatum);
+				markA = ( (currDatum - physMin[currNs])
+						  * (digMax[currNs] - digMin[currNs])
+						  / (physMax[currNs] - physMin[currNs])
+						  + digMin[currNs]);
+				fwrite(&markA, sizeof(quint16), 1, edfForDatum);
+			}
+			else /// simple edf
+			{
+				//				a = (qint16) (currDatum);
+				a = ( (currDatum - physMin[currNs])
+					  * (digMax[currNs] - digMin[currNs])
+					  / (physMax[currNs] - physMin[currNs])
+					  + digMin[currNs]);
+				fwrite(&a, sizeof(qint16), 1, edfForDatum);
+			}
+		}
+	}
 }
 
 void edfFile::writeAnnotations() const
@@ -1573,12 +1566,12 @@ void edfFile::adjustMarkerChannel()
 }
 
 
-edfFile edfFile::vertcatFile(QString addEdfPath, QString outPath) const
+edfFile edfFile::vertcatFile(const QString & addEdfPath,
+							 const QString & outPath) const
 {
     edfFile temp(*this);
     edfFile addEdf;
     addEdf.readEdfFile(addEdfPath);
-
 
 	edfChannel addChan;
 	std::valarray<double> addData;
@@ -1704,7 +1697,7 @@ std::vector<int> edfFile::findChannels(const std::vector<QString> & strs) const
 	std::vector<int> res{};
 	for(int i = 0; i < this->ns; ++i)
 	{
-		for(QString str : strs)
+		for(const QString & str : strs)
 		{
 			if(labels[i].contains(str, Qt::CaseInsensitive))
 			{
@@ -1729,7 +1722,7 @@ edfFile & edfFile::subtractMeans(const QString & outPath)
 	return *this;
 }
 
-edfFile & edfFile::concatFile(QString addEdfPath, QString outPath) /// assume only data concat
+edfFile & edfFile::concatFile(const QString & addEdfPath, const QString & outPath) /// assume only data concat
 {
     edfFile addEdf;
     addEdf.readEdfFile(addEdfPath);
@@ -1742,8 +1735,8 @@ edfFile & edfFile::concatFile(QString addEdfPath, QString outPath) /// assume on
 
 	for(int i = 0; i < std::min(this->ns, addEdf.getNs()); ++i)
 	{
-		std::copy(std::begin(addEdf.getData()[i]),
-				  std::end(addEdf.getData()[i]),
+		std::copy(std::begin(addEdf.getData(i)),
+				  std::end(addEdf.getData(i)),
 				  std::begin(this->edfData[i]) + oldLen);
 	}
     /// remake
@@ -1941,7 +1934,6 @@ void edfFile::countFft()
 		/// new rewritten
 		fftData[i] = myLib::spectreRtoC(this->edfData[j]); /// shouldn't norm?
 		++i;
-		continue;
 	}
 }
 
@@ -2161,7 +2153,7 @@ edfFile edfFile::rereferenceDataCAR() const
 
 	/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - N
 	std::valarray<double> refArr(temp.edfData.cols());
-	for(QString chanName : usedLabels)
+	for(const QString & chanName : usedLabels)
 	{
 		refArr += temp[temp.findChannel(chanName)];
 	}
@@ -2222,7 +2214,7 @@ void edfFile::saveSubsection(int startBin,
     }
 }
 
-void edfFile::drawSubsection(int startBin, int finishBin, QString outPath) const
+void edfFile::drawSubsection(int startBin, int finishBin, const QString & outPath) const
 {
 	myLib::drw::drawEeg(this->edfData.subCols(startBin, finishBin),
 						this->srate,
@@ -2308,7 +2300,7 @@ edfFile edfFile::reduceChannels(const std::vector<int> & chanList) const /// muc
 
 edfFile & edfFile::removeChannels(const std::vector<int> & chanList)
 {
-    std::set<int, std::greater<int>> excludeSet;
+	std::set<int, std::greater<>> excludeSet;
     for(int val : chanList)
 	{
 		if(val != -1) { excludeSet.emplace(val); }
@@ -2327,7 +2319,7 @@ edfFile & edfFile::removeChannels(const std::vector<int> & chanList)
 
 edfFile & edfFile::removeChannels(const std::vector<uint> & chanList)
 {
-	std::set<uint, std::greater<uint>> excludeSet;
+	std::set<uint, std::greater<>> excludeSet;
 	for(uint val : chanList)
 	{
 		if(val != -1) { excludeSet.emplace(val); }
@@ -2346,7 +2338,7 @@ edfFile & edfFile::removeChannels(const std::vector<uint> & chanList)
 
 edfFile & edfFile::removeChannels(const QStringList & chanList)
 {
-	std::set<int, std::greater<int>> excludeSet;
+	std::set<int, std::greater<>> excludeSet;
 	for(const QString & ch : chanList)
 	{
 		auto val = this->findChannel(ch);
@@ -2421,27 +2413,27 @@ edfFile edfFile::reduceChannels(const QString & chanString) const
 
 	int itemCounter = 0;
 	for(auto item : leest)
-    {
+	{
 		int accordNum = item.toInt() - 1;
 		if(smLib::isInt(item)) /// just copy
 		{
 			temp.edfData[itemCounter] = this->edfData[accordNum];
 			temp.channels[itemCounter] = this->channels[accordNum];
-        }
+		}
 		else if(item.contains(QRegExp(R"([\+\-\*\/])")))
-        {
+		{
 			int lengthCounter = 0; /// length of the expression in chars
 			auto lst = item.split(QRegExp(R"([\+\-\*\/])"), QString::SkipEmptyParts);
 
 			/// check that nums between operators
-			for(auto in : lst)
-            {
+			for(const auto & in : lst)
+			{
 				if(!smLib::isInt(in))
-                {
+				{
 					std::cout << "edfFile::reduceChannels: NAN between operators, return *this" << std::endl;
 					return *this;
-                }
-            }
+				}
+			}
 
 			temp.channels[itemCounter] = this->channels[lst.front().toInt() - 1];
 			temp.edfData[itemCounter] = this->edfData[lst.front().toInt() - 1];
@@ -2456,27 +2448,27 @@ edfFile edfFile::reduceChannels(const QString & chanString) const
 			}
 
 			for(auto lstIter = std::begin(lst) + 1; lstIter != std::end(lst); ++lstIter)
-            {
+			{
 				double sign = 0.;
 				if(item[lengthCounter] == '+') sign = 1.;
 				else if(item[lengthCounter] == '-') sign = -1.;
 				else /// this should never happen!
-                {
+				{
 					std::cout << "edfFile::reduceChannels: first sign is not + or -, return * this" << std::endl;
 					return *this;
-                }
+				}
 				lengthCounter += 1; /// sign length
 				lengthCounter += (*lstIter).length();
 
 				/// check '/' and '*'
 				if(item[lengthCounter] == '/')
-                {
+				{
 					sign /= (*(lstIter+1)).toDouble(); /// already checked for being int
-                }
+				}
 				else if(item[lengthCounter] == '*')
-                {
+				{
 					sign *= (*(lstIter+1)).toDouble(); /// already checked for being int
-                }
+				}
 
 				/// for bipolar EOG because of EOG inverse
 				double eogSign = 1.;
@@ -2492,19 +2484,19 @@ edfFile edfFile::reduceChannels(const QString & chanString) const
 					lengthCounter += 1 + (*lstIter+1).length(); /// sign and argument
 					++lstIter;
 				}
-            }
+			}
 			/// invert EOG back EOG inverse
 			/// will inverse EOG1-EOG2
 			if(eogNotBipolarFlag)
 			{
 				temp.edfData[itemCounter] *= -1.;
 			}
-        }
-        else
-        {
+		}
+		else
+		{
 			std::cout << "edfFile::reduceChannels: unknown format of the string, return *this" << std::endl;
 			return *this;
-        }
+		}
 		++itemCounter;
 	}
 	std::cout << "edfFile::reduceChannels: ns = " << leest.length() << " "
@@ -2536,7 +2528,9 @@ void edfFile::setLabels(const std::vector<QString> & inLabels)
 	}
 }
 
-edfFile & edfFile::insertChannel(int num, const std::valarray<double> & dat, edfChannel ch)
+edfFile & edfFile::insertChannel(int num,
+								 const std::valarray<double> & dat,
+								 const edfChannel & ch)
 {
 	this->channels.insert(std::begin(this->channels) + num, ch);
 	this->edfData.myData.insert(std::begin(this->edfData.myData) + num, dat);
@@ -2544,7 +2538,7 @@ edfFile & edfFile::insertChannel(int num, const std::valarray<double> & dat, edf
 	return *this;
 }
 
-edfFile & edfFile::addChannel(const std::valarray<double> & dat, edfChannel ch)
+edfFile & edfFile::addChannel(const std::valarray<double> & dat, const edfChannel & ch)
 {
 	return this->insertChannel(this->getNs(), dat, ch);
 }
@@ -2640,8 +2634,8 @@ double edfFile::checkDdr(const QString & inPath)
     QString tempStr;
     double localDdr = 0.;
 
-    handleParam(tempStr, 244, true, tmp, (FILE*)NULL);
-    handleParam(localDdr, 8, true, tmp, (FILE*)NULL);
+	handleParam(tempStr, 244, true, tmp, nullptr);
+	handleParam(localDdr, 8, true, tmp, nullptr);
     fclose(tmp);
 
     return localDdr;
@@ -2649,7 +2643,7 @@ double edfFile::checkDdr(const QString & inPath)
 
 bool edfFile::isRerefChannel(const QString & inLabel)
 {
-	for(QString str: {"A1-A2", "A2-A1", "A1-N", "A2-N"})
+	for(const QString & str: {"A1-A2", "A2-A1", "A1-N", "A2-N"})
 	{
 		if(inLabel.contains(str)) return true;
 	}
@@ -2695,12 +2689,10 @@ edfFile edfFile::repairHoles() const
 	{
 		return *this;
 	}
-	else
-	{
-		edfFile temp(*this);
-		temp.setDataFromList(dataList);
-		return temp;
-	}
+	/// else
+	edfFile temp(*this);
+	temp.setDataFromList(dataList);
+	return temp;
 }
 
 
@@ -2708,11 +2700,11 @@ edfFile edfFile::repairChannelsOrder(const std::vector<QString> & standard) cons
 {
 
 	std::vector<int> reorderChanList{};
-	for(uint i = 0; i < standard.size(); ++i)
+	for(const auto & stand : standard)
 	{
 		for(int j = 0; j < this->ns; ++j)
 		{
-			if(this->labels[j].contains(standard[i])) /// unique standards
+			if(this->labels[j].contains(stand)) /// unique standards
 			{
 				reorderChanList.push_back(j);
 				break;
@@ -2739,11 +2731,10 @@ edfFile edfFile::repairChannelsOrder(const std::vector<QString> & standard) cons
 	{
 		return *this;
 	}
-	else
-	{
-		edfFile temp(*this);
-		return temp.reduceChannels(reorderChanList);
-	}
+	/// else
+	edfFile temp(*this);
+	return temp.reduceChannels(reorderChanList);
+
 }
 
 edfFile edfFile::repairPhysEqual() const
@@ -2762,18 +2753,16 @@ edfFile edfFile::repairPhysEqual() const
 	{
 		return *this;
 	}
-	else
+	/// else
+	edfFile temp(*this);
+	for(int i = 0; i < temp.ns; ++i)
 	{
-		edfFile temp(*this);
-		for(int i = 0; i < temp.ns; ++i)
+		if(temp.physMin[i] == temp.physMax[i])
 		{
-			if(temp.physMin[i] == temp.physMax[i])
-			{
-				temp.physMax[i] = temp.physMin[i] + 1;
-			}
+			temp.physMax[i] = temp.physMin[i] + 1;
 		}
-		return temp;
 	}
+	return temp;
 }
 
 void edfFile::transformEdfMatrix(const QString & inEdfPath,
@@ -2875,9 +2864,10 @@ void handleParam(Typ & qStr,
     if(readFlag)
     {
         array = new char [length + 1];
-        fread (array, sizeof(char), length, ioFile); array[length] = '\0';
+		fread (array, sizeof(char), length, ioFile);
+		array[length] = '\0';
         myTransform(qStr, array);
-        if(headerFile != NULL)
+		if(headerFile != nullptr)
         {
             fwrite(array, sizeof(char), length, headerFile);
         }

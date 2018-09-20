@@ -34,7 +34,7 @@ QString rightNumber(int input, int N) /// prepend zeros
 namespace myOut
 {
 
-FILE * fopen(QString filePath, const char *__modes)
+FILE * fopen(const QString & filePath, const char *__modes)
 {
 	return std::fopen(filePath.toStdString().c_str(), __modes);
 }
@@ -62,7 +62,7 @@ std::ostream & operator << (std::ostream & os, QChar toOut)
 
 std::ostream & operator<< (std::ostream & os, const std::complex<double> & toOut)
 {
-	os << toOut.real() << ((toOut.imag() >= 0.)?" + ":" - ") << std::abs(toOut.imag()) << "i";
+	os << toOut.real() << ((toOut.imag() >= 0.) ? " + " : " - ") << std::abs(toOut.imag()) << "i";
 	return os;
 }
 

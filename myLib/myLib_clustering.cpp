@@ -42,15 +42,11 @@ double countAngle(double initX, double initY)
 	{
 		return ((initY > 0.) ? (M_PI/2.) : (-M_PI/2));
 	}
-
 	if(initX > 0.)
 	{
 		return atan(initY/initX);
 	}
-	else
-	{
-		return atan(initY/initX) + M_PI;
-	}
+	return atan(initY/initX) + M_PI;
 }
 
 #if 0
@@ -408,7 +404,7 @@ void countGradientAddDot(const mat & distOld,
                          const mat & distNew,
 						 const coordType & crds,
 						 const std::vector<int> & placedDots,
-						 std::vector<double>  & gradient) /// gradient for one dot
+						 std::vector<double> & gradient) /// gradient for one dot
 {
 	const int b = placedDots.back();
     gradient[0] = 0.;
@@ -505,7 +501,7 @@ void sammonAddDot(const mat & distOld,
     while(1)
     {
         tmpError1 = tmpError2;
-        countGradientAddDot(distOld,
+		countGradientAddDot(distOld,
                             distNew,
                             plainCoords,
                             placedDots,
@@ -558,8 +554,8 @@ void sammonProj(const mat & distOld,
         distNew[i].resize(size);
     }
 
-	std::vector< std::pair <double, double> > plainCoords;
-    //    plainCoords.resize(size);
+	std::vector<std::pair<double, double>> plainCoords;
+//	plainCoords.resize(size);
 
     /// find three most distant points
     /// precise
@@ -580,8 +576,7 @@ void sammonProj(const mat & distOld,
                 num2 = j;
             }
         }
-    }
-	//    std::cout << "maxDist = " << maxDist << std::endl;
+	}
 	plainCoords.push_back(std::make_pair(0., 0.));
 	plainCoords.push_back(std::make_pair(maxDist, 0.));
     maxDist = 0.;
@@ -685,15 +680,16 @@ void drawSammon(const coordType & plainCoords,
 	painter.begin(&pic);
 
 	painter.setPen("black");
-	painter.drawLine(QPointF(0, pic.height()/2.),
-					 QPointF(pic.width(), pic.height()/2.));
-	painter.drawLine(QPointF(pic.width()/2., 0),
-					 QPointF(pic.width()/2, pic.height()));
+	painter.drawLine(QPointF(0., pic.height() / 2.),
+					 QPointF(pic.width(), pic.height() / 2.));
+	painter.drawLine(QPointF(pic.width() / 2., 0.),
+					 QPointF(pic.width() / 2., pic.height()));
 
 	double minX = 0., minY = 0., maxX = 0., maxY = 0., avX, avY, rangeX, rangeY;
 	const double rectSize = 4;
 
-	double sum1 = 0., sum2 = 0.;
+	double sum1 = 0.;
+	double sum2 = 0.;
 
 	minX = plainCoords.front().first;
 	minY = plainCoords.front().second;
@@ -750,8 +746,8 @@ void drawSammon(const coordType & plainCoords,
 			sumAngle2 += angle;
 		}
 	}
-	sumAngle1 /= (NumberOfVectors/2);
-	sumAngle2 /= (NumberOfVectors/2);
+	sumAngle1 /= NumberOfVectors / 2.;
+	sumAngle2 /= NumberOfVectors / 2.;
 	range = maxLeng * 1.02;
 
 	int mirror = 1;

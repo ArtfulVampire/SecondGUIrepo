@@ -23,7 +23,7 @@ void MainWindow::markerSetSecTime(int a)
 
 void MainWindow::markerGetSlot()
 {
-	bool byteMarker[16];
+	bool byteMarker[16]; /// remake
 	int timeIndex = ui->markerBinTimeSpinBox->value();
 	int marker = 0;
 	marker = globalEdf.getData()[globalEdf.getMarkChan()][timeIndex];
@@ -82,14 +82,14 @@ void MainWindow::markerSetDecValueSlot()
 void MainWindow::markerSetBinValueSlot()
 {
 	int marker = ui->markerDecimalLineEdit->text().toInt();
-	QString helpString;
+
 
 	std::vector<bool> byteMarker = myLib::matiCountByte(double(marker));
 
-	helpString.clear();
+	QString helpString;
 	for(int h = 15; h >= 8; --h)
 	{
-		helpString += (byteMarker[h] ? "1" : "0");
+		helpString += (byteMarker[h] ? QString("1") : QString("0"));
 	}
 	ui->markerBin0LineEdit->setText(helpString);
 

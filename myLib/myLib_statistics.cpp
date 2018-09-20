@@ -112,7 +112,7 @@ QPixmap histogram(const std::valarray<double> & arr,
 				  std::end(arr),
 				  [xMin, xMax, numSteps, &values](double in)
 	{
-		int a = int(std::floor((in - xMin) / ((xMax-xMin) / numSteps)));
+		int a = int(std::floor((in - xMin) / ((xMax - xMin) / numSteps)));
 		if(a >= 0 && a < numSteps)
 		{
 			values[ a ] += 1.;
@@ -175,13 +175,13 @@ QPixmap histogram(const std::valarray<double> & arr,
 }
 
 
-void kernelEst(QString filePath, QString picPath)
+void kernelEst(const QString & filePath, const QString & picPath)
 {
 	std::valarray<double> arr = readFileInLine(filePath);
 	kernelEst(arr, picPath);
 }
 
-void kernelEst(const std::valarray<double> & arr, QString picPath)
+void kernelEst(const std::valarray<double> & arr, const QString & picPath)
 {
 	double sigma = 0.;
 	int length = arr.size();
@@ -417,7 +417,10 @@ double rankit(int i, int length, double k)
 
 
 
-void countRCP(QString filePath, QString picPath, double * outMean, double * outSigma)
+void countRCP(const QString & filePath,
+			  const QString & picPath,
+			  double * outMean,
+			  double * outSigma) /// remake that shet
 {
 	std::valarray<double> arr = readFileInLine(filePath);
 
@@ -445,7 +448,7 @@ void drawRCP(const std::valarray<double> & values, const QString & picPath)
 	std::valarray<double> line(pic.width());
 	for(int i = 0; i < pic.width(); ++i)
 	{
-		line[i] = smLib::gaussian( (i - pic.width()/2) / (pic.width()/2.) * numOfDisp );
+		line[i] = smLib::gaussian( (i - pic.width() / 2.) / (pic.width() / 2.) * numOfDisp );
 	}
 
 	line /= line.max();
@@ -551,9 +554,9 @@ int MannWhitney(const std::valarray<double> & arr1,
 	const std::pair<double, whichGreater> res = MannWhitney(arr1, arr2);
 
 	if(res.first > p)							{ return 0; }	/// not different
-	else if(res.second == whichGreater::first)	{ return 1; }	/// arr1 > arr2
-	else if(res.second == whichGreater::second)	{ return 2; }	/// arr2 > arr1
-	else return 0;												/// never get here
+	if(res.second == whichGreater::first)		{ return 1; }	/// arr1 > arr2
+	if(res.second == whichGreater::second)		{ return 2; }	/// arr2 > arr1
+	return 0;													/// never get here
 }
 
 template <typename Typ>
@@ -602,7 +605,7 @@ template void writeMannWhitney(const trivector<double> & MW, const QString & out
 
 trivector<int> countMannWhitney(const QString & spectraPath,
 								matrix * averageSpectraOut,
-								matrix * distancesOut)
+								matrix * distancesOut) /// remake that shet
 {
 
 	trivector<int> res; /// [class1][class2][NetLength]
@@ -641,11 +644,11 @@ trivector<int> countMannWhitney(const QString & spectraPath,
 
 	if(averageSpectraOut != nullptr)
 	{
-		(*averageSpectraOut) = std::move(averageSpectra);
+		(*averageSpectraOut) = averageSpectra;
 	}
 	if(distancesOut != nullptr)
 	{
-		(*distancesOut) = std::move(distances);
+		(*distancesOut) = distances;
 	}
 	return res;
 }

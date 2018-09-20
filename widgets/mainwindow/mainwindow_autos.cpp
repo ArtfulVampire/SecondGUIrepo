@@ -46,7 +46,7 @@ void MainWindow::drawWeights(const QString & wtsPath,
 
 void MainWindow::makeEvoked(const QString & edfPath,
 							const std::valarray<double> & startMarkers,
-							const QString outPath)
+							const QString & outPath)
 {
 	const int length = 600;
 	edfFile fil;
@@ -67,14 +67,14 @@ void MainWindow::makeEvoked(const QString & edfPath,
 
 void MainWindow::makeEvoked(const QString & realsPath,
 							const QStringList & fileFilters,
-							const QString outPath)
+							const QString & outPath)
 {
 	const int length = 600;
 	QStringList reals = QDir(realsPath).entryList(fileFilters);
 
 	std::vector<matrix> dat(reals.size());
 	int i = 0;
-	for(QString fileName : reals)
+	for(const QString & fileName : reals)
 	{
 		dat[i++] = myLib::readMatrixFile(realsPath + "/" + fileName);
 	}
@@ -93,7 +93,7 @@ void MainWindow::testSuccessive2()
 
 
 	std::vector<double> res;
-	for(QString name : names)
+	for(const QString & name : names)
 	{
 		/// current best set
 		suc::numGoodNewLimit = 3;
@@ -139,7 +139,7 @@ void MainWindow::testSuccessive(const std::vector<double> & vals)
 	ui->windowLengthSpinBox->setValue(windLength);
 	ui->windsButton->setChecked(true); /// sliceWindFromReal
 
-	for(QString name : names)
+	for(const QString & name : names)
 	{
 		/// successive
 		setEdfFile(path + name + "_train.edf");
@@ -218,11 +218,11 @@ void MainWindow::testNewClassifiers()
 {
 	QString paath = "/media/Files/Data/Feedback/SuccessClass/";
 
-//	for(QString guy : {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"})
-	for(QString guy : {"PMI", "SMM", "SMS", "SUA"})
-//	for(QString guy : {"GAS"})
+//	for(const QString & guy : {"AAU", "AMA", "BEA", "CAA", "GAS", "PMI", "SMM", "SMS", "SUA"})
+	for(const QString & guy : {"PMI", "SMM", "SMS", "SUA"})
+//	for(const QString & guy : {"GAS"})
 	{
-		for(QString suff :{"_train", "_test"})
+		for(const QString & suff :{"_train", "_test"})
 		{
 			setEdfFile(paath + guy + suff + ".edf");
 //			readData();
@@ -314,7 +314,7 @@ void MainWindow::BaklushevDraw(const QString & workPath, const QString & edfName
 	QString spectraPath = workPath + "/SpectraSmooth";
 
 	int numOfReals[2];
-	QStringList lst[2];
+	QStringList lst[2]; /// legacy shet remake with std::array
 	QString marker[2] = {"*_241*" , "*_247*"};
 	matrix drawMat[2];
 

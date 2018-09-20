@@ -450,14 +450,13 @@ double FBedf::distSpec(taskType type1, taskType type2, ansType howSolved)
 
 double FBedf::insightPartOfAll(double thres) const
 {
-	return this->getNumInsights(thres) / this->getNum(taskType::verb, ansType::all);
+	return this->getNumInsights(thres) / double(this->getNum(taskType::verb, ansType::all));
 }
 
 double FBedf::insightPartOfSolved(double thres) const
 {
-	return this->getNumInsights(thres) / this->getNum(taskType::verb, ansType::answrd);
+	return this->getNumInsights(thres) / double(this->getNum(taskType::verb, ansType::answrd));
 }
-
 
 void FBedf::calculateICA() const
 {
@@ -565,6 +564,7 @@ double FBedf::spectreDispersionWinds(taskType typ, ansType howSolved) const
 	}
 	matrix windSpectraGood = windSpectra.subRows(goodRows);
 	std::vector<std::pair<int, int>> goodCols{};
+	goodCols.reserve(FBedf::chansToProcess.size());
 
 	for(int chan : FBedf::chansToProcess)
 	{
@@ -761,17 +761,17 @@ matrix FBedf::backgroundCompare(taskType typ, ansType howSolved) const
 	{
 		int counter = 1;
 		const int restNum = static_cast<int>(taskType::rest);
-		for(int i = 0; i < realsSpectra[restNum].size(); ++i)
+		for(const auto & realSpectre : realsSpectra[restNum])
 		{
-			if( !realsSpectra[restNum][i].isEmpty() )
+			if( !realSpectre.isEmpty() )
 			{
 				if( avRest.isEmpty() )
 				{
-					avRest = realsSpectra[restNum][i];
+					avRest = realSpectre;
 				}
 				else
 				{
-					avRest += realsSpectra[restNum][i];
+					avRest += realSpectre;
 					++counter;
 				}
 			}
@@ -845,11 +845,12 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 	const int alphaIndex = this->individualAlphaPeakIndexWind();
 	const int twoHzRange = fftLimit(2., srate, windFftLen);
 
-	std::vector<std::pair<int, int>> alphaRange{};
+	std::vector<std::pair<int, int>> alphaRange(this->getNs() - 1);
+
 	for(int i = 0; i < this->getNs() - 1; ++i) /// magic const num of channels chansToClassify.size()
 	{
-		alphaRange.push_back({i * getSpLenWind() + alphaIndex - twoHzRange,
-							  i * getSpLenWind() + alphaIndex + twoHzRange});
+		alphaRange[i] = {i * getSpLenWind() + alphaIndex - twoHzRange,
+						 i * getSpLenWind() + alphaIndex + twoHzRange};
 	}
 
 	ClassifierData dt{};

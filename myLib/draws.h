@@ -16,6 +16,7 @@
 namespace myLib
 {
 
+const int BaklushevChans = 19;
 /// jet
 const double defV = 1.;
 const std::vector<double> colDots_2 = {1/9., 3.25/9., 5.5/9., 7.75/9.};
@@ -39,7 +40,7 @@ enum class ColorScale {jet,
 
 
 
-void drawColorScale(QString filename, int range, ColorScale type = ColorScale::jet, bool full = false);
+void drawColorScale(const QString & filename, int range, ColorScale type = ColorScale::jet, bool full = false);
 
 void drawRealisation(const QString & inPath);
 
@@ -64,7 +65,7 @@ QPixmap drawEeg(const matrix & dataD,
 
 QPixmap drawOneSignal(const std::valarray<double> & signal,
 					  int picHeight = 600,
-					  QString outPath = QString());
+					  const QString & outPath = QString());
 
 
 QPixmap drawOneTemplate(const int chanNum = -1,

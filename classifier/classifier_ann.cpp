@@ -2,7 +2,7 @@
 
 using namespace myOut;
 
-ANN::ANN() : Classifier()
+ANN::ANN()
 {
     myType = ModelType::ANN;
     typeString = "ANN";
@@ -93,9 +93,9 @@ void ANN::setDim(const std::vector<int> & inDim)
 {
     dim.clear();
 	dim.push_back(myClassData->getData().cols());
-    for(uint i = 0; i < inDim.size(); ++i)
+	for(auto in : inDim)
     {
-        dim.push_back(inDim[i]);
+		dim.push_back(in);
     }
 	dim.push_back(myClassData->getNumOfCl());
 
@@ -418,13 +418,13 @@ void ANN::writeWeight(const QString & wtsPath) const
 	weightsFile << std::fixed;
 	weightsFile.precision(4);
 
-	for(uint i = 0; i < weight.size(); ++i) /// numOfLayers
+	for(const auto & layer : weight) /// numOfLayers
     {
-		for(uint j = 0; j < weight[i].size(); ++j) /// top layer
+		for(const auto & top : layer) /// top layer
         {
-			for(uint k = 0; k < weight[i][j].size(); ++k) /// bot layer
+			for(const auto & val : top) /// bot layer
             {
-                weightsFile << weight[i][j][k] << '\n';
+				weightsFile << val << '\n';
             }
             weightsFile << '\n';
         }
@@ -464,7 +464,7 @@ void ANN::readWeight(const QString & fileName,
 }
 
 
-void ANN::drawWeight(QString wtsPath,
+void ANN::drawWeight(const QString & wtsPath,
 					 QString picPath)
 {
     if( dim.size() != 2 ) return;
@@ -502,7 +502,7 @@ void ANN::drawWeight(QString wtsPath,
 
 double ANN::adjustLearnRate(std::ostream & os)
 {
-	std::vector<uint> mixNum = smLib::mixed<std::vector<uint>>(myClassData->getData().rows());
+	auto mixNum = smLib::mixed<std::vector<uint>>(myClassData->getData().rows());
 
 	/// fold
 	if(0)
@@ -543,7 +543,8 @@ double ANN::adjustLearnRate(std::ostream & os)
         {
 			learnRate = lowThr; break;
         }
-		else if(learnRate >= highThr)
+
+		if(learnRate >= highThr)
         {
 			learnRate = highThr; break;
         }

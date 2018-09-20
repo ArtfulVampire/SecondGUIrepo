@@ -42,7 +42,7 @@ QString getPicPath(const QString & dataPath,
 int getTypeOfFileName(const QString & fileName,
 					  const QStringList & markers);
 
-void cleanDir(QString dirPath, QString nameFilter = QString(), bool ext = true);
+void cleanDir(const QString & dirPath, const QString & nameFilter = QString(), bool ext = true);
 
 QString setFileName(const QString & initNameOrPath); /// -> initName_i.ext
 
@@ -53,8 +53,8 @@ double areSimilarFiles(const QString & path1,
 					   const QString & path2);
 int countSymbolsInFile(const QString & filePath, char inChar);
 void replaceSymbolsInFile(const QString & filePath,
-						  QString inChar,
-						  QString outChar,
+						  const QString & inChar,
+						  const QString & outChar,
 						  QString outPath);
 
 std::vector<int> splitStringIntoVec(const QString & in);

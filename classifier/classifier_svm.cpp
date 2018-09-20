@@ -2,7 +2,7 @@
 
 using namespace myOut;
 
-SVM::SVM() : Classifier()
+SVM::SVM()
 {
     kernelNum = 0;
     myType = ModelType::SVM;

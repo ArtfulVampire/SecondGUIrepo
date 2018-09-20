@@ -37,8 +37,8 @@ double morletSinNew(double const freq1,
 					const double timeShift,
 					const double time);
 
-void wavelet(QString filePath,
-			 QString picPath,
+void wavelet(const QString & filePath,
+			 const QString & picPath,
 			 int channelNumber = 0,
 			 int ns = 20);
 
@@ -54,7 +54,7 @@ double blue(int range, double j, double V = defV, double S = 1.0);
 QColor hueJet(int range, double j);
 
 
-void drawWavelet(QString picPath,
+void drawWavelet(const QString & picPath,
 				 const matrix &inData);
 
 #if WAVELET_MATLAB
@@ -64,7 +64,7 @@ int initMtlb();
 int termMtlb();
 matrix cwt(const std::valarray<double> & signal, double srate);
 void drawWaveletMtlb(const matrix & inData,
-					 QString picPath = QString());
+					 const QString & picPath = QString());
 #endif
 }
 

@@ -27,8 +27,8 @@ std::valarray<double> makeNoise(int numPoints = 4096);
 
 
 /// chnage to std::vector<matrix> inputData and matrix output
-void eyesProcessingStatic(const std::vector<int> eogChannels = {21, 22}, /// 19 eeg, 2 help, form zero
-						  const std::vector<int> eegChannels = coords::leest19,
+void eyesProcessingStatic(const std::vector<int> & eogChannels = {21, 22}, /// 19 eeg, 2 help, form zero
+						  const std::vector<int> & eegChannels = coords::leest19,
 						  const QString & windsDir = DEFS.dirPath()
 													   + "/winds",
 						  const QString & outFilePath = DEFS.dirPath()
@@ -111,7 +111,7 @@ std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
 
 matrix integrateSpectra(const matrix & spectraR,
 						double srate,
-						std::vector<std::pair<double, double>> limits);
+						const std::vector<std::pair<double, double>> & limits);
 
 
 
@@ -220,7 +220,7 @@ double hilbertSD(const std::valarray<double> & arr);
 
 
 std::valarray<double> hilbertPieces(const std::valarray<double> & arr,
-									QString picPath = QString());
+									const QString & picPath = QString());
 
 std::valarray<double> bayesCount(const std::valarray<double> & dataIn, int numOfIntervals);
 

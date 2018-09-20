@@ -140,13 +140,13 @@ public:
 	/// read/write
 	edfFile & readEdfFile(const QString & EDFpath, bool headerOnly = false);
 	edfFile & reOpen();
-    void writeEdfFile(QString EDFpath, bool asPlain = false);
+	void writeEdfFile(const QString & EDFpath, bool asPlain = false);
 	void rewriteEdfFile();
 	void writeOtherData(const matrix & newData,
 						const QString & outPath,
 						std::vector<int> chanList = {}) const;
 	void saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag = false) const;
-	void drawSubsection(int startBin, int finishBin, QString outPath) const;
+	void drawSubsection(int startBin, int finishBin, const QString & outPath) const;
 
 
 	void handleEdfFile(const QString & EDFpath,
@@ -180,8 +180,8 @@ public:
 	/// make edfFile & func(...);
 	/// and  edfFile   func(...) const;
 	/// modify
-	edfFile vertcatFile(QString addEdfPath, QString outPath = QString()) const;
-	edfFile & concatFile(QString addEdfPath, QString outPath = QString());
+	edfFile vertcatFile(const QString & addEdfPath, const QString & outPath = QString()) const;
+	edfFile & concatFile(const QString & addEdfPath, const QString & outPath = QString());
 	edfFile & subtractMeans(const QString & outPath = QString());
 
     void countFft();
@@ -214,8 +214,8 @@ public:
 //	edfFile & retainChannel(int num);
 //	edfFile & retainChannel(const QString & nam);
 
-	edfFile & insertChannel(int num, const std::valarray<double> & dat, edfChannel ch);
-	edfFile & addChannel(const std::valarray<double> & dat, edfChannel ch);
+	edfFile & insertChannel(int num, const std::valarray<double> & dat, const edfChannel & ch);
+	edfFile & addChannel(const std::valarray<double> & dat, const edfChannel & ch);
 
 	edfFile & multiplyChannel(uint chanNum, double mult);
 	edfFile & multiplyChannels(std::vector<uint> chanNums, double mult);

@@ -17,8 +17,8 @@ namespace myLib
 {
 
 
-void kernelEst(const std::valarray<double> & arr, QString picPath);
-void kernelEst(QString filePath, QString picPath);
+void kernelEst(const std::valarray<double> & arr, const QString & picPath);
+void kernelEst(const QString & filePath, const QString & picPath);
 QPixmap kernelEst(const std::valarray<double> & arr);
 
 QPixmap histogram(const std::valarray<double> & arr,
@@ -84,8 +84,8 @@ double covariance (const Typ & arr1,
 
 void drawRCP(const std::valarray<double> & values,
 			 const QString & picPath); /// what is it?
-void countRCP(QString filename,
-			  QString picPath  = QString(),
+void countRCP(const QString & filename,
+			  const QString & picPath  = QString(),
 			  double * outMean = nullptr,
 			  double * outSigma = nullptr);
 

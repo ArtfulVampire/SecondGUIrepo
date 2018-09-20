@@ -365,14 +365,16 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				offset *= 0.4;
 			}
 
-			if(myFileType == fileType::real) /// to deprecate
+			switch(myFileType)
+			{
+			case fileType::real: /// to deprecate
 			{
 				ui->scrollArea->horizontalScrollBar()->setSliderPosition(
 							ui->scrollArea->horizontalScrollBar()->sliderPosition()
 							+ offset * edfFil.getFreq());
 				return true;
 			}
-			else if(myFileType == fileType::edf)
+			case fileType::edf:
 			{
 				/// scroll overflow/underflow
 				if((leftDrawLimit + ui->scrollArea->width() > dataCutLocal.cols() && offset > 0) ||
@@ -385,8 +387,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 							ui->paintStartDoubleSpinBox->value() + offset);
 				return true;
 			}
-			else { return false; }
-			break;
+			}
 		}
 		case QEvent::MouseButtonPress:
 		{
@@ -395,17 +396,15 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			{
 				return false;
 			}
-			else
+			/// else
+			/// start manualDraw
+			int numChan = ui->color3SpinBox->value();
+			if(numChan == -1) { return true; } /// do nothing
 			{
-				/// start manualDraw
-				int numChan = ui->color3SpinBox->value();
-				if(numChan == -1) { return true; } /// do nothing
-				{
-					manualDrawFlag = true;
-					manualDrawStart = ev->pos();
-					manualDrawDataBackup = drawData;
-					return true;
-				}
+				manualDrawFlag = true;
+				manualDrawStart = ev->pos();
+				manualDrawDataBackup = drawData;
+				return true;
 			}
 		}
 		case QEvent::MouseMove:

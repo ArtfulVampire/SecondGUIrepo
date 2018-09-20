@@ -21,7 +21,7 @@ std::vector<matrix> readSpectraDir(const QString & spectraPath);
 
 matrix readPlainData(const QString & inPath);
 
-void writePlainData(const QString outPath,
+void writePlainData(const QString & outPath,
 					const matrix & data);
 
 matrix readMatrixFile(const QString & filePath);

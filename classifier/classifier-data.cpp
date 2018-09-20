@@ -396,7 +396,7 @@ void ClassifierData::variancing(double var)
 	}
 	tmp.transpose();
 
-	dataMatrix = std::move(tmp);
+	dataMatrix = tmp;
 }
 
 void ClassifierData::z_transform(double var)

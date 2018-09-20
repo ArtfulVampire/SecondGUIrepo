@@ -190,11 +190,11 @@ void channelsOrderFile(const QString & inFilePath,
 	std::set<int> leftChannels;
 	for(int i = 0; i < initFile.getNs(); ++i) { leftChannels.emplace(i); }
 
-    for(uint i = 0; i < standard.size(); ++i) /// only for 31 channels
+    for(const auto & i : standard) /// only for 31 channels
     {
         for(int j = 0; j < initFile.getNs(); ++j)
         {
-			if(initFile.getLabels(j).contains(standard[i]))
+			if(initFile.getLabels(j).contains(i))
             {
                 reorderChanList.push_back(j);
 				leftChannels.erase(j);
@@ -286,14 +286,13 @@ void holesDir(const QString & inDirPath,
 			  int numChan,
 			  const QString & outDirPath)
 {
-    const auto leest = QDir(inDirPath).entryList(def::edfFilters, QDir::Files);
-    const auto vec = leest.toVector();
+	const auto leest = QDir(inDirPath).entryList(def::edfFilters, QDir::Files);
 
-    for(int i = 0; i < vec.size(); ++i)
+	for(const auto & fileName : leest)
 	{
-		holesFile(inDirPath + "/" + vec[i],
+		holesFile(inDirPath + "/" + fileName,
 				  numChan,
-				  outDirPath + "/" + vec[i]);
+				  outDirPath + "/" + fileName);
     }
 }
 

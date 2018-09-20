@@ -1,14 +1,5 @@
 #include <other/matrix.h>
 
-matrix::matrix()
-{
-
-}
-
-matrix::~matrix()
-{
-
-}
 
 matrix::matrix(int dim)
 {
@@ -70,12 +61,6 @@ matrix::matrix(int rows, int cols)
     this->resize(rows, cols);
     this->fill(0.);
 }
-
-matrix::matrix(const matrix & other)
-{
-	myData = other.myData;
-}
-
 
 matrix::matrix(const matrixType & other)
 {
@@ -184,23 +169,15 @@ matrix::matrix(std::initializer_list<double> lst) /// diagonal
     }
 }
 
-
-
-
-matrix & matrix::operator = (double other)
+matrix & matrix::operator= (double other)
 {
-	return this->fill(other);
+	this->fill(other);
+	return *this;
 }
 
-matrix matrix::operator = (const matrix & other)
-{
-	myData = other.myData;
-    return *this;
-}
-matrix matrix::operator = (const matrixType & other)
+matrix & matrix::operator=(const matrixType & other)
 {
 	myData = other;
-
     return *this;
 }
 
@@ -244,7 +221,7 @@ matrix operator + (const matrix & lhs, double val)
     return result;
 }
 
-matrix matrix::operator += (const matrix & other)
+matrix & matrix::operator += (const matrix & other)
 {
     if(this->rows() != other.rows()
        || this->cols() != other.cols())
@@ -259,7 +236,7 @@ matrix matrix::operator += (const matrix & other)
     return *this;
 }
 
-matrix matrix::operator += (double val)
+matrix & matrix::operator += (double val)
 {
 	for(int i = 0; i < this->rows(); ++i)
     {
@@ -296,7 +273,7 @@ matrix operator - (const matrix & lhs, double val)
     return result;
 }
 
-matrix matrix::operator -= (const matrix & other)
+matrix & matrix::operator -= (const matrix & other)
 {
     if(this->rows() != other.rows()
        || this->cols() != other.cols())
@@ -311,7 +288,7 @@ matrix matrix::operator -= (const matrix & other)
     return *this;
 }
 
-matrix matrix::operator -= (double val)
+matrix & matrix::operator -= (double val)
 {
 	for(int i = 0; i < this->rows(); ++i)
     {
@@ -319,7 +296,7 @@ matrix matrix::operator -= (double val)
     }
     return *this;
 }
-matrix matrix::operator -()
+matrix matrix::operator -() const
 {
     matrix res(this->rows(), this->cols());
 
@@ -343,7 +320,7 @@ matrix operator * (const matrix & lhs, double val)
     return result;
 }
 
-matrix matrix::operator *= (double other)
+matrix & matrix::operator *= (double other)
 {
 	for(int i = 0; i < this->rows(); ++i)
     {
@@ -352,9 +329,10 @@ matrix matrix::operator *= (double other)
     return *this;
 }
 
-void matrix::operator *=(const matrix & other)
+matrix & matrix::operator *=(const matrix & other)
 {
 	(*this) = this->operator*(other);
+	return *this;
 }
 
 matrix matrix::operator *(const matrix & other) const
@@ -429,7 +407,7 @@ matrix operator / (const matrix & lhs, double val)
     return result;
 }
 
-bool matrix::operator == (const matrix & other)
+bool matrix::operator == (const matrix & other) const
 {
     if(this->rows() != other.rows())
     {
@@ -456,12 +434,12 @@ bool matrix::operator == (const matrix & other)
     return true;
 }
 
-bool matrix::operator != (const matrix & other)
+bool matrix::operator != (const matrix & other) const
 {
 	return !(this->operator==(other));
 }
 
-matrix matrix::apply(std::function<std::valarray<double>(const std::valarray<double> &)> func) const
+matrix matrix::apply(const std::function<std::valarray<double>(const std::valarray<double> &)> & func) const
 {
 	matrix res{};
 	for(const auto & row : myData)
@@ -491,20 +469,11 @@ matrix matrix::integrate(const std::vector<std::pair<int, int>> & intervals) con
 	return res;
 }
 
-
-bool matrix::isEmpty() const
-{
-	if(this->rows() == 0 || this->cols() == 0) return true;
-	return false;
-}
-
-
-matrix matrix::operator /= (double other)
+matrix & matrix::operator /= (double other)
 {
 	for(int i = 0; i < this->rows(); ++i)
     {
 		myData[i] /= other;
-
     }
     return *this;
 }
@@ -667,7 +636,7 @@ matrix & matrix::centerRows(int numRows)
 	for(int i = 0; i < this->cols(); ++i)
 	{
 		const std::valarray<double> col = this->getCol(i, numRows);
-		if((col == 0.).min() == true) { ++zeroCols; }
+		if((col == 0.).min()) { ++zeroCols; }
 	}
 
 	for(int i = 0; i < numRows; ++i)
@@ -1037,7 +1006,7 @@ matrix & matrix::push_back(const std::vector<double> & in)
 	return *this;
 }
 
-matrix matrix::transposed(const matrix &input)
+matrix matrix::transposed(const matrix & input)
 {
     matrix res(input.cols(), input.rows());
 	for(int i = 0; i < input.rows(); ++i)

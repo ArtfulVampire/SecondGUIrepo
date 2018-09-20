@@ -54,8 +54,8 @@ QPixmap phaseDifferences(const std::valarray<double> & sig1,
 
 		auto phi = std::arg(res12[index]);
 		phis.push_back(phi);
-		pnt.drawLine(picSize / 2, picSize / 2,
-					 picSize / 2 * (1. + cos(phi)), picSize / 2 * (1. - sin(phi)));
+		pnt.drawLine(picSize / 2., picSize / 2.,
+					 picSize / 2. * (1. + cos(phi)), picSize / 2. * (1. - sin(phi)));
 
 	}
 
@@ -224,10 +224,10 @@ void iitpData::countCrossSpectrumW(int chan1, int chan2, double overlap)
 	   ||fileType == iitp::trialType::passive )
 	{
 
-		for(uint i = 0; i < this->piecesData.size(); ++i)
+		for(const auto & piece : this->piecesData)
 		{
-			this->crossSpectra[chan1][chan2] += myLib::spectreCross(this->piecesData[i][chan1],
-																	this->piecesData[i][chan2],
+			this->crossSpectra[chan1][chan2] += myLib::spectreCross(piece[chan1],
+																	piece[chan2],
 																	srate,
 																	wnd,
 																	fftLenW);
@@ -260,33 +260,34 @@ void iitpData::countPiecesFFT()
 
 void iitpData::clearCrossSpectra()
 {
+
 	this->crossSpectra.clear();
 	this->crossSpectra.resize(this->ns);
-	for(uint i = 0; i < this->crossSpectra.size(); ++i)
+	for(auto & in : this->crossSpectra)
 	{
-		this->crossSpectra[i].resize(this->ns, {});
+		in.resize(this->ns, {});
 	}
 
 	this->coherencies.clear();
 	this->coherencies.resize(this->ns);
-	for(uint i = 0; i < this->coherencies.size(); ++i)
+	for(auto & in : this->coherencies)
 	{
-		this->coherencies[i].resize(this->ns, {});
+		in.resize(this->ns, {});
 	}
 
 	this->mscoherencies.clear();
 	this->mscoherencies.resize(this->ns);
-	for(uint i = 0; i < this->mscoherencies.size(); ++i)
+	for(auto & in : this->mscoherencies)
 	{
-		this->mscoherencies[i].resize(this->ns, {});
+		in.resize(this->ns, {});
 	}
 
 
 	this->piecesFFT.clear();
 	this->piecesFFT.resize(this->piecesData.size());
-	for(uint i = 0; i < this->piecesFFT.size(); ++i)
+	for(auto & in : this->piecesFFT)
 	{
-		this->piecesFFT[i].resize(this->ns, {});
+		in.resize(this->ns, {});
 	}
 }
 
@@ -854,7 +855,7 @@ iitpData & iitpData::staging(const QString & chanName,
 						in = in + k;
 						break;
 					}
-					else if(in - k > 0 && marks[in - k] == 0.)
+					if(in - k > 0 && marks[in - k] == 0.)
 					{
 						in = in - k;
 						break;
@@ -950,14 +951,10 @@ void iitpData::setFftLen(int in)
 forMap::forMap(const iitp::iitpData::mscohsType & in,
 			   const iitp::iitpData & inFile,
 			   int filNum,
-			   QString typ,
-			   QString gon)
+			   const QString & typ,
+			   const QString & gon) : fileNum{filNum}, fileType{typ}, gonio{gon}
 {
-	fileNum = filNum;
-	fileType = typ;
-	gonio = gon;
-
-	fmChans.clear();
+		fmChans.clear();
 	for(const QString & emgNam : iitp::forMapEmgNames)
 	{
 #if 0
@@ -994,7 +991,7 @@ forMap::forMap(const iitp::iitpData::mscohsType & in,
 					{
 						std::cout << "abs(coh) > 1"
 								  << " fileNum " << fileNum
-								  << " type " << typ
+								  << " type " << fileType
 									 << " eeg " << inFile.getLabels(eegNum)
 									 << " EMG " << iitp::forMapEmgNames[i]
 									 << " freq " << FR

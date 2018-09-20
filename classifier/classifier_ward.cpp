@@ -2,7 +2,7 @@
 
 using namespace myOut;
 
-WARD::WARD() : Classifier()
+WARD::WARD()
 {
     this->numOfClust = 15;
     centers.resize(numOfClust);
@@ -132,9 +132,9 @@ void WARD::classifyDatum1(uint vecNum)
     int ind = myLib::indexOfMax(distances);
 
 	outputLayer.resize(myClassData->getNumOfCl()); outputLayer = 0;
-    for(uint i = 0; i < clusts[ind].size(); ++i)
+	for(auto index : clusts[ind])
     {
-		outputLayer[ myClassData->getTypes()[ clusts[ind][i] ] ] += 1;
+		outputLayer[ myClassData->getTypes(index) ] += 1;
     }
 	outputLayer /= myClassData->getApriori();
 }

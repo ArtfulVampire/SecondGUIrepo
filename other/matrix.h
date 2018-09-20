@@ -31,21 +31,20 @@ using matrixType = std::vector<std::valarray<double>>;
 class matrix
 {
 public:
-	matrix();
-	~matrix();
+	matrix()=default;
+	~matrix()=default;
+	matrix(matrix && other)=default;
+	matrix(const matrix & other)=default;
+
+	matrix & operator= (const matrix & other)=default;
+	matrix & operator= (matrix && other)=default;
+
+
+
+	matrix(const matrixType & other);
 	matrix(int dim);
 	matrix(int rows, int cols);
 	matrix(int rows, int cols, double value);
-
-	matrix(const matrix & other);
-	matrix(const matrixType & other);
-
-	matrix(matrix && other)
-		:myData{other.myData}
-	{
-		other.myData = matrixType();
-	}
-
 
 	matrix(const std::valarray<double> & vect1, const std::valarray<double> & vect2);
 	matrix(const std::valarray<double> & vect, bool orientH);
@@ -73,19 +72,20 @@ public:
 
 	double sum() const;
 	double traceCov() const;
+	bool isEmpty() const			{ return(this->rows() == 0 || this->cols() == 0); }
 	matrixType::iterator begin()					{ return std::begin(myData); }
 	matrixType::iterator end()						{ return std::end(myData); }
 	matrixType::const_iterator begin() const		{ return std::begin(myData); }
 	matrixType::const_iterator end() const			{ return std::end(myData); }
-	bool isEmpty() const;
-	std::valarray<double> & last() { return myData.back(); }
-	std::valarray<double> & back() { return myData.back(); }
-	const std::valarray<double> & last() const { return myData.back(); }
-	const std::valarray<double> & back() const { return myData.back(); }
-	std::valarray<double> & front() { return myData.front(); }
-	std::valarray<double> & first() { return myData.front(); }
-	const std::valarray<double> & front() const { return myData.front(); }
-	const std::valarray<double> & first() const { return myData.front(); }
+	std::valarray<double> & last()					{ return myData.back(); }
+	std::valarray<double> & back()					{ return myData.back(); }
+	const std::valarray<double> & last() const		{ return myData.back(); }
+	const std::valarray<double> & back() const		{ return myData.back(); }
+
+	std::valarray<double> & front()					{ return myData.front(); }
+	std::valarray<double> & first()					{ return myData.front(); }
+	const std::valarray<double> & front() const		{ return myData.front(); }
+	const std::valarray<double> & first() const		{ return myData.front(); }
 
 	std::valarray<double> toValarByRows() const;
 	std::valarray<double> toValarByCols() const;
@@ -108,44 +108,41 @@ public:
 	matrix & resize(int i);
 	matrix & reserve(int i);
 
-
-	std::valarray<double> & operator [](int i)
-	{
-		return myData[i];
-
-	}
-
-	const std::valarray<double> & operator [](int i) const
+	std::valarray<double> & operator[](int i)
 	{
 		return myData[i];
 	}
 
-	matrix & operator =(double other);
-	matrix operator = (const matrix & other);
-	matrix operator = (const matrixType & other);
+	const std::valarray<double> & operator[](int i) const
+	{
+		return myData[i];
+	}
 
-	matrix operator += (const matrix & other);
-	matrix operator += (double val);
+	matrix & operator= (double other);
+	matrix & operator= (const matrixType & other);
 
-	matrix operator -= (const matrix & other);
-	matrix operator -= (double val);
+	matrix & operator +=(const matrix & other);
+	matrix & operator +=(double val);
 
-	matrix operator *(const matrix & other) const;
-	void operator *= (const matrix & other);
-	matrix operator *= (double val);
+	matrix & operator -=(const matrix & other);
+	matrix & operator -=(double val);
 
-	matrix operator /= (double other);
-	matrix operator -();
+	matrix operator* (const matrix & other) const;
+	matrix & operator *=(const matrix & other);
+	matrix & operator *=(double val);
 
-	bool operator == (const matrix & other);
-	bool operator != (const matrix & other);
+	matrix & operator /=(double other);
+	matrix operator-() const;
+
+	bool operator== (const matrix & other) const;
+	bool operator!= (const matrix & other) const;
 
 	/// transpose
-	matrix operator !() { return matrix::transposed(*this); } /// DANGER
+	matrix operator!() const { return matrix::transposed(*this); } /// DANGER
 	/// inverse
-	matrix operator ~() { return matrix::inverted(*this); }
+	matrix operator~() const { return matrix::inverted(*this); }
 
-	matrix apply(std::function<std::valarray<double>(const std::valarray<double> &)>) const;
+	matrix apply(const std::function<std::valarray<double>(const std::valarray<double> &)> &) const;
 	matrix integrate(const std::vector<std::pair<int, int>> & intervals) const;
 
 
@@ -200,7 +197,6 @@ public:
 		return *this;
 	}
 
-
 	std::valarray<double> matrixSystemSolveGauss(const std::valarray<double> & inVec) const;
 public:
 	matrixType myData {matrixType()};
@@ -208,14 +204,14 @@ public:
 
 
 std::ostream & operator<< (std::ostream & os, const matrix & toOut);
-matrix operator + (const matrix & lhs, const matrix & rhs);
-matrix operator + (const matrix & lhs, double val);
-matrix operator / (const matrix & lhs, double val);
-//matrix operator * (const matrix & lhs, const matrix & rhs);
-matrix operator * (const matrix & lhs, double val);
-std::valarray<double> operator * (const matrix & lhs, const std::valarray<double> & rhs);
-std::valarray<double> operator * (const std::valarray<double> & lhs, const matrix & rhs);
-matrix operator - (const matrix & lhs, const matrix & rhs);
-matrix operator - (const matrix & lhs, double val);
+matrix operator+ (const matrix & lhs, const matrix & rhs);
+matrix operator+ (const matrix & lhs, double val);
+matrix operator/ (const matrix & lhs, double val);
+//matrix operator* (const matrix & lhs, const matrix & rhs);
+matrix operator* (const matrix & lhs, double val);
+std::valarray<double> operator* (const matrix & lhs, const std::valarray<double> & rhs);
+std::valarray<double> operator* (const std::valarray<double> & lhs, const matrix & rhs);
+matrix operator- (const matrix & lhs, const matrix & rhs);
+matrix operator- (const matrix & lhs, double val);
 
 #endif /// MATRIX_H

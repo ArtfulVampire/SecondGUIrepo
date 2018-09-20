@@ -36,7 +36,7 @@ template QString nm(double in);
 
 inline QString rn(int in, int num) { return myLib::rightNumber(in, num); }
 
-FILE * fopen(QString filePath, const char *__modes);
+FILE * fopen(const QString & filePath, const char *__modes);
 
 std::istream & operator>> (std::istream & is, QString & in);
 std::ostream & operator<< (std::ostream & os, QChar toOut);
@@ -47,18 +47,19 @@ std::ostream & operator<< (std::ostream & os, const QStringList & toOut);
 
 #if CPP17
 template <typename T
-		  , typename = typename std::enable_if<!std::is_same<T,char>::value &&
-											   !std::is_same<T,std::string>::value>::type
+//		  , typename = typename std::enable_if<!std::is_same<T,char>::value &&
+//											   !std::is_same<T,std::string>::value>::type
 		  >
-inline std::ostream & operator+= (std::ostream & os, const T & in)
+inline std::ostream & operator*= (std::ostream & os, const T & in)
 {
 	os << in << "\t";
 	return os;
 }
+
 template<class... inputs>
 inline std::ostream & myWrite (std::ostream & os, const inputs &... ins)
 {
-	(os += ... += ins);
+	(os *= ... *= ins);
 	os << std::endl;
 	return os;
 }

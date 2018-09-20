@@ -46,7 +46,7 @@ public:
 	/// the difference in the initial norming and colsNorms filling
 	void orderIcaDisp();	/// by dispersion
 	void orderIcaLen();		/// by maps-length
-	void order(std::function<double(int)> func);
+	void order(const std::function<double(int)> & func);
 	void calculateExplVar();
 
 	bool isEmpty() const				{ return components.isEmpty() || matrixA.isEmpty(); }
@@ -98,7 +98,7 @@ public:
 	/// main function
 	void calculateICA();
 	void calculateSVD(); /// unused
-	void writeNewEDF(const QString & outPath); /// to do
+	void writeNewEDF(const QString & outPath); /// TO DO
 
 	/// output to files
 	void printTxts() const;

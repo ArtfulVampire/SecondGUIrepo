@@ -32,7 +32,7 @@ void Cut::smartFindLearnSlot()
 			smartFindThresholds[ch].resize(smartFindFuncs.size());
 			for(uint numFunc = 0; numFunc < smartFindFuncs.size(); ++numFunc)
 			{
-				thrParam param;
+				thrParam param{};
 
 				std::valarray<double> vals(smartFindLearnData.size());
 				for(uint windNum = 0; windNum < smartFindLearnData.size(); ++windNum)
@@ -395,7 +395,7 @@ void Cut::smartFindNextSlot()
 					proceed = false;
 					break; /// from while(proceed)
 				}
-				else if(smartFindWindParams[windNum][ch][numFunc] > paramAbsThreshold[numFunc])
+				if(smartFindWindParams[windNum][ch][numFunc] > paramAbsThreshold[numFunc])
 				{
 					std::cout << "nextBad: param = " << paramNames[numFunc] << " "
 							  << "chan = " << edfFil.getLabels(ch) << " "

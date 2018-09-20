@@ -229,7 +229,7 @@ void checkMarkFBfinal(const QString & filePath)
 }
 
 
-void createAnsFiles(const QString & guyPath, QString guyName)
+void createAnsFiles(const QString & guyPath, const QString & guyName)
 {
 	for(int i : {1, 2, 3})
 	{
@@ -254,12 +254,12 @@ void repairMarkersInNewFB(QString edfPath, int numSession)
 	bool startFlag = true;
 	for(int i = 0; i < mrk.size(); ++i)
 	{
-		if(mrk[i] == 239 && startFlag == true)
+		if(mrk[i] == 239. && startFlag)
 		{
 			marks.push_back(i);
 			startFlag = false;
 		}
-		else if(mrk[i] == 254)
+		else if(mrk[i] == 254.)
 		{
 			startFlag = true;
 		}
@@ -311,7 +311,6 @@ void repairMarkersInNewFB(QString edfPath, int numSession)
 	}
 	edfPath.replace(".edf", "_good.edf");
 	fil.writeEdfFile(edfPath);
-
 }
 
 void successiveNetPrecleanWinds(const QString & windsPath)

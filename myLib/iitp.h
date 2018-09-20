@@ -201,8 +201,8 @@ struct forMap
 	forMap(const iitp::iitpData::mscohsType & in,
 		   const iitp::iitpData & inFile,
 		   int filNum,
-		   QString typ,
-		   QString gon);
+		   const QString & typ,
+		   const QString & gon);
 };
 
 

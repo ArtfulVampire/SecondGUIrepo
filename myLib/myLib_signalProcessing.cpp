@@ -317,13 +317,12 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 												   highFreq,
 												   srate);
 	}
-	else
-	{
-		return butter::butterworthBandPassTwoSided(inputSignal,
-												   lowFreq,
-												   highFreq,
-												   srate);
-	}
+	/// else
+	return butter::butterworthBandPassTwoSided(inputSignal,
+											   lowFreq,
+											   highFreq,
+											   srate);
+
 }
 
 } /// namespace butter
@@ -544,7 +543,7 @@ void four1(double * dataF, int nn, int isign)
         if (j > i)
         {
             std::swap(dataF[j], dataF[i]);
-			std::swap(dataF[j+1], dataF[i+1]);
+			std::swap(dataF[j + 1], dataF[i + 1]);
         }
         m = n >> 1; /// m = n / 2;
         while (m >= 2 && j > m)
@@ -1149,7 +1148,7 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
     }
 
     /// Decimate
-    unsigned int m = (unsigned int)log2(N);
+	auto m = static_cast<unsigned int>(log2(N));
     for (unsigned int a = 0; a < N; ++a)
     {
         unsigned int b = a;
@@ -1202,7 +1201,7 @@ double fractalDimension(const std::valarray<double> & arr,
 	std::vector<double> drawL_{};
 
 	/// make collection of timeShifts
-	std::vector<int> timeShifts = smLib::range<std::vector<int>>(1, Kmax);
+	auto timeShifts = smLib::range<std::vector<int>>(1, Kmax);
 
 #if 0
 	/// for long scale signals
@@ -1330,7 +1329,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 	timeShifts = {1, 2, 3, 4}; /// initialize
 	for(int i = 11; i < log2(N / 4) * 4 + 1 ; ++i)
 	{
-		timeShifts.push_back(std::floor(std::pow(2, (i - 1)/4.)));
+		timeShifts.push_back(std::floor(std::pow(2, (i - 1) / 4.)));
 	}
 
 	for(int timeShift : timeShifts)
@@ -1530,7 +1529,7 @@ std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
 
 matrix integrateSpectra(const matrix & spectraR,
 						double srate,
-						std::vector<std::pair<double, double>> limits)
+						const std::vector<std::pair<double, double>> & limits)
 {
 	matrix res(spectraR);
 	/// kinda res.apply(myLib::integrateSpectre(_1, srate, limits));
@@ -1553,7 +1552,6 @@ std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
 		j += spectreStepFreq)
 	{
 		lims.push_back({j - spectreStepFreq / 2., j + spectreStepFreq / 2.});
-
 	}
 	return integrateSpectre(spectreR, srate, lims);
 }
@@ -1679,7 +1677,7 @@ void centerMatrixRows(matrix & inData,
     for(int i = 0; i < dataLen; ++i)
     {
 		const std::valarray<double> temp = inData.getCol(i, howManyRows);
-		if((temp == 0.).min() == true) { ++eyes; }
+		if((temp == 0.).min()) { ++eyes; }
     }
 
 	for(int i = 0; i < howManyRows; ++i)
@@ -1791,7 +1789,7 @@ double splineOutput(const std::valarray<double> & inX,
 std::valarray<double> hilbert(const std::valarray<double> & arr,
 							  double lowFreq,
 							  double highFreq,
-							  QString picPath)
+							  const QString & picPath)
 {
 
     const int inLength = arr.size();
@@ -1926,22 +1924,18 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 
 
 std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
-									QString picPath)
+									const QString & picPath)
 {
 	/// do hilbert transform for the first inLength bins
 	const int inLength = inArr.size();
 	const int fftLen = smLib::fftL(inLength) / 2;
 
 	std::valarray<double> outHilbert(inLength); /// result
-	std::valarray<double> tempArr[2];
-	int start;
+	std::valarray<double> tempArr[2]; /// remake somehow
+	int start{0};
 	for(int i = 0; i < 2; ++i)
 	{
-		if(i == 0)
-		{
-			start = 0;
-		}
-		else if(i == 1)
+		if(i == 1)
 		{
 			start = inLength - fftLen;
 		}
@@ -2105,7 +2099,7 @@ std::valarray<double> makeSine(int numPoints,
 
 std::valarray<double> makeNoise(int numPoints)
 {
-	srand(time(0));
+	srand(time(nullptr));
 	std::valarray<double> res(numPoints);
 	for(int i = 0; i < numPoints; ++i)
 	{
@@ -2544,14 +2538,13 @@ std::valarray<double> calcSpectre(const std::valarray<double> & inSignal,
 
 
 
-void eyesProcessingStatic(const std::vector<int> eogChannels,
-						  const std::vector<int> eegChannels,
+void eyesProcessingStatic(const std::vector<int> & eogChannels,
+						  const std::vector<int> & eegChannels,
 						  const QString & windsDir,
 						  const QString & outFilePath)
 {
 	QTime myTime;
 	myTime.start();
-
 
 	QStringList leest = QDir(windsDir).entryList({"*" + def::plainDataExtension});
 
@@ -2567,14 +2560,16 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 	{
 		signalNums.push_back(eogNum);
 	}
+	signalNums.push_back(0);
 
 	const uint Size = eogChannels.size() + 1; /// usually 3
+
 	matrix matrixInit(Size, Size);
 	matrix coefficients(eegChannels.size(), eogChannels.size());
 
 	for(uint k = 0; k < eegChannels.size(); ++k)
 	{
-		signalNums.push_back(eegChannels[k]);
+		signalNums.back() = eegChannels[k];
 		for(uint j = 0; j < Size; ++j)
 		{
 			for(uint z = j; z < Size; ++z)
@@ -2596,7 +2591,6 @@ void eyesProcessingStatic(const std::vector<int> eogChannels,
 			coefficients[k][i] = - matrixInit[i][eogChannels.size()]
 								 / matrixInit[eogChannels.size()][eogChannels.size()];
 		}
-		signalNums.pop_back();
 	}
 
 	writeMatrixFile(outFilePath,

@@ -15,7 +15,7 @@ double Net::getLrate() const
 	else
 	{
 		if(ANN * myANN = dynamic_cast<ANN *>(myModel)) { return myANN->getLrate(); }
-		else { std::cout << "Net::getLrate: ANN bad cast" << std::endl; return -1; }
+		 std::cout << "Net::getLrate: ANN bad cast" << std::endl; return -1;
 	}
 }
 
@@ -25,7 +25,7 @@ void Net::setDimensionalitySlot()
 	{
         std::vector<int> pewpew;
         auto strList = ui->dimensionalityLineEdit->text().split(' ', QString::SkipEmptyParts);
-        for(QString peww : strList)
+		for(const QString & peww : strList)
         {
             pewpew.push_back(peww.toInt());
         }
@@ -169,7 +169,7 @@ void Net::setClassifier(ModelType typ)
 void Net::setClassifier(QAbstractButton * but, bool i)
 {
     if(!i) return;
-	if(myModel != nullptr)
+	if(myModel)
 	{
 		delete myModel;
 	}
@@ -186,7 +186,7 @@ void Net::setClassifier(QAbstractButton * but, bool i)
 			setDimensionalitySlot();
 			return;
 		}
-		else { std::cout << "Net::setClassifier: ANN bad cast" << std::endl; }
+		std::cout << "Net::setClassifier: ANN bad cast" << std::endl;
     }
     else if(but->text() == "RDA")
 	{
@@ -257,7 +257,7 @@ void Net::setSourceSlot(QAbstractButton * but)
 
 void Net::setModeSlot(QAbstractButton * but, bool i)
 {
-	if(i == false) return;
+	if(!i) return;
 
 	if(but->text().contains("N-fold"))
 	{

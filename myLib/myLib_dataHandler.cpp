@@ -87,7 +87,8 @@ QStringList makeFullFileList(const QString & path,
 std::vector<matrix> readSpectraDir(const QString & spectraPath)
 {
 	std::vector<QStringList> lst = makeFileLists(spectraPath);
-	std::vector<matrix> spectra;
+	std::vector<matrix> spectra{};
+	spectra.reserve(lst.size());
 
 	for(const QStringList & sublist : lst) /// for each class
 	{
@@ -195,20 +196,20 @@ void writeFileInLine(const QString & filePath,
 }
 
 /// in file and in matrix - transposed
-void writePlainData(const QString outPath,
+void writePlainData(const QString & outPath,
 					const matrix & data)
 {
 	std::ofstream outStr;
 	if(outPath.endsWith(def::plainDataExtension))
-    {
-        outStr.open(outPath.toStdString());
-    }
-    else
-    {
-        QString outPathNew = outPath;
+	{
+		outStr.open(outPath.toStdString());
+	}
+	else
+	{
+		QString outPathNew = outPath;
 		outPathNew.remove("." + def::plainDataExtension); /// what is this for?
 		outStr.open((outPathNew + '.' + def::plainDataExtension).toStdString());
-    }
+	}
 	outStr << "NumOfSlices "	<< data.cols() << "\t";
 	outStr << "NumOfChannels "	<< data.rows() << "\r\n";
 
@@ -390,10 +391,10 @@ void readIITPfile(const QString & filePath,
 	std::string tmp;
 	outLabels.resize(numOfCols);
 	inStr >> tmp; /// Time
-	for(uint i = 0; i < outLabels.size(); ++i)
+	for(auto & outLabel : outLabels)
 	{
 		inStr >> tmp;
-		outLabels[i] = QString(tmp.c_str());
+		outLabel = QString(tmp.c_str());
 	}
 
 	outData = matrix(numOfCols, numOfRows, 0.); /// transposed
@@ -463,7 +464,7 @@ void writeMatrixFile(const QString & filePath,
 	file << std::fixed;
 	file.precision(4);
 
-	for(const auto row : outData)
+	for(const auto & row : outData)
 	{
 		file << row << "\r\n";
     }

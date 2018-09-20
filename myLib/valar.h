@@ -53,10 +53,10 @@ Typ mean(const std::vector<Typ> & in1);
 /// Container<double>
 
 template <class Container>
-double min(const Container & in1);
+double min(const Container & arr);
 
 template <class Container>
-double max(const Container & in1);
+double max(const Container & arr);
 
 template <class Container>
 double prod(const Container & in1, const Container & in2);

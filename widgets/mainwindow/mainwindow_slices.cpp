@@ -678,7 +678,7 @@ void MainWindow::sliceElena()
 				qApp->processEvents();
 				if(stopFlag)
 				{
-					stopFlag = 0;
+					stopFlag = false;
 					return;
 				}
 
@@ -862,7 +862,7 @@ void MainWindow::sliceOneByOne()
             qApp->processEvents();
             if(stopFlag)
             {
-                stopFlag = 0;
+                stopFlag = false;
                 return;
             }
 #if USE_MARKERS
@@ -985,7 +985,7 @@ void MainWindow::sliceOneByOneNew()
             qApp->processEvents();
             if(stopFlag)
             {
-                stopFlag = 0;
+                stopFlag = false;
                 break;
             }
 
@@ -1136,7 +1136,7 @@ void MainWindow::sliceMatiSimple()
     ui->progressBar->setValue(0);
 
 	outStream << "sliceMatiSimple: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
-    stopFlag = 0;
+    stopFlag = false;
 #endif
 }
 
@@ -1149,14 +1149,14 @@ void MainWindow::sliceMati()
     int start = 0;
     int end = -1;
     std::vector<bool> markers;
-    bool state[3];
+	std::array<bool, 3> state;
     QString fileMark;
-	int session[4]; /// generality
+	std::array<int, 4> session; /// generality
     int type = 3;
 
-    for(int i = 0; i < 4; ++i)
+	for(int & in : session)
     {
-        session[i] = 0;
+		in = 0;
     }
 
     const edfFile & fil = globalEdf;
@@ -1166,11 +1166,11 @@ void MainWindow::sliceMati()
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
         currMarker = fil.getData()[fil.getMarkChan()][i];
-        if(currMarker == 0)
+		if(currMarker == 0.)
         {
             continue;
         }
-        else
+		/// else
         {
 			markers = myLib::matiCountByte(currMarker);
 			/// decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
@@ -1238,7 +1238,7 @@ void MainWindow::sliceMati()
     }
     ui->progressBar->setValue(0);
 	outStream << "sliceMati: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
-    stopFlag = 0;
+    stopFlag = false;
 }
 
 /// add markChan alias

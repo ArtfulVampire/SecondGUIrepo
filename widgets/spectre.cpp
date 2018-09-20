@@ -168,17 +168,17 @@ int findChannel(int x, int y, QSize siz)
     switch(b)
     {
 	/// Fp1, Fp2
-    case 0:
-    {
-        if(a == 1) return 0;
-		else if(a == 3) return 1;
+	case 0:
+	{
+		if(a == 1) return 0;
+		if(a == 3) return 1;
 		break;
-    }
+	}
 	/// O1, O2
-    case 4:
-    {
-        if(a == 1) return 17;
-		else if(a == 3) return 18;
+	case 4:
+	{
+		if(a == 1) return 17;
+		if(a == 3) return 18;
 		break;
 	}
 #if 0
@@ -199,40 +199,40 @@ int findChannel(int x, int y, QSize siz)
 
 bool Spectre::eventFilter(QObject *obj, QEvent *event)
 {
-	if (obj == ui->specLabel) /// this is magic
-    {
+	if(obj == ui->specLabel) /// this is magic
+	{
 		if(event->type() == QEvent::MouseButtonPress)
 		{
-            QMouseEvent * mouseEvent = static_cast<QMouseEvent*>(event);
+			QMouseEvent * mouseEvent = static_cast<QMouseEvent*>(event);
 			/// fmod is float resting
 
 			/// between channels graphs by y-axis
 			if(std::fmod(16. * mouseEvent->y() / ui->specLabel->height(), 3.) < 0.5)
-            {
-                return false;
-            }
+			{
+				return false;
+			}
 
 			/// between channels graphs by x-axis
-			else if(std::fmod(16. * mouseEvent->x() / ui->specLabel->width(), 3.) < 0.5)
-            {
-                if(mouseEvent->button() == Qt::LeftButton)
-                {
+			if(std::fmod(16. * mouseEvent->x() / ui->specLabel->width(), 3.) < 0.5)
+			{
+				if(mouseEvent->button() == Qt::LeftButton)
+				{
 					int chanNum = findChannel(mouseEvent->x(),
 											  mouseEvent->y(),
 											  ui->specLabel->size());
-                    rangeLimits[chanNum].first = 0;
-                }
-                else if(mouseEvent->button() == Qt::RightButton)
-                {
+					rangeLimits[chanNum].first = 0;
+				}
+				else if(mouseEvent->button() == Qt::RightButton)
+				{
 
 					int chanNum = findChannel(mouseEvent->x(),
 											  mouseEvent->y(),
 											  ui->specLabel->size()) - 1;
 					rangeLimits[chanNum].second = DEFS.spLength();
-                }
-                return true;
-            }
-			else
+				}
+				return true;
+			}
+			/// else
 			{
 				QString helpString = DEFS.dirPath()
 									 + "/Help"
@@ -246,7 +246,7 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
 										  mouseEvent->y(),
 										  ui->specLabel->size());
 
-				double val = (mouseEvent->x() / ui->specLabel->width()	/// part of click x
+				double val = (mouseEvent->x() / double(ui->specLabel->width())	/// part of click x
 							  - coords::x[chanNum])						/// part of origin x
 							 / coords::scale							/// part of graph width
 							 * DEFS.spLength();
@@ -266,10 +266,10 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
 					paint.setPen(QPen(QBrush("blue"), 2));
 
 					double blueXpart = coords::x[i]
-									   + rangeLimits[i].first / DEFS.spLength() * coords::scale;
+									   + rangeLimits[i].first * coords::scale / DEFS.spLength();
 
 					double redXpart = coords::x[i]
-									  + rangeLimits[i].second / DEFS.spLength() * coords::scale;
+									  + rangeLimits[i].second * coords::scale / DEFS.spLength();
 
 					paint.drawLine(
 								QPointF(blueXpart * paint.device()->width(),
@@ -289,11 +289,11 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
 
 				return true;
 			}
-        }
-        else
-        {
-            return false;
-        }
+		}
+		/// else
+		{
+			return false;
+		}
     }
     return QWidget::eventFilter(obj, event);
 }
@@ -421,17 +421,17 @@ void Spectre::psaSlot()
 	if(!DEFS.isUser(username::Ossadtchi))
 	{
 		/// set colors
-        std::vector<QColor> colors;
+		std::vector<QColor> colors;
 		if(ui->colourRadioButton->isChecked()) { colors = def::colours; }
-        else if(ui->grayRadioButton->isChecked())
+		else if(ui->grayRadioButton->isChecked())
 		{
 			for(int i = 0; i < DEFS.numOfClasses(); ++i)
-            {
+			{
 				colors.push_back(QColor(255. * (DEFS.numOfClasses() - i) / DEFS.numOfClasses(),
 										255. * (DEFS.numOfClasses() - i) / DEFS.numOfClasses(),
 										255. * (DEFS.numOfClasses() - i) / DEFS.numOfClasses()));
-            }
-        }
+			}
+		}
 		/// draw
 		/// remake to myLib::drw::...
 		myLib::drawTemplate(avPicPath);
@@ -831,8 +831,7 @@ std::vector<int> Spectre::countSpectra(std::vector<int> chanList)
 bool Spectre::countOneSpectre(const matrix & data2, matrix & outData)
 {	
 	outData = myLib::countSpectre(data2, DEFS.getFftLen(), ui->smoothBox->value());
-	if(outData.isEmpty()) return false;
-	return true;
+	return !outData.isEmpty();
 }
 
 void Spectre::drawWavelets() /// unused
@@ -867,7 +866,7 @@ void Spectre::drawWavelets() /// unused
 	std::ofstream outStr;
 	outStr.open(helpString.toStdString(), std::ios_base::app);
 
-	std::set<double, std::greater<double>> tempVec;
+	std::set<double, std::greater<>> tempVec;
 
 	/// count maxValue
     for(const QString & fileName : lst)

@@ -172,9 +172,9 @@ public:
 
 	FeedbackClass() { isGood = false; }
 
-	FeedbackClass(const QString & guyPath_,
-				  const QString & guyName_,
-				  const QString & postfix_);
+	FeedbackClass(QString guyPath_,
+				  QString guyName_,
+				  QString postfix_);
 
 	~FeedbackClass() {}
 	void setOstream(std::ostream & in) { ostr = &in; } /// DANGER ostr can overlive in
@@ -215,7 +215,7 @@ private:
 
 
 private:
-	FBedf files[3];
+	std::array<FBedf, 3> files;
 
 	QString guyPath;
 	QString guyName;

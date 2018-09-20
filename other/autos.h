@@ -184,7 +184,7 @@ void IITPrerefCAR(const QString & guyName,
 				  const QString & addFilter = QString());
 
 void IITPrectifyEmg(const QString & guyName,
-				  QString postfix = "_sum_new",
+				  const QString & postfix = "_sum_new",
 				  const QString & dirPath = def::iitpSyncFolder);
 void IITPstagedToEnveloped(const QString & guyName,
 						   QString postfix = "_sum_new_f",

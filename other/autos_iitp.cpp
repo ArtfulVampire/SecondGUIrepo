@@ -119,10 +119,10 @@ std::vector<std::pair<QString, std::vector<QString>>> IITPtestEegChannels(const 
 		fil.readEdfFile(guyDir + "/" + edf);
 
 		std::vector<QString> absChans{};
-		for(auto chan : iitp::eegNames) /// good order
+		for(const auto & chan : iitp::eegNames) /// good order
 		{
 			bool absent = true;
-			for(auto inChan : fil.getLabels())
+			for(const auto & inChan : fil.getLabels())
 			{
 				if(inChan.contains(chan)) { absent = false; break; }
 			}
@@ -139,7 +139,7 @@ std::vector<std::pair<QString, std::vector<QString>>> IITPtestEegChannels(const 
 			if(01)
 			{
 				std::cout << edf << ": ";
-				for(auto ch : absChans)
+				for(const auto & ch : absChans)
 				{
 					std::cout << ch << " ";
 				}
@@ -160,7 +160,7 @@ void IITPinsertChannels(const QString & guyDir,
 	{
 		edfFile fil;
 		fil.readEdfFile(guyDir + "/" + in.first);
-		for(auto chan : in.second)
+		for(const auto & chan : in.second)
 		{
 			int num = myLib::indexOfVal(iitp::eegNames, chan);
 
@@ -232,7 +232,7 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 					  10,
 					  y);
 		pnt.drawText(10 + 2,
-					 y + QFontMetrics(font).height() / 2,
+					 y + QFontMetrics(font).height() / 2.,
 					 QString::number(val));
 	}
 
@@ -245,7 +245,7 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 					  x,
 					  pic.height() * (graphHeight + 0.03));
 		pnt.drawText(x - 4,
-					 pic.height() * (graphHeight + 0.03) + QFontMetrics(font).height() / 2,
+					 pic.height() * (graphHeight + 0.03) + QFontMetrics(font).height() / 2.,
 					 QString::number(i));
 	}
 
@@ -287,7 +287,7 @@ void IITPrename(const QString & guyName)
 		inStr >> oldNum >> newNum;
 		if(!inStr.eof())
 		{
-			for(QString ending : {
+			for(const QString & ending : {
 				"_eeg.edf",
 				"_emg.edf",
 				".dat"
@@ -309,7 +309,7 @@ void IITPrename(const QString & guyName)
 	}
 	inStr.close();
 
-	for(QString nam : QDir(pth).entryList({"*" + postfix + "*"}))
+	for(const QString & nam : QDir(pth).entryList({"*" + postfix + "*"}))
 	{
 		QString newName = nam;
 		newName.remove(postfix);
@@ -367,7 +367,7 @@ void IITPfilterGonios(const QString & guyName,
 		std::vector<int> chanList;
 		for(int i = 0; i < fil.getNs(); ++i)
 		{
-			for(auto joint : joints)
+			for(const QString & joint : joints)
 			{
 				if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive))
 				{
@@ -828,7 +828,7 @@ void IITPpre2(const QString & guyName)
 
 #if 01
 		/// filter EMG notch + goniogramms
-		for(QString addName :{"dsp", "fft"})
+		for(const QString & addName :{"dsp", "fft"})
 		{
 //			if(addName == "dsp")
 //			{
@@ -889,7 +889,7 @@ void IITPpre2(const QString & guyName)
 
 #if 01
 		/// filter EEG edfs, but not ECG
-		for(QString addName :{"dsp", "fft"})
+		for(const QString & addName :{"dsp", "fft"})
 		{
 //			if(addName == "dsp")
 //			{
@@ -915,7 +915,7 @@ void IITPpre2(const QString & guyName)
 #if 01
 		/// resample
 		/// upsample EEGs
-		for(QString addName :{"dsp", "fft"})
+		for(const QString & addName :{"dsp", "fft"})
 		{
 //			if(addName == "dsp")
 //			{
@@ -949,7 +949,7 @@ void IITPpre2(const QString & guyName)
 
 		/// vertcat eeg+emg
 
-		for(QString addName :{"dsp", "fft"})
+		for(const QString & addName :{"dsp", "fft"})
 		{
 			/// upsampled EEG
 			filePath = ExpNamePre + "_eeg_" + addName + "_up.edf";
@@ -1015,7 +1015,7 @@ void IITPremoveZchans(const QString & hauptDir)
 
 
 void IITPrectifyEmg(const QString & guyName,
-				  QString postfix,
+				  const QString & postfix,
 				  const QString & dirPath)
 {
 	/// replace EMG with its abs
@@ -1049,7 +1049,7 @@ void IITPrectifyEmg(const QString & guyName,
 		}
 
 		dt.readEdfFile(filePath(fileNum));
-		for(QString emgChan : iitp::emgNames)
+		for(const QString & emgChan : iitp::emgNames)
 		{
 			int num = dt.findChannel(emgChan);
 			if(num == -1) { continue; }
@@ -1068,7 +1068,7 @@ void IITPcopyToCar(const QString & guyName)
 	const QString inPath = def::iitpSyncFolder + "/" + guyName;
 	const QString outPath = def::iitpSyncFolder + "/" + guyName + "_car";
 	QDir().mkpath(outPath);
-	for(const QString fileName : QDir(inPath).entryList({"*_stag*"}))
+	for(const QString & fileName : QDir(inPath).entryList({"*_stag*"}))
 	{
 		QFile::copy(inPath + "/" + fileName,
 					outPath + "/" + fileName);
@@ -1090,7 +1090,7 @@ void IITPrerefCAR(const QString & guyName,
 
 	QStringList edfs = QDir(workPath).entryList(def::edfFilters);
 
-	for(QString fileName : edfs)
+	for(const QString & fileName : edfs)
 	{
 		if(!addFilter.isEmpty() && !fileName.contains(addFilter)) { continue; }
 
@@ -1182,7 +1182,7 @@ void IITPstagedToEnveloped(const QString & guyName,
 		}
 
 		dt.readEdfFile(filePath(fileNum));
-		for(QString emgChan : iitp::emgNames)
+		for(const QString & emgChan : iitp::emgNames)
 		{
 			int num = dt.findChannel(emgChan);
 			if(num == -1) { continue; }
@@ -1233,7 +1233,7 @@ void IITPdrawSameScale(const QString & guyName, const std::vector<int> & nums)
 {
 	std::vector<QString> paths;
 	const QString workDir = def::iitpResFolder + "/" + guyName + "/sp";
-	for(QString fileName : QDir(workDir).entryList({"*_sp.txt"}))
+	for(const QString & fileName : QDir(workDir).entryList({"*_sp.txt"}))
 	{
 		int fileNum = iitp::iitpData::getFileNum(fileName);
 		if(std::find(std::begin(nums), std::end(nums), fileNum) != std::end(nums))
@@ -1364,7 +1364,7 @@ void IITPprocessStaged(const QString & guyName,
 	const double continiousOverlap	= 0.5;
 	const double confidenceLevel	= 0.05; /// for threshold value only
 
-	for(const QString add : {"", "_car"})
+	for(const QString & add : {"", "_car"})
 	{
 		const QString guyDir = guyName + add;
 		const QString direct = dirPath + "/" + guyDir + "/";
@@ -1415,7 +1415,7 @@ void IITPprocessStaged(const QString & guyName,
 					continue;
 				}
 			}
-			catch (std::out_of_range a)
+			catch (std::out_of_range & a)
 			{
 				/* do nothing, it's okay */
 			}
@@ -1544,7 +1544,7 @@ void IITPdoShit(const QString & resultsPathPrefix,
 						   maxes[i][j],
 						   myLib::drw::ColorScale::jet,
 						   true).save(resultsPathPrefix + "cohPics/" + picName,
-									  0, 100);
+									  nullptr, 100);
 #endif
 }
 
@@ -1640,7 +1640,7 @@ void IITPdrawSpectralMaps(const QString & guyName,
 {
 	/// read sp [4; 40) Hz, draw maps
 
-	for(const QString add : {"", "_car"})
+	for(const QString & add : {"", "_car"})
 	{
 		const QString guyDir = guyName + add;
 		const QString inPath = dirPath + "/" + guyDir + "/sp/";

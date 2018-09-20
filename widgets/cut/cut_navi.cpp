@@ -80,7 +80,8 @@ void Cut::findPrevMark(double mark)
 			while (it != beg)
 			{
 				if (*it == mark) { break; }
-				else { --it; }
+				/// else
+				--it;
 			}
 		}
 		else
@@ -88,7 +89,8 @@ void Cut::findPrevMark(double mark)
 			while (it != beg)
 			{
 				if (*it != 0.) { break; }
-				else { --it; }
+				/// else
+				--it;
 			}
 		}
 

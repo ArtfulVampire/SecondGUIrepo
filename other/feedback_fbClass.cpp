@@ -3,13 +3,15 @@
 #include <myLib/statistics.h>
 #include <widgets/net.h>
 
+#include <utility>
+
 namespace fb
 {
 /// FeedbackClass
-FeedbackClass::FeedbackClass(const QString & guyPath_,
-							 const QString & guyName_,
-							 const QString & postfix_)
-	: guyPath(guyPath_), guyName(guyName_), postfix(postfix_)
+FeedbackClass::FeedbackClass(QString guyPath_,
+							 QString guyName_,
+							 QString postfix_)
+	: guyPath(std::move(guyPath_)), guyName(std::move(guyName_)), postfix(std::move(postfix_))
 {
 	isGood = false;
 	auto filePath = [this](int numSes) -> QString
@@ -199,7 +201,7 @@ void FeedbackClass::writeRightWrong(const QString & prePath)
 void FeedbackClass::writeBackgroundCompare(taskType typ, ansType howSolved)
 {
 	int counter = 1;
-	for(fileNum nn : {fileNum::first, fileNum::second, fileNum::third})
+	for(auto nn : {fileNum::first, fileNum::second, fileNum::third})
 	{
 		const int fileN = static_cast<int>(nn);
 		matrix diff = this->files[fileN].backgroundCompare(typ, howSolved)
@@ -262,9 +264,7 @@ void FeedbackClass::calculateICAs()
 /// ???
 void FeedbackClass::writeLearnedPatterns()
 {
-
 	ANN * ann = new ANN();
-
 
 	auto & fil1 = this->files[int(fileNum::first)];
 	fil1.remakeWindows(0.5 * fil1.getFreq(), 0); /// magic const

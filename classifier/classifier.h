@@ -48,9 +48,9 @@ protected:
 
 	ClassifierData * myClassData;
 
-	matrix confusionMatrix; /// [realClass] [predictedClass]
-	double averageAccuracy;				/// to deprecate
-	double kappa;						/// to deprecate
+	matrix confusionMatrix;				/// [realClass] [predictedClass]
+	double averageAccuracy{};			/// to deprecate
+	double kappa{};						/// to deprecate
 	std::valarray<double> outputLayer;	/// output of classification
 
 	bool testCleanFlag  = false;		/// delete wrong classified files
@@ -97,7 +97,7 @@ private:
 
 public:
     Classifier();
-    virtual ~Classifier();
+	virtual ~Classifier()=default;
 
 	avType averageClassification(std::ostream & os = std::cout); /// on confusionMatrix
 
@@ -184,7 +184,7 @@ public:
     void readWeight(const QString & fileName,
 					weightType * wtsMatrix = nullptr);
 	void writeWeight(const QString & wtsPath = QString()) const;
-    void drawWeight(QString wtsPath = QString(),
+	void drawWeight(const QString & wtsPath = QString(),
 					QString picPath = QString());
 	double adjustLearnRate(std::ostream & os = std::cout);
 

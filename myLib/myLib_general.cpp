@@ -27,17 +27,18 @@ QString rerefChannel(const QString & initialRef,
     /// assume the name to be: * Name-Ref *
     /// length of channel and ref are less than 4
 
+	/// remake with switch(...)
     if(targetRef == "A1")
     {
         if(initialRef == "A2")
         {
             return currentNum + sign[0] + earsChan;
         }
-        else if(initialRef == "N")
+		if(initialRef == "N")
         {
             return currentNum + "-" + groundChan;
         }
-        else if(initialRef == "Ar")
+		if(initialRef == "Ar")
         {
             return currentNum + sign[0] + earsChan + "/2";
         }
@@ -48,11 +49,11 @@ QString rerefChannel(const QString & initialRef,
         {
             return currentNum + sign[1] + earsChan;
         }
-        else if(initialRef == "N")
+		if(initialRef == "N")
         {
             return currentNum + "-" + groundChan + sign[1] + earsChan;
         }
-        else if(initialRef == "Ar")
+		if(initialRef == "Ar")
         {
             return currentNum + sign[1] + earsChan + "/2";
         }
@@ -63,11 +64,11 @@ QString rerefChannel(const QString & initialRef,
         {
             return currentNum + "+" + groundChan;
         }
-        else if(initialRef == "A2")
+		if(initialRef == "A2")
         {
             return currentNum + sign[0] + earsChan + "+" + groundChan;
         }
-        else if(initialRef == "Ar")
+		if(initialRef == "Ar")
         {
             return currentNum + sign[0] + earsChan + "/2"  + "+" + groundChan;
         }
@@ -78,17 +79,16 @@ QString rerefChannel(const QString & initialRef,
 		{
             return currentNum + sign[1] + earsChan + "/2";
         }
-        else if(initialRef == "A2")
+		if(initialRef == "A2")
         {
             return currentNum + sign[0] + earsChan + "/2";
         }
-        else if(initialRef == "N")
+		if(initialRef == "N")
         {
             return currentNum + "-" + groundChan + sign[1] + earsChan + "/2";
         }
     }
     return currentNum;
-
 }
 
 QString setFileName(const QString & initNameOrPath) /// append _num before the dot
@@ -313,7 +313,7 @@ std::vector<int> splitStringIntoVec(const QString & in)
 {
 	std::vector<int> res{};
 	QStringList lst = in.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
-	for(QString p : lst)
+	for(const QString & p : lst)
 	{
 		res.push_back(p.toInt());
 	}
@@ -385,7 +385,7 @@ bool areEqualFiles(QString path1, QString path2)
 	using byte = qint8;
 	FILE * fil1 = fopen(path1, "rb");
 	FILE * fil2 = fopen(path2, "rb");
-	if(fil1 == NULL || fil2 == NULL)
+	if(fil1 == nullptr || fil2 == nullptr)
 	{
 		std::cout << "areEqualFiles: some of the files == NULL" << std::endl;
 	}
@@ -453,8 +453,8 @@ int countSymbolsInFile(const QString & filePath, char inChar)
 }
 
 void replaceSymbolsInFile(const QString & filePath,
-						  QString inChar,
-						  QString outChar,
+						  const QString & inChar,
+						  const QString & outChar,
 						  QString outPath)
 {
 	QFile fil(filePath);
@@ -471,7 +471,7 @@ void replaceSymbolsInFile(const QString & filePath,
 }
 
 
-void cleanDir(QString dirPath, QString nameFilter, bool ext)
+void cleanDir(const QString & dirPath, const QString & nameFilter, bool ext)
 {
 	QDir tmpDir(dirPath);
 
@@ -513,7 +513,7 @@ void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 
 	FILE * outFile;
 	outFile = fopen(outPath, "wb");
-	if(outFile == NULL)
+	if(outFile == nullptr)
 	{
 		std::cout << "cant open file to write" << std::endl;
 		return;

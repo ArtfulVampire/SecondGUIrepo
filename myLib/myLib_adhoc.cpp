@@ -35,15 +35,12 @@ std::vector<QString> readBurdenkoLog(const QString & logPath)
 	{
 		inStr.readLine();
 	}
-	for(int i = 0; i < res.size(); ++i)
+	for(auto & inRes : res)
 	{
 		QString line = QString(inStr.readLine().toStdString().c_str());
-		res[i] = line.split('\t', QString::SkipEmptyParts)[2].mid(1);
+		inRes = line.split('\t', QString::SkipEmptyParts)[2].mid(1);
 	}
-//	for(int i = 0; i < res.size(); ++i)
-//	{
-//		std::cout << res[i] << std::endl;
-//	}
+//	std::cout << res << std::endl;
 	inStr.close();
 	return res;
 }

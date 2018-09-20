@@ -4,7 +4,7 @@ using namespace myOut;
 
 /// lowest distance to cluster center
 
-DIST::DIST() : Classifier()
+DIST::DIST()
 {
     myType = ModelType::DIST;
     typeString = "DIST";

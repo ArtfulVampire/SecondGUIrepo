@@ -105,9 +105,9 @@ void MainWindow::rereferenceCARSlot()
 	}
 #else
 	/// new 20-Apr-18
-	for(uint i = 0; i < rerefChannels.size(); ++i)
+	for(int rerefChannel : rerefChannels)
 	{
-		int chan = globalEdf.findChannel(rerefChannels[i]);
+		int chan = globalEdf.findChannel(rerefChannel);
 
 		if(!globalEdf.getLabels(chan).contains("EOG"))
 		{

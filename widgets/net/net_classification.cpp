@@ -136,7 +136,7 @@ void Net::crossClassification()
         qApp->processEvents();
         if(stopFlag)
         {
-            stopFlag = 0;
+            stopFlag = false;
             return;
         }
     }
@@ -156,21 +156,21 @@ std::vector<uint>> Net::makeIndicesSetsCross(
     const int fold = ui->foldSpinBox->value();
 
 	for(int i = 0; i < numOfClasses; ++i)
-    {
+	{
 		const int clSize = myModel->getClassifierData()->getClassCount(i);
 		for(int j = 0; j < clSize; ++j)
-        {
+		{
 			if(j >= (clSize * numOfFold / fold) &&
 			   j < (clSize * (numOfFold + 1) / fold))
-            {
-                tallInd.push_back(arr[i][j]);
-            }
-            else
-            {
-                learnInd.push_back(arr[i][j]);
-            }
-        }
-    }
+			{
+				tallInd.push_back(arr[i][j]);
+			}
+			else
+			{
+				learnInd.push_back(arr[i][j]);
+			}
+		}
+	}
 	return std::make_pair(learnInd, tallInd);
 }
 
@@ -243,7 +243,6 @@ void Net::customF()
 	/// clean CLassifierData to 3 * N train windows
 	uint N = 80;
 	myClassifierData.clean(N, "_train");
-	return;
 #endif
 
 #if 0
