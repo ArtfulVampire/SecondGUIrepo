@@ -856,23 +856,26 @@ void Cut::manualDraw(QPoint finP)
 {
 	const int numChan = ui->color3SpinBox->value();
 	if(numChan == -1) { return; }
+	if(manualDrawStart.x() == finP.x()) { return; }
+
+
+	QPoint sta = manualDrawStart;
+	QPoint fin = finP;
+	manualDrawStart = fin;
+	if(sta.x() > fin.x())
+	{
+		std::swap(sta, fin);
+	}
 
 	/// like in myLib_drw.cpp, function drawEeg, variable offsetY
 	const double offsetY = (numChan + 1)
 						   * ui->scrollArea->height()
 						   / (drawData.rows() + 2.);
-	const double norm = normCoeff();
-
-	QPoint sta = manualDrawStart;
-	QPoint fin = std::move(finP);
-
-//	if(sta.x() == fin.x()) { return; }
-	if(sta.x() > fin.x()) { std::swap(sta, fin); }
-
 	/// horzNorm
-	const int Xsta = sta.x() * ui->xNormDoubleSpinBox->value();
-	const int Xfin = fin.x() * ui->xNormDoubleSpinBox->value();
-	for(int x = Xsta; x < Xfin; ++x)
+	const int Xsta = std::round(sta.x() * ui->xNormDoubleSpinBox->value());
+	const int Xfin = std::round(fin.x() * ui->xNormDoubleSpinBox->value());
+	const double norm = normCoeff();
+	for(int x = Xsta; x <= Xfin; ++x)
 	{
 		dataCutLocal[numChan][x + leftDrawLimit] =
 				((sta.y() - offsetY)										/// init value
@@ -881,8 +884,8 @@ void Cut::manualDraw(QPoint finP)
 				/ norm;														/// norm
 	}
 	drawData = this->makeDrawData();
+//	paintData(drawData);
 	repaintData(drawData, Xsta, Xfin);
-	manualDrawStart = fin;
 }
 
 double Cut::normCoeff()
@@ -903,10 +906,19 @@ void Cut::repaintData(matrix & drawDataLoc, int sta, int fin)
 		if(ch < drawDataLoc.rows()) { drawDataLoc[ch] = 0; }
 	}
 
+//	currentPic = myLib::drw::drawEeg(drawDataLoc * normCoeff(),
+//									 edfFil.getFreq(),
+//									 ui->scrollArea->height(),
+//									 this->makeColouredChans())
+//				  /// horzNorm
+//				 .scaledToWidth(ui->paintLengthDoubleSpinBox->value()
+//								* edfFil.getFreq()
+//								/ ui->xNormDoubleSpinBox->value());
+
 	myLib::drw::redrawEeg(currentPic,
 						  sta,
 						  fin,
-						  drawDataLoc * normCoeff(),
+						  drawDataLoc * normCoeff() / ui->xNormDoubleSpinBox->value(),
 						  edfFil.getFreq(),
 						  /// horzNorm
 						  ui->xNormDoubleSpinBox->value(),

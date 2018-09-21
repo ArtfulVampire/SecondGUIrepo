@@ -758,7 +758,7 @@ QPixmap redrawEegCopy(const QPixmap & prev,
 	return pic;
 }
 
-/// [sta, fin)
+/// [sta, fin]
 void redrawEeg(QPixmap & pic,
 			   int sta,
 			   int fin,
@@ -775,9 +775,20 @@ void redrawEeg(QPixmap & pic,
 	paint.setBrush(QBrush("white"));
 
 	/// horzNorm
-	int staNorm = std::floor(sta / Xnorm);
-	int finNorm = std::floor(fin / Xnorm);
-	paint.drawRect(staNorm - 1, 0, finNorm-staNorm + 2, pic.height()); /// magic +-1
+	int staNorm = std::ceil(sta / Xnorm);
+	int finNorm = std::ceil(fin / Xnorm);
+
+	 /// magic +-1
+	auto rect1 = QRect(QPoint(staNorm, 0),
+					  QPoint(finNorm, pic.height()));
+	paint.drawRect(rect1);
+
+	auto rect2 = QRect(QPoint(sta, 0),
+					  QPoint(fin, pic.height()));
+	QPixmap piece(rect2.size());
+	piece.fill("white");
+	QPainter pnt;
+	pnt.begin(&piece);
 
 	for(int chanNum = 0; chanNum < inData.rows(); ++chanNum)
 	{
@@ -785,39 +796,48 @@ void redrawEeg(QPixmap & pic,
 		auto it = std::find_if(std::begin(colouredChans), std::end(colouredChans),
 							   [chanNum](const std::pair<int, QColor> & in)
 		{
-			return (in.first == chanNum);
+			return in.first == chanNum;
 		}
 		);
 		if(it != std::end(colouredChans))
 		{
-			paint.setPen(QPen(QBrush((*it).second), myLib::drw::penWidth));
+			pnt.setPen(QPen(QBrush((*it).second), myLib::drw::penWidth));
 		}
 		else
 		{
-			paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth)); /// default color
+			pnt.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
 		}
 
 		const double offsetY = (chanNum + 1) * pic.height() / double(inData.rows() + 2);
 
 		/// horzNorm
-		for(int currX = staNorm - 1; currX < finNorm - 1; ++currX)  /// magic +-2
+		/// magic +-2
+#if 01
+		int x = 0;
+		for(int currX = rect2.left(); currX <= rect2.right() ; ++currX, ++x)
 		{
-			paint.drawLine(currX,
+			pnt.drawLine(x,
 						   /// horzNorm WHAAAAAAAAAAAAT
-						   offsetY + inData[chanNum][currX * Xnorm] / Xnorm,
-					currX + 1,
+						   offsetY + inData[chanNum][currX],
+					x + 1,
 					/// horzNorm WHAAAAAAAAAAAAAAT
-					offsetY + inData[chanNum][(currX + 1) * Xnorm] / Xnorm);
+					offsetY + inData[chanNum][currX + 1]
+					);
 		}
+#endif
 	}
+	pnt.end();
+	paint.drawPixmap(rect1, piece, piece.rect());
+
+#if 0
 	/// paint seconds marks
 	paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
-	for(int numSec = 0; numSec < (inData.cols() / srate) + 1; ++numSec)
+	for(int numSec = staNorm / srate; numSec <= finNorm / srate ; ++numSec)
 	{
 		paint.drawLine(numSec * srate / Xnorm, pic.height(),
-					   numSec * srate / Xnorm, pic.height() - 32);
+					   numSec * srate / Xnorm, pic.height() - 32 / Xnorm);
 		paint.drawText(numSec * srate / Xnorm,
-					   pic.height() - 35,
+					   pic.height() - 35 / Xnorm,
 					   nm(numSec));
 
 		for(int subSec = 1; subSec < 5; ++subSec) /// const 5
@@ -827,6 +847,7 @@ void redrawEeg(QPixmap & pic,
 		}
 	}
 	paint.end();
+#endif
 }
 
 QPixmap drawEeg(const matrix & inData,
