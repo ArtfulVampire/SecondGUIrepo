@@ -740,11 +740,12 @@ QPixmap drawRealisation(const QString & inPath, int srate)
 }
 
 QPixmap redrawEegCopy(const QPixmap & prev,
-				  int sta,
-				  int fin,
-				  const matrix & inData,
-				  int srate,
-				  const std::vector<std::pair<int, QColor> > & colouredChans)
+					  int sta,
+					  int fin,
+					  const matrix & inData,
+					  int srate,
+					  double Xnorm,
+					  const std::vector<std::pair<int, QColor> > & colouredChans)
 {
 	QPixmap pic = prev;
 	redrawEeg(pic,
@@ -752,6 +753,7 @@ QPixmap redrawEegCopy(const QPixmap & prev,
 			  fin,
 			  inData,
 			  srate,
+			  Xnorm,
 			  colouredChans);
 	return pic;
 }
@@ -762,18 +764,20 @@ void redrawEeg(QPixmap & pic,
 			   int fin,
 			   const matrix & inData,
 			   int srate,
+			   double Xnorm,
 			   const std::vector<std::pair<int, QColor> > & colouredChans)
 {
-	pic = pic.scaled(pic.width(), myLib::drw::eegPicHeight);
 	QPainter paint;
 	paint.begin(&pic);
-
-	const double norm = 1.;
 
 	/// white before redraw
 	paint.setPen("white");
 	paint.setBrush(QBrush("white"));
-	paint.drawRect(sta - 1, 0, fin-sta + 1, pic.height()); /// magic +-1
+
+	/// horzNorm
+	int staNorm = std::floor(sta / Xnorm);
+	int finNorm = std::floor(fin / Xnorm);
+	paint.drawRect(staNorm - 1, 0, finNorm-staNorm + 2, pic.height()); /// magic +-1
 
 	for(int chanNum = 0; chanNum < inData.rows(); ++chanNum)
 	{
@@ -795,28 +799,31 @@ void redrawEeg(QPixmap & pic,
 
 		const double offsetY = (chanNum + 1) * pic.height() / double(inData.rows() + 2);
 
-		for(int currX = sta - 2; currX < fin + 2; ++currX)  /// magic +-2
+		/// horzNorm
+		for(int currX = staNorm - 1; currX < finNorm - 1; ++currX)  /// magic +-2
 		{
 			paint.drawLine(currX,
-						   offsetY + inData[chanNum][currX] * norm,
-						   currX + 1,
-						   offsetY + inData[chanNum][currX + 1] * norm);
+						   /// horzNorm WHAAAAAAAAAAAAT
+						   offsetY + inData[chanNum][currX * Xnorm] / Xnorm,
+					currX + 1,
+					/// horzNorm WHAAAAAAAAAAAAAAT
+					offsetY + inData[chanNum][(currX + 1) * Xnorm] / Xnorm);
 		}
 	}
 	/// paint seconds marks
 	paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
 	for(int numSec = 0; numSec < (inData.cols() / srate) + 1; ++numSec)
 	{
-		paint.drawLine(numSec * srate, pic.height(),
-					   numSec * srate, pic.height() - 32);
-		paint.drawText(numSec * srate,
+		paint.drawLine(numSec * srate / Xnorm, pic.height(),
+					   numSec * srate / Xnorm, pic.height() - 32);
+		paint.drawText(numSec * srate / Xnorm,
 					   pic.height() - 35,
 					   nm(numSec));
 
 		for(int subSec = 1; subSec < 5; ++subSec) /// const 5
 		{
-			paint.drawLine((numSec + subSec / 5.) * srate, pic.height(),
-						   (numSec + subSec / 5.) * srate, pic.height() - 25);
+			paint.drawLine((numSec + subSec / 5.) * srate / Xnorm, pic.height(),
+						   (numSec + subSec / 5.) * srate / Xnorm, pic.height() - 25);
 		}
 	}
 	paint.end();

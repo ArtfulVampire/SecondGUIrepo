@@ -60,7 +60,7 @@ private:
 
 	/// manual signal draw
 	int getDrawnChannel(const QPoint & clickPos);
-	void manualDraw(QPoint fin); /// copy parameter - can be changed
+	void manualDraw(QPoint finP); /// copy parameter - can be changed
 	void manualDrawAddUndo();
 
 	void colorSpinSlot(QSpinBox * spin, QLineEdit * lin);
@@ -167,6 +167,7 @@ private:
 	static const int picScaleGapY = 20;
 	bool drawFlag{false}; /// to prevent many redraws in e.g. setValuesByEdf()
 	std::vector<int> marksToDraw{};
+	double prevXnorm{1.};
 
 	/// manual signal draw
 	bool manualDrawFlag{false};						/// manual signal draw

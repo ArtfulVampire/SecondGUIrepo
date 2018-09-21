@@ -180,8 +180,16 @@ Cut::Cut() :
 	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked, this, &Cut::paint);
 	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
-	QObject::connect(ui->xNormDoubleSpinBox, SIGNAL(valueChanged(double)),
-					 this, SLOT(paint()));
+	QObject::connect(ui->xNormDoubleSpinBox,
+					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+					 [this](double in)
+	{
+		/// horzNorm
+		ui->paintLengthDoubleSpinBox->setValue(ui->paintLengthDoubleSpinBox->value()
+											   / prevXnorm * in);
+		prevXnorm = in;
+		paint();
+	});
 	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
 	QObject::connect(ui->paintLengthDoubleSpinBox,
@@ -189,7 +197,9 @@ Cut::Cut() :
 					 [this](double a)
 	{
 		if(this->size().width() == a * edfFil.getFreq() + scrollAreaGapX) return;
-		this->resize(a * edfFil.getFreq() + scrollAreaGapX, this->height());
+		/// horzNorm
+		this->resize(a * edfFil.getFreq() / ui->xNormDoubleSpinBox->value()
+					 + scrollAreaGapX, this->height());
 	});
 	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
 					 this, SLOT(timesAndDiffSlot()));
@@ -313,7 +323,8 @@ void Cut::resizeEvent(QResizeEvent * event)
 	if(event->size() == event->oldSize()) { return; }
 
     /// adjust scrollArea size
-	double newLen = smLib::doubleRound((event->size().width() - scrollAreaGapX) / edfFil.getFreq(),
+	double newPaintLength = smLib::doubleRound((event->size().width() - scrollAreaGapX)
+											   / edfFil.getFreq() * ui->xNormDoubleSpinBox->value(),
 									   ui->paintLengthDoubleSpinBox->decimals());
 	double newHei = std::max(int(smLib::doubleRound(event->size().height(), -1)),
 							 this->minimumHeight())
@@ -321,9 +332,10 @@ void Cut::resizeEvent(QResizeEvent * event)
 
     ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
                                 ui->scrollArea->geometry().y(),
-								newLen * edfFil.getFreq(),
+								/// horzNorm
+								newPaintLength * edfFil.getFreq() / ui->xNormDoubleSpinBox->value(),
 								newHei);
-	ui->paintLengthDoubleSpinBox->setValue(newLen);
+	ui->paintLengthDoubleSpinBox->setValue(newPaintLength);
 
 	if(!dataCutLocal.isEmpty())
 	{
@@ -345,7 +357,15 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			if(scrollEvent->modifiers().testFlag(Qt::ControlModifier) &&
 			   !scrollEvent->modifiers().testFlag(Qt::ShiftModifier))
 			{
-				ui->yNormDoubleSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
+				if(scrollEvent->modifiers().testFlag(Qt::AltModifier))
+				{
+					/// horzNorm
+					ui->xNormDoubleSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
+				}
+				else
+				{
+					ui->yNormDoubleSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
+				}
 				return true;
 			}
 
@@ -491,7 +511,14 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			{
 				if(clickEvent->modifiers().testFlag(Qt::ControlModifier))
 				{
-					ui->yNormInvertCheckBox->click();
+					if(clickEvent->modifiers().testFlag(Qt::AltModifier))
+					{
+						ui->xNormDoubleSpinBox->setValue(1.);
+					}
+					else
+					{
+						ui->yNormInvertCheckBox->click();
+					}
 				}
 				else
 				{
@@ -619,7 +646,10 @@ void Cut::showDerivatives()
 	const int st = 5;
 
 	int numSig1 = ui->derivChan1SpinBox->value();
-	if(edfFil.getNs() >= coords::egi::manyChannels) { numSig1 = coords::egi::chans128to20[ui->derivChan1SpinBox->value()]; }
+	if(edfFil.getNs() >= coords::egi::manyChannels)
+	{
+		numSig1 = coords::egi::chans128to20[ui->derivChan1SpinBox->value()];
+	}
 	const std::valarray<double> & sig1 = dataCutLocal[numSig1];
 
 	const int ind1 = ui->leftLimitSpinBox->value();
@@ -634,7 +664,10 @@ void Cut::showDerivatives()
 	}
 
 	int numSig2 = ui->derivChan2SpinBox->value();
-	if(edfFil.getNs() >= coords::egi::manyChannels) { numSig2 = coords::egi::chans128to20[ui->derivChan2SpinBox->value()]; }
+	if(edfFil.getNs() >= coords::egi::manyChannels)
+	{
+		numSig2 = coords::egi::chans128to20[ui->derivChan2SpinBox->value()];
+	}
 	const std::valarray<double> & sig2 = dataCutLocal[numSig2];
 	const int ind2 = ui->rightLimitSpinBox->value();
 	ui->derivVal2SpinBox->setValue(sig2[ind2]);
@@ -651,15 +684,17 @@ void Cut::showDerivatives()
 void Cut::mousePressSlot(Qt::MouseButton btn, int coord)
 {
 	if(btn == Qt::LeftButton &&
-	   coord + leftDrawLimit < ui->rightLimitSpinBox->value())
+	   /// horzNorm
+	   leftDrawLimit + coord * ui->xNormDoubleSpinBox->value() < ui->rightLimitSpinBox->value())
 	{
-		ui->leftLimitSpinBox->setValue(coord + leftDrawLimit);
+		ui->leftLimitSpinBox->setValue(leftDrawLimit + coord * ui->xNormDoubleSpinBox->value());
 	}
 	else if(btn == Qt::RightButton &&
-			coord + leftDrawLimit > ui->leftLimitSpinBox->value() &&
+			/// horzNorm
+			leftDrawLimit + coord * ui->xNormDoubleSpinBox->value() > ui->leftLimitSpinBox->value() &&
 			coord < dataCutLocal.cols())
 	{
-		ui->rightLimitSpinBox->setValue(coord + leftDrawLimit);
+		ui->rightLimitSpinBox->setValue(leftDrawLimit + coord * ui->xNormDoubleSpinBox->value());
 	}
 	showDerivatives();
 	paintLimits();
@@ -748,7 +783,11 @@ matrix Cut::makeDrawData()
 	if(myFileType == fileType::edf)
 	{
 		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * edfFil.getFreq();
-		rightDrawLimit = std::min(leftDrawLimit + ui->scrollArea->width(), int(dataCutLocal.cols()));
+		rightDrawLimit = std::min(leftDrawLimit +
+								  /// horzNorm
+								  int(ui->paintLengthDoubleSpinBox->value()
+								  * edfFil.getFreq()),
+								  int(dataCutLocal.cols()));
 	}
 	else if(myFileType == fileType::real)
 	{
@@ -766,11 +805,11 @@ int Cut::getDrawnChannel(const QPoint & clickPos)
 	double dist = 1000;
 	int num = -1;
 
-	std::cout << "Y = " << clickPos.y() << "\t"
-			  << "scrH = " << ui->scrollArea->height() << "\t"
-			  << "picL = " << ui->picLabel->height() << "\t"
-			  << "pic = " << ui->picLabel->pixmap()->height() << "\t"
-			  << std::endl;
+//	std::cout << "Y = " << clickPos.y() << "\t"
+//			  << "scrH = " << ui->scrollArea->height() << "\t"
+//			  << "picL = " << ui->picLabel->height() << "\t"
+//			  << "pic = " << ui->picLabel->pixmap()->height() << "\t"
+//			  << std::endl;
 	for(int i = 0; i < drawData.rows(); ++i)
 	{
 		/// look myLib_drw.cpp, drawEeg(...), offsetY
@@ -782,12 +821,12 @@ int Cut::getDrawnChannel(const QPoint & clickPos)
 								  + vals[i] * norm
 
 								  - clickPos.y());
-		std::cout << i + 1 << "\t"
-				  << "val = " << vals[i] << "\t"
-				  << "norm = " << norm << "\t"
-				  << "offset = " << offsetY << "\t"
-				  << "sig = " << offsetY + vals[i] * norm << "\t"
-				  << "D = " << D << std::endl;
+//		std::cout << i + 1 << "\t"
+//				  << "val = " << vals[i] << "\t"
+//				  << "norm = " << norm << "\t"
+//				  << "offset = " << offsetY << "\t"
+//				  << "sig = " << offsetY + vals[i] * norm << "\t"
+//				  << "D = " << D << std::endl;
 		if(D < dist)
 		{
 			dist = D;
@@ -813,7 +852,7 @@ void Cut::manualDrawAddUndo()
 	undoActions.push_back(undoAction);
 }
 
-void Cut::manualDraw(QPoint fin)
+void Cut::manualDraw(QPoint finP)
 {
 	const int numChan = ui->color3SpinBox->value();
 	if(numChan == -1) { return; }
@@ -825,20 +864,24 @@ void Cut::manualDraw(QPoint fin)
 	const double norm = normCoeff();
 
 	QPoint sta = manualDrawStart;
-	if(sta.x() == fin.x()) { return; }
+	QPoint fin = std::move(finP);
 
-	if(manualDrawStart.x() > fin.x()) { std::swap(sta, fin); }
+//	if(sta.x() == fin.x()) { return; }
+	if(sta.x() > fin.x()) { std::swap(sta, fin); }
 
-	for(int x = sta.x(); x < fin.x(); ++x) /// [sta, fin]
+	/// horzNorm
+	const int Xsta = sta.x() * ui->xNormDoubleSpinBox->value();
+	const int Xfin = fin.x() * ui->xNormDoubleSpinBox->value();
+	for(int x = Xsta; x < Xfin; ++x)
 	{
 		dataCutLocal[numChan][x + leftDrawLimit] =
 				((sta.y() - offsetY)										/// init value
-				 + (fin.y() - sta.y())) / double(fin.x() - sta.x())			/// inclination
-				 * (x - sta.x())											/// range
+				 + (fin.y() - sta.y()) / double(Xfin - Xsta)				/// inclination
+				 * (x - Xsta))												/// range
 				/ norm;														/// norm
 	}
 	drawData = this->makeDrawData();
-	repaintData(drawData, sta.x(), fin.x());
+	repaintData(drawData, Xsta, Xfin);
 	manualDrawStart = fin;
 }
 
@@ -861,12 +904,15 @@ void Cut::repaintData(matrix & drawDataLoc, int sta, int fin)
 	}
 
 	myLib::drw::redrawEeg(currentPic,
-						  sta, fin,
+						  sta,
+						  fin,
 						  drawDataLoc * normCoeff(),
 						  edfFil.getFreq(),
+						  /// horzNorm
+						  ui->xNormDoubleSpinBox->value(),
 						  this->makeColouredChans());
 
-	paintMarkers(drawDataLoc);
+//	paintMarkers(drawDataLoc);
 	paintLimits();
 }
 
@@ -885,7 +931,11 @@ void Cut::paintData(matrix & drawDataLoc)
 	currentPic = myLib::drw::drawEeg(drawDataLoc * normCoeff(),
 									 edfFil.getFreq(),
 									 ui->scrollArea->height(),
-									 this->makeColouredChans());
+									 this->makeColouredChans())
+				  /// horzNorm
+				 .scaledToWidth(ui->paintLengthDoubleSpinBox->value()
+								* edfFil.getFreq()
+								/ ui->xNormDoubleSpinBox->value());
 	paintMarkers(drawDataLoc);
 	paintLimits();
 }
@@ -916,7 +966,8 @@ void Cut::paintMarkers(const matrix & drawDataLoc)
 		if(toDraw != 0. && allowed)
 		{
 			/// magic consts
-			pnt.drawText(i,
+			/// horzNorm
+			pnt.drawText(i / ui->xNormDoubleSpinBox->value(),
 						 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
 						 nm(int(toDraw)));
 		}
@@ -933,14 +984,16 @@ void Cut::paintLimits()
 	QPainter paint;
 	paint.begin(&tempPic);
 
-	int leftX = ui->leftLimitSpinBox->value() - leftDrawLimit;
+	/// horzNorm
+	int leftX = (ui->leftLimitSpinBox->value() - leftDrawLimit) / ui->xNormDoubleSpinBox->value();
 	if(leftX >= 0 && leftX < ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq())
 	{
 		paint.setPen(QPen(QBrush("blue"), 2));
 		paint.drawLine(leftX, 0, leftX, tempPic.height());
 	}
 
-	int rightX = ui->rightLimitSpinBox->value() - leftDrawLimit;
+	/// horzNorm
+	int rightX = (ui->rightLimitSpinBox->value() - leftDrawLimit) / ui->xNormDoubleSpinBox->value();
 	if(rightX >= 0 && rightX < ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq())
 	{
 		paint.setPen(QPen(QBrush("red"), 2));

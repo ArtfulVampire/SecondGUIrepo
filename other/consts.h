@@ -326,7 +326,7 @@ const std::map<QString, std::vector<QString>> chans128
 			" 14 ",		/// right-left-up
 			" 21 ",		/// left-right-up
 			" 25 ",		/// left-left-up
-			" 128 "		/// left-left
+			" 128 ",	/// left-left
 		}
 	},
 	{"fp",

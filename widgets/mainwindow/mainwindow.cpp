@@ -214,9 +214,6 @@ MainWindow::MainWindow() :
 
 	QObject::connect(ui->reduceChannesPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsSlot()));
 
-
-
-
     customFunc();
 }
 

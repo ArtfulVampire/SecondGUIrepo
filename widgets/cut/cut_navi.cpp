@@ -96,13 +96,16 @@ void Cut::findPrevMark(double mark)
 
 		if(it == beg)
 		{
-			std::cout << "findNextMark: marker not found" << std::endl;
+			std::cout << "findPrevMark: marker not found" << std::endl;
 			return;
 		}
 
 		int index = std::distance(beg, it);
 		ui->paintStartDoubleSpinBox->setValue(
-					std::max(0., index / edfFil.getFreq() - findNextGap * 0.8));
+					/// horzNorm
+					std::max(0.,
+							 index / edfFil.getFreq()
+							 - findNextGap * 0.8 * ui->xNormDoubleSpinBox->value()));
 		showDerivatives();
 		paint();
 	}
@@ -121,13 +124,17 @@ void Cut::findNextMark(int mark)
 		decltype(std::begin(markArr)) it;
 		if(mark > 0)
 		{
-			it = std::find(std::begin(markArr) + leftDrawLimit + int(findNextGap * edfFil.getFreq()),
+			it = std::find(std::begin(markArr) + leftDrawLimit
+						   /// horzNorm
+						   + int(findNextGap * edfFil.getFreq() / ui->xNormDoubleSpinBox->value()),
 						   std::end(markArr),
 						   mark);
 		}
 		else
 		{
-			it = std::find_if(std::begin(markArr) + leftDrawLimit + int(findNextGap * edfFil.getFreq()),
+			it = std::find_if(std::begin(markArr) + leftDrawLimit
+							  /// horzNorm
+							  + int(findNextGap * edfFil.getFreq() / ui->xNormDoubleSpinBox->value()),
 							  std::end(markArr),
 							  [](double in){ return in != 0.; });
 		}
@@ -140,7 +147,10 @@ void Cut::findNextMark(int mark)
 
 		int index = std::distance(std::begin(markArr), it);
 		ui->paintStartDoubleSpinBox->setValue(
-					std::max(0., index / edfFil.getFreq() - findNextGap * 0.8));
+					/// horzNorm
+					std::max(0.,
+							 index / edfFil.getFreq()
+							 - findNextGap * 0.8 * ui->xNormDoubleSpinBox->value()));
 		showDerivatives();
 		paint();
 	}

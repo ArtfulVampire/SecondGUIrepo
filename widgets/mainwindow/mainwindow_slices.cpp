@@ -239,6 +239,7 @@ void MainWindow::sliceElena()
 	/// 210 - closed start, 211 - closed end
 	/// 212 - open start, 213 - open end
 	const std::vector<std::vector<int>> eyesMarks{{210, 211}, {212, 213}};
+
 	/// rest "operational codes"
 	const std::vector<int> eyesCodes{214, 215};
 
