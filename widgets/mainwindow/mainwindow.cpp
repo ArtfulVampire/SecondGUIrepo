@@ -249,8 +249,7 @@ void MainWindow::changeRedNsLine(int a)
 #if 0
 	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
 #else
-	QString str = ui->reduceChannelsComboBox->itemText(a);
-	QString outStr{};
+	const QString str = ui->reduceChannelsComboBox->itemText(a);
 	bool eeg = str.contains("EEG");
 	bool reref = str.contains("reref");
 	bool emg = str.contains("EMG");
@@ -258,9 +257,9 @@ void MainWindow::changeRedNsLine(int a)
 	bool mark = str.contains("mark");
 	bool oth = str.contains("other");
 
+	QString outStr{};
 	if(str.startsWith("128"))
 	{
-		outStr.clear();
 		for(const QString & ch : coords::egi::chans128to20str)
 		{
 			outStr += nm(globalEdf.findChannel(ch) + 1) + " ";
@@ -305,6 +304,16 @@ void MainWindow::showCountSpectra()
 void MainWindow::showReduce()
 {
 	ChooseChans * ch = new ChooseChans();
+	QObject::connect(ch, &ChooseChans::strSig,
+					 [this](const std::vector<int> & chans)
+	{
+		QString res{};
+		for(int in : chans)
+		{
+			res += nm(in) + " ";
+		}
+		ui->reduceChannelsLineEdit->setText(res);
+	});
 	ch->show();
 }
 

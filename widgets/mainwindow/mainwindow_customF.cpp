@@ -20,6 +20,7 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
+	showReduce();
 
 #if 0
 	edfFile fil;

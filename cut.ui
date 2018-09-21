@@ -91,7 +91,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QWidget" name="layoutWidget1">
    <property name="geometry">
     <rect>
      <x>1620</x>
@@ -205,7 +205,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QWidget" name="layoutWidget2">
    <property name="geometry">
     <rect>
      <x>810</x>
@@ -227,7 +227,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QWidget" name="layoutWidget3">
    <property name="geometry">
     <rect>
      <x>1330</x>
@@ -302,35 +302,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>1</x>
-     <y>1</y>
-     <width>741</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="browseLayout">
-    <item>
-     <widget class="QLineEdit" name="filePathLineEdit"/>
-    </item>
-    <item>
-     <widget class="QPushButton" name="browseButton">
-      <property name="text">
-       <string>Bro&amp;wse</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QComboBox" name="suffixComboBox"/>
-    </item>
-    <item>
-     <widget class="QComboBox" name="subdirComboBox"/>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QWidget" name="layoutWidget4">
    <property name="geometry">
     <rect>
      <x>491</x>
@@ -408,7 +380,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QWidget" name="layoutWidget5">
    <property name="geometry">
     <rect>
      <x>491</x>
@@ -566,7 +538,7 @@
     <string>drawSpectrum</string>
    </property>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QWidget" name="layoutWidget6">
    <property name="geometry">
     <rect>
      <x>930</x>
@@ -673,7 +645,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QWidget" name="layoutWidget7">
    <property name="geometry">
     <rect>
      <x>933</x>
@@ -771,12 +743,12 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget8">
    <property name="geometry">
     <rect>
      <x>1</x>
      <y>31</y>
-     <width>461</width>
+     <width>494</width>
      <height>186</height>
     </rect>
    </property>
@@ -1019,20 +991,63 @@
     </item>
    </layout>
   </widget>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>2</x>
+     <y>0</y>
+     <width>911</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QLineEdit" name="filePathLineEdit"/>
+    </item>
+    <item>
+     <widget class="QPushButton" name="browseButton">
+      <property name="text">
+       <string>Bro&amp;wse</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QComboBox" name="suffixComboBox"/>
+    </item>
+    <item>
+     <widget class="QComboBox" name="subdirComboBox"/>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_19">
+      <property name="text">
+       <string>X norm</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QDoubleSpinBox" name="xNormDoubleSpinBox">
+      <property name="minimum">
+       <double>0.010000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>10.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+      <property name="value">
+       <double>1.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <zorder>picLabel</zorder>
   <zorder>scrollArea</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
   <zorder>spectreLabel</zorder>
   <zorder>drawSpectrumPushButton</zorder>
-  <zorder>savePicPushButton</zorder>
+  <zorder>label_19</zorder>
+  <zorder>xNormDoubleSpinBox</zorder>
  </widget>
  <resources/>
  <connections/>

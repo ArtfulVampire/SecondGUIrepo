@@ -117,7 +117,8 @@ void Cut::findNextMark(int mark)
 	if(myFileType == fileType::edf)
 	{
 		const std::valarray<double> & markArr = dataCutLocal[edfFil.getMarkChan()];
-		auto it = std::begin(markArr);
+
+		decltype(std::begin(markArr)) it;
 		if(mark > 0)
 		{
 			it = std::find(std::begin(markArr) + leftDrawLimit + int(findNextGap * edfFil.getFreq()),

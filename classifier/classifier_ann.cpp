@@ -512,7 +512,7 @@ double ANN::adjustLearnRate(std::ostream & os)
 	}
 
 
-	double res = learnRate;
+	double res{};
     int counter = 0;
     do
     {

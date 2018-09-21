@@ -1041,6 +1041,7 @@ auto colorFunction (ColorScale in) -> QColor (*)(int, int)
 	}
 //	default: { /* can't get here */ return myLib::drw::grayScale; }
 	}
+	return myLib::drw::grayScale;
 }
 
 QPixmap drawColorScale(int range, ColorScale type, bool full)

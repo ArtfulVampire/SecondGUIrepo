@@ -314,6 +314,9 @@ const std::vector<QString> chans128to20str{
 };
 
 
+const std::vector<QString> chans128groups
+{"fp", "af", "f", "fc", "ft", "c", "t", "cp", "p", "tp", "po", "o", "eog", "other"};
+
 const std::map<QString, std::vector<QString>> chans128
 {
 	{"eog",
@@ -364,13 +367,19 @@ const std::map<QString, std::vector<QString>> chans128
 	{"fc",
 		{
 			" 34 ",		/// FC5
+			" 35 ",		///
 			" 28 ",		/// FC3
+			" 29 ",		/// FC
 			" 20 ",		/// FC1
+			" 13 ",		/// FFC1
 			" 12 ",		/// FFC1
 			" 6 ",		/// FCz
 			" 5 ",		/// FFC2
+			" 112 ",	/// FFC2
 			" 118 ",	/// FC2
+			" 111 ",	/// FC
 			" 117 ",	/// FC4
+			" 110 ",	///
 			" 116 ",	/// FC6
 		}
 	},
@@ -382,7 +391,9 @@ const std::map<QString, std::vector<QString>> chans128
 			" 36 ",		/// C3
 			" 30 ",		/// C1
 			" 31 ",		/// CC1
+			" 7 ",		/// CCF1
 //			"  ",		/// Cz - REF
+			" 106 ",	/// CCF2
 			" 80 ", 	/// CC2
 			" 105 ",	/// C2
 			" 104 ",	/// C4
@@ -446,9 +457,11 @@ const std::map<QString, std::vector<QString>> chans128
 			" 64 ",		/// PO7
 			" 59 ",		/// PO5
 			" 60 ",		/// PO3
+			" 66 ",		///
 			" 67 ",		/// PO1
 			" 72 ",		/// POz
 			" 77 ",		/// PO2
+			" 84 ",		///
 			" 85 ",		/// PO4
 			" 91 ",		/// PO6
 			" 95 ",		/// PO8
@@ -459,13 +472,15 @@ const std::map<QString, std::vector<QString>> chans128
 			" 65 ",		/// O5
 			" 69 ",		/// O3
 			" 70 ",		/// O1
+			" 71 ",		/// OOP1
 			" 75 ",		/// Oz
+			" 76 ",		/// OOP2
 			" 83 ",		/// O2
 			" 89 ",		/// O4
 			" 90 ",		/// O6
 		}
 	},
-	{"oter",
+	{"other",
 		{
 
 			" 48 ",		/// FT13
@@ -486,6 +501,9 @@ const std::map<QString, std::vector<QString>> chans128
 			" 120 ",	/// FT12
 			" 119 ",	/// FT14
 
+
+			" 57 ",		/// left mastoid
+			" 100 ",	/// right mastoid
 			" 127 ",	/// left cheek
 			" 126 ",	/// right cheek
 			" 17 ",		/// nasion

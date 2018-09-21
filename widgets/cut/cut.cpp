@@ -180,6 +180,8 @@ Cut::Cut() :
 	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked, this, &Cut::paint);
 	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
+	QObject::connect(ui->xNormDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(paint()));
 	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
 	QObject::connect(ui->paintLengthDoubleSpinBox,

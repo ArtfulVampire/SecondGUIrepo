@@ -2,6 +2,10 @@
 #define CHOOSECHANS_H
 
 #include <QWidget>
+#include <QGridLayout>
+#include <QPushButton>
+#include <QCheckBox>
+#include <QVBoxLayout>
 
 namespace Ui {
 class ChooseChans;
@@ -15,6 +19,9 @@ public:
 	explicit ChooseChans();
 	~ChooseChans();
 
+signals:
+	void strSig(const std::vector<int> & str);
+
 private:
 	Ui::ChooseChans *ui;
 	static const int drawGap = 5;
@@ -23,6 +30,11 @@ private:
 	static const int pushButtonHeight = 30;
 	static const int pushButtonWidth = 25;
 	static const int checkUncheckWidth = 50;
+	static const int checkColSize = 10;
+
+	QVBoxLayout * both{new QVBoxLayout(this)};
+	QGridLayout * checks{new QGridLayout()};
+	QGridLayout * buttons{new QGridLayout()};
 
 };
 

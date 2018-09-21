@@ -724,8 +724,7 @@ void Spectre::cleanSpectra()
 				sp[k / DEFS.spLength()][k % DEFS.spLength()] = 0.;
             }
             ++cnt;
-        }
-        num = 0;
+		}
     }
 	std::cout << "cleanSpectra: num of zeroed points = " << cnt << std::endl;
 	ui->outputDirLineEdit->setText(ui->outputDirLineEdit->text() + "/Clean");
