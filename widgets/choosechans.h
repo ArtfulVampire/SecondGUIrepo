@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QCheckBox>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 
 namespace Ui {
 class ChooseChans;
@@ -34,7 +35,6 @@ private:
 
 	QVBoxLayout * both{new QVBoxLayout(this)};
 	QGridLayout * checks{new QGridLayout()};
-	QGridLayout * buttons{new QGridLayout()};
 
 };
 

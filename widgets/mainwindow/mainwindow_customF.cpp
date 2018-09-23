@@ -35,8 +35,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-
-
 #if 0
 	/// draw the envelope picture
 	const QString gh = "/media/Files/Data/Galya/15Mar18/Ilja_Tarotin/Ilja_Tarotin_zg.edf";

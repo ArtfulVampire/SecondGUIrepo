@@ -18,19 +18,7 @@ ChooseChans::ChooseChans() :
 {
 	ui->setupUi(this);
 
-	/// consider 128 channels + status
-	QLabel * checkLabel = new QLabel("check", this);
-	QLabel * uncheckLabel = new QLabel("unchek", this);
 
-
-	checkLabel->setGeometry(drawGap,
-							drawGap,
-							checkUncheckWidth,
-							pushButtonHeight);
-	uncheckLabel->setGeometry(drawGap,
-							  drawGap + pushButtonHeight + drawGap,
-							  checkUncheckWidth,
-							  pushButtonHeight);
 
 	/// checkboxes
 	/// 8 colomns by 16 items
@@ -46,7 +34,7 @@ ChooseChans::ChooseChans() :
 							  std::ceil(128. / checkColSize) * checkBoxWidth,
 							  checkColSize * checkBoxHeight));
 
-	/// bad idea capture all
+	///
 	auto setCheckBoxes = [this](const QString & area, bool ch)
 	{
 		if(!coords::egi::chans128.count(area)) { return; }
@@ -61,8 +49,24 @@ ChooseChans::ChooseChans() :
 		}
 	};
 
-
+#if 0
 	/// buttons
+	/// consider 128 channels + status
+	QLabel * checkLabel = new QLabel("check", this);
+	QLabel * uncheckLabel = new QLabel("unchek", this);
+
+
+	checkLabel->setGeometry(drawGap,
+							drawGap,
+							checkUncheckWidth,
+							pushButtonHeight);
+	uncheckLabel->setGeometry(drawGap,
+							  drawGap + pushButtonHeight + drawGap,
+							  checkUncheckWidth,
+							  pushButtonHeight);
+
+
+	QGridLayout * buttons{new QGridLayout()};
 	buttons->addWidget(uncheckLabel, 0, 0);
 	buttons->addWidget(checkLabel, 1, 0);
 
@@ -79,7 +83,6 @@ ChooseChans::ChooseChans() :
 		}
 		++colCounter;
 	}
-
 	/// all
 	for(int i = 0; i < 2; ++i) /// 0 - check, 1 - uncheck
 	{
@@ -101,6 +104,46 @@ ChooseChans::ChooseChans() :
 	buttons->setGeometry(QRect(drawGap, drawGap,
 							   checkUncheckWidth + (colCounter - 1) * pushButtonWidth,
 							   2 * pushButtonHeight + drawGap));
+#else
+	/// checkboxes
+//	buttons->addWidget(uncheckLabel, 0, 0);
+//	buttons->addWidget(checkLabel, 1, 0);
+
+	QHBoxLayout * buttons{new QHBoxLayout()};
+	int colCounter = 1;
+	for(const auto & area : coords::egi::chans128groups)
+	{
+		QCheckBox * chk = new QCheckBox(area, this);
+		chk->setGeometry(0, 0, pushButtonWidth, pushButtonHeight);
+		chk->setChecked(true);
+		QObject::connect(chk, &QCheckBox::clicked,
+						 [area, setCheckBoxes](bool ch){ setCheckBoxes(area, ch); });
+		buttons->addWidget(chk, colCounter);
+		++colCounter;
+	}
+	/// all
+	QCheckBox * chk = new QCheckBox("all", this);
+	chk->setGeometry(0, 0, pushButtonWidth, pushButtonHeight);
+	chk->setChecked(true);
+	QObject::connect(chk, &QCheckBox::clicked,
+					 [this](bool i)
+	{
+		for(int num = 1; num <= 128; ++num)
+		{
+			auto pos = getPosition(num, checkColSize);
+			static_cast<QCheckBox*>
+					(checks->itemAtPosition(pos.first, pos.second)->widget())->setChecked(i);
+		}
+	});
+	buttons->addWidget(chk, colCounter);
+	buttons->setGeometry(QRect(drawGap, drawGap,
+							   checkUncheckWidth + (colCounter - 1) * pushButtonWidth,
+							   2 * pushButtonHeight + drawGap));
+
+#endif
+
+
+
 
 	/// unite
 	both->addItem(buttons);
