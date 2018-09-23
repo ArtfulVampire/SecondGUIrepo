@@ -91,7 +91,7 @@ void countRCP(const QString & filename,
 
 double binomialOneTailed(int num1, int num2, int numAll1, int numAll2 = 0);
 
-long long combination(int n, int k);
+int64_t combination(int n, int k);
 double combinationLog(int n, int k);
 double factorialLog(int n);
 double binomialPvalue(int n, int k, double successRate);

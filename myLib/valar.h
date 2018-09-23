@@ -32,7 +32,7 @@ void mix (Container & in);
 template <class Container>
 Container contReverse(const Container & in);
 
-template <typename Container>
+template <typename Container = std::valarray<double>>
 Container contSubsec(const Container & in, int beg, int en);
 
 template <class Container>
@@ -41,13 +41,8 @@ Container contPopFront(const Container & in, uint numOfPop);
 template <class Typ>
 Typ mean(const std::valarray<Typ> & in1);
 
-//template <typename Typ, template <typename, typename = std::allocator<Typ>> class Cont>
-//Typ mean(const Cont<Typ> & in1);
-
-template <typename Typ>
-Typ mean(const std::vector<Typ> & in1);
-
-
+//template <class Typ>
+//Typ mean(const std::vector<Typ> & in1);
 
 
 /// Container<double>
@@ -85,8 +80,11 @@ double sigmaToMean(const Container & arr);
 template <class Container>
 double median(const Container & arr);
 
+#if 0
+/// unused yet (23-Sep-2018)
 template <class Container>
 Container centered(const Container & arr);
+#endif
 
 
 

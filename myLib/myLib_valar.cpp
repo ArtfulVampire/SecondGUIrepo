@@ -88,13 +88,13 @@ Typ mean(const std::valarray<Typ> & arr)
 template double mean(const std::valarray<double> & arr);
 template std::complex<double> mean(const std::valarray<std::complex<double>> & arr);
 
-template <class Typ>
-Typ mean(const std::vector<Typ> & arr)
-{
-	return std::accumulate(std::begin(arr), std::end(arr), Typ{0.}) / Typ(arr.size());
-}
-template double mean(const std::vector<double> & arr);
-template std::complex<double> mean(const std::vector<std::complex<double>> & arr);
+//template <class Typ>
+//Typ mean(const std::vector<Typ> & arr)
+//{
+//	return std::accumulate(std::begin(arr), std::end(arr), Typ{0.}) / Typ(arr.size());
+//}
+//template double mean(const std::vector<double> & arr);
+//template std::complex<double> mean(const std::vector<std::complex<double>> & arr);
 
 template <class Container>
 double covariance(const Container & arr1, const Container & arr2)
@@ -164,7 +164,8 @@ template std::vector<double> contPopFront(const std::vector<double> & in, uint n
 
 
 
-
+#if 0
+/// unused yet (23-Sep-2018)
 template <> std::valarray<double> centered(const std::valarray<double> & arr)
 {
 	return arr - arr.sum() / arr.size();
@@ -179,6 +180,7 @@ Container centered(const Container & arr)
 	return res;
 }
 template std::vector<double> centered(const std::vector<double> & arr);
+#endif
 
 template <class Container>
 double sigmaToMean(const Container & arr)

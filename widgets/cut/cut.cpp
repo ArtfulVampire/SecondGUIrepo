@@ -410,6 +410,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				return true;
 			}
 			}
+			return true;
 		}
 		case QEvent::MouseButtonPress:
 		{
@@ -943,11 +944,12 @@ void Cut::paintData(matrix & drawDataLoc)
 	currentPic = myLib::drw::drawEeg(drawDataLoc * normCoeff(),
 									 edfFil.getFreq(),
 									 ui->scrollArea->height(),
-									 this->makeColouredChans())
+									 this->makeColouredChans());
+
 				  /// horzNorm
-				 .scaledToWidth(ui->paintLengthDoubleSpinBox->value()
-								* edfFil.getFreq()
-								/ ui->xNormDoubleSpinBox->value());
+	currentPic = currentPic.scaledToWidth(ui->paintLengthDoubleSpinBox->value()
+										  * edfFil.getFreq()
+										  / ui->xNormDoubleSpinBox->value());
 	paintMarkers(drawDataLoc);
 	paintLimits();
 }
@@ -968,6 +970,8 @@ void Cut::paintMarkers(const matrix & drawDataLoc)
 
 	QPainter pnt;
 	pnt.begin(&currentPic);
+
+	/// horzNorm
 	pnt.setFont(QFont("", 18)); /// magic const
 
 	for(int i = 0; i < drawDataLoc.cols(); ++i)

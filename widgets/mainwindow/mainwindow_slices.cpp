@@ -1147,8 +1147,7 @@ void MainWindow::sliceMati()
     myTime.start();
 
     int start = 0;
-    int end = -1;
-	arkers{};
+	int end = -1;
 	QString fileMark{};
 	std::array<int, 4> session{}; /// generality
     int type = 3;

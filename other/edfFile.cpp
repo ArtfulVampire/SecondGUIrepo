@@ -458,7 +458,6 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
         return;
     }
 
-#if EDFSTREAM
 	std::fstream edfStream;
 	if(readFlag)
 	{ edfStream.open(EDFpath.toStdString(), std::ios_base::in | std::ios_base::binary); }
@@ -471,16 +470,6 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 		return;
 	}
 
-#else
-    FILE * edfDescriptor;
-	edfDescriptor = fopen(EDFpath, (readFlag ? "r" : "w")); /// generality
-	if(edfDescriptor == NULL)
-	{
-		std::cout << "handleFile: cannot open edf file " << EDFpath << std::endl;
-		return;
-	}
-#endif
-
 	if(readFlag)
 	{
 		filePath = EDFpath;
@@ -491,7 +480,6 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 		QFile::remove(dirPath + "/markers.txt"); /// delete markers file
 	}
 
-#if EDFSTREAM
 	std::fstream headerStream;
 	if(readFlag && (writeHeaderFlag || headerOnly))
 	{
@@ -503,20 +491,6 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 			return;
 		}
 	}
-#else
-
-	FILE * header = NULL;
-	if(readFlag && (writeHeaderFlag || headerOnly))
-    {
-		helpString = dirPath + "/header.txt";
-        header = fopen(helpString, "w");
-        if(header == NULL)
-        {
-			std::cout << "edfFile::handleEdfFile: cannot open header.txt file" << std::endl;
-            return;
-        }
-    }
-#endif
 
 
     if(!readFlag)
@@ -524,28 +498,15 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 		this->fitData(edfData.cols());
     }
 
-#if EDFSTREAM
 	handleParam(headerInitialInfo, 184, readFlag, edfStream, headerStream);
 	handleParam(bytes, 8, readFlag, edfStream, headerStream);
 	handleParam(headerReservedField, 44, readFlag, edfStream, headerStream);
 	handleParam(ndr, 8, readFlag, edfStream, headerStream);
 	handleParam(ddr, 8, readFlag, edfStream, headerStream);
 	handleParam(ns, 4, readFlag, edfStream, headerStream);
-#else
-    handleParam(headerInitialInfo, 184, readFlag, edfDescriptor, header);
-    handleParam(bytes, 8, readFlag, edfDescriptor, header);
-    handleParam(headerReservedField, 44, readFlag, edfDescriptor, header);
-    handleParam(ndr, 8, readFlag, edfDescriptor, header);
-    handleParam(ddr, 8, readFlag, edfDescriptor, header);
-    handleParam(ns, 4, readFlag, edfDescriptor, header);
-#endif
 
 	/// start channels read
-#if EDFSTREAM
 	handleParamArray(labels, ns, 16, readFlag, edfStream, headerStream);
-#else
-	handleParamArray(labels, ns, 16, readFlag, edfDescriptor, header);
-#endif
 
     /// generality for encephalan
 	if(readFlag)
@@ -655,13 +616,8 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 		}
     }
 
-#if EDFSTREAM
 	handleParamArray(transducerType, ns, 80, readFlag, edfStream, headerStream);
 	handleParamArray(physDim, ns, 8, readFlag, edfStream, headerStream);
-#else
-	handleParamArray(transducerType, ns, 80, readFlag, edfDescriptor, header);
-	handleParamArray(physDim, ns, 8, readFlag, edfDescriptor, header);
-#endif
 
     if(!readFlag)
     {
@@ -685,17 +641,10 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
             }
         }
 	}
-#if EDFSTREAM
 	handleParamArray(physMin, ns, 8, readFlag, edfStream, headerStream);
 	handleParamArray(physMax, ns, 8, readFlag, edfStream, headerStream);
 	handleParamArray(digMin, ns, 8, readFlag, edfStream, headerStream);
 	handleParamArray(digMax, ns, 8, readFlag, edfStream, headerStream);
-#else
-    handleParamArray(physMin, ns, 8, readFlag, edfDescriptor, header);
-    handleParamArray(physMax, ns, 8, readFlag, edfDescriptor, header);
-    handleParamArray(digMin, ns, 8, readFlag, edfDescriptor, header);
-    handleParamArray(digMax, ns, 8, readFlag, edfDescriptor, header);
-#endif
 
 	if(0)
 	{
@@ -721,13 +670,8 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 			}
 		}
 	}
-#if EDFSTREAM
 	handleParamArray(prefiltering, ns, 80, readFlag, edfStream, headerStream);
 	handleParamArray(nr, ns, 8, readFlag, edfStream, headerStream);
-#else
-    handleParamArray(prefiltering, ns, 80, readFlag, edfDescriptor, header);
-    handleParamArray(nr, ns, 8, readFlag, edfDescriptor, header);
-#endif
 
     /// real length handler
     if(readFlag)
@@ -754,34 +698,14 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 		ndr = int(realNdr); /// sometimes ndr from file is a lie
     }
 
-#if EDFSTREAM
 	handleParamArray(reserved, ns, 32, readFlag, edfStream, headerStream);
-#else
-	handleParamArray(reserved, ns, 32, readFlag, edfDescriptor, header);
-#endif
 	/// end channels read
 
-#if EDFSTREAM
 	handleParam(headerRest, int(bytes - (ns + 1) * 256), readFlag, edfStream, headerStream);
-#else
-	handleParam(headerRest, int(bytes - (ns + 1) * 256), readFlag, edfDescriptor, header);
-#endif
 
 	/// files are already opened as binary, no need to reopen
 	if(0)
 	{
-#if !EDFSTREAM
-		if(readFlag && (header != NULL))
-		{
-			fclose(header);
-		}
-		if(headerOnly) { fclose(edfDescriptor); return; }
-		fclose(edfDescriptor);
-
-
-		edfDescriptor = fopen(EDFpath, (readFlag ? "rb" : "ab"));
-		fseek(edfDescriptor, bytes, SEEK_SET);
-#else
 		/// headerStream will close by itself
 		///
 		auto pos = (readFlag ? edfStream.tellg() : edfStream.tellp());
@@ -791,20 +715,13 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 					   (readFlag ? std::ios_base::in : std::ios_base::out));
 		if(readFlag)	{ edfStream.seekg(pos); }
 		else			{ edfStream.seekp(pos); }
-#endif
 	}
 
 	if(readFlag) { annotations.clear(); }
 
 	/// read write data
-
-#if EDFSTREAM
 	handleData(readFlag, edfStream);
 	edfStream.close();
-#else
-    handleData(readFlag, edfDescriptor);
-	fclose(edfDescriptor);
-#endif
 
 	if(readFlag) { this->cutZerosAtEnd(); }
 
@@ -916,7 +833,7 @@ void edfFile::handleDatum(int currNs,
 	{
 		if(currNs != markerChannel) /// usual data read
 		{
-			edfForDatum.read((char*)&a, sizeof(qint16));
+			edfForDatum.read(reinterpret_cast<char*>(&a), sizeof(qint16));
 
 			currDatum = physMin[currNs]
 						+ (double(a) - digMin[currNs])
@@ -940,7 +857,7 @@ void edfFile::handleDatum(int currNs,
 			}
 			else if(this->matiFlag)
 			{
-				edfForDatum.read((char*)&markA, sizeof(qint16));
+				edfForDatum.read(reinterpret_cast<char*>(&markA), sizeof(qint16));
 				currDatum = physMin[currNs]
 							+ (double(markA) - digMin[currNs])
 							* (physMax[currNs] - physMin[currNs])
@@ -954,7 +871,7 @@ void edfFile::handleDatum(int currNs,
 			}
 			else /// simple edf
 			{
-				edfForDatum.read((char*)&a, sizeof(qint16));
+				edfForDatum.read(reinterpret_cast<char*>(&a), sizeof(qint16));
 				currDatum = physMin[currNs]
 						+ (physMax[currNs] - physMin[currNs])
 						* (double(a) - digMin[currNs])
@@ -989,7 +906,7 @@ void edfFile::handleDatum(int currNs,
 						   + (this->ntFlag ? 0 : 1))
 						/ (physMax[currNs] - physMin[currNs])
 						+ digMin[currNs]);
-			edfForDatum.write((char*)&a, sizeof(quint16));
+			edfForDatum.write(reinterpret_cast<char*>(&a), sizeof(quint16));
 		}
 		else /// if markers channel
 		{
@@ -1004,7 +921,7 @@ void edfFile::handleDatum(int currNs,
 										  * (digMax[currNs] - digMin[currNs])
 										  / (physMax[currNs] - physMin[currNs])
 										  + digMin[currNs]);
-				edfForDatum.write((char*)&markA, sizeof(quint16));
+				edfForDatum.write(reinterpret_cast<char*>(&markA), sizeof(quint16));
 			}
 			else /// simple edf
 			{
@@ -1013,7 +930,7 @@ void edfFile::handleDatum(int currNs,
 							* (digMax[currNs] - digMin[currNs])
 							/ (physMax[currNs] - physMin[currNs])
 							+ digMin[currNs]);
-				edfForDatum.write((char*)&a, sizeof(quint16));
+				edfForDatum.write(reinterpret_cast<char*>(&a), sizeof(quint16));
 			}
 		}
 	}
@@ -1038,176 +955,6 @@ std::vector<uint> edfFile::countMarkers(const std::vector<int> & mrks) const
 		}
 	}
 	return res;
-}
-
-void edfFile::handleData(bool readFlag,
-                         FILE * edfForData)
-{
-    int currTimeIndex;
-    QString helpString;
-    if(readFlag)
-	{
-		/// fails when different frequencies. nr.max() could heal it
-		this->edfData = matrix(ns, ndr * ddr * srate, 0.);
-
-        this->channels.clear();
-        for(int i = 0; i < this->ns; ++i)
-        {
-            this->channels.push_back(edfChannel(labels[i],
-                                                transducerType[i],
-                                                physDim[i],
-                                                physMax[i],
-                                                physMin[i],
-                                                digMax[i],
-                                                digMin[i],
-                                                prefiltering[i],
-                                                nr[i],
-												reserved[i]
-                                                )
-                                     );
-        }
-    }
-    for(int i = 0; i < ndr; ++i)
-    {
-        for(int currNs = 0; currNs < ns; ++currNs)
-        {
-            helpString.clear();
-            for(int k = 0; k < nr[currNs]; ++k)
-            {
-                currTimeIndex = i * nr[currNs] + k;
-                handleDatum(currNs, currTimeIndex, readFlag, helpString, edfForData);
-                /// use annotations
-            }
-            if(currNs == markerChannel && this->edfPlusFlag)
-            {
-				std::cout << helpString.size() << std::endl;
-                annotations.push_back(helpString);
-            }
-        }
-    }
-}
-
-void edfFile::handleDatum(int currNs,
-                          int currTimeIndex,
-                          bool readFlag,
-                          QString & ntAnnot,
-                          FILE * edfForDatum)
-{
-	char helpChar = '0';
-	qint16 a = 0;
-	quint16 markA = 0;
-
-	double & currDatum = this->edfData[currNs][currTimeIndex];
-
-	if(readFlag)
-	{
-		if(currNs != markerChannel) /// usual data read
-		{
-			fread(&a, sizeof(qint16), 1, edfForDatum);
-			currDatum = physMin[currNs]
-						+ (physMax[currNs] - physMin[currNs])
-						* (double(a) - digMin[currNs])
-						/ (digMax[currNs] - digMin[currNs]
-						   + (this->ntFlag ? 0 : 1));
-			/// neurotravel + 0
-			/// encephalan + 1
-
-			//			currDatum = a * 1./8.; /// generality encephalan
-
-		}
-		else /// if markers channel
-		{
-			if(this->edfPlusFlag)
-			{
-				/// edf+
-				fread(&helpChar, sizeof(char), 1, edfForDatum);
-				ntAnnot += helpChar;
-				fread(&helpChar, sizeof(char), 1, edfForDatum);
-				ntAnnot += helpChar;
-			}
-			else if(this->matiFlag)
-			{
-				fread(&markA, sizeof(quint16), 1, edfForDatum);
-				currDatum = physMin[currNs]
-							+ (physMax[currNs] - physMin[currNs])
-							* (double(markA) - digMin[currNs])
-							/ (digMax[currNs] - digMin[currNs]);
-				//				currDatum = markA;
-
-				if(currDatum != 0.)
-				{
-					myLib::matiFixMarker(currDatum);
-				}
-			}
-			else /// simple edf
-			{
-				fread(&a, sizeof(qint16), 1, edfForDatum);
-				currDatum = physMin[currNs]
-							+ (physMax[currNs] - physMin[currNs])
-							* (double(a) - digMin[currNs])
-							/ (digMax[currNs] - digMin[currNs]);
-
-				//				currDatum = a; /// generality encephalan
-			}
-#if 0
-			/// write in file
-			if(writeMarkersFlag &&
-			   !edfPlusFlag &&
-			   currDatum != 0) /// make markers file when read only
-			{
-				writeMarker(currDatum, currTimeIndex);
-			}
-#endif
-		}
-	}
-	else /// if write
-	{
-		if(currNs != markerChannel) /// usual data write
-		{
-			/// round better to N * 1/8.
-			if(currNs < 21) /// generality bicycle
-			{
-				currDatum = smLib::doubleRoundFraq(currDatum,
-												   int( (digMax[currNs] - digMin[currNs] + 1)
-														/ (physMax[currNs] - physMin[currNs]) )
-												   ); /// need for eyes cleaned EEG only
-			}
-
-			a = ((currDatum - physMin[currNs])
-				 * (digMax[currNs] - digMin[currNs]
-					+ (this->ntFlag ? 0 : 1))
-				 / (physMax[currNs] - physMin[currNs])
-				 + digMin[currNs]);
-
-			fwrite(&a, sizeof(qint16), 1, edfForDatum);
-		}
-		else /// if markers channel
-		{
-			if(this->edfPlusFlag) ////////////////////////// to do???
-			{
-				/// edf+
-				//                fwrite(&helpChar, sizeof(char), 1, edfDescriptor);
-			}
-			else if(this->matiFlag)
-			{
-				//				markA = (quint16) (currDatum);
-				markA = ( (currDatum - physMin[currNs])
-						  * (digMax[currNs] - digMin[currNs])
-						  / (physMax[currNs] - physMin[currNs])
-						  + digMin[currNs]);
-				fwrite(&markA, sizeof(quint16), 1, edfForDatum);
-			}
-			else /// simple edf
-			{
-				//				a = (qint16) (currDatum);
-				a = ( (currDatum - physMin[currNs])
-					  * (digMax[currNs] - digMin[currNs])
-					  / (physMax[currNs] - physMin[currNs])
-					  + digMin[currNs]);
-				fwrite(&a, sizeof(qint16), 1, edfForDatum);
-			}
-		}
-	}
 }
 
 void edfFile::writeAnnotations() const
@@ -1273,7 +1020,6 @@ void edfFile::writeMarkers() const
 void edfFile::writeMarker(double currDatum,
 						  int currTimeIndex) const
 {
-#define MARKERS_STREAM 01
 	std::vector<bool> byteMarker;
 
 #if 0
@@ -1286,83 +1032,43 @@ void edfFile::writeMarker(double currDatum,
 //						 + this->ExpName + "_" /// for FeedbackFinal
 						 + "markers.txt";
 
-#if MARKERS_STREAM
 	std::ofstream markersStream(helpString.toStdString(), std::ios_base::app);
 	markersStream << currTimeIndex << "\t"
 				  << currTimeIndex / double(this->srate) << "\t"
 				  << currDatum;
-#else
-	FILE * markers;
-    markers = fopen(helpString, "a+");
-    fprintf(markers, "%d %d", currTimeIndex, int(currDatum));
-#endif
-
 
     if(this->matiFlag)
     {
 		byteMarker = myLib::matiCountByte(currDatum);
 
-#if MARKERS_STREAM
 		markersStream << "\t";
-#else
-		fprintf(markers, "\t");
-#endif
 		for(int s = 15; s >= 0; --s)
 		{
-#if MARKERS_STREAM
 			markersStream << byteMarker[s];
-#else
-			fprintf(markers, "%d", int(byteMarker[s]));
-#endif
 			if(s == 8)
 			{
-#if MARKERS_STREAM
 				markersStream << " ";
-#else
-				fprintf(markers, " ");  // byte delimiter
-#endif
 			}
 		}
 		if(byteMarker[10])
 		{
-#if MARKERS_STREAM
 			markersStream << " - session end";
-#else
-			fprintf(markers, " - session end");
-#endif
 		}
 		else if(byteMarker[9] || byteMarker[8])
 		{
-#if MARKERS_STREAM
 			markersStream << " - session start";
-#else
-			fprintf(markers, " - session start");
-#endif
 		}
 		if(byteMarker[12])
 		{
-#if MARKERS_STREAM
 			markersStream << " - 12 bit error";
-#else
-			fprintf(markers, " - 12 bit error");
-#endif
 		}
 		if(byteMarker[11])
 		{
-#if MARKERS_STREAM
 			markersStream << " - 11 bit error";
-#else
-			fprintf(markers, " - 11 bit error");
-#endif
 		}
-    }
-#if MARKERS_STREAM
+	}
 	markersStream << "\n";
 	markersStream.close();
-#else
-	fprintf(markers, "\n");
-	fclose(markers);
-#endif
 }
 
 /// time and string (discard duration and epoch start)
@@ -2630,15 +2336,10 @@ double edfFile::checkDdr(const QString & inPath)
 		std::cout << "edfFile::checkDdr: file doesn't exist" << std::endl;
         return -1;
     }
-    FILE * tmp = fopen(inPath, "r");
-    QString tempStr;
-    double localDdr = 0.;
-
-	handleParam(tempStr, 244, true, tmp, nullptr);
-	handleParam(localDdr, 8, true, tmp, nullptr);
-    fclose(tmp);
-
-    return localDdr;
+	QFile inStr(inPath);
+	inStr.open(QIODevice::ReadOnly|QIODevice::Text);
+	inStr.skip(244); /// all before ddr
+	return QString(inStr.read(8)).toInt();
 }
 
 bool edfFile::isRerefChannel(const QString & inLabel)
@@ -2782,351 +2483,3 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
     fil.writeOtherData(newData, newEdfPath);
 	std::cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
-
-
-
-
-
-
-
-
-/// non-members for static operation
-void myTransform(int & output, char * input)			{ output = atoi(input); }
-void myTransform(double & output, char * input)			{ output = atof(input); }
-void myTransform(QString & output, char * input)		{ output = QString(input); }
-void myTransform(std::string & output, char * input)	{ output = std::string(input); }
-
-char * QStrToCharArr(const QString & input, int len = -1)
-{
-	/// fixes problem with labels length
-
-	int leng = input.length();
-	if(len != -1)
-	{
-		leng = len;
-	}
-	char * array = new char [leng + 1];
-	memcpy(array, input.toStdString().c_str(), input.length());
-
-	if(len != -1)
-	{
-		for(int i = input.length(); i < leng; ++i)
-		{
-			array[i] = ' ';
-		}
-	}
-	array[leng] = '\0';
-	return array;
-}
-
-void myTransform(int input, int len, char ** output)
-{
-	(*output) = QStrToCharArr(myLib::fitNumber(input, len));
-}
-void myTransform(double input, int len, char ** output)
-{
-	(*output) = QStrToCharArr(myLib::fitNumber(input, len));
-}
-void myTransform(const QString & input, int len, char ** output)
-{
-    (*output) = QStrToCharArr(input, len);
-}
-void myTransform(const std::string & input, int len, char ** output)
-{
-    (*output) = new char [len + 1];
-    std::string tmp = input;
-    for(int i = input.length(); i < len; ++i)
-    {
-        tmp.push_back(' ');
-    }
-
-    std::copy(std::begin(tmp),
-              std::end(tmp),
-              (*output));
-    (*output)[len] = '\0';
-}
-
-
-
-
-
-
-
-
-template <typename Typ>
-void handleParam(Typ & qStr,
-                 int length,
-                 bool readFlag,
-                 FILE * ioFile,
-                 FILE * headerFile)
-{
-    char * array;
-    if(readFlag)
-    {
-        array = new char [length + 1];
-		fread (array, sizeof(char), length, ioFile);
-		array[length] = '\0';
-        myTransform(qStr, array);
-		if(headerFile != nullptr)
-        {
-            fwrite(array, sizeof(char), length, headerFile);
-        }
-        delete []array;
-    }
-    else
-    {
-		myTransform(qStr, length, &array);
-        fprintf(ioFile, "%s", array);
-        delete []array;
-    }
-}
-
-template <typename Typ>
-void handleParamArray(std::valarray<Typ> & qStr,
-                      int number,
-                      int length,
-                      bool readFlag,
-                      FILE * ioFile,
-                      FILE * headerFile)
-{
-	if(readFlag) { qStr = std::valarray<Typ>(Typ(), number); } /// clean param vector
-
-    for(int i = 0; i < number; ++i)
-    {
-        handleParam <Typ> (qStr[i], length, readFlag, ioFile, headerFile);
-    }
-}
-
-template <typename Typ>
-void handleParamArray(std::vector<Typ> & qStr,
-                      int number,
-                      int length,
-                      bool readFlag,
-                      FILE * ioFile,
-                      FILE * headerFile)
-{
-	if(readFlag) { qStr = std::vector<Typ>(number, Typ()); } /// clean param vector
-
-    for(int i = 0; i < number; ++i)
-    {
-        handleParam <Typ> (qStr[i], length, readFlag, ioFile, headerFile);
-    }
-}
-
-template
-void handleParamArray(std::vector<int> & qStr,
-                      int number,
-                      int length,
-                      bool readFlag,
-                      FILE * ioFile,
-                      FILE * headerFile);
-template
-void handleParamArray(std::vector<double> & qStr,
-                      int number,
-                      int length,
-                      bool readFlag,
-                      FILE * ioFile,
-                      FILE * headerFile);
-template
-void handleParamArray(std::vector<QString> & qStr,
-                      int number,
-                      int length,
-                      bool readFlag,
-                      FILE * ioFile,
-                      FILE * headerFile);
-
-template
-void handleParamArray(std::valarray<int> & qStr,
-                      int number,
-                      int length,
-                      bool readFlag,
-                      FILE * ioFile,
-                      FILE * headerFile);
-template
-void handleParamArray(std::valarray<double> & qStr,
-                      int number,
-                      int length,
-                      bool readFlag,
-                      FILE * ioFile,
-                      FILE * headerFile);
-template
-void handleParamArray(std::valarray<QString> & qStr,
-                      int number,
-                      int length,
-                      bool readFlag,
-                      FILE * ioFile,
-                      FILE * headerFile);
-
-template
-void handleParam(int & qStr,
-                 int length,
-                 bool readFlag,
-                 FILE * ioFile,
-                 FILE * headerFile);
-template
-void handleParam(double & qStr,
-                 int length,
-                 bool readFlag,
-                 FILE * ioFile,
-                 FILE * headerFile);
-template
-void handleParam(QString & qStr,
-                 int length,
-                 bool readFlag,
-                 FILE * ioFile,
-                 FILE * headerFile);
-
-template
-void handleParam(std::string & qStr,
-                 int length,
-                 bool readFlag,
-                 FILE * ioFile,
-                 FILE * headerFile);
-
-
-
-/// with streams
-
-template <typename Typ>
-void handleParam(Typ & qStr,
-				 int length,
-				 bool readFlag,
-				 std::fstream & ioFile,
-				 std::fstream & headerFile)
-{
-	char * array;
-	if(readFlag)
-	{
-		array = new char [length + 1];
-		ioFile.read(array, length); array[length] = '\0';
-		myTransform(qStr, array);
-		if(headerFile.good())
-		{
-			headerFile.write(array, length);
-		}
-		delete []array;
-	}
-	else
-	{
-		myTransform(qStr, length, &array);
-		ioFile.write(array, length);
-		delete []array;
-	}
-}
-
-template <typename Typ>
-void handleParamArray(std::vector<Typ> & qStr,
-					  int number,
-					  int length,
-					  bool readFlag,
-					  std::fstream & ioFile,
-					  std::fstream & headerFile)
-{
-	if(readFlag)
-	{
-		qStr = std::vector<Typ>(number);
-		for(auto & in : qStr)
-		{
-			in = Typ();
-		}
-	}
-
-	for(int i = 0; i < number; ++i)
-	{
-		handleParam <Typ> (qStr[i], length, readFlag, ioFile, headerFile);
-	}
-}
-
-template <typename Typ>
-void handleParamArray(std::valarray<Typ> & qStr,
-					  int number,
-					  int length,
-					  bool readFlag,
-					  std::fstream & ioFile,
-					  std::fstream & headerFile)
-{
-	if(readFlag)
-	{
-		qStr = std::valarray<Typ>(number);
-		for(auto & in : qStr)
-		{
-			in = Typ();
-		}
-	}
-
-	for(int i = 0; i < number; ++i)
-	{
-		handleParam <Typ> (qStr[i], length, readFlag, ioFile, headerFile);
-	}
-}
-
-
-template
-void handleParamArray(std::vector<int> & qStr,
-					  int number,
-					  int length,
-					  bool readFlag,
-					  std::fstream & ioFile,
-					  std::fstream & headerFile);
-template
-void handleParamArray(std::vector<double> & qStr,
-					  int number,
-					  int length,
-					  bool readFlag,
-					  std::fstream & ioFile,
-					  std::fstream & headerFile);
-template
-void handleParamArray(std::vector<QString> & qStr,
-					  int number,
-					  int length,
-					  bool readFlag,
-					  std::fstream & ioFile,
-					  std::fstream & headerFile);
-
-template
-void handleParamArray(std::valarray<int> & qStr,
-					  int number,
-					  int length,
-					  bool readFlag,
-					  std::fstream & ioFile,
-					  std::fstream & headerFile);
-template
-void handleParamArray(std::valarray<double> & qStr,
-					  int number,
-					  int length,
-					  bool readFlag,
-					  std::fstream & ioFile,
-					  std::fstream & headerFile);
-template
-void handleParamArray(std::valarray<QString> & qStr,
-					  int number,
-					  int length,
-					  bool readFlag,
-					  std::fstream & ioFile,
-					  std::fstream & headerFile);
-
-template
-void handleParam(int & qStr,
-				 int length,
-				 bool readFlag,
-				 std::fstream & ioFile,
-				 std::fstream & headerFile);
-template
-void handleParam(double & qStr,
-				 int length,
-				 bool readFlag,
-				 std::fstream & ioFile,
-				 std::fstream & headerFile);
-template
-void handleParam(QString & qStr,
-				 int length,
-				 bool readFlag,
-				 std::fstream & ioFile,
-				 std::fstream & headerFile);
-
-template
-void handleParam(std::string & qStr,
-				 int length,
-				 bool readFlag,
-				 std::fstream & ioFile,
-				 std::fstream & headerFile);

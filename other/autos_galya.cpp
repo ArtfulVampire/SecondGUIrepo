@@ -470,12 +470,12 @@ void countWavelet(const matrix & inData,
 	const int numOfFreqs = wvlt::cwt(inData[0], srate).rows(); /// pewpew
 
 
-	using funcPtr = double(*)(const std::valarray<double> &);
-//	using funcPtr = std::function<double(const std::valarray<double> &)>;
-	std::vector< funcPtr > funcs;
-//	funcs.push_back(static_cast<funcPtr>(&smLib::mean<double>));
-	funcs.push_back(static_cast<funcPtr>(&smLib::sigma<std::valarray<double>>));
-//	funcs.push_back(static_cast<funcPtr>(&smLib::median<std::valarray<double>>));
+//	using funcType = double(*)(const std::valarray<double> &);
+	using funcType = std::function<double(const std::valarray<double> &)>;
+	std::vector< funcType > funcs;
+	funcs.push_back(static_cast<funcType>(smLib::mean<double>));
+	funcs.push_back(static_cast<funcType>(smLib::sigma<std::valarray<double>>));
+	funcs.push_back(static_cast<funcType>(smLib::median<std::valarray<double>>));
 
 	std::vector<matrix> outData{};
 	for(const auto & func : funcs)

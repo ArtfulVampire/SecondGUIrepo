@@ -21,6 +21,7 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 //	showReduce();
+//	std::cout << edfFile::checkDdr("/media/Files/Data/AAX/AAX.EDF") << std::endl;
 
 #if 0
 	edfFile fil;

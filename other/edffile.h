@@ -6,41 +6,58 @@
 #include <myLib/output.h>
 #include <myLib/general.h>
 
-//#include <optional>
-
-using namespace myOut;
-
 #include <QVector>
 #include <QTime>
 
-template <typename Typ>
-void handleParam(Typ & qStr,
-                 int length,
-                 bool readFlag,
-                 FILE * ioFile,
-                 FILE * headerFile);
+//#include <optional> /// to do (for findChannels)
 
-template <typename Typ>
-void handleParamArray(std::vector<Typ> & qStr,
-                      int number,
-                      int length,
-                      bool readFlag,
-                      FILE * ioFile,
-                      FILE * headerFile);
-template <typename Typ>
-void handleParamArray(std::valarray<Typ> & qStr,
-                      int number,
-                      int length,
-                      bool readFlag,
-                      FILE * ioFile,
-                      FILE * headerFile);
+using namespace myOut;
+
+inline void myTransformRead(int & output, char * input)			{ output = atoi(input); }
+inline void myTransformRead(double & output, char * input)		{ output = atof(input); }
+inline void myTransformRead(QString & output, char * input)		{ output = QString(input); }
+
+inline QString myTransformWrite(int input, int len)
+{
+	return myLib::fitNumber(input, len);
+}
+inline QString myTransformWrite(double input, int len)
+{
+	return myLib::fitNumber(input, len);
+}
+inline QString myTransformWrite(const QString & input, int len)
+{
+	QString res{input};
+	res += QString(' ', len);
+	res.resize(len);
+	return res;
+}
 
 template <typename Typ>
 void handleParam(Typ & qStr,
 				 int length,
 				 bool readFlag,
 				 std::fstream & ioFile,
-				 std::fstream & headerFile);
+				 std::fstream & headerFile)
+{
+	char * array;
+	if(readFlag)
+	{
+		array = new char [length + 1];
+		ioFile.read(array, length); array[length] = '\0';
+		myTransformRead(qStr, array);
+		if(headerFile.good())
+		{
+			headerFile.write(array, length);
+		}
+		delete []array;
+	}
+	else
+	{
+		QString outString = myTransformWrite(qStr, length);
+		ioFile.write(outString.toStdString().c_str(), length);
+	}
+}
 
 template <typename Typ>
 void handleParamArray(std::vector<Typ> & qStr,
@@ -48,24 +65,37 @@ void handleParamArray(std::vector<Typ> & qStr,
 					  int length,
 					  bool readFlag,
 					  std::fstream & ioFile,
-					  std::fstream & headerFile);
+					  std::fstream & headerFile)
+{
+	if(readFlag)
+	{
+		qStr = std::vector<Typ>(number, Typ());
+	}
+
+	for(auto & in : qStr )
+	{
+		handleParam(in, length, readFlag, ioFile, headerFile);
+	}
+}
+
 template <typename Typ>
 void handleParamArray(std::valarray<Typ> & qStr,
 					  int number,
 					  int length,
 					  bool readFlag,
 					  std::fstream & ioFile,
-					  std::fstream & headerFile);
+					  std::fstream & headerFile)
+{
+	if(readFlag)
+	{
+		qStr = std::valarray<Typ>(number);
+	}
 
-
-
-void myTransform(int & output, char * input);
-void myTransform(double & output, char * input);
-void myTransform(QString & output, char * input);
-
-void myTransform(int input, int len, char ** output);
-void myTransform(double input, int len, char ** output);
-void myTransform(const QString & input, int len, char ** output);
+	for(auto & in : qStr )
+	{
+		handleParam(in, length, readFlag, ioFile, headerFile);
+	}
+}
 
 
 struct edfChannel
@@ -84,7 +114,7 @@ public:
 
 public:
 	edfChannel()=default;
-	~edfChannel() {}
+	~edfChannel()=default;
 
     edfChannel(QString in_label,
                QString in_transducerType,
@@ -116,7 +146,6 @@ public:
 enum class inst {mati, iitp};
 enum class eogType {cross, correspond};
 //enum class reference{A1, A2, Ar, CAR, Base}; //// TO DO
-#define EDFSTREAM 01
 
 
 class edfFile
@@ -124,15 +153,15 @@ class edfFile
 public:
 
 	edfFile()=default;
+	~edfFile()=default;
+//	edfFile(const edfFile & other)=default;
 	edfFile(edfFile && other)=default;
-	~edfFile() {}
+//	edfFile & operator=(const edfFile & other)=default;
+	edfFile & operator=(edfFile && other)=default;
 
 	edfFile(const edfFile & other, bool noData = false);
 	edfFile(const QString & txtFilePath, inst which);
 	edfFile(const QString & edfPath);
-
-//	edfFile & operator=(const edfFile & other)=default;
-	edfFile & operator=(edfFile && other)=default;
 
 	operator bool() { return edfData.isEmpty(); }
 	bool isEmpty() { return edfData.isEmpty(); }
@@ -159,15 +188,6 @@ public:
 					 bool readFlag,
 					 QString & ntAnnot,
 					 std::fstream & edfForDatum);
-
-    void handleData(bool readFlag,
-					FILE * edfForData); /// deprecated
-    void handleDatum(int currNs,
-                     int currTimeIndex,
-                     bool readFlag,
-                     QString & ntAnnot,
-                     FILE * edfForDatum);
-
 
     void writeMarker(double currDatum,
 					 int currTimeIndex) const; /// deprecated

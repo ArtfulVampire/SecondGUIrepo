@@ -767,6 +767,7 @@ void redrawEeg(QPixmap & pic,
 			   double Xnorm,
 			   const std::vector<std::pair<int, QColor> > & colouredChans)
 {
+#define PIECE_DRAW 0
 	QPainter paint;
 	paint.begin(&pic);
 
@@ -775,20 +776,23 @@ void redrawEeg(QPixmap & pic,
 	paint.setBrush(QBrush("white"));
 
 	/// horzNorm
-	int staNorm = std::ceil(sta / Xnorm);
+	int staNorm = std::floor(sta / Xnorm);
 	int finNorm = std::ceil(fin / Xnorm);
 
 	 /// magic +-1
-	auto rect1 = QRect(QPoint(staNorm, 0),
-					  QPoint(finNorm, pic.height()));
+	auto rect1 = QRect(QPoint(staNorm - 1, 0),
+					  QPoint(finNorm + 1, pic.height()));
 	paint.drawRect(rect1);
 
+
+#if PIECE_DRAW
 	auto rect2 = QRect(QPoint(sta, 0),
 					  QPoint(fin, pic.height()));
 	QPixmap piece(rect2.size());
 	piece.fill("white");
 	QPainter pnt;
 	pnt.begin(&piece);
+#endif
 
 	for(int chanNum = 0; chanNum < inData.rows(); ++chanNum)
 	{
@@ -801,18 +805,27 @@ void redrawEeg(QPixmap & pic,
 		);
 		if(it != std::end(colouredChans))
 		{
+
+#if PIECE_DRAW
 			pnt.setPen(QPen(QBrush((*it).second), myLib::drw::penWidth));
+#else
+			paint.setPen(QPen(QBrush((*it).second), myLib::drw::penWidth));
+#endif
 		}
 		else
 		{
+#if PIECE_DRAW
 			pnt.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
+#else
+			paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
+#endif
 		}
 
 		const double offsetY = (chanNum + 1) * pic.height() / double(inData.rows() + 2);
 
 		/// horzNorm
 		/// magic +-2
-#if 01
+#if PIECE_DRAW
 		int x = 0;
 		for(int currX = rect2.left(); currX <= rect2.right() ; ++currX, ++x)
 		{
@@ -824,26 +837,43 @@ void redrawEeg(QPixmap & pic,
 					offsetY + inData[chanNum][currX + 1]
 					);
 		}
+#else
+		for(int currX = rect1.left(); currX <= rect1.right() + 1; ++currX)
+		{
+			paint.drawLine(currX,
+						   /// horzNorm WHAAAAAAAAAAAAT
+						   offsetY + inData[chanNum][currX * Xnorm],
+					(currX + 1),
+					/// horzNorm WHAAAAAAAAAAAAAAT
+					offsetY + inData[chanNum][(currX + 1) * Xnorm]
+					);
+		}
 #endif
+
 	}
+#if PIECE_DRAW
 	pnt.end();
 	paint.drawPixmap(rect1, piece, piece.rect());
+#endif
 
-#if 0
-	/// paint seconds marks
+#if PIECE_DRAW
+	/// to do markers
+#else
+	/// paint seconds marks - TO DO
+
 	paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
 	for(int numSec = staNorm / srate; numSec <= finNorm / srate ; ++numSec)
 	{
 		paint.drawLine(numSec * srate / Xnorm, pic.height(),
-					   numSec * srate / Xnorm, pic.height() - 32 / Xnorm);
+					   numSec * srate / Xnorm, pic.height() - 32 / Xnorm); /// magic const
 		paint.drawText(numSec * srate / Xnorm,
-					   pic.height() - 35 / Xnorm,
+					   pic.height() - 35 / Xnorm, /// magic const
 					   nm(numSec));
 
 		for(int subSec = 1; subSec < 5; ++subSec) /// const 5
 		{
 			paint.drawLine((numSec + subSec / 5.) * srate / Xnorm, pic.height(),
-						   (numSec + subSec / 5.) * srate / Xnorm, pic.height() - 25);
+						   (numSec + subSec / 5.) * srate / Xnorm, pic.height() - 25); /// magic const
 		}
 	}
 	paint.end();
@@ -946,7 +976,7 @@ double redMatlab(int range, int j, double V, double S)
 {
 	double part = j / double(range);
 	/// matlab
-	if    (0. <= part && part <= myLib::drw::colDots[0])				{ return V*(1.-S); }
+	if(0. <= part && part <= myLib::drw::colDots[0])					{ return V*(1.-S); }
 	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1])	{ return V*(1.-S); }
 	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2])	{ return V*(1.-S) + V*S*(part-myLib::drw::colDots[1]) / (myLib::drw::colDots[2] - myLib::drw::colDots[1]); }
 	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3])	{ return V; }
@@ -958,7 +988,7 @@ double greenMatlab(int range, int j, double V, double S)
 {
 	double part = j / double(range);
 	/// matlab
-	if    (0.0 <= part && part <= myLib::drw::colDots[0])				{ return V*(1.-S); }
+	if(0.0 <= part && part <= myLib::drw::colDots[0])					{ return V*(1.-S); }
 	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1])	{ return V*(1.-S) + V*S*(part-myLib::drw::colDots[0])/(myLib::drw::colDots[1] - myLib::drw::colDots[0]); }
 	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2])	{ return V; }
 	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3])	{ return V - V*S*(part-myLib::drw::colDots[2])/(myLib::drw::colDots[3] - myLib::drw::colDots[2]); }
@@ -970,7 +1000,7 @@ double blueMatlab(int range, int j, double V, double S)
 {
 	double part = j / double(range);
 	/// matlab
-	if    (0.0 <= part && part <= myLib::drw::colDots[0])				{ return V -V*S/2. + V*S*(part)/(myLib::drw::colDots[0] - 0.0)/2.; }
+	if(0.0 <= part && part <= myLib::drw::colDots[0])					{ return V -V*S/2. + V*S*(part)/(myLib::drw::colDots[0] - 0.0)/2.; }
 	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1])	{ return V; }
 	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2])	{ return V - V*S*(part-myLib::drw::colDots[1])/(myLib::drw::colDots[2] - myLib::drw::colDots[1]); }
 	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3])	{ return V*(1.-S); }
@@ -993,7 +1023,7 @@ double redJet(int range, int j, double V, double S)
 	double part = j / double(range);
 
 	/// old
-	if    (0.000 <= part && part <= 0.167)	{ return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.; }
+	if(0.000 <= part && part <= 0.167)		{ return V*(1.-S); } /// 2. - V*S/2. + V*S*(part)*3.;
 	if(0.167 < part && part <= 0.400)		{ return V*(1.-S); }
 	if(0.400 < part && part <= 0.500)		{ return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.; }
 	if(0.500 < part && part <= 0.600)		{ return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.; }
@@ -1008,7 +1038,7 @@ double greenJet(int range, int j, double V, double S)
 	double hlp = 1.0;
 
 	/// old
-	if    (0.000 <= part && part <= 0.167)	{ return V*(1.-S); }
+	if(0.000 <= part && part <= 0.167)		{ return V*(1.-S); }
 	if(0.167 < part && part <= 0.400)		{ return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167); }
 	if(0.400 < part && part <= 0.500)		{ return V-V*S*(1.-hlp); }
 	if(0.500 < part && part <= 0.600)		{ return V-V*S*(1.-hlp); }
@@ -1021,7 +1051,7 @@ double blueJet(int range, int j, double V, double S)
 {
 	double part = j / double(range);
 	/// old
-	if    (0.000 <= part && part <= 0.167)	{ return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.; }
+	if(0.000 <= part && part <= 0.167)		{ return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.; }
 	if(0.167 < part && part <= 0.400)		{ return V; }
 	if(0.400 < part && part <= 0.500)		{ return V - V*S*(part-0.400)/(0.500-0.400)/2.; }
 	if(0.500 < part && part <= 0.600)		{ return V - V*S*(part-0.400)/(0.500-0.400)/2.; }
