@@ -467,7 +467,7 @@ void ANN::readWeight(const QString & fileName,
 void ANN::drawWeight(const QString & wtsPath,
 					 QString picPath)
 {
-    if( dim.size() != 2 ) return;
+	if( dim.size() != 2 ) { return; }
 
     if(!QFile::exists(wtsPath))
     {

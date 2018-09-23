@@ -10,7 +10,7 @@ namespace repair
 
 void physMinMaxDir(const QString & dirPath, const QStringList & filters)
 {
-	for(QString str : QDir(dirPath).entryList(filters))
+	for(const QString & str : QDir(dirPath).entryList(filters))
     {
         edfFile feel;
 		feel.readEdfFile(dirPath + "/" + str);
@@ -21,7 +21,7 @@ void physMinMaxDir(const QString & dirPath, const QStringList & filters)
 void physMinMaxCheck(const QString & dirPath)
 {
     QDir(dirPath).mkdir("bad");
-    for(QString str : QDir(dirPath).entryList(def::edfFilters))
+	for(const QString & str : QDir(dirPath).entryList(def::edfFilters))
     {
         edfFile feel;
 		feel.readEdfFile(dirPath + "/" + str);
@@ -59,15 +59,15 @@ void toLatinFileOrFolder(const QString & fileOrFolderPath)
 
 void toLatinDir(const QString & dirPath, const QStringList & filters)
 {
-    QStringList leest;
+	QStringList leest;
 	if(!filters.isEmpty())
-    {
-        leest = QDir(dirPath).entryList(filters);
-    }
-    else
-    {
+	{
+		leest = QDir(dirPath).entryList(filters);
+	}
+	else
+	{
 		leest = QDir(dirPath).entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
-    }
+	}
 
     for(const QString & str : leest)
     {
@@ -227,10 +227,9 @@ void channelsOrderDir(const QString & inDirPath,
 
 /// #pragma omp parallel
 /// #pragma omp for nowait schedule(dynamic,3)
-    for(int i = 0; i < vec.size(); ++i)
-    {
-		QString outName = vec[i];
-		channelsOrderFile(inDirPath + "/" + vec[i],
+	for(const QString & outName : vec)
+	{
+		channelsOrderFile(inDirPath + "/" + outName,
 						  outDirPath + "/" + outName,
 						  standard);
     }
@@ -443,4 +442,4 @@ void fullRepairDir(const QString & dirPath, const QStringList & filters)
 	repair::toLowerDir(dirPath, filters);
 }
 
-} /// end namespace repair
+} /// end of namespace repair

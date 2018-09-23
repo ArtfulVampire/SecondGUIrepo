@@ -27,6 +27,4 @@ template std::vector<QLineEdit*> widgetsOfLayout(QLayout * lay);
 template std::vector<QPushButton*> widgetsOfLayout(QLayout * lay);
 template std::vector<QCheckBox*> widgetsOfLayout(QLayout * lay);
 
-
-
-} /// end namespace qtLib
+} /// end of namespace qtLib

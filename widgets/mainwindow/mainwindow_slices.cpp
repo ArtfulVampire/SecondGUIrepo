@@ -722,7 +722,7 @@ void MainWindow::sliceElena()
 }
 
 /// beginning - from mark1 to mark 2, end 250 Marker - included in filename
-void MainWindow::sliceBak(int marker1, int marker2, QString marker)
+void MainWindow::sliceBak(int marker1, int marker2, const QString & marker)
 {
     /// for Baklushev
     QString helpString;
@@ -747,7 +747,7 @@ void MainWindow::sliceBak(int marker1, int marker2, QString marker)
 		if(markerChan[i] == 250.)
         {
             k = i;
-            if(h == 1) ++h;
+			if(h == 1) { ++h; }
         }
         if(h == 2)
         {
@@ -810,69 +810,68 @@ void MainWindow::sliceOneByOne()
 			continue;
 		}
 #endif
-        else
-        {
+
 #if USE_MARKERS
-			const int finish = in.first;
+		const int finish = in.first;
 #else
-			const int finish = i;
+		const int finish = i;
 #endif
 
-			helpString = DEFS.dirPath()
-						 + "/Reals"
-						 + "/" + fil.getExpName()
-						 + "." + rn(number++, 4);
+		helpString = DEFS.dirPath()
+					 + "/Reals"
+					 + "/" + fil.getExpName()
+					 + "." + rn(number++, 4);
 
 
-            if(finish > start)
-            {
-				if(finish - start <= DEFS.getFreq() * 62) /// magic const generality limit
-                {
-                    helpString += "_" + marker;
+		if(finish > start)
+		{
+			if(finish - start <= DEFS.getFreq() * 62) /// magic const generality limit
+			{
+				helpString += "_" + marker;
+				fil.saveSubsection(start,
+								   finish,
+								   helpString, true);
+			}
+			else /// pause rest
+			{
+				if(def::writeLongStartEnd)
+				{
+					helpString += "_000";
 					fil.saveSubsection(start,
 									   finish,
 									   helpString, true);
-                }
-                else /// pause rest
-                {
-					if(def::writeLongStartEnd)
-                    {
-                        helpString += "_000";
-                        fil.saveSubsection(start,
-                                           finish,
-                                           helpString, true);
-                    }
-                    else
-                    {
+				}
+				else
+				{
 #if 0
-						/// why do I need this?
-						helpString += "_" + marker;
-						matrix tempData(fil.getNs(), 100, 0.);
-						tempData[fil.getMarkChan()][0] = markChanArr[start];
-						myLib::writePlainData(helpString, tempData);
+					/// why do I need this?
+					helpString += "_" + marker;
+					matrix tempData(fil.getNs(), 100, 0.);
+					tempData[fil.getMarkChan()][0] = markChanArr[start];
+					myLib::writePlainData(helpString, tempData);
 #endif
-                    }
 				}
 			}
+		}
 #if USE_MARKERS
-			ui->progressBar->setValue(in.first * 100. / fil.getDataLen());
+		ui->progressBar->setValue(in.first * 100. / fil.getDataLen());
 #else
-			ui->progressBar->setValue(i * 100. / fil.getDataLen());
+		ui->progressBar->setValue(i * 100. / fil.getDataLen());
 #endif
 
-            qApp->processEvents();
-            if(stopFlag)
-            {
-                stopFlag = false;
-                return;
-            }
+		qApp->processEvents();
+		if(stopFlag)
+		{
+			stopFlag = false;
+			return;
+		}
 #if USE_MARKERS
-			marker = nm(in.second);
+		marker = nm(in.second);
 #else
-			marker = nm(markChanArr[finish]);
+		marker = nm(markChanArr[finish]);
 #endif
-			start = finish;
-        }
+		start = finish;
+
     }
 
 
@@ -883,23 +882,23 @@ void MainWindow::sliceOneByOne()
 					 + "/" + fil.getExpName()
 					 + "." + rn(number++, 4);
 		if(fil.getDataLen() - start < 40 * DEFS.getFreq()) /// if last realisation or interstimulus
-        {
-            helpString += "_" + marker;
-            fil.saveSubsection(start,
-                               fil.getDataLen(),
-                               helpString, true);
-        }
-        else /// just last big rest with eyes closed/open
-        {
+		{
+			helpString += "_" + marker;
+			fil.saveSubsection(start,
+							   fil.getDataLen(),
+							   helpString, true);
+		}
+		else /// just last big rest with eyes closed/open
+		{
 			if(def::writeLongStartEnd)
-            {
-                helpString += "_000";
-                fil.saveSubsection(start,
-                                   fil.getDataLen(),
-                                   helpString, true);
-            }
-            else /// not to loose the last marker
-            {
+			{
+				helpString += "_000";
+				fil.saveSubsection(start,
+								   fil.getDataLen(),
+								   helpString, true);
+			}
+			else /// not to loose the last marker
+			{
 #if 0
 				/// ???
 				helpString += "_" + marker;
@@ -907,9 +906,9 @@ void MainWindow::sliceOneByOne()
 				tempData[fil.getMarkChan()][0] = markChanArr[start];
 				myLib::writePlainData(helpString, tempData);
 #endif
-            }
-        }
-    }
+			}
+		}
+	}
 }
 
 /// deprecated numChanWrite - always with markers
@@ -927,59 +926,60 @@ void MainWindow::sliceOneByOneNew()
 
     /// 200, 255, (241||247, num, 254, 255)
     /// with feedback 200 (241||247, num, 231||237, (234), 254, 255)
+	/// remake with markers pairs
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
         if(markChanArr[i] == 0.)
         {
             continue;
         }
-        else if((markChanArr[i] > 200 && markChanArr[i] < 241) ||
-				markChanArr[i] == 255 ||
-                markChanArr[i] == 250 ||
-				markChanArr[i] == 251) /// all not interesting markers
+		if((markChanArr[i] > 200. && markChanArr[i] < 241.) ||
+		   markChanArr[i] == 255. ||
+		   markChanArr[i] == 250. ||
+		   markChanArr[i] == 251.) /// all not interesting markers
         {
             continue;
-        }
-        else if(markChanArr[i] == 241 || markChanArr[i] == 247)
-        {
-            marker = "254";
-            if(markChanArr[i] == 241) h = 0;
-            else if (markChanArr[i] == 247) h = 1;
-            continue; /// wait for num marker
-        }
-		else if(true) /// marker can be num <= 200, ==254, smth else
-        {
-            if(marker.isEmpty())
-            {
-                marker = "sht";
-            }
+		}
+		if(markChanArr[i] == 241. || markChanArr[i] == 247.)
+		{
+			marker = "254";
+			if(markChanArr[i] == 241.)			{ h = 0; }
+			else if (markChanArr[i] == 247.)	{ h = 1; }
+			continue; /// wait for num marker
+		}
+		/// marker can be num <= 200, ==254, smth else
+		{
+			if(marker.isEmpty())
+			{
+				marker = "sht";
+			}
 
 			helpString = DEFS.dirPath()
 						 + "/Reals"
 						 + "/" + fil.getExpName()
 						 + "." + rn(number++, 4);
-            if(i > j)
-            {
+			if(i > j)
+			{
 				if(i - j <= DEFS.getFreq() * 60) /// const generality limit
-                {
-                    helpString += "_" + marker;
-                    fil.saveSubsection(j, i, helpString, true);
-                }
-                else /// pause rest
-                {
+				{
+					helpString += "_" + marker;
+					fil.saveSubsection(j, i, helpString, true);
+				}
+				else /// pause rest
+				{
 					if(def::writeLongStartEnd)
-                    {
-                        helpString += "_000";
-                        fil.saveSubsection(j, i, helpString, true);
-                    }
-                    else
-                    {
-                        helpString += "_" + marker;
-                        matrix tempData(fil.getNs(), 100, 0.);
-                        tempData[fil.getMarkChan()][0] = markChanArr[j];
+					{
+						helpString += "_000";
+						fil.saveSubsection(j, i, helpString, true);
+					}
+					else
+					{
+						helpString += "_" + marker;
+						matrix tempData(fil.getNs(), 100, 0.);
+						tempData[fil.getMarkChan()][0] = markChanArr[j];
 						myLib::writePlainData(helpString, tempData);
-                    }
-                }
+					}
+				}
             }
             ui->progressBar->setValue(i * 100. / fil.getDataLen());
 
@@ -1005,25 +1005,25 @@ void MainWindow::sliceOneByOneNew()
 					 + "/" + fil.getExpName()
 					 + "." + rn(number++, 4);
 		if(fil.getDataLen() - j < 40 * DEFS.getFreq()) /// if last realisation or interstimulus
-        {
-            helpString += "_" + marker;
-            fil.saveSubsection(j, fil.getDataLen(), helpString, true);
-        }
-        else /// just last big rest with eyes closed/open
-        {
+		{
+			helpString += "_" + marker;
+			fil.saveSubsection(j, fil.getDataLen(), helpString, true);
+		}
+		else /// just last big rest with eyes closed/open
+		{
 			if(def::writeLongStartEnd)
-            {
-                helpString += "_000";
-                fil.saveSubsection(j, fil.getDataLen(), helpString, true);
-            }
-            else /// not to loose the last marker
-            {
-                helpString += "_" + marker;
-                matrix tempData(fil.getNs(), 100, 0.);
-                tempData[fil.getMarkChan()][0] = markChanArr[j];
+			{
+				helpString += "_000";
+				fil.saveSubsection(j, fil.getDataLen(), helpString, true);
+			}
+			else /// not to loose the last marker
+			{
+				helpString += "_" + marker;
+				matrix tempData(fil.getNs(), 100, 0.);
+				tempData[fil.getMarkChan()][0] = markChanArr[j];
 				myLib::writePlainData(helpString, tempData);
-            }
-        }
+			}
+		}
     }
 
 }
@@ -1146,13 +1146,11 @@ void MainWindow::sliceMati()
     QTime myTime;
     myTime.start();
 
-    QString helpString;
     int start = 0;
     int end = -1;
-    std::vector<bool> markers;
-	std::array<bool, 3> state;
-    QString fileMark;
-	std::array<int, 4> session; /// generality
+	arkers{};
+	QString fileMark{};
+	std::array<int, 4> session{}; /// generality
     int type = 3;
 
 	for(int & in : session)
@@ -1173,14 +1171,16 @@ void MainWindow::sliceMati()
         }
 		/// else
         {
-			markers = myLib::matiCountByte(currMarker);
+			std::vector<bool> markers = myLib::matiCountByte(currMarker);
 			/// decide whether the marker is interesting: 15 14 13 12 11 10 9 8    7 6 5 4 3 2 1 0
-            for(int i = 0; i < 3; ++i)
+
+			std::array<bool, 3> state{};
+			for(int i = 0; i < 3; ++i)
             {
 				state[i] = markers[i + 8]; /// always elder byte is for count adn type of the session
             }
 
-            if(!(state[0] || state[1] || state[2])) continue; /// if all are zeros
+			if(!(state[0] || state[1] || state[2])) { continue; } /// if all are zeros
 
 			if(state[2] == 1) /// the end of a session
             {
@@ -1213,12 +1213,12 @@ void MainWindow::sliceMati()
         {
             if(type != 3) /// dont write rests
             {
-				helpString = DEFS.dirPath()
-							 + "/auxEdfs"
-							 + "/" + fil.getExpName()
-							 + "_" + nm(type)
-							 + "_" + nm(session[type])
-							 + ".edf";
+				QString helpString = DEFS.dirPath()
+									 + "/auxEdfs"
+									 + "/" + fil.getExpName()
+									 + "_" + nm(type)
+									 + "_" + nm(session[type])
+									 + ".edf";
 
                 fil.saveSubsection(start,
                                    end,
@@ -1360,4 +1360,43 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
         }
     }
 	outStream << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+}
+
+void MainWindow::eegVegetSlot()
+{
+	QStringList files = QFileDialog::getOpenFileNames(this,
+													  tr("Choose veget and eeg files"),
+													  DEFS.getDirPath(),
+													  "*.edf, *.EDF");
+	if(files.size() != 2) { return; }
+	QString veget{};
+	QString eeg{};
+	for(int i = 0; i < 2; ++i)
+	{
+		if(files[i].contains("_veget"))
+		{
+			veget = files[i];
+			eeg = files[(i + 1) % 2];
+		}
+	}
+	if(veget.isEmpty())
+	{
+		outStream << "eegVegetSlot: no _veget file" << std::endl;
+		return;
+	}
+	edfFile fil1(eeg);
+	fil1 = fil1.vertcatFile(veget);
+	for(int i = 0; i < fil1.getNs() - 1; ++i)
+	{
+		if(fil1.getLabels(i).contains("Status")
+		   && fil1.getLabels().back().contains("Status"))
+		{
+			fil1.removeChannel(i);
+			break;
+		}
+	}
+	QString outPath = veget;
+	outPath.remove("_veget");
+	outPath.replace(".edf", "_unite.edf");
+	fil1.writeEdfFile(outPath);
 }

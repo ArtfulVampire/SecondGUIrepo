@@ -734,7 +734,7 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
     {
         /// olololololololololololololololo
         this->srate = std::round(nr[0] / ddr);
-        const long long fileSize = QFile(EDFpath).size();
+		const int64_t fileSize = QFile(EDFpath).size();
         const int sumNr = std::accumulate(std::begin(nr),
                                           std::end(nr),
                                           0.);
@@ -1220,7 +1220,7 @@ void edfFile::writeAnnotations() const
 		{
 			if(ch.unicode() == 0 ||
 			   ch.unicode() == 20 ||
-			   ch.unicode() == 21) ch = ' ';
+			   ch.unicode() == 21) { ch = ' '; }
 		}
 		annotStream << a.toLatin1().toStdString() << std::endl;
 	}
@@ -1545,7 +1545,7 @@ void edfFile::adjustArraysByChannels()
 
 void edfFile::adjustMarkerChannel()
 {
-	if(this->markerChannel == -1 || this->markerChannel == this->ns - 1) return;
+	if(this->markerChannel == -1 || this->markerChannel == this->ns - 1) { return; }
 
     if(!(this->channels.back().label.contains("Marker") ||
          this->channels.back().label.contains("Status")))
@@ -1667,7 +1667,7 @@ int edfFile::findChannel(const QString & str) const
 {
 	for(int i = 0; i < this->ns; ++i)
 	{
-		if(labels[i].contains(str, Qt::CaseInsensitive)) return i;
+		if(labels[i].contains(str, Qt::CaseInsensitive)) { return i; }
 	}
 	return -1;
 }
@@ -1771,7 +1771,7 @@ edfFile & edfFile::downsample(double newFreq,
 	}
 	for(int numChan : chanList)
 	{
-		if(getFreq(numChan) == newFreq) continue;
+		if(getFreq(numChan) == newFreq) { continue; }
 
 		edfData[numChan] = myLib::downsample(edfData[numChan],
 											 getFreq(numChan),
@@ -1807,7 +1807,7 @@ edfFile & edfFile::upsample(double newFreq,
 	}
 	for(int numChan : chanList)
 	{
-		if(nr[numChan] == newFreq) continue;
+		if(nr[numChan] == newFreq) { continue; }
 
 		edfData[numChan] = myLib::upsample(edfData[numChan],
 										   getFreq(numChan),
@@ -1837,7 +1837,7 @@ edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
 	auto numECG = this->findChannel("ECG");
 	auto numArtefac = this->findChannel("Artefac");
 
-	if(byEeg) numECG = 0;
+	if(byEeg) { numECG = 0; }
 
 	const std::valarray<double> & eegMarkChan = this->getData()[numECG];
 	const std::valarray<double> & emgMarkChan = this->getData()[numArtefac];
@@ -1885,7 +1885,7 @@ std::pair<int, int> edfFile::iitpSyncAutoJump(int startSearchEeg,
 	auto numECG = this->findChannel("ECG");
 	auto numArtefac = this->findChannel("Artefac");
 
-	if(byEeg) numECG = 0;
+	if(byEeg) { numECG = 0; }
 
 	const std::valarray<double> & eegMarkChan = this->getData()[numECG];
 	const std::valarray<double> & emgMarkChan = this->getData()[numArtefac];
@@ -2246,7 +2246,7 @@ edfFile & edfFile::cleanFromEyes(QString eyesPath,
             {
                 eegNums.push_back(i);
             }
-            if(eegNums.size() == coefs.rows()) break; /// bicycle generality - only first 19
+			if(eegNums.size() == coefs.rows()) { break; } /// bicycle generality - only first 19
         }
     }
     if(eogNums.empty())
@@ -2349,7 +2349,7 @@ edfFile & edfFile::removeChannels(const QStringList & chanList)
 
 	for(int k : excludeSet)
 	{
-		if(k < 0) continue; /// for -1 in findChannel
+		if(k < 0) { continue; } /// for -1 in findChannel
 
 		this->edfData.eraseRow(k);
 		this->channels.erase(std::begin(this->channels) + k);
@@ -2450,8 +2450,8 @@ edfFile edfFile::reduceChannels(const QString & chanString) const
 			for(auto lstIter = std::begin(lst) + 1; lstIter != std::end(lst); ++lstIter)
 			{
 				double sign = 0.;
-				if(item[lengthCounter] == '+') sign = 1.;
-				else if(item[lengthCounter] == '-') sign = -1.;
+				if(item[lengthCounter] == '+')		{ sign = 1.; }
+				else if(item[lengthCounter] == '-')	{ sign = -1.; }
 				else /// this should never happen!
 				{
 					std::cout << "edfFile::reduceChannels: first sign is not + or -, return * this" << std::endl;
@@ -2645,7 +2645,7 @@ bool edfFile::isRerefChannel(const QString & inLabel)
 {
 	for(const QString & str: {"A1-A2", "A2-A1", "A1-N", "A2-N"})
 	{
-		if(inLabel.contains(str)) return true;
+		if(inLabel.contains(str)) { return true; }
 	}
 	return false;
 }
@@ -2889,7 +2889,7 @@ void handleParamArray(std::valarray<Typ> & qStr,
                       FILE * ioFile,
                       FILE * headerFile)
 {
-    if(readFlag) qStr = std::valarray<Typ>(Typ(), number); /// clean param vector
+	if(readFlag) { qStr = std::valarray<Typ>(Typ(), number); } /// clean param vector
 
     for(int i = 0; i < number; ++i)
     {
@@ -2905,7 +2905,7 @@ void handleParamArray(std::vector<Typ> & qStr,
                       FILE * ioFile,
                       FILE * headerFile)
 {
-    if(readFlag) qStr = std::vector<Typ>(number, Typ()); /// clean param vector
+	if(readFlag) { qStr = std::vector<Typ>(number, Typ()); } /// clean param vector
 
     for(int i = 0; i < number; ++i)
     {

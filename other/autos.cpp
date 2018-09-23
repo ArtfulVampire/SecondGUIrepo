@@ -270,4 +270,4 @@ return;
 #endif
 }
 
-} /// end namespace autos
+} /// end of namespace autos

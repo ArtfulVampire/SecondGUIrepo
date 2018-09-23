@@ -494,6 +494,13 @@
          </property>
         </widget>
        </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="eegVegetPushButton">
+         <property name="text">
+          <string>eeg + veget</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>

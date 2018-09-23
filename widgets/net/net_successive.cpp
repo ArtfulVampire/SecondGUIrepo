@@ -802,7 +802,7 @@ void Net::successivePreclean(const QString & spectraPath, const QStringList & fi
     myModel->setTestCleanFlag(true);
 	for(int i = 0; i < 5; ++i)
     {
-		if(autoClassification(spectraPath).first == 100.) break;
+		if(autoClassification(spectraPath).first == 100.) { break; }
     }
     myModel->setTestCleanFlag(false);
 }

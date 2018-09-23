@@ -874,4 +874,4 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 	return res;
 }
 
-} /// end namespace fb
+} /// end of namespace fb

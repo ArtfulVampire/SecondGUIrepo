@@ -1063,5 +1063,4 @@ bool forMap::isBad(int numEmg) const
 											   iitp::forMapEmgNames[numEmg])));
 }
 
-
-} /// namespace iitp
+} /// end of namespace iitp

@@ -82,8 +82,8 @@ std::vector<std::pair<int, int>> handleAnnots(const std::vector<QString> & annot
 			/// workaround "empty" parts
 			mark.replace(QRegExp(" {2,}"), " ");
 			mark.replace(QRegExp("\\0{2,}"), " ");
-			if(mark.size() < 10) continue; /// magic const
-			if(mark.contains(QChar(21))) continue; /// edf+ "duration"
+			if(mark.size() < 10) { continue; } /// magic const
+			if(mark.contains(QChar(21))) { continue; } /// edf+ "duration"
 
 //			std::cout << mark << std::endl; continue;
 			auto par = mark.split(sep2, QString::SkipEmptyParts);

@@ -6,7 +6,7 @@ namespace smLib
 template <class Container>
 Container range(int beg, int en)
 {
-	if(en <= beg) return Container{};
+	if(en <= beg) { return Container{}; }
 
 	Container res(en - beg);
 	std::iota(std::begin(res), std::end(res), beg);
@@ -287,4 +287,4 @@ void mix (Container & in)
 template void mix(std::vector<uint> &);
 template void mix(std::vector<int> &);
 
-} /// end of namespace
+} /// end of namespace smLib

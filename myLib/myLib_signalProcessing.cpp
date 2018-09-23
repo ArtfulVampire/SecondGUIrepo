@@ -325,7 +325,7 @@ std::valarray<double> refilter(const std::valarray<double> & inputSignal,
 
 }
 
-} /// namespace butter
+} /// end of namespace butter
 
 namespace btr
 {
@@ -383,7 +383,7 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 	res = smLib::contReverse(res);
 	return res;
 }
-} /// namespace btr
+} /// end of namespace btr
 
 #if 0
 namespace myDsp
@@ -1327,7 +1327,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 	/// for long scale signals
 	std::vector<int> timeShifts;
 	timeShifts = {1, 2, 3, 4}; /// initialize
-	for(int i = 11; i < log2(N / 4) * 4 + 1 ; ++i)
+	for(int i = 11; i < log2(N / 4.) * 4 + 1 ; ++i)
 	{
 		timeShifts.push_back(std::floor(std::pow(2, (i - 1) / 4.)));
 	}
@@ -1397,6 +1397,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 		double lenY = maxY - minY; std::cout << lenY << std::endl;
 
 		/// draw values
+		/// magic consts
 		pnt.setFont(QFont("Helvetica", 12));
 		/// y
 		pnt.drawText(0, pic.height() * (1. - gap) + 12 / 2,
@@ -1818,14 +1819,12 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
     for(int i = 0; i < fftLen; ++i)
     {
         if(i < 2. * lowFreq / spStep
-           || i > 2. * highFreq / spStep)
-            out[i] = 0.;
+		   || i > 2. * highFreq / spStep) { out[i] = 0.; }
     }
     for(int i = fftLen; i < 2 * fftLen; ++i)
     {
         if(((2 * fftLen - i) < 2. * lowFreq / spStep)
-           || (2 * fftLen - i > 2. * highFreq / spStep))
-            out[i] = 0.;
+		   || (2 * fftLen - i > 2. * highFreq / spStep)) { out[i] = 0.; }
     }
 	/// constant component
     out[0] = 0.;
@@ -2475,9 +2474,9 @@ matrix countSpectre(const matrix & inData,
 		h = 0;
 		for(int j = 0; j < data2.rows(); ++j)
 		{
-			if(std::abs(data2[j][i]) <= threshold) ++h; /// generality 1/8.
+			if(std::abs(data2[j][i]) <= threshold) { ++h; } /// generality 1/8.
 		}
-		if(h == data2.rows()) eyes += 1;
+		if(h == data2.rows()) { eyes += 1; }
 	}
 
 	if(
@@ -2522,7 +2521,7 @@ std::valarray<double> calcSpectre(const std::valarray<double> & inSignal,
 	const int leftSmoothLimit = 2; /// doesn't effect on zero component
     const int rightSmoothLimit = fftLength / 2 - 1;
 	double help1, help2;
-	for(int a = 0; a < (int)(NumOfSmooth / normSmooth); ++a)
+	for(int a = 0; a < std::ceil(NumOfSmooth / normSmooth); ++a)
     {
         help1 = outSpectre[leftSmoothLimit - 1];
         for(int k = leftSmoothLimit; k < rightSmoothLimit; ++k)
@@ -2555,14 +2554,15 @@ void eyesProcessingStatic(const std::vector<int> & eogChannels,
 		dataE.horzCat(tmp);
 	}
 
+	const uint Size = eogChannels.size() + 1; /// usually 3
 	std::vector<int> signalNums;
+	signalNums.reserve(Size);
 	for(int eogNum : eogChannels)
 	{
 		signalNums.push_back(eogNum);
 	}
 	signalNums.push_back(0);
 
-	const uint Size = eogChannels.size() + 1; /// usually 3
 
 	matrix matrixInit(Size, Size);
 	matrix coefficients(eegChannels.size(), eogChannels.size());
@@ -2608,4 +2608,4 @@ std::valarray<double> (* refilter)(const std::valarray<double> & inputSignal,
 								  double srate) =
 		&butter::refilter;
 
-}/// namespace myLib
+} /// end of namespace myLib

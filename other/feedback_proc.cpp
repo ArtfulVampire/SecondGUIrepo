@@ -4,14 +4,14 @@
 namespace fb
 {
 
-taskType & operator ++(taskType & in) /// prefix
+taskType & operator++ (taskType & in) /// prefix
 {
 	return in = (in == taskType::rest)
 				? taskType::spat
 				: static_cast<taskType>(static_cast<int>(in) + 1);
 }
 
-taskType operator ++(taskType & in, int) /// postfix
+taskType operator++ (taskType & in, int) /// postfix
 {
 	auto res = in;
 	++in;
@@ -321,4 +321,5 @@ void successiveNetPrecleanWinds(const QString & windsPath)
 	ann->successivePreclean(windsPath, {});
 	delete ann;
 }
-} /// end namespace fb
+
+} /// end of namespace fb

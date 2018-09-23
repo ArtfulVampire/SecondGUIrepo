@@ -196,7 +196,7 @@ Cut::Cut() :
 					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 					 [this](double a)
 	{
-		if(this->size().width() == a * edfFil.getFreq() + scrollAreaGapX) return;
+		if(this->size().width() == a * edfFil.getFreq() + scrollAreaGapX) { return; }
 		/// horzNorm
 		this->resize(a * edfFil.getFreq() / ui->xNormDoubleSpinBox->value()
 					 + scrollAreaGapX, this->height());
@@ -777,7 +777,7 @@ void Cut::paint()
 
 matrix Cut::makeDrawData()
 {
-	if(dataCutLocal.isEmpty() || !drawFlag || !fileOpened) return {};
+	if(dataCutLocal.isEmpty() || !drawFlag || !fileOpened) { return {}; }
 
 	int rightDrawLimit = 0.;
 	if(myFileType == fileType::edf)

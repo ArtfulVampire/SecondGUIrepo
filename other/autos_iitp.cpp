@@ -274,7 +274,7 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 void IITPrename(const QString & guyName)
 {
 	const QString pth = def::iitpFolder + "/" + guyName + "/";
-	if(!QFile::exists(pth + "rename.txt")) return;
+	if(!QFile::exists(pth + "rename.txt")) { return; }
 
 	const QString postfix = "_rn";
 
@@ -361,7 +361,7 @@ void IITPfilterGonios(const QString & guyName,
 
 		/// filter goniogramms
 		filePath = ExpNamePre + postfix + ".edf";
-		if(!QFile::exists(filePath)) continue;
+		if(!QFile::exists(filePath)) { continue; }
 		fil.readEdfFile(filePath);
 
 		std::vector<int> chanList;
@@ -476,7 +476,7 @@ void IITPtestCoh(const QString & guyName)
 	std::ofstream ofile;
 	for(int fileNum : iitp::fileNums)
 	{
-		if(!QFile::exists(filePath(fileNum))) continue;
+		if(!QFile::exists(filePath(fileNum))) { continue; }
 
 		ofile.open(resPath(fileNum).toStdString());
 		dt.readEdfFile(filePath(fileNum));
@@ -1270,7 +1270,7 @@ void IITPwriteCohsToFile(std::ofstream & outStr,
 	{
 		for(int eeg2 : iitp::interestEeg)
 		{
-			if(eeg2 <= eeg1) continue;
+			if(eeg2 <= eeg1) { continue; }
 
 			for(double fr : iitp::interestFrequencies)
 			{
@@ -1751,6 +1751,4 @@ void IITPmaxCoh(const QString & filePath,
 	}
 }
 
-} /// end namespace autos
-
-
+} /// end of namespace autos

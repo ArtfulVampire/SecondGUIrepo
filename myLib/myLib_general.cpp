@@ -134,11 +134,8 @@ QString getExtension(const QString & filePath)
     {
         helpString = helpString.right(helpString.length() - helpString.lastIndexOf('.') - 1);
         return helpString;
-    }
-    else
-    {
-        return QString();
-    }
+	}
+	return {};
 }
 
 QString kyrToLatin(const QString & in)
@@ -252,7 +249,7 @@ int indexOfVal(const Container & cont, Typ val)
 	int i = 0;
 	for(auto it = std::begin(cont); it != std::end(cont); ++it, ++i)
 	{
-		if(*it == val) return i;
+		if(*it == val) { return i; }
 	}
 	return -1;
 }
@@ -278,7 +275,7 @@ std::pair<bool, Typ> contains(const Container & cont, const std::vector<Typ> & v
 	{
 		for(Typ v : val)
 		{
-			if(in == v) return std::make_pair(true, v);
+			if(in == v) { return std::make_pair(true, v); }
 		}
 	}
 	return std::make_pair(false, 0);
@@ -292,21 +289,23 @@ template std::pair<bool, int> contains(const std::valarray<double> & cont,
 template <class InputIterator, class Typ>
 InputIterator find_back(InputIterator last, InputIterator first, const Typ & val)
 {
-	while (last!=first) {
-	   if (*last==val) return last;
-	   --last;
-	 }
-	 return first;
+	while (last != first)
+	{
+		if (*last == val) { return last; }
+		--last;
+	}
+	return first;
 }
 
 template <class InputIterator, class Pred>
 InputIterator find_back_if(InputIterator last, InputIterator first, Pred pred)
 {
-	while (last!=first) {
-	   if (pred(*last)) return last;
-	   --last;
-	 }
-	 return first;
+	while (last != first)
+	{
+		if (pred(*last)) { return last; }
+		--last;
+	}
+	return first;
 }
 
 std::vector<int> splitStringIntoVec(const QString & in)
@@ -377,7 +376,7 @@ int edfPlusLen(const QString & s)
 }
 
 
-bool areEqualFiles(QString path1, QString path2)
+bool areEqualFiles(const QString & path1, const QString & path2)
 {
 	QTime myTime;
 	myTime.start();
@@ -447,7 +446,7 @@ int countSymbolsInFile(const QString & filePath, char inChar)
 	while(!feof(inStr))
 	{
 		fscanf(inStr, "%c", &tmpChar);
-		if(!feof(inStr) && tmpChar == inChar) ++res;
+		if(!feof(inStr) && tmpChar == inChar) { ++res; }
 	}
 	return res;
 }
@@ -502,9 +501,7 @@ void cleanDir(const QString & dirPath, const QString & nameFilter, bool ext)
 	{
 		QFile::remove(tmpDir.absolutePath() + "/" + lst[h]);
 	}
-
 }
-
 
 void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 {
@@ -604,8 +601,4 @@ template uint indexOfMin(const std::vector<double> & cont);
 template uint indexOfMin(const std::valarray<double> & cont);
 template uint indexOfMin(const std::list<double> & cont);
 
-
-} /// namespace myLib
-
-
-
+} /// end of namespace myLib

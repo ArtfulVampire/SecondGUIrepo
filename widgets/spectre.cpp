@@ -170,15 +170,15 @@ int findChannel(int x, int y, QSize siz)
 	/// Fp1, Fp2
 	case 0:
 	{
-		if(a == 1) return 0;
-		if(a == 3) return 1;
+		if(a == 1) { return 0; }
+		if(a == 3) { return 1; }
 		break;
 	}
 	/// O1, O2
 	case 4:
 	{
-		if(a == 1) return 17;
-		if(a == 3) return 18;
+		if(a == 1) { return 17; }
+		if(a == 3) { return 18; }
 		break;
 	}
 #if 0
@@ -770,7 +770,7 @@ std::vector<int> Spectre::countSpectra(std::vector<int> chanList)
 	{
 		if(fileName.contains("_num") ||
 //		   fileName.contains("_300") ||
-		   fileName.contains("_sht")) continue;
+		   fileName.contains("_sht")) { continue; }
 
 		/// read data file
 		QString helpString = inDirPath + "/" + fileName;

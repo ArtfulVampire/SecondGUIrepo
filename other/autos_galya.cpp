@@ -822,7 +822,7 @@ void Xenia_TBI(const QString & tbi_path)
 
 
 			QStringList t = QDir(workPath + "/" + guy).entryList(def::edfFilters);
-			if(t.isEmpty()) continue;
+			if(t.isEmpty()) { continue; }
 
 			QString ExpName = t[0];
 			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
@@ -1266,7 +1266,7 @@ void ArrangeFilesToTable(const QString & inPath,
 												  ))
 	{
 		if((fileName == tableName)
-		   || fileName.contains("people")) continue;
+		   || fileName.contains("people")) { continue; }
 
 		if(writePeople)
 		{
@@ -1798,5 +1798,4 @@ void ProcessByFolders(const QString & inPath,
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
-
-} /// namespace autos
+} /// end of namespace autos

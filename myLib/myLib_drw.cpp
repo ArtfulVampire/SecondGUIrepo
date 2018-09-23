@@ -23,7 +23,7 @@ int numOfChans(const std::valarray<double> & inData)
 
 int numOfChans(int inDataSize)
 {
-	if(myLib::drw::manualNs > 0) return myLib::drw::manualNs;
+	if(myLib::drw::manualNs > 0) { return myLib::drw::manualNs; }
 
 	for(const int nch : {19, 23, 20, 21})
 	{
@@ -128,17 +128,17 @@ QPixmap drawOneTemplate(const QString & chanName,
 
 			helpString = nm(std::round(cF));
 
-			if(helpString.toInt() % 5 != 0) continue;
+			if(helpString.toInt() % 5 != 0) { continue; }
 
 			if(helpString.toInt() < 10)
 			{
-				paint.drawText(QPointF(X + k - myLib::drw::fontSizeHz / 3,
+				paint.drawText(QPointF(X + k - myLib::drw::fontSizeHz / 3.,
 									   pic.height() - 1),
 							   helpString);
 			}
 			else
 			{
-				paint.drawText(QPointF(X + k - myLib::drw::fontSizeHz / 3 * 2,
+				paint.drawText(QPointF(X + k - myLib::drw::fontSizeHz / 3. * 2,
 									   pic.height() - 1),
 							   helpString);
 			}
@@ -148,7 +148,7 @@ QPixmap drawOneTemplate(const QString & chanName,
 	paint.setFont(QFont("Helvetica", int(myLib::drw::fontSizeChan), -1, false));
 	if(!chanName.isEmpty())
 	{
-		paint.drawText(QPointF(X - myLib::drw::fontSizeChan * 2 / 3,
+		paint.drawText(QPointF(X - myLib::drw::fontSizeChan * 2. / 3.,
 							   Y - myLib::drw::graphHeight + myLib::drw::fontSizeChan),
 					   chanName);
 	}
@@ -570,7 +570,7 @@ QPixmap drawOneArray(const QPixmap & templatePic,
 	QPainter paint;
 	paint.begin(&pic);
 
-	if(maxVal <= 0.) maxVal = std::abs(inData).max();
+	if(maxVal <= 0.) { maxVal = std::abs(inData).max(); }
 	const double norm = myLib::drw::graphHeight / maxVal / (weightsFlag + 1);
 
 
@@ -659,7 +659,7 @@ QPixmap drawMannWitney(const QPixmap & templatePic,
 				/// check it is goog with spLength w/o DEFS
 				for(int j = offset; j < offset + spLength; ++j)
 				{
-					if(inMW[h][l - h][j] == 0) continue;
+					if(inMW[h][l - h][j] == 0) { continue; }
 
 					if(inMW[h][l - h][j] == 1) /// if class1 spectre is bigger
 					{
@@ -704,8 +704,8 @@ QPixmap drawMannWitneyInLine(const QPixmap & templatePic,
 			const int currTop = pic.height() * (offsetYinLine + (1. - offsetYinLine) * num);
 			const int currBot = pic.height() * (offsetYinLine + (1. - offsetYinLine) * (num + 1));
 
-			QColor color1 = QColor(inColors[k]);
-			QColor color2 = QColor(inColors[j]);
+			QColor color1 = inColors[k];
+			QColor color2 = inColors[j];
 
 			for(int i = 0; i < pic.width(); ++i)
 			{
@@ -891,15 +891,15 @@ QPixmap drawEeg(const matrix & inData,
 	for(int numSec = 0; numSec < (inData.cols() / srate) + 1; ++numSec)
 	{
 		paint.drawLine(numSec * srate, pic.height(),
-					   numSec * srate, pic.height() - 32);
+					   numSec * srate, pic.height() - 32); /// magic const
 		paint.drawText(numSec * srate,
-					   pic.height() - 35,
+					   pic.height() - 35,  /// magic const
 					   nm(numSec));
 
 		for(int subSec = 1; subSec < 5; ++subSec) /// const 5
 		{
 			paint.drawLine((numSec + subSec / 5.) * srate, pic.height(),
-						   (numSec + subSec / 5.) * srate, pic.height() - 25);
+						   (numSec + subSec / 5.) * srate, pic.height() - 25); /// magic const
 		}
 	}
 	paint.end();
@@ -911,31 +911,31 @@ QPixmap drawEeg(const matrix & inData,
 double redOld(int range, int j)
 {
 	double part = j / double(range);
-	if(0.000 <= part && part <= 0.5) return 0.;
-	if(0.500 < part && part <= 0.800) return (part - 0.5) / (0.8 - 0.5);
-	if(0.800 < part && part <= 1.000) return 1.;
+	if(0.000 <= part && part <= 0.5)	{ return 0.; }
+	if(0.500 < part && part <= 0.800)	{ return (part - 0.5) / (0.8 - 0.5); }
+	if(0.800 < part && part <= 1.000)	{ return 1.; }
 	return 0.0;
 }
 double greenOld(int range, int j)
 {
 	double part = j / double(range);
-	if(0.000 <= part && part <= 0.2) return part * 5;
-	if(0.200 < part && part <= 0.800) return 1.;
-	if(0.800 < part && part <= 1.000) return 1. - (part - 0.8) / (1.0 - 0.8);
+	if(0.000 <= part && part <= 0.2)	{ return part * 5; }
+	if(0.200 < part && part <= 0.800)	{ return 1.; }
+	if(0.800 < part && part <= 1.000)	{ return 1. - (part - 0.8) / (1.0 - 0.8); }
 	return 0.0;
 }
 double blueOld(int range, int j)
 {
 	double part = j / double(range);
-	if(0.000 <= part && part <= 0.2) return 1.;
-	if(0.200 < part && part <= 0.500) return 1 - (part - 0.2) / (0.5 - 0.2);
-	if(0.500 < part && part <= 1.000) return 0.;
+	if(0.000 <= part && part <= 0.2)	{ return 1.; }
+	if(0.200 < part && part <= 0.500)	{ return 1 - (part - 0.2) / (0.5 - 0.2); }
+	if(0.500 < part && part <= 1.000)	{ return 0.; }
 	return 0.0;
 }
 QColor hueOld(int range, int j)
 {
-	if(j > range) j = range;
-	if(j < 0) j = 0;
+	if(j > range)	{ j = range; }
+	if(j < 0)		{ j = 0; }
 
 	return QColor(255. * myLib::drw::redOld(range, j),
 				  255. * myLib::drw::greenOld(range, j),
@@ -946,11 +946,11 @@ double redMatlab(int range, int j, double V, double S)
 {
 	double part = j / double(range);
 	/// matlab
-	if    (0. <= part && part <= myLib::drw::colDots[0]) return V*(1.-S);
-	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S);
-	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[1]) / (myLib::drw::colDots[2] - myLib::drw::colDots[1]);
-	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V;
-	if(myLib::drw::colDots[3] < part && part <= 1.) return V - V*S*(part-myLib::drw::colDots[3])/(1 - myLib::drw::colDots[3])/2.;
+	if    (0. <= part && part <= myLib::drw::colDots[0])				{ return V*(1.-S); }
+	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1])	{ return V*(1.-S); }
+	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2])	{ return V*(1.-S) + V*S*(part-myLib::drw::colDots[1]) / (myLib::drw::colDots[2] - myLib::drw::colDots[1]); }
+	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3])	{ return V; }
+	if(myLib::drw::colDots[3] < part && part <= 1.)						{ return V - V*S*(part-myLib::drw::colDots[3])/(1 - myLib::drw::colDots[3])/2.; }
 	return 0.; /// never happens
 }
 
@@ -958,11 +958,11 @@ double greenMatlab(int range, int j, double V, double S)
 {
 	double part = j / double(range);
 	/// matlab
-	if    (0.0 <= part && part <= myLib::drw::colDots[0]) return V*(1.-S);
-	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V*(1.-S) + V*S*(part-myLib::drw::colDots[0])/(myLib::drw::colDots[1] - myLib::drw::colDots[0]);
-	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V;
-	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V - V*S*(part-myLib::drw::colDots[2])/(myLib::drw::colDots[3] - myLib::drw::colDots[2]);
-	if(myLib::drw::colDots[3] < part && part <= 1.) return V*(1.-S);
+	if    (0.0 <= part && part <= myLib::drw::colDots[0])				{ return V*(1.-S); }
+	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1])	{ return V*(1.-S) + V*S*(part-myLib::drw::colDots[0])/(myLib::drw::colDots[1] - myLib::drw::colDots[0]); }
+	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2])	{ return V; }
+	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3])	{ return V - V*S*(part-myLib::drw::colDots[2])/(myLib::drw::colDots[3] - myLib::drw::colDots[2]); }
+	if(myLib::drw::colDots[3] < part && part <= 1.)						{ return V*(1.-S); }
 	return 0.; /// never happens
 }
 
@@ -970,19 +970,19 @@ double blueMatlab(int range, int j, double V, double S)
 {
 	double part = j / double(range);
 	/// matlab
-	if    (0.0 <= part && part <= myLib::drw::colDots[0]) return V -V*S/2. + V*S*(part)/(myLib::drw::colDots[0] - 0.0)/2.;
-	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1]) return V;
-	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2]) return V - V*S*(part-myLib::drw::colDots[1])/(myLib::drw::colDots[2] - myLib::drw::colDots[1]);
-	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3]) return V*(1.-S);
-	if(myLib::drw::colDots[3] < part && part <= 1.) return V*(1.-S);
+	if    (0.0 <= part && part <= myLib::drw::colDots[0])				{ return V -V*S/2. + V*S*(part)/(myLib::drw::colDots[0] - 0.0)/2.; }
+	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1])	{ return V; }
+	if(myLib::drw::colDots[1] < part && part <= myLib::drw::colDots[2])	{ return V - V*S*(part-myLib::drw::colDots[1])/(myLib::drw::colDots[2] - myLib::drw::colDots[1]); }
+	if(myLib::drw::colDots[2] < part && part <= myLib::drw::colDots[3])	{ return V*(1.-S); }
+	if(myLib::drw::colDots[3] < part && part <= 1.)						{ return V*(1.-S); }
 	return 0.; /// never happens
 }
 
 
 QColor hueMatlab(int range, int j)
 {
-	if(j > range) j = range;
-	if(j < 0) j = 0;
+	if(j > range)	{ j = range; }
+	if(j < 0)		{ j = 0; }
 	return QColor(255. * myLib::drw::redMatlab(range, j),
 				  255. * myLib::drw::greenMatlab(range, j),
 				  255. * myLib::drw::blueMatlab(range, j));
@@ -993,12 +993,12 @@ double redJet(int range, int j, double V, double S)
 	double part = j / double(range);
 
 	/// old
-	if    (0.000 <= part && part <= 0.167) return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.;
-	if(0.167 < part && part <= 0.400) return V*(1.-S);
-	if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
-	if(0.500 < part && part <= 0.600) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
-	if(0.600 < part && part <= 0.833) return V;
-	if(0.833 < part && part <= 1.000) return V - V*S*(part-0.833)/(1.000-0.833)/2.;
+	if    (0.000 <= part && part <= 0.167)	{ return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.; }
+	if(0.167 < part && part <= 0.400)		{ return V*(1.-S); }
+	if(0.400 < part && part <= 0.500)		{ return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.; }
+	if(0.500 < part && part <= 0.600)		{ return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.; }
+	if(0.600 < part && part <= 0.833)		{ return V; }
+	if(0.833 < part && part <= 1.000)		{ return V - V*S*(part-0.833)/(1.000-0.833)/2.; }
 	return 0.0;
 }
 
@@ -1008,12 +1008,12 @@ double greenJet(int range, int j, double V, double S)
 	double hlp = 1.0;
 
 	/// old
-	if    (0.000 <= part && part <= 0.167) return V*(1.-S);
-	if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
-	if(0.400 < part && part <= 0.500) return V-V*S*(1.-hlp);
-	if(0.500 < part && part <= 0.600) return V-V*S*(1.-hlp);
-	if(0.600 < part && part <= 0.833) return V-V*S*(1.-hlp) - V*S*hlp*(part-0.600)/(0.833-0.600);
-	if(0.833 < part && part <= 1.000) return V*(1.-S);
+	if    (0.000 <= part && part <= 0.167)	{ return V*(1.-S); }
+	if(0.167 < part && part <= 0.400)		{ return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167); }
+	if(0.400 < part && part <= 0.500)		{ return V-V*S*(1.-hlp); }
+	if(0.500 < part && part <= 0.600)		{ return V-V*S*(1.-hlp); }
+	if(0.600 < part && part <= 0.833)		{ return V-V*S*(1.-hlp) - V*S*hlp*(part-0.600)/(0.833-0.600); }
+	if(0.833 < part && part <= 1.000)		{ return V*(1.-S); }
 	return 0.0;
 }
 
@@ -1021,18 +1021,18 @@ double blueJet(int range, int j, double V, double S)
 {
 	double part = j / double(range);
 	/// old
-	if    (0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
-	if(0.167 < part && part <= 0.400) return V;
-	if(0.400 < part && part <= 0.500) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
-	if(0.500 < part && part <= 0.600) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
-	if(0.600 < part && part <= 0.833) return V*(1.-S);
-	if(0.833 < part && part <= 1.000) return V*(1.-S);
+	if    (0.000 <= part && part <= 0.167)	{ return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.; }
+	if(0.167 < part && part <= 0.400)		{ return V; }
+	if(0.400 < part && part <= 0.500)		{ return V - V*S*(part-0.400)/(0.500-0.400)/2.; }
+	if(0.500 < part && part <= 0.600)		{ return V - V*S*(part-0.400)/(0.500-0.400)/2.; }
+	if(0.600 < part && part <= 0.833)		{ return V*(1.-S); }
+	if(0.833 < part && part <= 1.000)		{ return V*(1.-S); }
 	return 0.0;
 }
 QColor hueJet(int range, int j)
 {
-	if(j > range) j = range;
-	if(j < 0) j = 0;
+	if(j > range)	{ j = range; }
+	if(j < 0)		{ j = 0; }
 	return QColor(255. * myLib::drw::redJet(range, j),
 				  255. * myLib::drw::greenJet(range, j),
 				  255. * myLib::drw::blueJet(range, j));
@@ -1040,8 +1040,8 @@ QColor hueJet(int range, int j)
 
 QColor grayScale(int range, int j)
 {
-	if(j > range) j = range;
-	if(j < 0) j = 0;
+	if(j > range)	{ j = range; }
+	if(j < 0)		{ j = 0; }
 	return QColor(255. * (1. - double(j) / range),
 				  255. * (1. - double(j) / range),
 				  255. * (1. - double(j) / range));
@@ -1286,7 +1286,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 		{
 			/// round shape
 			if(smLib::distance(x, y, mapSize / 2., mapSize / 2.) >
-			   mapSize * 2. * std::sqrt(2.) / (dim - 1.) ) continue;
+			   mapSize * 2. * std::sqrt(2.) / (dim - 1.) ) { continue; }
 
 			val = myLib::splineOutput(inX, inYv, dim, Av, Bv, y * scale);
 			if(maxAbs == 0.)
@@ -1402,18 +1402,15 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	{
 		return pic1;
 	}
-	else if(1.5 * std::abs(maxMagn) < std::abs(minMagn))
+	if(1.5 * std::abs(maxMagn) < std::abs(minMagn))
 	{
 		return pic2;
 	}	
-	else if(sum >= 0.)
+	if(sum >= 0.)
 	{
 		return pic1;
 	}
-	else
-	{
-		return pic2;
-	}
+	return pic2;
 }
 
 QString mapPath(const QString & dir,
@@ -1510,6 +1507,5 @@ QPixmap drawMapsOnSpectra(const QPixmap & inSpectraPic,
 	return pic;
 }
 
-
-} /// namespace drw
-} /// namespace myLib
+} /// end of namespace drw
+} /// end of namespace myLib

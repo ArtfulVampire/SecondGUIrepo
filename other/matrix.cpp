@@ -959,8 +959,8 @@ matrix & matrix::pop_back()
 
 void matrix::print(int rows, int cols) const
 {
-    if(rows == 0) rows = this->rows();
-    if(cols == 0) cols = this->cols();
+	if(rows == 0)	{ rows = this->rows(); }
+	if(cols == 0)	{ cols = this->cols(); }
 
 	for(int i = 0; i < rows; ++i)
     {
@@ -974,8 +974,8 @@ void matrix::print(int rows, int cols) const
 
 void matrix::printWithBraces(int rows, int cols) const
 {
-	if(rows == 0) rows = this->rows();
-	if(cols == 0) cols = this->cols();
+	if(rows == 0)	{ rows = this->rows(); }
+	if(cols == 0)	{ cols = this->cols(); }
 
 	std::cout << "{";
 	for(int i = 0; i < rows; ++i)
@@ -1044,7 +1044,7 @@ matrix & matrix::transpose()
 
 double matrix::trace() const
 {
-    if(this->rows() != this->cols()) return 0.;
+	if(this->rows() != this->cols()) { return 0.; }
     double res = 0.;
 	for(int i = 0; i < this->rows(); ++i)
     {

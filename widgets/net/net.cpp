@@ -212,7 +212,7 @@ void Net::drawWtsSlot()
     {
         return;
     }
-    QString helpString = QFileDialog::getOpenFileName((QWidget * )this,
+	QString helpString = QFileDialog::getOpenFileName(this,
                                                       tr("wts to draw"),
 													  DEFS.dirPath(),
                                                       tr("wts files (*.wts)"));
@@ -235,7 +235,7 @@ void Net::writeWtsSlot()
     QString helpString;
 	if(!autoFlag)
 	{
-		helpString = QFileDialog::getSaveFileName((QWidget * )this,
+		helpString = QFileDialog::getSaveFileName(this,
 												  tr("wts to save"),
 												  DEFS.dirPath(),
 												  tr("wts files (*.wts)"));

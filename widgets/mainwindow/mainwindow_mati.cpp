@@ -66,14 +66,14 @@ void MainWindow::markerSetDecValueSlot()
 	helpString = ui->markerBin0LineEdit->text();
 	for(int h = 0; h < 8; ++h)
 	{
-		if(helpString[h] != '0' && helpString[h] != '1') return;
+		if(helpString[h] != '0' && helpString[h] != '1') { return; }
 		marker += std::pow(2, 8) * (helpString[h] == '1') * std::pow(2, 7-h);
 	}
 
 	helpString = ui->markerBin1LineEdit->text();
 	for(int h = 0; h < 8; ++h)
 	{
-		if(helpString[h] != '0' && helpString[h] != '1') return;
+		if(helpString[h] != '0' && helpString[h] != '1') { return; }
 		marker += (helpString[h] == '1') * std::pow(2, 7-h);
 	}
 	ui->markerDecimalLineEdit->setText(nm(marker));
@@ -132,7 +132,7 @@ void MainWindow::matiPreprocessingSlot()
 
 	for(int dirNum = 0; dirNum < dirList.length(); ++dirNum)
 	{
-		if(!dirList[dirNum].contains("SDA")) continue;
+		if(!dirList[dirNum].contains("SDA")) { continue; }
 
 		if(flagCommaDot) /// change , to . in amod logFiles
 		{
@@ -162,7 +162,7 @@ void MainWindow::matiPreprocessingSlot()
 				while(!feof(fil))
 				{
 					fread(&ch, sizeof(char), 1, fil);
-					if(ch == ',') ch = '.';
+					if(ch == ',') { ch = '.'; }
 					fwrite(&ch, sizeof(char), 1, fil1);
 				}
 				fclose(fil);
@@ -327,7 +327,7 @@ void MainWindow::matiPreprocessingSlot()
 							+ "_" + nm(type)
 							+ "_" + nm(session)
 							+ ".edf";
-					if(!QFile::exists(helpString)) continue;
+					if(!QFile::exists(helpString)) { continue; }
 
 					diffMark = helpString;
 					diffMark.replace(".edf", "_diffMark.txt");
@@ -338,7 +338,7 @@ void MainWindow::matiPreprocessingSlot()
 
 					for(int i = 0; i < fil.getDataLen(); ++i)
 					{
-						if(fil.getData()[fil.getMarkChan()][i] == 0) continue;
+						if(fil.getData()[fil.getMarkChan()][i] == 0) { continue; }
 						if(myLib::matiCountBit(fil.getData()[fil.getMarkChan()][i], 14))
 						{
 							for(int j = i - 40; j < i + 40; ++j)
@@ -383,7 +383,7 @@ void MainWindow::matiPreprocessingSlot()
 					+ "/" + dirList[dirNum] + fileSuffix
 					+ "_a"
 					+ ".edf"; /// generality
-			if(QFile::exists(outPath)) QFile::remove(outPath);
+			if(QFile::exists(outPath)) { QFile::remove(outPath); }
 			QFile::copy(helpString, outPath);
 
 			setEdfFile(outPath);

@@ -27,7 +27,7 @@ QString rightNumber(int input, int N) /// prepend zeros
 	return h.right(N);
 }
 
-} /// namespace myLib
+} /// end of namespace myLib
 
 
 
@@ -40,7 +40,7 @@ FILE * fopen(const QString & filePath, const char *__modes)
 }
 
 
-std::istream & operator>> (std::istream &is, QString & in)
+std::istream & operator>> (std::istream & is, QString & in)
 {
 	std::string tmp;
 	is >> tmp;
@@ -98,4 +98,4 @@ std::ostream & operator<< (std::ostream & os, const QStringList & toOut)
 //template std::ostream & operator << (std::ostream & os, const std::valarray<int> & toOut);
 //template std::ostream & operator << (std::ostream & os, const QList<int> & toOut);
 //template std::ostream & operator << (std::ostream & os, const QList<double> & toOut);
-} /// namespace myOut
+} /// end of namespace myOut

@@ -190,8 +190,10 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->drawMapsPushButton, SIGNAL(clicked()), this, SLOT(drawMapsSlot()));
 	QObject::connect(ui->eyesButton, SIGNAL(clicked()), this, SLOT(processEyes()));
 	QObject::connect(ui->succPrecleanPushButton, &QPushButton::clicked,
-					 [this](){ fb::successiveNetPrecleanWinds(
+					 [](){ fb::successiveNetPrecleanWinds(
 					globalEdf.getDirPath() + "/SpectraSmooth/winds"); });
+	QObject::connect(ui->eegVegetPushButton, SIGNAL(clicked()),
+					 this, SLOT(eegVegetSlot()));
 
 	/// slice
 	QObject::connect(ui->cutEDF, SIGNAL(clicked()), this, SLOT(sliceAll()));
@@ -281,10 +283,10 @@ void MainWindow::changeRedNsLine(int a)
 				continue;
 			}
 		}
-		else if(lab.contains("EMG"))	{ if(!emg)	continue; }
-		else if(lab.contains("EOG"))	{ if(!eog)	continue; }
-		else if(lab.contains("Marker"))	{ if(!mark)	continue; }
-		else /*any other channel*/		{ if(!oth)	continue; }
+		else if(lab.contains("EMG") && !emg)		{ continue; }
+		else if(lab.contains("EOG") && !eog)		{ continue; }
+		else if(lab.contains("Marker") && !mark)	{ continue; }
+		else if(!oth)								{ continue; }
 
 		outStr += nm(i + 1) + " ";
 	}
@@ -304,11 +306,13 @@ void MainWindow::showReduce()
 	QObject::connect(ch, &ChooseChans::strSig,
 					 [this](const std::vector<int> & chans)
 	{
+		/// consider edfFile.getChannels()
 		QString res{};
 		for(int in : chans)
 		{
 			res += nm(in) + " ";
 		}
+		res += "129"; /// markers
 		ui->reduceChannelsLineEdit->setText(res);
 	});
 	ch->show();

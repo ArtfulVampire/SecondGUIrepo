@@ -17,7 +17,7 @@ QString matiCountByteStr(double marker)
     for(int h = 15; h >= 0; --h)
     {
         result += nm(int(byteMarker[h]));
-        if(h == 8) result += " ";
+		if(h == 8) { result += " "; }
     }
     return result;
 
@@ -83,7 +83,7 @@ int matiCountDecimal(std::vector<bool> byteMarker)
 int matiCountDecimal(QString byteMarker)
 {
     byteMarker.remove(' ');
-    if(byteMarker.length() != 16) return 0;
+	if(byteMarker.length() != 16) { return 0; }
 
     int res = 0;
     for(int h = 0; h < 16; ++h)
@@ -93,6 +93,4 @@ int matiCountDecimal(QString byteMarker)
     return res;
 }
 
-
-
-}/// namespace myLib
+} /// end of namespace myLib

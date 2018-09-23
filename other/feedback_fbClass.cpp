@@ -396,4 +396,5 @@ void FeedbackClass::writeFile()
 	}
 	outStr.close();
 }
-} /// end namespace fb
+
+} /// end of namespace fb

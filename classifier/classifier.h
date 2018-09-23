@@ -43,8 +43,8 @@ public:
 	using avType = std::pair<double, double>;				/// average accuracy, Cohen's kappa
 	using classOneType = std::tuple<bool, int, double>;		/// correctness, outClass, error
 protected:
-	ModelType myType;
-    QString typeString;
+	ModelType myType;	/// don't know what to initialize with - remake
+	QString typeString{};
 
 	ClassifierData * myClassData;
 

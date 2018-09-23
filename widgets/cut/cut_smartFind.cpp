@@ -337,7 +337,7 @@ void Cut::smartFindFind(bool forward)
 			return;
 		}
 	}
-	if(!proceed) std::cout << std::endl;
+	if(!proceed) { std::cout << std::endl; }
 
 	resetLimits();
 	ui->paintStartDoubleSpinBox->setValue(
@@ -407,7 +407,7 @@ void Cut::smartFindNextSlot()
 				}
 			}
 		}
-		if(proceed) ++windNum;
+		if(proceed) { ++windNum; }
 
 		if(windNum == dataCutLocal.cols() / smartFindWindLen - 1)
 		{
@@ -416,7 +416,7 @@ void Cut::smartFindNextSlot()
 		}
 	}
 
-	if(!proceed) std::cout << std::endl;
+	if(!proceed) { std::cout << std::endl; }
 
 	resetLimits();
 	ui->paintStartDoubleSpinBox->setValue(

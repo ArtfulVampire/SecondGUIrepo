@@ -48,7 +48,7 @@ QString setFileName(const QString & initNameOrPath); /// -> initName_i.ext
 
 
 
-bool areEqualFiles(QString path1, QString path2);
+bool areEqualFiles(const QString & path1, const QString & path2);
 double areSimilarFiles(const QString & path1,
 					   const QString & path2);
 int countSymbolsInFile(const QString & filePath, char inChar);

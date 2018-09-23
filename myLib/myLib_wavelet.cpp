@@ -12,7 +12,7 @@ bool isInit = false;
 
 int initMtlb()
 {
-	if(isInit) return 1;
+	if(isInit) { return 1; }
 	auto t0 = std::chrono::high_resolution_clock::now();
 	std::cout << "matlab lib load starts" << std::endl;
 	if (!libcwt_rInitializeWithHandlers(nullptr, nullptr)){
@@ -34,7 +34,7 @@ int initMtlb()
 
 int termMtlb()
 {
-	if(!isInit) return 1;
+	if(!isInit) { return 1; }
 	try
 	{
 		libcwt_rTerminate();
@@ -412,20 +412,20 @@ double red(int range, double j, double V, double S)
 {
 	double part = j / double(range);
 	/// matlab
-	if    (0. <= part && part <= wvlt::colDots[0]) return V*(1.-S);
-	if(wvlt::colDots[0] < part && part <= wvlt::colDots[1]) return V*(1.-S);
-	if(wvlt::colDots[1] < part && part <= wvlt::colDots[2]) return V*(1.-S) + V*S*(part-wvlt::colDots[1])/(wvlt::colDots[2] - wvlt::colDots[1]);
-	if(wvlt::colDots[2] < part && part <= wvlt::colDots[3]) return V;
-	if(wvlt::colDots[3] < part && part <= 1.) return V - V*S*(part-wvlt::colDots[3])/(1 - wvlt::colDots[3])/2.;
+	if    (0. <= part && part <= wvlt::colDots[0])			{ return V*(1.-S); }
+	if(wvlt::colDots[0] < part && part <= wvlt::colDots[1])	{ return V*(1.-S); }
+	if(wvlt::colDots[1] < part && part <= wvlt::colDots[2])	{ return V*(1.-S) + V*S*(part-wvlt::colDots[1])/(wvlt::colDots[2] - wvlt::colDots[1]); }
+	if(wvlt::colDots[2] < part && part <= wvlt::colDots[3])	{ return V; }
+	if(wvlt::colDots[3] < part && part <= 1.)				{ return V - V*S*(part-wvlt::colDots[3])/(1 - wvlt::colDots[3])/2.; }
 	return 0.0;
 #if 0
 	/// old
-	if    (0.000 <= part && part <= 0.167) return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.;
-	if(0.167 < part && part <= 0.400) return V*(1.-S);
-	if(0.400 < part && part <= 0.500) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
-	if(0.500 < part && part <= 0.600) return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.;
-	if(0.600 < part && part <= 0.833) return V;
-	if(0.833 < part && part <= 1.000) return V - V*S*(part-0.833)/(1.000-0.833)/2.;
+	if    (0.000 <= part && part <= 0.167)	{ return V*(1.-S); /// 2. - V*S/2. + V*S*(part)*3.; }
+	if(0.167 < part && part <= 0.400)		{ return V*(1.-S); }
+	if(0.400 < part && part <= 0.500)		{ return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.; }
+	if(0.500 < part && part <= 0.600)		{ return V*(1.-S) + V*S*(part-0.400)/(0.500-0.400)/2.; }
+	if(0.600 < part && part <= 0.833)		{ return V; }
+	if(0.833 < part && part <= 1.000)		{ return V - V*S*(part-0.833)/(1.000-0.833)/2.; }
 	return 0.0;
 #endif
 }
@@ -433,21 +433,21 @@ double green(int range, double j, double V, double S)
 {
 	double part = j / double(range);
 	/// matlab
-	if    (0.0 <= part && part <= wvlt::colDots[0]) return V*(1.-S);
-	if(wvlt::colDots[0] < part && part <= wvlt::colDots[1]) return V*(1.-S) + V*S*(part-wvlt::colDots[0])/(wvlt::colDots[1] - wvlt::colDots[0]);
-	if(wvlt::colDots[1] < part && part <= wvlt::colDots[2]) return V;
-	if(wvlt::colDots[2] < part && part <= wvlt::colDots[3]) return V - V*S*(part-wvlt::colDots[2])/(wvlt::colDots[3] - wvlt::colDots[2]);
-	if(wvlt::colDots[3] < part && part <= 1.) return V*(1.-S);
+	if    (0.0 <= part && part <= wvlt::colDots[0])				{ return V*(1.-S); }
+	if(wvlt::colDots[0] < part && part <= wvlt::colDots[1])	{ return V*(1.-S) + V*S*(part-wvlt::colDots[0])/(wvlt::colDots[1] - wvlt::colDots[0]); }
+	if(wvlt::colDots[1] < part && part <= wvlt::colDots[2])	{ return V; }
+	if(wvlt::colDots[2] < part && part <= wvlt::colDots[3])	{ return V - V*S*(part-wvlt::colDots[2])/(wvlt::colDots[3] - wvlt::colDots[2]); }
+	if(wvlt::colDots[3] < part && part <= 1.)				{ return V*(1.-S); }
 	return 0.0;
 #if 0
 	/// old
 	double hlp = 1.0;
-	if    (0.000 <= part && part <= 0.167) return V*(1.-S);
-	if(0.167 < part && part <= 0.400) return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167);
-	if(0.400 < part && part <= 0.500) return V-V*S*(1.-hlp);
-	if(0.500 < part && part <= 0.600) return V-V*S*(1.-hlp);
-	if(0.600 < part && part <= 0.833) return V-V*S*(1.-hlp) - V*S*hlp*(part-0.600)/(0.833-0.600);
-	if(0.833 < part && part <= 1.000) return V*(1.-S);
+	if    (0.000 <= part && part <= 0.167)	{ return V*(1.-S); }
+	if(0.167 < part && part <= 0.400)		{ return V*(1.-S) + V*S*hlp*(part-0.167)/(0.400-0.167); }
+	if(0.400 < part && part <= 0.500)		{ return V-V*S*(1.-hlp); }
+	if(0.500 < part && part <= 0.600)		{ return V-V*S*(1.-hlp); }
+	if(0.600 < part && part <= 0.833)		{ return V-V*S*(1.-hlp) - V*S*hlp*(part-0.600)/(0.833-0.600); }
+	if(0.833 < part && part <= 1.000)		{ return V*(1.-S); }
 	return 0.0;
 #endif
 }
@@ -455,29 +455,28 @@ double green(int range, double j, double V, double S)
 double blue(int range, double j, double V, double S)
 {
 	double part = j / double(range);
-
-	if    (0.0 <= part && part <= wvlt::colDots[0]) return V -V*S/2. + V*S*(part)/(wvlt::colDots[0] - 0.0)/2.;
-	if(wvlt::colDots[0] < part && part <= wvlt::colDots[1]) return V;
-	if(wvlt::colDots[1] < part && part <= wvlt::colDots[2]) return V - V*S*(part-wvlt::colDots[1])/(wvlt::colDots[2] - wvlt::colDots[1]);
-	if(wvlt::colDots[2] < part && part <= wvlt::colDots[3]) return V*(1.-S);
-	if(wvlt::colDots[3] < part && part <= 1.) return V*(1.-S);
+	if    (0.0 <= part && part <= wvlt::colDots[0])			{ return V -V*S/2. + V*S*(part)/(wvlt::colDots[0] - 0.0)/2.; }
+	if(wvlt::colDots[0] < part && part <= wvlt::colDots[1])	{ return V; }
+	if(wvlt::colDots[1] < part && part <= wvlt::colDots[2])	{ return V - V*S*(part-wvlt::colDots[1])/(wvlt::colDots[2] - wvlt::colDots[1]); }
+	if(wvlt::colDots[2] < part && part <= wvlt::colDots[3])	{ return V*(1.-S); }
+	if(wvlt::colDots[3] < part && part <= 1.)				{ return V*(1.-S); }
 	return 0.0;
 #if 0
 	/// old
-	if    (0.000 <= part && part <= 0.167) return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.;
-	if(0.167 < part && part <= 0.400) return V;
-	else if(0.400 < part && part <= 0.500) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
-	if(0.500 < part && part <= 0.600) return V - V*S*(part-0.400)/(0.500-0.400)/2.;
-	if(0.600 < part && part <= 0.833) return V*(1.-S);
-	if(0.833 < part && part <= 1.000) return V*(1.-S);
+	if    (0.000 <= part && part <= 0.167)	{ return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.; }
+	if(0.167 < part && part <= 0.400)		{ return V; }
+	if(0.400 < part && part <= 0.500)		{ return V - V*S*(part-0.400)/(0.500-0.400)/2.; }
+	if(0.500 < part && part <= 0.600)		{ return V - V*S*(part-0.400)/(0.500-0.400)/2.; }
+	if(0.600 < part && part <= 0.833)		{ return V*(1.-S); }
+	if(0.833 < part && part <= 1.000)		{ return V*(1.-S); }
 	return 0.0;
 #endif
 }
 
 QColor hueJet(int range, double j)
 {
-	if(j > range) j = range; /// bicycle for no black colour
-	if(j < 0) j = 0; /// bicycle for no black colour
+	if(j > range)	{ j = range; }	/// bicycle for no black colour
+	if(j < 0)		{ j = 0; }		/// bicycle for no black colour
 	//    return QColor(255.*red1(range,j), 255.*green1(range,j), 255.*blue1(range,j));
 	return QColor(255. * red(range, j),
 				  255. * green(range, j),
@@ -576,7 +575,4 @@ void drawWavelet(const QString & picPath,
 template matrix countWavelet(const std::valarray<double> & inSignal);
 template matrix countWavelet(const std::vector<double> & inSignal);
 
-
-
-
-}
+} /// end of namespace wvlt

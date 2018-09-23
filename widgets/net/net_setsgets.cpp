@@ -8,15 +8,10 @@ void Net::setAutoProcessingFlag(bool a)
 
 double Net::getLrate() const
 {
-	if(myModel->getType() != ModelType::ANN)
-    {
-        return -1;
-    }
-	else
-	{
-		if(ANN * myANN = dynamic_cast<ANN *>(myModel)) { return myANN->getLrate(); }
-		 std::cout << "Net::getLrate: ANN bad cast" << std::endl; return -1;
-	}
+	if(myModel->getType() != ModelType::ANN) { return -1; }
+	if(ANN * myANN = dynamic_cast<ANN *>(myModel)) { return myANN->getLrate(); }
+	std::cout << "Net::getLrate: ANN bad cast" << std::endl;
+	return -1;
 }
 
 void Net::setDimensionalitySlot()
@@ -168,11 +163,8 @@ void Net::setClassifier(ModelType typ)
 
 void Net::setClassifier(QAbstractButton * but, bool i)
 {
-    if(!i) return;
-	if(myModel)
-	{
-		delete myModel;
-	}
+	if(!i) { return; }
+	delete myModel;
 
     if(but->text() == "ANN")
     {
@@ -257,7 +249,7 @@ void Net::setSourceSlot(QAbstractButton * but)
 
 void Net::setModeSlot(QAbstractButton * but, bool i)
 {
-	if(!i) return;
+	if(!i) { return; }
 
 	if(but->text().contains("N-fold"))
 	{

@@ -96,7 +96,7 @@ void WARD::merge(const uint one, const uint two)
 
     for(uint i = 0; i < clusts.size(); ++i)
     {
-        if(i == A || i == B) continue;
+		if(i == A || i == B) { continue; }
         const uint S = clusts[i].size();
         dists[A][i] = ((S + U) * dists[A][i]
                       + (S + V) * dists[B][i]

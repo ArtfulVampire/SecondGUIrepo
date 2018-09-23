@@ -18,7 +18,7 @@ void KNN::setNumOfNear(int ii)
 /// recount if dataMatrixChanged!!!!11
 void KNN::learn(std::vector<uint> & indices)
 {
-	if(!distances.isEmpty()) return;
+	if(!distances.isEmpty()) { return; }
 
 	uint num = myClassData->getData().rows();
     distances = matrix(num, num, 0.);
@@ -41,7 +41,7 @@ void KNN::classifyDatum1(uint vecNum)
 	/// fill toSort
 	for(int i = 0; i < myClassData->getData().rows(); ++i)
 	{
-		if(i == vecNum) continue;
+		if(i == vecNum) { continue; }
 		toSort.push_back(std::make_pair(
 							 distances[i][vecNum],
 							 myClassData->getTypes(i))

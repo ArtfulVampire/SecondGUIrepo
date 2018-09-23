@@ -532,7 +532,7 @@ void sammonAddDot(const mat & distOld,
 
         if(tmpError2 < 1e-10
 		   || (std::abs(tmpError1 - tmpError2) / tmpError1) < 1e-6
-           || iterationsCount > 100) break;
+		   || iterationsCount > 100) { break; }
     }
 	//    std::cout << "NewDot = " << plainCoords[addNum].first << '\t' << plainCoords[addNum].second << std::endl;
 	//    std::cout << "NumOfIterations addDot = " << iterationsCount << " error = " << tmpError2 << std::endl;
@@ -583,7 +583,7 @@ void sammonProj(const mat & distOld,
 
     for(int i = 0; i < size; ++i)
     {
-        if(i == num1 || i == num2) continue;
+		if(i == num1 || i == num2) { continue; }
         if(fmin(distOld[i][num1], distOld[i][num2]) > maxDist)
         {
             maxDist = fmin(distOld[i][num1], distOld[i][num2]);
@@ -900,4 +900,4 @@ void drawShepard(const mat & distOld,
 
 }
 
-}
+} /// end of namespace clust

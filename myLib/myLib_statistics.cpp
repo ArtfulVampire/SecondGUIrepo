@@ -10,7 +10,7 @@ using namespace myOut;
 namespace myLib
 {
 
-long long combination(int n, int k)
+int64_t combination(int n, int k)
 {
 	double ans = 1.;
 	for(int i = 0; i < std::min(k, n-k); ++i)
@@ -18,7 +18,7 @@ long long combination(int n, int k)
 		ans *= (n - i);
 		ans /= (i + 1);
 	}
-	return static_cast<long long>(ans);
+	return static_cast<int64_t>(ans);
 }
 
 
@@ -112,7 +112,7 @@ QPixmap histogram(const std::valarray<double> & arr,
 				  std::end(arr),
 				  [xMin, xMax, numSteps, &values](double in)
 	{
-		int a = int(std::floor((in - xMin) / ((xMax - xMin) / numSteps)));
+		int a = std::floor((in - xMin) / ((xMax - xMin) / numSteps));
 		if(a >= 0 && a < numSteps)
 		{
 			values[ a ] += 1.;
@@ -754,4 +754,4 @@ double covariance(const Typ &arr1, const Typ &arr2, int length, int shift, bool 
 template double covariance(const std::vector<double> &arr1, const std::vector<double> &arr2, int length, int shift, bool fromZero);
 template double covariance(const std::valarray<double> &arr1, const std::valarray<double> &arr2, int length, int shift, bool fromZero);
 
-} /// namespace myLib
+} /// end of namespace myLib

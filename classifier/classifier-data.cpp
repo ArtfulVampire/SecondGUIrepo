@@ -134,7 +134,7 @@ void ClassifierData::erase(const uint index)
 	{
 		for(auto & inInd : ind)
 		{
-			if(inInd > index) --inInd;
+			if(inInd > index) { --inInd; }
 		}
 	}
 
