@@ -297,7 +297,8 @@ void MainWindow::sliceElena()
 		"PPGfreq",
 		"reacTime",
 	};
-	/// alpha peak
+
+	/// alpha peak names
 	for(int i : eegChannels)
 	{
 		QString lab = fil.getLabels(i);
@@ -305,6 +306,7 @@ void MainWindow::sliceElena()
 		lab.resize(lab.indexOf('-'));
 		tableCols.push_back("alpha_" + lab);
 	}
+
 	/// add average spectra names
 	for(const auto & chs : integrChans)
 	{
@@ -400,7 +402,7 @@ void MainWindow::sliceElena()
 						   + "_n_" + pieceNumber
 						   + "_m_" + taskMark
 						   + "_t_" + operMark
-				+ "." + def::spectraDataExtension;
+				+ ".edf";
 		myLib::writeMatrixFile(savePath,
 							   spec.subCols(DEFS.left(),
 											DEFS.right()));
@@ -539,6 +541,19 @@ void MainWindow::sliceElena()
 		/// if not found both markers - do nothing
 		if(eyesSta == std::end(marks) || eyesFin == std::end(marks)) { continue; }
 
+		QString restFileName = fil.getDirPath()
+							   + "/Reals"
+							   + "/" + fil.getExpName()
+							   + "_n_0_" + nm(1500 + typ * 100)	/// taskNumber (1500 - closed, 1600 - open)
+							   + "_m_" + nm(eyesMarks[typ][0])	/// taskMark
+								+ "_t_" + nm(eyesCodes[typ])
+								+ ".edf";
+
+		/// save rests signal
+		fil.saveSubsection((*eyesSta).first,
+						   (*eyesFin).first,
+						   restFileName);
+
 		/// save values for whole rest piece
 		if(writePoly)
 		{
@@ -568,8 +583,7 @@ void MainWindow::sliceElena()
 			/// save window signal
 			fil.saveSubsection(i,
 							   i + restWindow * fil.getFreq(),
-							   helpString,
-							   true);
+							   helpString);
 			if(writePoly)
 			{
 				table.push_back(
@@ -631,7 +645,7 @@ void MainWindow::sliceElena()
 									 + "/" + fil.getExpName()
 									 + "_n_" + nm(number)				/// taskNumber
 									 + "_m_" + nm(marker)				/// taskMark
-									 + "_t_" + nm(mark.second);		/// operMark
+									 + "_t_" + nm(mark.second);			/// operMark
 
 				if(start != -1) /// it was already set by task start
 				{
@@ -640,8 +654,7 @@ void MainWindow::sliceElena()
 						/// save the task signal
 						fil.saveSubsection(start,
 										   mark.first,
-										   helpString,
-										   true);
+										   helpString);
 
 						/// new 6-Mar-18
 						if(writePoly)
@@ -703,7 +716,10 @@ void MainWindow::sliceElena()
 
 	/// remove empty rows
 	std::vector<int> inds{};
-	for(int i = 0; i < table.rows(); ++i) { if(table[i].size() == 0) { inds.push_back(i); } }
+	for(int i = 0; i < table.rows(); ++i)
+	{
+		if(table[i].size() == 0) { inds.push_back(i); }
+	}
 	table.eraseRows(inds);
 
 	tableStream << table;
