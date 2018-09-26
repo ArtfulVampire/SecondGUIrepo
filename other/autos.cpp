@@ -78,8 +78,9 @@ matrix makeTestData(const QString & outPath)
 
 	testSignals = pewM * testSignals;
 
-	myLib::writePlainData(outPath, testSignals);
-	myLib::writePlainData(outPath + "_", testSignals.resizeCols(2000)); /// edit out time
+	/// remake with edfs
+//	myLib::writePlainData(outPath, testSignals);
+//	myLib::writePlainData(outPath + "_", testSignals.resizeCols(2000)); /// edit out time
 	return pewM;
 }
 
@@ -263,11 +264,20 @@ return;
 	{
 		newD.push_back(newDists[i][0]);
 	}
-
-
 	myLib::kernelEst(smLib::vecToValar(newD)).save("/media/Files/Data/Mati/clust.jpg", nullptr, 100);
 	myLib::histogram(smLib::vecToValar(newD), 40).save("/media/Files/Data/Mati/clustH.jpg", nullptr, 100);
 #endif
 }
+
+void elenaCalculation(const QString & edfPath128)
+{
+	elenaCalculation(edfFile(edfPath128));
+}
+
+void elenaCalculation(const edfFile & edf128)
+{
+
+}
+
 
 } /// end of namespace autos

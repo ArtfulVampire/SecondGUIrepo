@@ -283,9 +283,9 @@ void Cut::zero(int start, int end)
 	{
 		/// ExpName.left(3)_fileSuffix_TYPE_SESSION_PIECE.MARKER
 		QString helpString = "_0_[0-9]_[0-9]{2,2}";
-		if(currentFile.contains(QRegExp(helpString)))
+		if(edfFil.getFilePath().contains(QRegExp(helpString)))
 		{
-			std::cout << "zero: adjust limits   " << currentFile << std::endl;
+			std::cout << "zero: adjust limits   " << edfFil.getFilePath() << std::endl;
 			matiAdjustLimits();
 		}
 	}
@@ -470,6 +470,19 @@ void Cut::setMarker(int offset, int newVal)
 {
 	if( !fileOpened ) { return; }
 
+	int num = edfFil.getMarkChan();
+	if(num <= 0)
+	{
+		std::cout << "Cut::setMarker: haven't found markers channel" << std::endl;
+		return;
+	}
+	int val = dataCutLocal[num][offset];
+	auto undoAction = [num, offset, val, this](){ this->dataCutLocal[num][offset] = val; };
+	undoActions.push_back(undoAction);
+	dataCutLocal[num][offset] = newVal;
+
+#if 0
+	/// old, deprecate fileType::real
 	if(myFileType == fileType::edf)
 	{
 		int num = edfFil.getMarkChan();
@@ -496,6 +509,7 @@ void Cut::setMarker(int offset, int newVal)
 
 		dataCutLocal[num][offset] = newVal;
 	}
+#endif
 }
 
 

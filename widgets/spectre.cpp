@@ -624,7 +624,7 @@ void Spectre::writeSpectra(const std::vector<int> & chanList,
 	for(const QString & inFileName : fileNames)
     {
 		QString outString = outDirPath + "/" + inFileName;
-		outString.replace("." + def::plainDataExtension, "." + def::spectraDataExtension);
+		outString.replace(".edf", "." + def::spectraDataExtension); /// was def::plainDataExtension
 
 		std::ofstream outStream;
 		outStream.open(outString.toStdString());
@@ -774,7 +774,7 @@ std::vector<int> Spectre::countSpectra(std::vector<int> chanList)
 
 		/// read data file
 		QString helpString = inDirPath + "/" + fileName;
-		matrix dataIn = myLib::readPlainData(helpString).subRows(chanList);
+		matrix dataIn = edfFile(helpString).getData().subRows(chanList);
 
 		if(ui->spectraRadioButton->isChecked())
 		{
@@ -872,7 +872,7 @@ void Spectre::drawWavelets() /// unused
     {
 		filePath = ui->inputDirLineEdit->text()
 				   + "/" + fileName;
-		signal = myLib::readPlainData(filePath);
+		signal = edfFile(filePath).getData();
 
 		for(int chanNum = 0; chanNum < DEFS.nsWOM(); ++chanNum)
         {

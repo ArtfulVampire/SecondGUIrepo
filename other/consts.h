@@ -165,8 +165,8 @@ namespace def
 	const bool withMarkersFlag{true};			/// remove everywhere as true
 	const bool writeLongStartEnd{true};			/// don't know, do I need it?
 
-	const QString plainDataExtension			{"scg"};
-	const QStringList plainFilters				{"*.scg"};
+//	const QString plainDataExtension			{"scg"}; /// deprecated
+//	const QStringList plainFilters				{"*.scg"}; /// deprecated
 	const QString spectraDataExtension			{"psd"};
 	const QStringList edfFilters				{"*.edf", "*.EDF"};
 	const std::vector<QColor> colours{ QColor("blue"),

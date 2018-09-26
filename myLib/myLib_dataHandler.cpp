@@ -45,7 +45,7 @@ QStringList makeFullFileList(const QString & path,
 	QStringList res{};
 	if(DEFS.getFileMarks().isEmpty())
 	{
-		res = QDir(path).entryList({"*.edf", "*.EDF", QString("*." + def::plainDataExtension)},
+		res = QDir(path).entryList({"*.edf", "*.EDF"},
 								   QDir::Files,
 								   QDir::Name); /// Name ~ order
 	}
@@ -195,6 +195,8 @@ void writeFileInLine(const QString & filePath,
     file.close();
 }
 
+#if 0
+/// deprecated
 /// in file and in matrix - transposed
 void writePlainData(const QString & outPath,
 					const matrix & data)
@@ -227,7 +229,10 @@ void writePlainData(const QString & outPath,
     outStr.flush();
     outStr.close();
 }
+#endif
 
+#if 0
+/// deprecated
 matrix readPlainData(const QString & inPath)
 {
 	matrix res{};
@@ -266,6 +271,7 @@ matrix readPlainData(const QString & inPath)
     inStr.close();
 	return res;
 }
+#endif
 
 matrix readMatrixFileRaw(const QString & filePath)
 {

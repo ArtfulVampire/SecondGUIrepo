@@ -39,7 +39,7 @@ public:
     void matiAdjustLimits();
 
 private:
-    void setFileType(const QString & dataFileName);
+//    void setFileType(const QString & dataFileName); /// deprecated
 
 	/// read or modify data3
 	void zero(int start, int end);
@@ -172,10 +172,10 @@ private:
 	/// manual signal draw
 	bool manualDrawFlag{false};						/// manual signal draw
 	QPoint manualDrawStart{};						/// manual signal draw
-	matrix manualDrawDataBackup;					/// manual signal draw
+	matrix manualDrawDataBackup{};					/// manual signal draw
 
 	/// edf and related widget-globals
-	fileType myFileType{fileType::edf}; /// to deprecate, leave edf only
+	fileType myFileType{fileType::edf};
 	edfFile edfFil{};
 	bool fileOpened{false};
 	matrix dataCutLocal{};				/// eegData of the whole file
@@ -183,9 +183,9 @@ private:
 	matrix drawData{};					/// a piece of data to be drawn
 
 	/// next/prev
-	QStringList filesList;
+	QStringList filesList{};
 	QStringList::iterator fileListIter{};
-	QString currentFile; /// deprecate to edfFile filePath (as fileType::real will be deprecated)
+//	QString currentFile{}; /// deprecate to edfFile filePath (as fileType::real will be deprecated)
 	int addNum = 0; /// for cut() winds
 
 	/// markers
@@ -193,8 +193,8 @@ private:
 
 	/// copy, split, paste, undo
 	matrix copyData{};
-	std::vector<matrix> undoData;
-	std::vector<std::function<void(void)>> undoActions;
+	std::vector<matrix> undoData{};
+	std::vector<std::function<void(void)>> undoActions{};
 
 	/// for auto lookup for bad points
 	const int smartFindNumCh = 19;

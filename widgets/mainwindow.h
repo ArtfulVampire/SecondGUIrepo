@@ -89,7 +89,7 @@ public slots:
 public:
 	/// mati
 	void sliceMati();
-    void sliceMatiPieces(bool plainFlag = true);
+	void sliceMatiPieces();
     void sliceMatiSimple();
 
 	void sliceBak(int marker1, int marker2, const QString & marker);

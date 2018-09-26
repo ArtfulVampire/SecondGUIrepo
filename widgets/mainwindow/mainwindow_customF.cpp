@@ -20,37 +20,24 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-//	showReduce();
-//	std::cout << edfFile::checkDdr("/media/Files/Data/AAX/AAX.EDF") << std::endl;
+
 
 #if 0
-	edfFile fil;
-	fil.readEdfFile("/media/Files/Data/Galya/all_buben/B04_0000002/B04_0000002_bub.edf");
-//	std::ofstream outStr1("/media/Files/Data/1.txt");
-	std::ofstream outStr2("/media/Files/Data/2.txt");
-//	auto sig = fil.getData(10);
-//	autos::countFFT(fil.getData(), fil.getFreq(), outStr1);
-	autos::countFFT(fil.getData(), fil.getFreq(), outStr2);
-//	outStr1.close();
-	outStr2.close();
-	exit(0);
-#endif
-
-#if 0
-	/// draw the envelope picture
-	const QString gh = "/media/Files/Data/Galya/15Mar18/Ilja_Tarotin/Ilja_Tarotin_zg.edf";
-	const QString fff = "/media/Files/Data/env_8_13.jpg";
-	edfFile fl;
-	fl.readEdfFile(gh);
-	std::valarray<double> arr = smLib::contSubsec(fl.getData("Pz"), 5.6 * 250, (5.6 + 7) * 250);
-	arr = myLib::refilter(arr, 8, 13, false, 250);
-	myLib::hilbertPieces(arr, fff);
+	/// rename some files in a dir
+	const QString workPath = "/media/Files/Data/Geodesics/MPI_128";
+	for(const QString & fileName : QDir(workPath).entryList(def::edfFilters))
+	{
+		QString newName = fileName;
+		newName.replace("301_Malinovskaya_20_01_", "MPI_");
+		newName.remove("_f3.5-40_rr_eyesClean_new_rdc");
+		QFile::rename(workPath + "/" + fileName,
+					  workPath + "/" + newName);
+	}
 	exit(0);
 #endif
 
 #if 0
 	/// count correctness, average times, ICA
-
 #if 0 /// new (~10 people)
 	const QString dear = "FeedbackNewMark";
 	const auto & guysList = subj::guysFBnew;
@@ -105,23 +92,279 @@ void MainWindow::customFunc()
 	exit(0);	
 #endif
 
+
 #if 0
-	/// EDF+ test
-	edfFile feel;
-//	feel.readEdfFile("/media/Files/Data/Galya/Burd/Data/04/04_shkatova.edf");
-//	feel.writeEdfFile("/media/Files/Data/Galya/Burd/Data/04/04_shkatova__.edf");
-	feel.readEdfFile("/media/Files/Data/Galya/Burd/Data/04/04_shkatova__.edf");
-//	std::cout << myLib::areEqualFiles("/media/Files/Data/Galya/Burd/Data/04/04_shkatova.edf",
-//									  "/media/Files/Data/Galya/Burd/Data/04/04_shkatova__.edf")
-//			  << std::endl;
-	exit(0);
+	/// Galya processing things
+
+#if 0
+	/// tactile
+	const std::vector<QString> usedMarkers{"_buk", "_kis", "_rol", "_sch", "_fon"};
+	const std::vector<QString> usedMarkers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
+	const std::vector<QString> usedMarkers{"_rest"};
+
+	/// Dasha
+	const std::vector<QString> usedMarkers{"_brush", "_cry", "_fire", "_flower",
+										   "_isopropanol", "_needles", "_vanilla", "_wc"};
+
+	///	26-feb-18, tbi
+	const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+										   "_ph", "_rv", "_sc", "_sm", "_og", "_zg"};
+	/// other tbi
+	const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+										   "_og", "_rv", "_sm", "_zg"};
+
+	/// rhythm adoption
+	const std::vector<QString> usedMarkers{"_2sv", "_2zv",
+										   "_4sv", "_4zv",
+										   "_8sv", "_8zv",
+										   "_16sv", "_16zv"
+										   , "_fon"
+//										   , "_og"
+//										   , "_zg"
+										  };
+
+	/// buben
+	const std::vector<QString> usedMarkers{"_bub",
+										   "_bubAfter",
+										   "_bubAud",
+										   "_bubAudAfter",
+										   "_time",
+										   "_og",
+										   "_ogAfter",
+										   "_zg",
+										  };
+#endif
+
+	/// Burdenko Faces
+	const std::vector<QString> usedMarkers{
+		"_svoi",
+		"_other",
+		"_all",
+	};
+	const QString workPath = def::GalyaFolder + "/Faces";
+	const int numChan = 19;
+	/// groups
+//	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+//	const QStringList subdirs{"young", "adult"};
+	const QStringList subdirs{""};
+
+#if 0
+		/// compose a list of markers
+		std::set<QString> markers{};
+		for(const QString & fn : QDir(workPath).entryList(def::edfFilters))
+		{
+			int a = fn.lastIndexOf('_');
+			int b = fn.lastIndexOf('.');
+			QString mrk = fn.mid(a + 1, b - a - 1);
+			markers.emplace(mrk);
+		}
+		for(const auto & mrk : markers)
+		{
+//			std::cout << R"(")" << mrk << R"(", )";
+			std::cout << mrk << " ";
+		}
+		std::cout << std::endl;
+		exit(0);
+#endif
+
+
+#if 0
+		/// initial repair and to folders
+		for(const QString & subdir : subdirs)
+		{
+			repair::toLatinDir(workPath + "/" + subdir);
+			repair::deleteSpacesDir(workPath + "/" + subdir);
+			repair::toLowerDir(workPath + "/" + subdir);
+			/// some special names cleaning
+			for(const QString & fileName : QDir(workPath + "/" + subdir).entryList(def::edfFilters))
+			{
+				QString newName = fileName;
+//				newName.replace("_new.edf", ".edf", Qt::CaseInsensitive);
+//				newName.replace("_bub_after", "_bubAfter", Qt::CaseInsensitive);
+//				newName.replace("_bub_aud", "_bubAud", Qt::CaseInsensitive);
+//				newName.replace("_bubAud_after", "_bubAudAfter", Qt::CaseInsensitive);
+//				newName.replace("_bub_aud_after", "_bubAudAfter", Qt::CaseInsensitive);
+//				newName.replace("_og_after", "_ogAfter", Qt::CaseInsensitive);
+//				newName.replace("_4_", "_4", Qt::CaseInsensitive);
+//				newName.replace("_8_", "_8", Qt::CaseInsensitive);
+//				newName.replace("_16_", "_16", Qt::CaseInsensitive);
+
+				bool p = false;
+				for(auto mrk : usedMarkers)
+				{
+					if(newName.contains(mrk)) { p = true; break;}
+				}
+				if(!p)
+				{
+					std::cout << subdir + "/" + newName << std::endl;
+				}
+
+				if(newName != fileName)
+				{
+					QFile::remove(workPath + "/" + subdir + "/" + newName);
+					QFile::rename(workPath + "/" + subdir + "/" + fileName,
+								  workPath + "/" + subdir + "/" + newName);
+				}
+
+			}
+//			autos::EdfsToFolders(workPath + "/" + subdir);
+		}
+		exit(0);
 #endif
 
 #if 0
-	edfFile fil;
-	fil.readEdfFile("/media/Files/Data/Galya/Burd/Data/19/19_savchenko.edf");
-	fil.downsample(500);
-	fil.writeEdfFile("/media/Files/Data/Galya/Burd/Data/19/19_savchenko_ds.edf");
+		/// each subject into his/her own folder
+		for(const QString & subdir : subdirs)
+		{
+//			autos::rewriteNew(workPath + "/" + subdir);
+			autos::EdfsToFolders(workPath + "/" + subdir);
+		}
+		exit(0);
+#endif
+
+#if 0
+		/// checks and corrects channels order consistency
+
+		edfFile labels;
+		labels.readEdfFile(workPath + "/labels.edf");
+
+		QString str19;
+		for(int i = 0; i < numChan; ++i)
+		{
+			str19 += nm(labels.findChannel(coords::lbl19[i]) + 1) + " ";
+		}
+		std::cout << str19 << std::endl;
+
+		for(const QString & subdir : subdirs)
+		{
+			const QString groupDir = workPath + "/" + subdir;
+			const auto guyDirs = QDir(groupDir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+
+			for(const QString & guyDir : guyDirs) /// each guy
+			{
+				const QString guyPath = groupDir + "/" + guyDir;
+				auto filList = QDir(guyPath).entryList(def::edfFilters); /// edfs of one guy
+				for(const QString & fl : filList)
+				{
+					edfFile file;
+					file.readEdfFile(guyPath + "/" + fl, true);
+					QString helpString{};
+					for(int i = 0; i < numChan; ++i)
+					{
+						helpString += nm(file.findChannel(coords::lbl19[i]) + 1) + " ";
+					}
+					if(helpString != str19)
+					{
+						std::cout << fl << std::endl;
+						/// rewrite file with correct chan order - read with data
+//						file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
+					}
+				}
+			}
+		}
+		exit(0);
+#endif
+
+#if 0
+		/// calculation itself
+		DEFS.setAutosUser(autosUser::Galya);
+
+		for(const QString & subdir : subdirs)
+		{
+			/// usual processing
+			autos::ProcessByFolders(workPath + "/" + subdir,
+									usedMarkers);
+
+#if 0
+			/// rhythm adoption
+			for(const QString & stimType : {"sv", "zv"})
+			{
+				autos::rhythmAdoptionGroup(workPath + "/" + subdir,
+										   "_fon",
+										   stimType);
+			}
+#endif
+		}
+		exit(0);
+#endif
+
+
+	/// labels part
+	autos::makeLabelsFile(numChan, workPath, "_1.6_30", usedMarkers, "\t");
+
+#if 0
+		/// labels rhythm adoption
+
+		const QString sep{"\t"};
+//		const QString sep{"\r\n"};
+
+		std::vector<QString> labels1 = coords::lbl19;
+		for(QString & in : labels1) { in = in.toLower(); }
+
+
+		std::ofstream lab;
+		for(const QString & T : {"sv", "zv"})
+		{
+			lab.open((workPath + "/labels_" + T + ".txt").toStdString());
+
+			for(int fr : {2, 4, 8, 16})
+			{
+				for(QString lbl : labels1)
+				{
+					lab << nm(fr)
+						<< "_" << T
+						<< "_" << lbl << sep;
+				}
+			}
+			lab.close();
+		}
+		exit(0);
+#endif
+
+#if 0
+		if(01)
+		{
+			/// cout lengths of all txts
+			for(const QString & subdir : subdirs)
+			{
+				for(QString fn : QDir(workPath + "/" + subdir + "_out").entryList({"*.txt"}))
+				{
+					std::cout << fn << "\t"
+							  << myLib::countSymbolsInFile(workPath + "/" + subdir + "_out" + "/" + fn, '\t') << std::endl;
+				}
+			}
+		}
+		std::cout << "labels.txt" << "\t"
+				  << myLib::countSymbolsInFile(workPath + "/labels.txt", '\t') << std::endl;
+		exit(0);
+#endif
+
+#if 0
+		/// test table rows lengths
+		for(const QString & subdir : subdirs)
+		{
+			QFile feel(workPath + "/" + subdir + "_out/all.txt");
+			feel.open(QIODevice::ReadOnly);
+			while(!feel.atEnd())
+			{
+				std::cout << QString(feel.readLine()).count('\t') << std::endl;
+			}
+			feel.close();
+		}
+		exit(0);
+#endif
+
+#endif /// end Galya processing things
+
+#if 0
+	/// draw the envelope picture
+	const QString gh = "/media/Files/Data/Galya/15Mar18/Ilja_Tarotin/Ilja_Tarotin_zg.edf";
+	const QString fff = "/media/Files/Data/env_8_13.jpg";
+	edfFile fl;
+	fl.readEdfFile(gh);
+	std::valarray<double> arr = smLib::contSubsec(fl.getData("Pz"), 5.6 * 250, (5.6 + 7) * 250);
+	arr = myLib::refilter(arr, 8, 13, false, 250);
+	myLib::hilbertPieces(arr, fff);
 	exit(0);
 #endif
 
@@ -295,24 +538,10 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
-	/// rename some files in a dir
-	{
-		const QString workPath = "/media/Files/Data/Geodesics/MPI_128";
-		for(const QString & fileName : QDir(workPath).entryList(def::edfFilters))
-		{
-			QString newName = fileName;
-			newName.replace("301_Malinovskaya_20_01_", "MPI_");
-			newName.remove("_f3.5-40_rr_eyesClean_new_rdc");
-			QFile::rename(workPath + "/" + fileName,
-						  workPath + "/" + newName);
-		}
-		exit(0);
-	}
-#endif
+
 
 #if 0
-	/// check markers
+	/// check markers feedback
 	const QString path = QString("/media/Files/Data/FeedbackNewMark/");
 	for(const QString & subdir : QDir(path).entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
@@ -476,7 +705,6 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-	return;
 	/// replace Knee_r with Elbow_r		when legs only
 	/// and Knee_r with -Knee_l			when legs + arms
 	for(const QString & guy : {"Elena", "Ivan"})
@@ -508,7 +736,7 @@ void MainWindow::customFunc()
 #endif
 
 #if 0
-	/// IITP
+	/// IITP main processing
 //	return;
 	QString guy = "Isakov2";
 	{
@@ -626,6 +854,8 @@ void MainWindow::customFunc()
 	std::cout << cc << std::endl;
 	exit(0);
 #endif
+
+
 #if 0
 	/// Xenia pretable
 	std::vector<std::vector<int>> groupIds
@@ -816,395 +1046,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
-	/// Galya processing things
-
-//	const QString workPath = def::GalyaFolder + "/24Apr18Tankina";
-	const QString workPath = def::GalyaFolder + "/all_buben";
-
-	/// tactile
-//	const std::vector<QString> usedMarkers{"_buk", "_kis", "_rol", "_sch", "_fon"};
-//	const std::vector<QString> usedMarkers{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
-//	const std::vector<QString> usedMarkers{"_rest"};
-
-	/// Dasha
-//	const std::vector<QString> usedMarkers{"_brush", "_cry", "_fire", "_flower",
-//										   "_isopropanol", "_needles", "_vanilla", "_wc"};
-
-	///	26-feb-18, tbi
-//	const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
-//										   "_ph", "_rv", "_sc", "_sm", "_og", "_zg"};
-	/// other tbi
-//	const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
-//										   "_og", "_rv", "_sm", "_zg"};
-
-	/// rhythm adoption
-//	const std::vector<QString> usedMarkers{"_2sv", "_2zv",
-//										   "_4sv", "_4zv",
-//										   "_8sv", "_8zv",
-//										   "_16sv", "_16zv"
-//										   , "_fon"
-////										   , "_og"
-////										   , "_zg"
-//										  };
-
-	/// buben
-	const std::vector<QString> usedMarkers{"_bub",
-										   "_bubAfter",
-										   "_bubAud",
-										   "_bubAudAfter",
-										   "_time",
-										   "_og",
-										   "_ogAfter",
-										   "_zg",
-										  };
-
-	if(0)
-	{
-		/// compose a list of markers
-		std::set<QString> markers{};
-		for(const QString & fn : QDir(workPath).entryList(def::edfFilters))
-		{
-			int a = fn.lastIndexOf('_');
-			int b = fn.lastIndexOf('.');
-			QString mrk = fn.mid(a + 1, b - a - 1);
-			markers.emplace(mrk);
-		}
-		for(const auto & mrk : markers)
-		{
-//			std::cout << R"(")" << mrk << R"(", )";
-			std::cout << mrk << " ";
-		}
-		std::cout << std::endl;
-		exit(0);
-	}
-
-
-	/// groups
-//	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-//	const QStringList subdirs{"young"};
-	const QStringList subdirs{""};
-
-
-	if(0)
-	{
-		/// initial repair and to folders
-		for(const QString & subdir : subdirs)
-		{
-			repair::toLatinDir(workPath + "/" + subdir);
-			repair::deleteSpacesDir(workPath + "/" + subdir);
-			repair::toLowerDir(workPath + "/" + subdir);
-			/// some special names cleaning
-			for(const QString & fileName : QDir(workPath + "/" + subdir).entryList(def::edfFilters))
-			{
-				QString newName = fileName;
-				newName.replace("_new.edf", ".edf", Qt::CaseInsensitive);
-				newName.replace("_bub_after", "_bubAfter", Qt::CaseInsensitive);
-				newName.replace("_bub_aud", "_bubAud", Qt::CaseInsensitive);
-				newName.replace("_bubAud_after", "_bubAudAfter", Qt::CaseInsensitive);
-				newName.replace("_bub_aud_after", "_bubAudAfter", Qt::CaseInsensitive);
-				newName.replace("_og_after", "_ogAfter", Qt::CaseInsensitive);
-//				newName.replace("_4_", "_4", Qt::CaseInsensitive);
-//				newName.replace("_8_", "_8", Qt::CaseInsensitive);
-//				newName.replace("_16_", "_16", Qt::CaseInsensitive);
-
-				bool p = false;
-				for(auto mrk : usedMarkers)
-				{
-					if(newName.contains(mrk)) { p = true; break;}
-				}
-				if(!p)
-				{
-					std::cout << subdir + "/" + newName << std::endl;
-				}
-
-				if(newName != fileName)
-				{
-					QFile::remove(workPath + "/" + subdir + "/" + newName);
-					QFile::rename(workPath + "/" + subdir + "/" + fileName,
-								  workPath + "/" + subdir + "/" + newName);
-				}
-
-			}
-//			autos::EdfsToFolders(workPath + "/" + subdir);
-		}
-		exit(0);
-	}
-
-//	return;
-
-	if(0)
-	{
-		/// each subject into his/her own folder
-		for(const QString & subdir : subdirs)
-		{
-//			autos::rewriteNew(workPath + "/" + subdir);
-			autos::EdfsToFolders(workPath + "/" + subdir);
-		}
-		exit(0);
-	}
-
-
-	if(0)
-	{
-		/// checks and corrects channels order consistency
-
-		edfFile labels;
-		labels.readEdfFile(workPath + "/labels.edf");
-
-		QString str19;
-		for(int i = 0; i < 19; ++i)
-		{
-			str19 += nm(labels.findChannel(coords::lbl19[i]) + 1) + " ";
-		}
-		std::cout << str19 << std::endl;
-
-		for(const QString & subdir : subdirs)
-		{
-			const QString groupDir = workPath + "/" + subdir;
-			const auto guyDirs = QDir(groupDir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-
-			for(const QString & guyDir : guyDirs) /// each guy
-			{
-				const QString guyPath = groupDir + "/" + guyDir;
-				auto filList = QDir(guyPath).entryList(def::edfFilters); /// edfs of one guy
-				for(const QString & fl : filList)
-				{
-					edfFile file;
-					file.readEdfFile(guyPath + "/" + fl, true);
-					QString helpString{};
-					for(int i = 0; i < 19; ++i)
-					{
-						helpString += nm(file.findChannel(coords::lbl19[i]) + 1) + " ";
-					}
-					if(helpString != str19)
-					{
-						std::cout << fl << std::endl;
-						/// rewrite file with correct chan order - read with data
-//						file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
-					}
-				}
-			}
-		}
-		exit(0);
-	}
-
-
-
-	if(01)
-	{
-		/// calculation itself
-		DEFS.setAutosUser(autosUser::Galya);
-
-		DEFS.setAutosMask(featuresMask::spectre);
-
-		for(const QString & subdir : subdirs)
-		{
-			/// usual processing
-			autos::ProcessByFolders(workPath + "/" + subdir,
-									usedMarkers);
-
-			/// rhythm adoption
-//			for(const QString & stimType : {"sv", "zv"})
-//			{
-//				autos::rhythmAdoptionGroup(workPath + "/" + subdir,
-//										   "_fon",
-//										   stimType);
-//			}
-		}
-		exit(0);
-	}
-
-
-	if(0)
-	{
-		/// test table rows lengths
-		for(const QString & subdir : subdirs)
-		{
-			QFile feel(workPath + "/" + subdir + "_out/all.txt");
-			feel.open(QIODevice::ReadOnly);
-			while(!feel.atEnd())
-			{
-				std::cout << QString(feel.readLine()).count('\t') << std::endl;
-			}
-			feel.close();
-		}
-		exit(0);
-	}
-
-	/// labels part
-	if(0)
-	{
-		/// labels rhythm adoption
-
-		const QString sep{"\t"};
-//		const QString sep{"\r\n"};
-
-		std::vector<QString> labels1 = coords::lbl19;
-		for(QString & in : labels1) { in = in.toLower(); }
-
-
-		std::ofstream lab;
-		for(const QString & T : {"sv", "zv"})
-		{
-			lab.open((workPath + "/labels_" + T + ".txt").toStdString());
-
-			for(int fr : {2, 4, 8, 16})
-			{
-				for(QString lbl : labels1)
-				{
-					lab << nm(fr)
-						<< "_" << T
-						<< "_" << lbl << sep;
-				}
-			}
-			lab.close();
-		}
-		exit(0);
-	}
-
-	if(0)
-	{
-		///make labels file
-
-		const QString sep{"\t"};
-//		const QString sep{"\r\n"};
-
-		edfFile labels;
-		labels.readEdfFile(workPath + "/labels.edf");
-
-		std::vector<QString> labels1 = labels.getLabels();
-		labels1.resize(16);
-
-		for(QString & in : labels1)
-		{
-			in = in.mid(in.indexOf(' ') + 1,
-						in.indexOf('-') - in.indexOf(' ') - 1).toLower();
-		}
-
-		const QString initFreq = "_1.6_30";
-
-		std::ofstream lab;
-		lab.open((workPath + "/labels.txt").toStdString());
-		for(QString mark : usedMarkers)
-		{
-			mark.remove('_');
-
-			/// FFT
-			/// 18 ranges 1-Hz-wide, 19 channels = 342 values
-			/// 18 ranges 1-Hz-wide, 16 channels = 288 values
-			for(int i = 2; i < 20; ++i)
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_" << "fft"
-						<< "_" << nm(i)
-						<< "_" << nm(i+1)
-						<< "_"  << lbl << sep;
-				}
-			}
-
-			/// ALPHA
-			for(QString lbl : labels1) /// 19 values
-			{
-				lab << mark
-					<< "_" << "alpha"
-					<< initFreq
-					<< "_" << lbl << sep;
-			}
-
-			/// Hilbert and Fractal Dimension 5*19 = 95 values
-			/// Hilbert and Fractal Dimension 5*16 = 80 values
-			for(QString fir : {
-				QString("fd")		+ initFreq,
-				QString("hilbcarr")	+ initFreq,
-				QString("hilbcarr")	+ "_8_13",
-				QString("hilbsd")	+ initFreq,
-				QString("hilbsd")	+ "_8_13"
-		}
-				)
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_" << fir
-						<< "_"
-						<< lbl << sep;
-				}
-			}
-
-			/// HJORTH
-			/// 2 * 19 = 38 values
-			/// 2 * 16 = 32 values
-			for(QString fir : {"hjmob", "hjcom"})
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_" << fir
-						<< initFreq
-						<< "_" << lbl << sep;
-				}
-
-			}
-
-#if 01
-			/// WAVELET
-			/// 19 freqs * 19 channels = 361 values
-			/// 19 freqs * 16 channels = 304 values
-			for(int i = 0; i < 19; ++i) /// freqs
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_wavSD"
-						<< "_" << nm(i + 2)
-						<< "_" << lbl << sep;
-				}
-			}
-#endif
-
-
-			/// logFFT
-			/// 18 freqs * 19 chans = 342 values
-			/// 18 freqs * 16 chans = 288 values
-			for(int i = 2; i < 20; ++i)
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_" << "logfft"
-						<< "_" << nm(i)
-						<< "_" << nm(i+1)
-						<< "_"  << lbl << sep;
-				}
-			}
-		}
-		lab.close();
-		exit(0);
-	}
-
-	if(01)
-	{
-		if(01)
-		{
-			/// cout lengths of all txts
-			for(const QString & subdir : subdirs)
-			{
-				for(QString fn : QDir(workPath + "/" + subdir + "_out").entryList({"*.txt"}))
-				{
-					std::cout << fn << "\t"
-							  << myLib::countSymbolsInFile(workPath + "/" + subdir + "_out" + "/" + fn, '\t') << std::endl;
-				}
-			}
-		}
-		std::cout << "labels.txt" << "\t"
-				  << myLib::countSymbolsInFile(workPath + "/labels.txt", '\t') << std::endl;
-		exit(0);
-	}
-	exit(0);
-#endif
 
 
 #if 0
@@ -2586,7 +2427,7 @@ exit(0);
         }
 
         helpString = pth + oneFile;
-		dataMat = myLib::readPlainData(helpString);
+		dataMat = edfFile(helpString).getData();
 		std::cout << dataMat.cols() << std::endl;
 
         for(int i = 0; i < 20; ++i)

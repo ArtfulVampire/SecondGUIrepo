@@ -171,6 +171,7 @@ public:
 	matrix subCols(int beginCol, int endCol) const;			/// submatrix
 	matrix subCols(int newCol) const;						/// submatrix
 	matrix subCols(const std::vector<std::pair<int, int>> & intervals) const;
+	matrix subColsStride(int start, int stride) const;
 
 	/// rows operations
 	matrix & swapRows(int i, int j);

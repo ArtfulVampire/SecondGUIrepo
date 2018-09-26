@@ -180,13 +180,13 @@ Cut::Cut() :
 	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked, this, &Cut::paint);
 	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
-	QObject::connect(ui->xNormDoubleSpinBox,
-					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-					 [this](double in)
+	QObject::connect(ui->xNormSpinBox,
+					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+					 [this](int in)
 	{
 		/// horzNorm
-		ui->paintLengthDoubleSpinBox->setValue(ui->paintLengthDoubleSpinBox->value()
-											   / prevXnorm * in);
+		ui->paintLengthDoubleSpinBox->setValue(ui->paintLengthDoubleSpinBox->value() * in
+											   / prevXnorm);
 		prevXnorm = in;
 		paint();
 	});
@@ -198,7 +198,7 @@ Cut::Cut() :
 	{
 		if(this->size().width() == a * edfFil.getFreq() + scrollAreaGapX) { return; }
 		/// horzNorm
-		this->resize(a * edfFil.getFreq() / ui->xNormDoubleSpinBox->value()
+		this->resize(a * edfFil.getFreq() / ui->xNormSpinBox->value()
 					 + scrollAreaGapX, this->height());
 	});
 	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
@@ -324,7 +324,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 
     /// adjust scrollArea size
 	double newPaintLength = smLib::doubleRound((event->size().width() - scrollAreaGapX)
-											   / edfFil.getFreq() * ui->xNormDoubleSpinBox->value(),
+											   / edfFil.getFreq() * ui->xNormSpinBox->value(),
 									   ui->paintLengthDoubleSpinBox->decimals());
 	double newHei = std::max(int(smLib::doubleRound(event->size().height(), -1)),
 							 this->minimumHeight())
@@ -333,7 +333,7 @@ void Cut::resizeEvent(QResizeEvent * event)
     ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
                                 ui->scrollArea->geometry().y(),
 								/// horzNorm
-								newPaintLength * edfFil.getFreq() / ui->xNormDoubleSpinBox->value(),
+								newPaintLength * edfFil.getFreq() / ui->xNormSpinBox->value(),
 								newHei);
 	ui->paintLengthDoubleSpinBox->setValue(newPaintLength);
 
@@ -360,7 +360,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				if(scrollEvent->modifiers().testFlag(Qt::AltModifier))
 				{
 					/// horzNorm
-					ui->xNormDoubleSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
+					ui->xNormSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
 				}
 				else
 				{
@@ -399,8 +399,12 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			case fileType::edf:
 			{
 				/// scroll overflow/underflow
-				if((leftDrawLimit + ui->scrollArea->width() > dataCutLocal.cols() && offset > 0) ||
-				   (leftDrawLimit == 0 && offset < 0))
+				/// horzNorm
+				if((leftDrawLimit
+					+ ui->scrollArea->width()
+					* ui->xNormSpinBox->value() > dataCutLocal.cols()
+					&& offset > 0)
+				   || (leftDrawLimit == 0 && offset < 0))
 				{
 					return false;
 				}
@@ -514,7 +518,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				{
 					if(clickEvent->modifiers().testFlag(Qt::AltModifier))
 					{
-						ui->xNormDoubleSpinBox->setValue(1.);
+						ui->xNormSpinBox->setValue(1.);
 					}
 					else
 					{
@@ -686,16 +690,16 @@ void Cut::mousePressSlot(Qt::MouseButton btn, int coord)
 {
 	if(btn == Qt::LeftButton &&
 	   /// horzNorm
-	   leftDrawLimit + coord * ui->xNormDoubleSpinBox->value() < ui->rightLimitSpinBox->value())
+	   leftDrawLimit + coord * ui->xNormSpinBox->value() < ui->rightLimitSpinBox->value())
 	{
-		ui->leftLimitSpinBox->setValue(leftDrawLimit + coord * ui->xNormDoubleSpinBox->value());
+		ui->leftLimitSpinBox->setValue(leftDrawLimit + coord * ui->xNormSpinBox->value());
 	}
 	else if(btn == Qt::RightButton &&
 			/// horzNorm
-			leftDrawLimit + coord * ui->xNormDoubleSpinBox->value() > ui->leftLimitSpinBox->value() &&
+			leftDrawLimit + coord * ui->xNormSpinBox->value() > ui->leftLimitSpinBox->value() &&
 			coord < dataCutLocal.cols())
 	{
-		ui->rightLimitSpinBox->setValue(leftDrawLimit + coord * ui->xNormDoubleSpinBox->value());
+		ui->rightLimitSpinBox->setValue(leftDrawLimit + coord * ui->xNormSpinBox->value());
 	}
 	showDerivatives();
 	paintLimits();
@@ -780,7 +784,14 @@ matrix Cut::makeDrawData()
 {
 	if(dataCutLocal.isEmpty() || !drawFlag || !fileOpened) { return {}; }
 
-	int rightDrawLimit = 0.;
+	leftDrawLimit = ui->paintStartDoubleSpinBox->value() * edfFil.getFreq();
+	int rightDrawLimit = std::min(leftDrawLimit +
+								  /// horzNorm
+								  int(ui->paintLengthDoubleSpinBox->value()
+									  * edfFil.getFreq()),
+								  int(dataCutLocal.cols()));
+#if 0
+	/// deprecate fileType::real
 	if(myFileType == fileType::edf)
 	{
 		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * edfFil.getFreq();
@@ -790,11 +801,12 @@ matrix Cut::makeDrawData()
 								  * edfFil.getFreq()),
 								  int(dataCutLocal.cols()));
 	}
-	else if(myFileType == fileType::real)
+	else if(myFileType == fileType::real) /// to deprecate
 	{
 		leftDrawLimit = 0;
 		rightDrawLimit = dataCutLocal.cols();
 	}
+#endif
 	return dataCutLocal.subCols(leftDrawLimit, rightDrawLimit);
 }
 
@@ -873,8 +885,8 @@ void Cut::manualDraw(QPoint finP)
 						   * ui->scrollArea->height()
 						   / (drawData.rows() + 2.);
 	/// horzNorm
-	const int Xsta = std::round(sta.x() * ui->xNormDoubleSpinBox->value());
-	const int Xfin = std::round(fin.x() * ui->xNormDoubleSpinBox->value());
+	const int Xsta = std::round(sta.x() * ui->xNormSpinBox->value());
+	const int Xfin = std::round(fin.x() * ui->xNormSpinBox->value());
 	const double norm = normCoeff();
 	for(int x = Xsta; x <= Xfin; ++x)
 	{
@@ -914,15 +926,15 @@ void Cut::repaintData(matrix & drawDataLoc, int sta, int fin)
 //				  /// horzNorm
 //				 .scaledToWidth(ui->paintLengthDoubleSpinBox->value()
 //								* edfFil.getFreq()
-//								/ ui->xNormDoubleSpinBox->value());
+//								/ ui->xNormSpinBox->value());
 
 	myLib::drw::redrawEeg(currentPic,
 						  sta,
 						  fin,
-						  drawDataLoc * normCoeff() / ui->xNormDoubleSpinBox->value(),
+						  drawDataLoc * normCoeff() / ui->xNormSpinBox->value(),
 						  edfFil.getFreq(),
 						  /// horzNorm
-						  ui->xNormDoubleSpinBox->value(),
+						  ui->xNormSpinBox->value(),
 						  this->makeColouredChans());
 
 //	paintMarkers(drawDataLoc);
@@ -941,15 +953,16 @@ void Cut::paintData(matrix & drawDataLoc)
 		if(ch < drawDataLoc.rows()) { drawDataLoc[ch] = 0; }
 	}
 
+	/// new horzNorm
+	drawDataLoc = drawDataLoc.subColsStride(0, ui->xNormSpinBox->value());
 	currentPic = myLib::drw::drawEeg(drawDataLoc * normCoeff(),
 									 edfFil.getFreq(),
 									 ui->scrollArea->height(),
 									 this->makeColouredChans());
 
-				  /// horzNorm
-	currentPic = currentPic.scaledToWidth(ui->paintLengthDoubleSpinBox->value()
-										  * edfFil.getFreq()
-										  / ui->xNormDoubleSpinBox->value());
+	/// old horzNorm
+//	currentPic = currentPic.scaledToWidth(drawDataLoc.cols() / ui->xNormSpinBox->value());
+
 	paintMarkers(drawDataLoc);
 	paintLimits();
 }
@@ -983,7 +996,7 @@ void Cut::paintMarkers(const matrix & drawDataLoc)
 		{
 			/// magic consts
 			/// horzNorm
-			pnt.drawText(i / ui->xNormDoubleSpinBox->value(),
+			pnt.drawText(i / ui->xNormSpinBox->value(),
 						 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
 						 nm(int(toDraw)));
 		}
@@ -1001,7 +1014,7 @@ void Cut::paintLimits()
 	paint.begin(&tempPic);
 
 	/// horzNorm
-	int leftX = (ui->leftLimitSpinBox->value() - leftDrawLimit) / ui->xNormDoubleSpinBox->value();
+	int leftX = (ui->leftLimitSpinBox->value() - leftDrawLimit) / ui->xNormSpinBox->value();
 	if(leftX >= 0 && leftX < ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq())
 	{
 		paint.setPen(QPen(QBrush("blue"), 2));
@@ -1009,7 +1022,7 @@ void Cut::paintLimits()
 	}
 
 	/// horzNorm
-	int rightX = (ui->rightLimitSpinBox->value() - leftDrawLimit) / ui->xNormDoubleSpinBox->value();
+	int rightX = (ui->rightLimitSpinBox->value() - leftDrawLimit) / ui->xNormSpinBox->value();
 	if(rightX >= 0 && rightX < ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq())
 	{
 		paint.setPen(QPen(QBrush("red"), 2));

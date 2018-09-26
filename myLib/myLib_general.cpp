@@ -109,19 +109,6 @@ QString setFileName(const QString & initNameOrPath) /// append _num before the d
     return helpString;
 }
 
-QString getExpNameLib(const QString & filePath, bool shortened) /// getFileName
-{
-    QString hlp;
-    hlp = (filePath);
-	hlp = hlp.right(hlp.length() - hlp.lastIndexOf('/') - 1); /// ExpName.edf
-    hlp = hlp.left(hlp.lastIndexOf('.')); /// ExpName
-	if(shortened)
-	{
-		hlp = hlp.left(hlp.indexOf('_')); /// 
-	}
-    return hlp;
-}
-
 QString getDirPathLib(const QString & filePath)
 {
 	return filePath.left(filePath.lastIndexOf('/'));
@@ -159,20 +146,30 @@ QString kyrToLatin(const QString & in)
 
 QString getFileName(const QString & filePath, bool withExtension)
 {
-    QString helpString = (filePath);
-	helpString = helpString.right(helpString.length() - helpString.lastIndexOf('/') - 1);
+	QString hlp{filePath};
+	hlp = hlp.right(hlp.length() - hlp.lastIndexOf('/') - 1);
     if(!withExtension)
     {
-        helpString = helpString.left(helpString.lastIndexOf("."));
+		hlp = hlp.left(hlp.lastIndexOf("."));
     }
-    return helpString;
+	return hlp;
+}
+
+QString getExpNameLib(const QString & filePath, bool shortened) /// getFileName
+{
+	QString hlp{myLib::getFileName(filePath, false)};
+	if(shortened)
+	{
+		hlp = hlp.left(hlp.indexOf('_')); ///
+	}
+	return hlp;
 }
 
 QString getPicPath(const QString & dataPath,
 				   const QString & ExpNameDir)
 {
 	QString fileName = myLib::getFileName(dataPath);
-	fileName.replace("." + def::plainDataExtension, "_");
+	fileName.replace(".edf", "_", Qt::CaseInsensitive);
 
 	QString addName{};
 	if(dataPath.contains("Reals"))		{ addName = "Signals"; }

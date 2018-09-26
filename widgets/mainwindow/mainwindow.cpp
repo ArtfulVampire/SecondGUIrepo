@@ -323,8 +323,8 @@ void MainWindow::processEyes()
 	readData();
 	const edfFile & fil = globalEdf;
 
-    std::vector<int> eegs;
-    std::vector<int> eogs;
+	std::vector<int> eegs{};
+	std::vector<int> eogs{};
     for(int i = 0; i < fil.getNs(); ++i)
     {
 		const auto & labl = fil.getLabels(i);
@@ -345,7 +345,7 @@ void MainWindow::processEyes()
         }
     }
     /// or (eogs, eegs)
-	myLib::eyesProcessingStatic(eogs); /// for first 19 eeg channels
+	myLib::eyesProcessingStatic(eogs, eegs); /// for first 19 eeg channels
 }
 
 void MainWindow::showNet()
@@ -501,14 +501,13 @@ void MainWindow::drawReals()
 
 	QString prePath = fil.getDirPath() + "/" + ui->drawDirBox->currentText();
 
-	auto a = def::edfFilters + def::plainFilters;
-	const QStringList lst = QDir(prePath).entryList(a);
+	const QStringList lst = QDir(prePath).entryList(def::edfFilters);
 
 	int i = 0;
 	for(const auto & fileName : lst)
 	{
 		const QString inPath = prePath + "/" + fileName;
-		matrix dataD = myLib::readPlainData(inPath);
+		matrix dataD = edfFile(inPath).getData();
 		if(dataD.cols() > 15000) { continue; }
 
 		QString outPath = myLib::getPicPath(inPath, fil.getDirPath());
@@ -530,7 +529,7 @@ void MainWindow::drawReals()
 
 void MainWindow::cleanDirsCheckAllBoxes(bool fl)
 {
-	for(auto ch : qtLib::widgetsOfLayout<QCheckBox>(ui->cleanDirsGrid))
+	for(auto ch : qtLib::widgetsOfLayout<QCheckBox>(ui->cleanDirsGrid)) /// pointers
 	{
 		ch->setChecked(fl);
 	}

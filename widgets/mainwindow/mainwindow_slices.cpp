@@ -18,7 +18,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 		/// almost equal time, should use sessionEdges
 #if 1
 		sliceMati();
-		sliceMatiPieces(true);
+		sliceMatiPieces();
 #else
 		sliceMatiSimple();
 #endif
@@ -85,7 +85,7 @@ void MainWindow::sliceJustWinds()
 		QString helpString = DEFS.windsFromRealsDir()
 							 + "/" + fil.getExpName()
 							 + "." + rn(windowCounter++, 4);
-		fil.saveSubsection(i, i + wndLength, helpString, true);
+		fil.saveSubsection(i, i + wndLength, helpString);
 
 		ui->progressBar->setValue( i * 100. / fil.getDataLen() );
 
@@ -204,8 +204,7 @@ void MainWindow::sliceWinds()
 			{
 				fil.saveSubsection(std::get<0>(*it),
 								   std::get<0>(*it) + windLen,
-								   std::get<2>(*it),
-								   true);
+								   std::get<2>(*it));
 				++succCounter[currWindTyp];
 
 				ui->progressBar->setValue( succCounter.sum() * 100. / (3. * succMax));
@@ -219,8 +218,7 @@ void MainWindow::sliceWinds()
 		{
 			fil.saveSubsection(std::get<0>(in),
 							   std::get<0>(in) + windLen,
-							   std::get<2>(in),
-							   true);
+							   std::get<2>(in));
 
 			ui->progressBar->setValue(c++ * 100. / forSave.size());
 		}
@@ -775,7 +773,7 @@ void MainWindow::sliceBak(int marker1, int marker2, const QString & marker)
 					+ "." + rn(number, 4);
 
             /// to test?
-            fil.saveSubsection(j, k, helpString, true);
+			fil.saveSubsection(j, k, helpString);
 
             i += 17;
             h = 0;
@@ -846,7 +844,7 @@ void MainWindow::sliceOneByOne()
 				helpString += "_" + marker;
 				fil.saveSubsection(start,
 								   finish,
-								   helpString, true);
+								   helpString);
 			}
 			else /// pause rest
 			{
@@ -855,7 +853,7 @@ void MainWindow::sliceOneByOne()
 					helpString += "_000";
 					fil.saveSubsection(start,
 									   finish,
-									   helpString, true);
+									   helpString);
 				}
 				else
 				{
@@ -902,7 +900,7 @@ void MainWindow::sliceOneByOne()
 			helpString += "_" + marker;
 			fil.saveSubsection(start,
 							   fil.getDataLen(),
-							   helpString, true);
+							   helpString);
 		}
 		else /// just last big rest with eyes closed/open
 		{
@@ -911,7 +909,7 @@ void MainWindow::sliceOneByOne()
 				helpString += "_000";
 				fil.saveSubsection(start,
 								   fil.getDataLen(),
-								   helpString, true);
+								   helpString);
 			}
 			else /// not to loose the last marker
 			{
@@ -930,7 +928,6 @@ void MainWindow::sliceOneByOne()
 /// deprecated numChanWrite - always with markers
 void MainWindow::sliceOneByOneNew()
 {
-    QString helpString;
     int number = 0;
     int j = 0;
 	int h = 0; /// h == 0 - 241, h == 1 - 247
@@ -970,32 +967,42 @@ void MainWindow::sliceOneByOneNew()
 				marker = "sht";
 			}
 
-			helpString = DEFS.dirPath()
-						 + "/Reals"
-						 + "/" + fil.getExpName()
-						 + "." + rn(number++, 4);
+			QString helpString = DEFS.dirPath()
+								 + "/Reals"
+								 + "/" + fil.getExpName()
+								 + "." + rn(number++, 4);
 			if(i > j)
 			{
+				/// new 26-Sep-2018, write everything
+				helpString += "_" + marker;
+				fil.saveSubsection(j, i, helpString);
+#if 0
+				/// old 26-Sep-2018
 				if(i - j <= DEFS.getFreq() * 60) /// const generality limit
 				{
 					helpString += "_" + marker;
-					fil.saveSubsection(j, i, helpString, true);
+					fil.saveSubsection(j, i, helpString);
 				}
-				else /// pause rest
+				else /// rest in the beginning, long pauses
 				{
 					if(def::writeLongStartEnd)
 					{
 						helpString += "_000";
-						fil.saveSubsection(j, i, helpString, true);
+						fil.saveSubsection(j, i, helpString);
 					}
 					else
 					{
 						helpString += "_" + marker;
 						matrix tempData(fil.getNs(), 100, 0.);
 						tempData[fil.getMarkChan()][0] = markChanArr[j];
-						myLib::writePlainData(helpString, tempData);
+
+						fil.saveSubsection(j, i, helpString);
+
+						/// remake using edfs
+//						myLib::writePlainData(helpString, tempData);
 					}
 				}
+#endif
             }
             ui->progressBar->setValue(i * 100. / fil.getDataLen());
 
@@ -1016,30 +1023,39 @@ void MainWindow::sliceOneByOneNew()
     }
     /// write final
     {
-		helpString = DEFS.dirPath()
-					 + "/Reals"
-					 + "/" + fil.getExpName()
-					 + "." + rn(number++, 4);
+		QString helpString = DEFS.dirPath()
+							 + "/Reals"
+							 + "/" + fil.getExpName()
+							 + "." + rn(number++, 4);
+		/// new 26-Sep-2018, write everything
+		helpString += "_" + marker;
+		fil.saveSubsection(j, fil.getDataLen(), helpString);
+#if 0
+		/// old 26-Sep-2018
 		if(fil.getDataLen() - j < 40 * DEFS.getFreq()) /// if last realisation or interstimulus
 		{
 			helpString += "_" + marker;
-			fil.saveSubsection(j, fil.getDataLen(), helpString, true);
+			fil.saveSubsection(j, fil.getDataLen(), helpString);
 		}
 		else /// just last big rest with eyes closed/open
 		{
 			if(def::writeLongStartEnd)
 			{
 				helpString += "_000";
-				fil.saveSubsection(j, fil.getDataLen(), helpString, true);
+				fil.saveSubsection(j, fil.getDataLen(), helpString);
 			}
 			else /// not to loose the last marker
 			{
 				helpString += "_" + marker;
 				matrix tempData(fil.getNs(), 100, 0.);
 				tempData[fil.getMarkChan()][0] = markChanArr[j];
-				myLib::writePlainData(helpString, tempData);
+
+				/// remake using edfs
+//				myLib::writePlainData(helpString, tempData);
 			}
 		}
+#endif
+
     }
 
 }
@@ -1131,7 +1147,7 @@ void MainWindow::sliceMatiSimple()
                                                           + '.' + fileMark);
 
 					int NumOfSlices = std::min(end - start - j * piece, piece);
-					/// PEWPEWPEWPEWPEWPEWPEW
+					/// PEWPEWPEWPEWPEWPEWPEW, use edf
 //					myLib::writePlainData(helpString,
 					fil.getData().subCols(NumOfSlices, start + j * piece));
                 }
@@ -1258,7 +1274,7 @@ void MainWindow::sliceMati()
 }
 
 /// add markChan alias
-void MainWindow::sliceMatiPieces(bool plainFlag)
+void MainWindow::sliceMatiPieces()
 {
     QTime myTime;
     myTime.start();
@@ -1350,7 +1366,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 									 + '_' + fileMark;
 
 
-                        fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
+						fil.saveSubsection(currStart, currEnd, helpString);
                         ++pieceNum;
                         currStart = currEnd;
 
@@ -1366,7 +1382,7 @@ void MainWindow::sliceMatiPieces(bool plainFlag)
 															  + "/" + fil.getExpName()
 															  + "_" + rn(pieceNum, 2)
                                                               + '_' + fileMark);
-                        fil.saveSubsection(currStart, currEnd, helpString, plainFlag);
+						fil.saveSubsection(currStart, currEnd, helpString);
                         ++pieceNum;
                         currStart = currEnd;
                     }

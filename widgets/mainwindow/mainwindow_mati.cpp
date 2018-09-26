@@ -388,7 +388,7 @@ void MainWindow::matiPreprocessingSlot()
 
 			setEdfFile(outPath);
 
-			sliceMatiPieces(true);
+			sliceMatiPieces();
 
 			outStream << "slice sessions to pieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 		}

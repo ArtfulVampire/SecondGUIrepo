@@ -198,7 +198,7 @@ void wavelet(const QString & filePath,
 	/// continious
 	double helpDouble;
 
-	matrix fileData = myLib::readPlainData(filePath);
+	matrix fileData = edfFile(filePath).getData();
 
 	std::valarray<double> input = fileData[channelNumber];
 

@@ -1025,18 +1025,12 @@
      </widget>
     </item>
     <item>
-     <widget class="QDoubleSpinBox" name="xNormDoubleSpinBox">
+     <widget class="QSpinBox" name="xNormSpinBox">
       <property name="minimum">
-       <double>0.500000000000000</double>
+       <number>1</number>
       </property>
       <property name="maximum">
-       <double>10.000000000000000</double>
-      </property>
-      <property name="singleStep">
-       <double>0.500000000000000</double>
-      </property>
-      <property name="value">
-       <double>1.000000000000000</double>
+       <number>10</number>
       </property>
      </widget>
     </item>

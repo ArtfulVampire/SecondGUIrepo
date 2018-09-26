@@ -1722,7 +1722,7 @@ void drawColorScale(const QString & filePath, int range, ColorScale type, bool f
 
 void drawRealisation(const QString & inPath)
 {
-	matrix inData = readPlainData(inPath);
+	matrix inData = edfFile(inPath).getData();
 
 	QString outPath = inPath;
 	outPath.resize(outPath.lastIndexOf('.'));

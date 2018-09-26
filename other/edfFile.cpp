@@ -391,26 +391,26 @@ void edfFile::rewriteEdfFile()
 	this->handleEdfFile(this->getFilePath(), false);
 }
 
-void edfFile::writeEdfFile(const QString & EDFpath, bool asPlain)
+void edfFile::writeEdfFile(const QString & EDFpath)
 {
 	if(*this == edfFile{}) { return; }
 
     QTime myTime;
     myTime.start();
-    if(!asPlain)
-    {
-        if(QFile::exists(EDFpath))
-        {
+	if(QFile::exists(EDFpath))
+	{
 //			std::cout << "writeEdfFile: file already exists, RETURN\n" << EDFpath << std::endl; return;
 //			std::cout << "writeEdfFile: file already exists, REWRITE = \n" << EDFpath << " ";
 //			std::cout << "writeEdfFile: file already exists, NAME += _rw" << std::endl; EDFpath.replace(".", "_rw.");
-        }
-        this->handleEdfFile(EDFpath, false);
-    }
-    else /// if(asPLain)
-	{
-		myLib::writePlainData(EDFpath, this->edfData);
-    }
+	}
+	this->handleEdfFile(EDFpath, false);
+#if 0
+		/// old plain
+		else /// if(asPLain)
+		{
+			myLib::writePlainData(EDFpath, this->edfData);
+		}
+#endif
 }
 
 /// readFlag: 1 - read, 0 - write
@@ -1894,30 +1894,28 @@ edfFile edfFile::rereferenceDataCAR() const
 }
 
 void edfFile::saveSubsection(int startBin,
-                             int finishBin,
-                             const QString & outPath,
-                             bool plainFlag) const /// [start, finish)
+							 int finishBin,
+							 const QString & outPath) const /// [start, finish)
 {
-    if(plainFlag)
-	{
-		myLib::writePlainData(outPath,
-							  this->edfData.subCols(startBin,
-													finishBin)
-							  );
-    }
-    else
-    {
-        edfFile temp(*this, true);
+#if 0
+	/// old plain 26-Sep-2018
+	myLib::writePlainData(outPath,
+						  this->edfData.subCols(startBin,
+												finishBin)
+						  );
+#endif
 
-		temp.edfData.resize(this->ns, finishBin - startBin);
-        for(int i = 0; i < this->ns; ++i)
-        {
-			std::copy(std::begin(this->edfData[i]) + startBin,
-					  std::begin(this->edfData[i]) + finishBin,
-					  std::begin(temp.edfData[i]));
-		}
-		temp.writeEdfFile(outPath, plainFlag);
-    }
+	edfFile temp(*this, true);
+
+	temp.edfData.resize(this->ns, finishBin - startBin);
+	for(int i = 0; i < this->ns; ++i)
+	{
+		std::copy(std::begin(this->edfData[i]) + startBin,
+				  std::begin(this->edfData[i]) + finishBin,
+				  std::begin(temp.edfData[i]));
+	}
+	temp.writeEdfFile(outPath.endsWith(".edf", Qt::CaseInsensitive) ? outPath : (outPath + ".edf"));
+
 }
 
 void edfFile::drawSubsection(int startBin, int finishBin, const QString & outPath) const

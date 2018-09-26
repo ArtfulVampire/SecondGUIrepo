@@ -2545,12 +2545,12 @@ void eyesProcessingStatic(const std::vector<int> & eogChannels,
 	QTime myTime;
 	myTime.start();
 
-	QStringList leest = QDir(windsDir).entryList({"*" + def::plainDataExtension});
+	QStringList leest = QDir(windsDir).entryList({"*.edf"});
 
-	matrix dataE(readPlainData(windsDir + "/" + leest[0]).rows(), 0);
+	matrix dataE(edfFile(windsDir + "/" + leest[0]).getNs(), 0);
 	for(const auto & filePath : leest)
 	{
-		matrix tmp = readPlainData(windsDir + "/" + filePath);
+		matrix tmp = edfFile(windsDir + "/" + filePath).getData();
 		dataE.horzCat(tmp);
 	}
 

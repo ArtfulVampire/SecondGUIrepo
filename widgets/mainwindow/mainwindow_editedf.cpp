@@ -432,14 +432,15 @@ void MainWindow::reduceChannelsSlot()
 		localNs = DEFS.getNs();
         helpString = (localDir.absolutePath()
 											  + "/" + fileName);
-		dataR = myLib::readPlainData(helpString);
+		dataR = edfFile(helpString).getData();
 		localNs = dataR.rows(); /// needed?
         for(int exclChan : excludeList)
         {
             dataR.eraseRow(exclChan);
             --localNs;
         }
-		myLib::writePlainData(helpString, dataR);
+		/// remake with edfs
+//		myLib::writePlainData(helpString, dataR);
     }
 
 	DEFS.setNs(DEFS.getNs() - excludeList.size());

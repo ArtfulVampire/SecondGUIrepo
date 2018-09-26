@@ -734,7 +734,7 @@ QPixmap drawMannWitneyInLine(const QPixmap & templatePic,
 
 QPixmap drawRealisation(const QString & inPath, int srate)
 {
-	matrix inData = myLib::readPlainData(inPath);
+	matrix inData = edfFile(inPath).getData();
 
 	return drawEeg(inData, srate, myLib::drw::eegPicHeight);
 }

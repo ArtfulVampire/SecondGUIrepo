@@ -105,7 +105,7 @@ void Cut::findPrevMark(double mark)
 					/// horzNorm
 					std::max(0.,
 							 index / edfFil.getFreq()
-							 - findNextGap * 0.8 * ui->xNormDoubleSpinBox->value()));
+							 - findNextGap * 0.8 * ui->xNormSpinBox->value()));
 		showDerivatives();
 		paint();
 	}
@@ -126,7 +126,7 @@ void Cut::findNextMark(int mark)
 		{
 			it = std::find(std::begin(markArr) + leftDrawLimit
 						   /// horzNorm
-						   + int(findNextGap * edfFil.getFreq() / ui->xNormDoubleSpinBox->value()),
+						   + int(findNextGap * edfFil.getFreq() / ui->xNormSpinBox->value()),
 						   std::end(markArr),
 						   mark);
 		}
@@ -134,7 +134,7 @@ void Cut::findNextMark(int mark)
 		{
 			it = std::find_if(std::begin(markArr) + leftDrawLimit
 							  /// horzNorm
-							  + int(findNextGap * edfFil.getFreq() / ui->xNormDoubleSpinBox->value()),
+							  + int(findNextGap * edfFil.getFreq() / ui->xNormSpinBox->value()),
 							  std::end(markArr),
 							  [](double in){ return in != 0.; });
 		}
@@ -150,7 +150,7 @@ void Cut::findNextMark(int mark)
 					/// horzNorm
 					std::max(0.,
 							 index / edfFil.getFreq()
-							 - findNextGap * 0.8 * ui->xNormDoubleSpinBox->value()));
+							 - findNextGap * 0.8 * ui->xNormSpinBox->value()));
 		showDerivatives();
 		paint();
 	}

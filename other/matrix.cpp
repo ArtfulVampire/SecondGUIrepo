@@ -599,6 +599,16 @@ matrix matrix::subCols(const std::vector<std::pair<int, int>> & intervals) const
 	return res;
 }
 
+matrix matrix::subColsStride(int start, int stride) const
+{
+	matrix res(this->rows(), 1);
+	for(int i = 0; i < this->rows(); ++i)
+	{
+		res[i] = this->myData[i][std::slice(start, this->cols() / stride, stride)];
+	}
+	return res;
+}
+
 matrix matrix::subRows(const std::vector<int> & inds) const /// submatrix
 {
 	matrix res = matrix();

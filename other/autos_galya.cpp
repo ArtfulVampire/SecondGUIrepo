@@ -1659,13 +1659,11 @@ void ProcessAllInOneFolder(const QString & inPath,
 }
 
 void ProcessByFolders(const QString & inPath,
+					  int numChan,
 					  const std::vector<QString> & markers)
 {
 	QTime myTime;
 	myTime.start();
-
-	const int numChan = 16;
-//	const int numChan = 31; /// MRI and other
 
 	if(!QDir(inPath + "_out").exists())
 	{
@@ -1796,6 +1794,155 @@ void ProcessByFolders(const QString & inPath,
 
 	std::cout << "ProcessByFolders: time elapsed = "
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
+}
+
+void makeLabelsFile(int numChan,
+					const QString & workPath,
+					const QString & initFreq,
+					const std::vector<QString> & usedMarkers,
+					const QString & sep)
+{
+	///make labels file
+
+	edfFile labels;
+	labels.readEdfFile(workPath + "/labels.edf");
+
+	std::vector<QString> labels1 = labels.getLabels();
+	labels1.resize(numChan);
+
+	for(QString & in : labels1)
+	{
+		in = in.mid(in.indexOf(' ') + 1,
+					in.indexOf('-') - in.indexOf(' ') - 1).toLower();
+	}
+
+	std::ofstream lab;
+	lab.open((workPath + "/labels.txt").toStdString());
+	for(QString mark : usedMarkers)
+	{
+		mark.remove('_');
+
+		if(DEFS.getAutosMask() & featuresMask::spectre)
+		{
+			/// FFT
+			/// 18 ranges 1-Hz-wide, 19 channels = 342 values
+			/// 18 ranges 1-Hz-wide, 16 channels = 288 values
+			for(int i = 2; i < 20; ++i)
+			{
+				for(const QString & lbl : labels1)
+				{
+					lab << mark
+						<< "_" << "fft"
+						<< "_" << nm(i)
+						<< "_" << nm(i+1)
+						<< "_"  << lbl << sep;
+				}
+			}
+		}
+
+		if(DEFS.getAutosMask() & featuresMask::alpha)
+		{
+			/// ALPHA
+			for(const QString & lbl : labels1) /// 19 values
+			{
+				lab << mark
+					<< "_" << "alpha"
+					<< initFreq
+					<< "_" << lbl << sep;
+			}
+		}
+
+		if(DEFS.getAutosMask() & featuresMask::fracDim)
+		{
+			/// Fractal Dimension numChan values
+			for(const QString & lbl : labels1)
+			{
+				lab << mark
+					<< "_fd" << initFreq
+					<< "_"
+					<< lbl << sep;
+			}
+
+		}
+
+		if(DEFS.getAutosMask() & featuresMask::Hilbert)
+		{
+			/// Hilbert 4 * 19 = 95 values
+			/// Hilbert 4 * 16 = 80 values
+			for(const QString & fir : {
+				QString("hilbcarr")	+ initFreq,
+				QString("hilbcarr")	+ "_8_13",
+				QString("hilbsd")	+ initFreq,
+				QString("hilbsd")	+ "_8_13"
+		}
+				)
+			{
+				for(const QString & lbl : labels1)
+				{
+					lab << mark
+						<< "_" << fir
+						<< "_"
+						<< lbl << sep;
+				}
+			}
+		}
+
+		if(DEFS.getAutosMask() & featuresMask::Hjorth)
+		{
+			/// HJORTH
+			/// 2 * 19 = 38 values
+			/// 2 * 16 = 32 values
+			for(const QString & fir : {"hjmob", "hjcom"})
+			{
+				for(const QString & lbl : labels1)
+				{
+					lab << mark
+						<< "_" << fir
+						<< initFreq
+						<< "_" << lbl << sep;
+				}
+
+			}
+		}
+
+#if WAVELET_MATLAB
+		if(DEFS.getAutosMask() & featuresMask::wavelet)
+		{
+			/// WAVELET
+			/// 19 freqs * 19 channels = 361 values
+			/// 19 freqs * 16 channels = 304 values
+			for(int i = 0; i < 19; ++i) /// freqs
+			{
+				for(const QString & lbl : labels1)
+				{
+					lab << mark
+						<< "_wavSD"
+						<< "_" << nm(i + 2)
+						<< "_" << lbl << sep;
+				}
+			}
+		}
+#endif
+
+		if(DEFS.getAutosMask() & featuresMask::logFFT)
+		{
+			/// logFFT
+			/// 18 freqs * 19 chans = 342 values
+			/// 18 freqs * 16 chans = 288 values
+			for(int i = 2; i < 20; ++i)
+			{
+				for(const QString & lbl : labels1)
+				{
+					lab << mark
+						<< "_" << "logfft"
+						<< "_" << nm(i)
+						<< "_" << nm(i+1)
+						<< "_"  << lbl << sep;
+				}
+			}
+		}
+	}
+	lab.close();
 }
 
 } /// end of namespace autos

@@ -169,12 +169,12 @@ public:
 	/// read/write
 	edfFile & readEdfFile(const QString & EDFpath, bool headerOnly = false);
 	edfFile & reOpen();
-	void writeEdfFile(const QString & EDFpath, bool asPlain = false);
+	void writeEdfFile(const QString & EDFpath);
 	void rewriteEdfFile();
 	void writeOtherData(const matrix & newData,
 						const QString & outPath,
 						std::vector<int> chanList = {}) const;
-	void saveSubsection(int startBin, int finishBin, const QString & outPath, bool plainFlag = false) const;
+	void saveSubsection(int startBin, int finishBin, const QString & outPath) const;
 	void drawSubsection(int startBin, int finishBin, const QString & outPath) const;
 
 

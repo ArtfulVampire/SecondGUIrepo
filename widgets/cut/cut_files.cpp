@@ -20,7 +20,7 @@ void Cut::next()
 		return;
 	}
 	++fileListIter;
-	helpString = myLib::getDirPathLib(currentFile) + "/" + (*fileListIter);
+	helpString = edfFil.getFilePath() + "/" + (*fileListIter);
 	openFile(helpString);
 }
 
@@ -33,7 +33,7 @@ void Cut::prev()
 	}
 
 	--fileListIter;
-	QString helpString = myLib::getDirPathLib(currentFile) + "/" + (*fileListIter);
+	QString helpString = edfFil.getFilePath() + "/" + (*fileListIter);
 	openFile(helpString);
 }
 
@@ -41,8 +41,12 @@ void Cut::prev()
 void Cut::rewrite()
 {
 	if( !fileOpened ) { return; }
+	/// new, only edf is possible
+	std::cout << "Cut:: Rewrite deliberately forbidden for edfs, use Save instead" << std::endl;
 
-	if(myFileType == fileType::real)
+#if 0
+	/// old
+	if(myFileType == fileType::real) /// to deprecate
 	{
 		myLib::writePlainData(currentFile, dataCutLocal);
 		currentPic.save(myLib::getPicPath(currentFile, this->edfFil.getDirPath()), nullptr, 100);
@@ -51,12 +55,12 @@ void Cut::rewrite()
 	{
 		std::cout << "Cut:: Rewrite deliberately forbidden for edfs, use Save instead" << std::endl;
 	}
+#endif
 }
-
 
 void Cut::saveAs(const QString & addToName)
 {
-	QString newPath = currentFile;
+	QString newPath = edfFil.getFilePath();
 	newPath.insert(newPath.lastIndexOf('.'), addToName);
 	edfFil.writeOtherData(dataCutLocal, newPath);
 }
@@ -65,6 +69,11 @@ void Cut::saveSlot()
 {
 	if( !fileOpened ) { return; }
 
+	this->saveAs("_new");
+	logAction(static_cast<const char*>("saveAs"), static_cast<const char*>("_new"));
+	std::cout << "Cut::save: edfFile saved" << std::endl;
+#if 0
+	/// old
 	if(myFileType == fileType::real)
 	{
 		QString helpString = edfFil.getDirPath()
@@ -82,64 +91,97 @@ void Cut::saveSlot()
 //		logAction("saveAs", "_new");
 		std::cout << "Cut::save: edfFile saved" << std::endl;
 	}
-
+#endif
 }
 
 void Cut::saveSubsecSlot()
 {
 	if( !fileOpened ) { return; }
-
 #if 01
 	/// check subsec if too long
-	/// turned off for SummerPractice2018 to make 30 min edfs
-	if(!checkBadRange(ui->leftLimitSpinBox->value(),
+	/// turn off for SummerPractice2018 to make 30 min edfs
+	if(checkBadRange(ui->leftLimitSpinBox->value(),
 					  ui->rightLimitSpinBox->value(),
-					  "saveSubsec"))
+					 "saveSubsec")) { return; }
 #endif
+
+	/// new, only edf is possible
+	QString newPath = edfFil.getDirPath() + "/winds/" + edfFil.getExpName();
+	const QString ad = ui->saveSubsecAddNameLineEdit->text();
+	if(!ad.isEmpty()) { newPath += "_" + ad; }
+	newPath += ".edf";
+
+	const QString newestPath{newPath};
+	int counter = 0;
+	while(QFile::exists(newPath))
 	{
-
-		if(myFileType == fileType::real
-		   || 1 /// write plain windows (eyes)
-		   )
-		{
-
-			QString helpString;
-			helpString = edfFil.getDirPath() +
-						 "/winds" +
-						 "/" + myLib::getFileName(currentFile) +
-						 "." + rn(addNum++, 3);
-			myLib::writePlainData(helpString,
-								  dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
-													   ui->rightLimitSpinBox->value())
-								  );
-		}
-		else if(myFileType == fileType::edf)
-		{
-			QString newPath = currentFile;
-			QString ad = ui->saveSubsecAddNameLineEdit->text();
-			if( !ad.isEmpty())
-			{
-				newPath.insert(newPath.lastIndexOf('.'), "_" + ad);
-			}
-
-			int counter = 0;
-			while(QFile::exists(newPath))
-			{
-				newPath = currentFile;
-				newPath.insert(newPath.lastIndexOf('.'), "_" + nm(counter));
-				++counter;
-			}
-
-			edfFil.writeOtherData(dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
-													   ui->rightLimitSpinBox->value()), newPath);
-
-			iitpLog("saveSub", 2, newPath);
-
-			std::cout << "Cut::saveSubsecSlot: edfFile saved - " << newPath << std::endl;
-		}
+		newPath = newestPath;
+		newPath.insert(newPath.lastIndexOf('.'), "_" + nm(counter));
+		++counter;
 	}
+
+	/// for the first one
+	if(myLib::getFileName(newPath).toLower() == edfFil.getExpName().toLower())
+	{
+		newPath.replace(".edf", "_0.edf", Qt::CaseInsensitive);
+	}
+	edfFil.writeOtherData(dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
+											   ui->rightLimitSpinBox->value()), newPath);
+	iitpLog("saveSub", 2, newPath);
 	resetLimits();
 	paint();
+#if 0
+	/// old
+
+
+	if(myFileType == fileType::real)
+	{
+
+		QString helpString;
+		helpString = edfFil.getDirPath() +
+					 "/winds" +
+					 "/" + myLib::getFileName(currentFile) +
+					 "." + rn(addNum++, 3);
+		myLib::writePlainData(helpString,
+							  dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
+												   ui->rightLimitSpinBox->value())
+							  );
+	}
+	else if(myFileType == fileType::edf)
+	{
+		QString newPath = edfFil.getDirPath() + "/winds/" + edfFil.getExpName();
+		const QString ad = ui->saveSubsecAddNameLineEdit->text();
+		if(!ad.isEmpty())
+		{
+			newPath += "_" + ad;
+		}
+		newPath += ".edf";
+
+		const QString newestPath{newPath};
+		int counter = 0;
+		while(QFile::exists(newPath))
+		{
+			newPath = newestPath;
+			newPath.insert(newPath.lastIndexOf('.'), "_" + nm(counter));
+			++counter;
+		}
+		/// for the first one
+		if(myLib::getFileName(newPath).toLower() == edfFil.getExpName().toLower())
+		{
+			newPath.replace(".edf", "_0.edf", Qt::CaseInsensitive);
+		}
+
+		edfFil.writeOtherData(dataCutLocal.subCols(ui->leftLimitSpinBox->value(),
+												   ui->rightLimitSpinBox->value()), newPath);
+
+		iitpLog("saveSub", 2, newPath);
+
+		std::cout << "Cut::saveSubsecSlot: edfFile saved - " << newPath << std::endl;
+	}
+
+	resetLimits();
+	paint();
+#endif
 }
 
 void Cut::browseSlot()
@@ -152,7 +194,8 @@ void Cut::browseSlot()
 	{
 		filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + in + " ";
 	}
-	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + def::plainDataExtension;
+	/// deprecated plainDataExtension
+//	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + def::plainDataExtension;
 
 	const QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
 															tr("Open file"),
@@ -162,13 +205,16 @@ void Cut::browseSlot()
 
 
 	ui->filePathLineEdit->setText(helpString);
-	this->setFileType(helpString);
+//	this->setFileType(helpString); /// deprecated fileType
 
 	DEFS.setDir(myLib::getDirPathLib(helpString));
+#if 0
+	/// fileType::real deprecated
 	if(this->myFileType == fileType::real)
 	{
 		DEFS.dirCdUp();
 	}
+#endif
 
 	filesList = QDir(myLib::getDirPathLib(helpString)).entryList(
 	{"*" + ui->suffixComboBox->currentText() +  "*." + myLib::getExtension(helpString)});
@@ -194,8 +240,12 @@ void Cut::browseSlot()
 	openFile(helpString);
 }
 
+#if 0
 void Cut::setFileType(const QString & dataFileName)
 {
+	this->myFileType = fileType::edf;
+#if 0
+	/// fileType::real deprecated
 	if(dataFileName.endsWith(".edf", Qt::CaseInsensitive))
 	{
 		this->myFileType = fileType::edf;
@@ -204,7 +254,9 @@ void Cut::setFileType(const QString & dataFileName)
 	{
 		this->myFileType = fileType::real;
 	}
+#endif
 }
+#endif
 
 
 void Cut::setValuesByEdf()
@@ -305,7 +357,7 @@ void Cut::openFile(const QString & dataFileName)
 	drawFlag = false;
 
 	addNum = 1;
-	currentFile = dataFileName;
+//	currentFile = dataFileName;
 	ui->filePathLineEdit->setText(dataFileName);
 	ui->iitpDisableEcgCheckBox->setChecked(false);
 
@@ -316,9 +368,20 @@ void Cut::openFile(const QString & dataFileName)
 	marksToDrawSet();
 
 	leftDrawLimit = 0;
-	if(this->myFileType == fileType::real)
+
+	/// new, only edf is possible
+	edfFil.readEdfFile(dataFileName);
+	currentPic = QPixmap{};
+	fileOpened = true;
+	logAction(edfFil.getExpName());
+	drawFlag = false;
+	setValuesByEdf(); /// needs fileOpened
+
+#if 0
+	/// fileType::real deprecated
+	if(this->myFileType == fileType::real) /// to deprecate
 	{
-		dataCutLocal = myLib::readPlainData(dataFileName);
+		dataCutLocal = edfFile(dataFileName).getData();
 		fileOpened = true;
 	}
 	else if(this->myFileType == fileType::edf)
@@ -330,6 +393,7 @@ void Cut::openFile(const QString & dataFileName)
 		drawFlag = false;
 		setValuesByEdf(); /// needs fileOpened
 	}
+#endif
 	drawFlag = true;
 	paint();
 }

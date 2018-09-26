@@ -19,10 +19,9 @@ std::vector<QStringList> makeFileLists(const QString & path,
 std::vector<matrix> readSpectraDir(const QString & spectraPath);
 
 
-matrix readPlainData(const QString & inPath);
+//matrix readPlainData(const QString & inPath); /// deprecated
 
-void writePlainData(const QString & outPath,
-					const matrix & data);
+//void writePlainData(const QString & outPath, const matrix & data); /// deprecated
 
 matrix readMatrixFile(const QString & filePath);
 
