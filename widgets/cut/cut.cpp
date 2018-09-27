@@ -358,13 +358,15 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
 
 			/// workaround to process only the second of two QWheelEvents
-			static QWheelEvent * p = nullptr;
-			if(!p)
+			static bool procFlag = false;
+			if(!procFlag)
 			{
-				p = scrollEvent;
+				procFlag = true;
 				return false;
 			}
-			p = nullptr;
+			procFlag = false;
+
+			const int step = (scrollEvent->delta() > 0) ? -1 : 1;
 
 			if(scrollEvent->modifiers().testFlag(Qt::ControlModifier) &&
 			   !scrollEvent->modifiers().testFlag(Qt::ShiftModifier))
@@ -372,33 +374,51 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				if(scrollEvent->modifiers().testFlag(Qt::AltModifier))
 				{
 					/// horzNorm
-					ui->xNormSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
+					ui->xNormSpinBox->stepBy(step);
+					return true;
 				}
 				else
 				{
-					ui->yNormDoubleSpinBox->stepBy((scrollEvent->delta() > 0) ? 1 : -1);
+					ui->yNormDoubleSpinBox->stepBy(step);
+					return true;
 				}
-				return true;
 			}
 
 			/// offset in seconds
-			double offset = (scrollEvent->delta() > 0) ? -1. : 1.;
+			double offset = ui->paintLengthDoubleSpinBox->value() * step;
 			if(scrollEvent->modifiers().testFlag(Qt::ShiftModifier))
 			{
 				if(!scrollEvent->modifiers().testFlag(Qt::ControlModifier))
 				{
-					offset *= ui->paintLengthDoubleSpinBox->value();
+					/// do nothing
 				}
 				else
 				{
-					offset *= ui->paintLengthDoubleSpinBox->value() * 5;
+					offset *= 5;
 				}
 			}
 			else
 			{
-				offset *= ui->paintLengthDoubleSpinBox->value() * 0.125;
+				offset *= 0.125;
 			}
 
+			/// new
+			/// scroll overflow/underflow check
+			if((leftDrawLimit
+				+ ui->scrollArea->width()
+				/// horzNorm
+				* ui->xNormSpinBox->value() > dataCutLocal.cols()
+				&& offset > 0)
+			   || (leftDrawLimit == 0 && offset < 0))
+			{
+				return false;
+			}
+
+			ui->paintStartDoubleSpinBox->setValue(
+						ui->paintStartDoubleSpinBox->value() + offset);
+			return true;
+#if 0
+			/// deprecate fileType::real
 			switch(myFileType)
 			{
 			case fileType::real: /// to deprecate
@@ -426,7 +446,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				return true;
 			}
 			}
-			return true;
+#endif
 		}
 		case QEvent::MouseButtonPress:
 		{

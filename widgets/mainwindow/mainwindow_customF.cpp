@@ -94,6 +94,229 @@ void MainWindow::customFunc()
 
 
 #if 0
+	/// Xenia finalest
+	const QString workPath = "/media/Files/Data/Xenia/FINAL";
+	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};
+	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+
+#if 0
+		/// initial rename guyDirs as edfs inside
+		for(const QString & subdir : subdirs)
+		{
+			const QString groupPath = workPath + "/" + subdir;
+			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(const QString & guy : groupGuys)
+			{
+				const QString guyPath = groupPath + "/" + guy;
+				repair::deleteSpacesDir(guyPath);
+				QString firstFile = QDir(guyPath).entryList(def::edfFilters)[0];
+				firstFile.resize(firstFile.lastIndexOf('_'));
+				QDir().rename(guyPath,
+							  groupPath + "/" + firstFile);
+				continue;
+			}
+		}
+		exit(0);
+#endif
+
+#if 0
+		/// check each guy has all stimuli files - OK
+		for(const QString & subdir : subdirs)
+		{
+			const QString groupPath = workPath + "/" + subdir;
+			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(const QString & guy : groupGuys)
+			{
+				const QString guyPath = groupPath + "/" + guy;
+				const QStringList guyFiles = QDir(guyPath).entryList(def::edfFilters);
+				for(const QString & mark : tbiMarkers)
+				{
+					bool ok = false;
+					for(const QString guyFile : guyFiles)
+					{
+						if(guyFile.contains(mark)) { ok = true; break; }
+					}
+					if(!ok) { std::cout << guy << mark << " not found!!!" << std::endl; }
+				}
+
+			}
+		}
+		exit(0);
+#endif
+
+#if 0
+		/// find absent guyNames in guys_finalest.txt and rename properly (manually)
+		/// read guys_finalest.txt
+		QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
+		fil.open(QIODevice::ReadOnly);
+		std::vector<QString> guys{};
+		while(1)
+		{
+			QString guy = fil.readLine();
+			guy.chop(1); /// chop \n
+			if(guy.isEmpty()) { break; }
+			guys.push_back(guy);
+		}
+		fil.close();
+
+
+		std::vector<QString> guysReal{};
+		for(const QString & subdir : subdirs)
+		{
+			const QString groupPath = workPath + "/" + subdir;
+			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+			for(QString guy : groupGuys)
+			{
+				guysReal.push_back(guy);
+			}
+		}
+		for(const auto & guy : guys)
+		{
+			if(!myLib::contains(guysReal, guy))
+			{
+				std::cout << guy << std::endl;
+			}
+		}
+		exit(0);
+#endif
+
+
+#if 0
+		/// processing itself
+		DEFS.setAutosUser(autosUser::XeniaFinalest);
+		DEFS.setAutosMask(0
+//						  | featuresMask::alpha
+//						  | featuresMask::fracDim
+						  | featuresMask::Hilbert
+//						  | featuresMask::spectre
+//						  | featuresMask::logFFT
+						  );
+		autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
+#endif
+
+
+#if 0
+	/// Xenia FINAL labels
+	const QString sep{"\t"};
+//	const QString sep{"\r\n"};
+
+	DEFS.setAutosMask(featuresMask::Hilbert);
+
+	std::ofstream lab;
+	lab.open((def::XeniaFolder + "/labels.txt").toStdString());
+
+	std::vector<QString> labels1 = coords::lbl19;
+	for(QString & in : labels1)
+	{
+		in = in.toLower();
+	}
+	smLib::eraseItems(labels1, std::vector<int>{4, 9, 14});	/// skip Fz, Cz, Pz
+
+	const QString initFreq = "_1.6-30";
+//	for(QString mark : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
+	for(const QString & mark : {"no", "kh", "sm", "cr", "bw", "bd", "fon"})
+	{
+		if(DEFS.getAutosMask() & featuresMask::fft)
+		{
+			/// FFT
+			for(int i = 2; i < 20; ++i) /// freqs
+			{
+				for(const QString & lbl : labels1)
+				{
+					lab << mark
+						<< "_" << "fft"
+						<< "_" << nm(i)
+						<< "-" << nm(i + 1)
+						<< "_"  << lbl << sep;
+				}
+			}
+		}
+		if(DEFS.getAutosMask() & featuresMask::fracDim)
+		{
+			const QString fir = "fd" + initFreq;
+			{
+				for(const QString & lbl : labels1)
+				{
+					lab << mark
+						<< "_" << fir
+						<< "_"
+						<< lbl << sep;
+				}
+			}
+		}
+
+		if(DEFS.getAutosMask() & featuresMask::Hilbert)
+		{
+			/// CHAOS
+			for(const QString & fir : {
+//				QString("hilbcarr")	+ initFreq,
+//				QString("hilbsd")	+ initFreq,
+				QString("hilbcarr")	+ "_2-6",
+				QString("hilbsd")	+ "_2-6",
+				QString("hilbcarr")	+ "_4-7",
+				QString("hilbsd")	+ "_4-7",
+		}
+				)
+			{
+				for(const QString & lbl : labels1)
+				{
+					lab << mark
+						<< "_" << fir
+						<< "_"
+						<< lbl << sep;
+				}
+			}
+		}
+		if(DEFS.getAutosMask() & featuresMask::wavelet)
+		{
+			/// WAVELET
+			for(const QString & fir : {"wavmean", "wavmed", "wavsgm"})
+			{
+				for(int i = 2; i <= 20; ++i)
+				{
+					for(const QString & lbl : labels1)
+					{
+						lab << mark
+							<< "_" << fir
+							<< "_" << nm(i)
+							<< "-" << nm(i+1)
+							<< "_" << lbl << sep;
+					}
+				}
+			}
+		}
+
+		if(DEFS.getAutosMask() & featuresMask::alphaPeak)
+		{
+			/// ALPHA
+			for(const QString & lbl : labels1)
+			{
+				lab << mark
+					<< "_" << "alpha"
+					<< initFreq
+					<< "_" << lbl << sep;
+			}
+		}
+	}
+	lab.close();
+	exit(0);
+#endif /// labels
+
+#if 0
+	/// labels check
+	std::cout << myLib::countSymbolsInFile(
+					 def::XeniaFolder + "/table_Hilbert_first30.txt", '\t') / 41 << std::endl;
+
+	std::cout << myLib::countSymbolsInFile(
+					 def::XeniaFolder + "/labels.txt", '\t') << std::endl;
+
+	exit(0);
+#endif
+
+#endif /// Xenia FINAL
+
+
+#if 0
 	/// Galya processing things
 
 #if 0
@@ -924,110 +1147,6 @@ void MainWindow::customFunc()
 	exit(0);
 #endif
 
-#if 0
-	/// Xenia finalest
-	const QString workPath = "/media/Files/Data/Xenia/FINAL";
-	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};
-
-	if(0)
-	{
-		/// initial rename guyDirs as edfs inside
-		for(const QString & subdir : subdirs)
-		{
-			const QString groupPath = workPath + "/" + subdir;
-			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-			for(const QString & guy : groupGuys)
-			{
-				const QString guyPath = groupPath + "/" + guy;
-				repair::deleteSpacesDir(guyPath);
-				QString firstFile = QDir(guyPath).entryList(def::edfFilters)[0];
-				firstFile.resize(firstFile.lastIndexOf('_'));
-				QDir().rename(guyPath,
-							  groupPath + "/" + firstFile);
-				continue;
-			}
-		}
-		exit(0);
-	}
-	if(0)
-	{
-		/// check each guy has all stimuli files - OK
-		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-		for(const QString & subdir : subdirs)
-		{
-			const QString groupPath = workPath + "/" + subdir;
-			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-			for(const QString & guy : groupGuys)
-			{
-				const QString guyPath = groupPath + "/" + guy;
-				const QStringList guyFiles = QDir(guyPath).entryList(def::edfFilters);
-				for(const QString & mark : tbiMarkers)
-				{
-					bool ok = false;
-					for(const QString guyFile : guyFiles)
-					{
-						if(guyFile.contains(mark)) { ok = true; break; }
-					}
-					if(!ok) { std::cout << guy << mark << " not found!!!" << std::endl; }
-				}
-
-			}
-		}
-		exit(0);
-	}
-
-	if(0) /// find absent guyNames in guys_finalest.txt and rename properly (manually)
-	{
-		/// read guys_finalest.txt
-		QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
-		fil.open(QIODevice::ReadOnly);
-		std::vector<QString> guys{};
-		while(1)
-		{
-			QString guy = fil.readLine();
-			guy.chop(1); /// chop \n
-			if(guy.isEmpty()) { break; }
-			guys.push_back(guy);
-		}
-		fil.close();
-
-
-		std::vector<QString> guysReal{};
-		for(const QString & subdir : subdirs)
-		{
-			const QString groupPath = workPath + "/" + subdir;
-			const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-			for(QString guy : groupGuys)
-			{
-				guysReal.push_back(guy);
-			}
-		}
-		for(const auto & guy : guys)
-		{
-			if(!myLib::contains(guysReal, guy))
-			{
-				std::cout << guy << std::endl;
-			}
-		}
-		exit(0);
-	}
-
-	if(01) /// processing itself
-	{
-		DEFS.setAutosUser(autosUser::XeniaFinalest);
-		const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-		DEFS.setAutosMask(0
-//						  | featuresMask::alpha
-//						  | featuresMask::fracDim
-						  | featuresMask::Hilbert
-//						  | featuresMask::spectre
-//						  | featuresMask::logFFT
-						  );
-		autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
-	}
-
-	exit(0);
-#endif
 
 #if 0
 	/// insert channels
@@ -1698,125 +1817,6 @@ void MainWindow::customFunc()
 			}
 		}
 	}
-#endif
-
-#if 0
-	/// Xenia final count
-	DEFS.setAutosUser(autosUser::Xenia)
-	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
-	exit(0);
-
-	/// Xenia FINAL labels
-	std::cout << myLib::countSymbolsInFile("/media/Files/Data/Xenia/FINAL_out/labels1.txt",
-										   '\t') << std::endl;
-	exit(0);
-
-	const QString sep{"\t"};
-//	const QString sep{"\r\n"};
-
-	std::ofstream lab;
-	lab.open((def::XeniaFolder + "/FINAL_out/labels1_6.txt").toStdString()
-//			 , std::ios_base::app
-			 );
-
-	std::vector<QString> labels1 = coords::lbl19;
-	for(QString & in : labels1)
-	{
-		in = in.toLower();
-	}
-
-	const QString initFreq = "_1.6-30";
-
-//	for(QString mark : {"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"})
-	for(QString mark : {"no", "kh", "sm", "cr", "bw", "bd", "fon"})
-	{
-		/// FFT
-		for(int i = 2; i < 20; ++i)
-		{
-			for(QString lbl : labels1)
-			{
-				lab << mark
-					<< "_" << "fft"
-					<< "_" << nm(i)
-					<< "-" << nm(i+1)
-					<< "_"  << lbl << sep;
-			}
-		}
-
-		/// CHAOS
-		for(QString fir : {
-			QString("fd")		+ initFreq,
-			QString("hilbcarr")	+ initFreq,
-			QString("hilbsd")	+ initFreq,
-			QString("hilbcarr")	+ "_4-6",
-			QString("hilbsd")	+ "_4-6",
-			QString("hilbcarr")	+ "_8-13",
-			QString("hilbsd")	+ "_8-13"
-	}
-			)
-		{
-			for(QString lbl : labels1)
-			{
-				lab << mark
-					<< "_" << fir
-					<< "_"
-					<< lbl << sep;
-			}
-		}
-
-		/// WAVELET
-		for(QString fir : {"wavmean", "wavmed", "wavsgm"})
-		{
-			for(int i = 2; i <= 20; ++i)
-			{
-				for(QString lbl : labels1)
-				{
-					lab << mark
-						<< "_" << fir
-						<< "_" << nm(i)
-						<< "-" << nm(i+1)
-						<< "_" << lbl << sep;
-				}
-			}
-		}
-
-		/// ALPHA
-		for(QString lbl : labels1)
-		{
-			lab << mark
-				<< "_" << "alpha"
-				<< initFreq
-				<< "_" << lbl << sep;
-		}
-	}
-	lab.close();
-	exit(0);
-
-	/// count
-	autos::Xenia_TBI_final(def::XeniaFolder + "/FINAL");
-	myLib::invertMatrixFile("/media/Files/Data/Xenia/FINAL_out/labels2.txt",
-							"/media/Files/Data/Xenia/FINAL_out/labels2_inv.txt");
-	exit(0);
-
-	/// check files sizes
-	QString ss = "/media/Files/Data/Xenia/FINAL/";
-	std::vector<QString> drs{"Healthy", "Moderate", "Severe"};
-	qint64 s = 10000000;
-	for( auto dr : drs)
-	{
-		QStringList in = QDir(ss + dr).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-		for(auto g : in)
-		{
-			auto in = QDir(ss + dr + "/" + g).entryInfoList(def::edfFilters);
-			for(auto i : in)
-			{
-				s = std::min(s, i.size());
-				if(i.size() == 427936) std::cout << dr << " " << g << std::endl;
-			}
-		}
-	}
-	std::cout << s << std::endl;
-	exit(0);
 #endif
 
 

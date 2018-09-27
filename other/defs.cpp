@@ -8,8 +8,8 @@ void defs::setAutosUser(autosUser in)
 	{
 	case autosUser::Galya:
 	{
-		autosMask = featuresMask::alpha |
-					featuresMask::spectre |
+		autosMask = featuresMask::alphaPeak |
+					featuresMask::fft |
 					featuresMask::Hilbert |
 					featuresMask::fracDim |
 					featuresMask::Hjorth |
@@ -20,8 +20,8 @@ void defs::setAutosUser(autosUser in)
 	}
 	case autosUser::Xenia:
 	{
-		autosMask = featuresMask::alpha |
-					featuresMask::spectre |
+		autosMask = featuresMask::alphaPeak |
+					featuresMask::fft |
 					featuresMask::Hilbert |
 					featuresMask::fracDim |
 					featuresMask::wavelet
@@ -30,8 +30,8 @@ void defs::setAutosUser(autosUser in)
 	}
 	case autosUser::XeniaFinalest:
 	{
-		autosMask = featuresMask::alpha |
-					featuresMask::spectre |
+		autosMask = featuresMask::alphaPeak |
+					featuresMask::fft |
 					featuresMask::Hilbert |
 					featuresMask::logFFT |
 //					featuresMask::wavelet |

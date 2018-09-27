@@ -56,13 +56,13 @@ enum class username {MichaelA,
 					 PolinaM};
 enum class autosUser {Xenia, Galya, XeniaFinalest};
 enum featuresMask {
-	spectre	= 0x01,	/// std::pow(2, 0);
-	alpha	= 0x02,	/// std::pow(2, 1);
-	fracDim	= 0x04,	/// std::pow(2, 2);
-	Hilbert	= 0x08,	/// std::pow(2, 3);
-	wavelet	= 0x10,	/// std::pow(2, 4);
-	Hjorth	= 0x20,	/// std::pow(2, 5);
-	logFFT	= 0x40	/// std::pow(2, 6);
+	fft			= 0x01,	/// std::pow(2, 0);
+	alphaPeak	= 0x02,	/// std::pow(2, 1);
+	fracDim		= 0x04,	/// std::pow(2, 2);
+	Hilbert		= 0x08,	/// std::pow(2, 3);
+	wavelet		= 0x10,	/// std::pow(2, 4);
+	Hjorth		= 0x20,	/// std::pow(2, 5);
+	logFFT		= 0x40	/// std::pow(2, 6);
 };
 enum class spectraNorming {all, each};
 

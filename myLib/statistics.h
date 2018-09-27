@@ -28,7 +28,7 @@ QPixmap histogram(const std::valarray<double> & arr,
 				  int valueMax = 0);
 
 
-double quantile(double alpha);
+double quantile(double alphaPeak);
 double normalCumulative(double zVal);
 
 double rankit(int i, int length, double k = 0.375);

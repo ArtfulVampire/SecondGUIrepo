@@ -120,7 +120,7 @@ void calculateFeatures(const QString & pathWithEdfs,
 		}
 		case autosUser::XeniaFinalest:
 		{
-#if 01
+#if 0
 			/// first 30 seconds
 			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq());	/// not resizeCols
 #else
@@ -138,7 +138,7 @@ void calculateFeatures(const QString & pathWithEdfs,
 				/// as is
 			}
 #endif
-			tmpData.eraseRows({4, 9, 14});							/// skip Fz, Cz, Pz
+			tmpData.eraseRows({4, 9, 14}); /// skip Fz, Cz, Pz
 			break;
 		}
 		default:
@@ -353,11 +353,12 @@ void countHilbert(const matrix & inData,
 
 	std::vector<std::pair<double, double>> filters{
 				std::make_pair(0, 0),		/// [0] no filter
-				std::make_pair(4, 6),		/// [1] theta
+				std::make_pair(4, 7),		/// [1] theta
 				std::make_pair(8, 13),		/// [2] alpha
 				std::make_pair(8, 10),		/// [3] low_alpha
 				std::make_pair(10, 13),		/// [4] high_alpha
-				std::make_pair(2, 20)		/// [5] band of interest
+				std::make_pair(2, 20),		/// [5] band of interest
+				std::make_pair(2, 6),		/// [6] delta
 	};
 
 	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); /// [filter][chan][0-carr, 1-SD]
@@ -442,8 +443,8 @@ void countHilbert(const matrix & inData,
 	{
 		for(int ch = 0; ch < inData.rows(); ++ch)
 		{
-			for(int filt : {0, 1, 2, 3, 4,  5}) /// whole, theta, alpha, low-alpha, high-alpha, 2-20
-//			for(int filt : {3, 4}) /// 8-10, 10-13
+//			for(int filt : {0, 1, 2, 3, 4,  5}) /// whole, theta, alpha, low-alpha, high-alpha, 2-20
+			for(int filt : {6, 1})
 //			int filt = 5; /// 2-20
 			{
 				for(int func : {0, 1})  /// carr or SD
@@ -856,10 +857,10 @@ void Xenia_TBI(const QString & tbi_path)
 			{
 				fileNames.clear();
 				for(featuresMask type : {
-					featuresMask::alpha,
+					featuresMask::alphaPeak,
 					featuresMask::fracDim,
 					featuresMask::Hilbert,
-					featuresMask::spectre,
+					featuresMask::fft,
 					featuresMask::wavelet})
 				{
 					QString typ = "_" + autos::getFeatureString(type);
@@ -1045,11 +1046,11 @@ void Xenia_TBI_final(const QString & finalPath,
 				{
 					QStringList fileNamesToArrange;
 					for(featuresMask func : {
-						featuresMask::spectre,
+						featuresMask::fft,
 						featuresMask::fracDim,
 						featuresMask::Hilbert,
 						featuresMask::wavelet,
-						featuresMask::alpha})
+						featuresMask::alphaPeak})
 					{
 						fileNamesToArrange.push_back(ExpName + mark
 													 + "_" + autos::getFeatureString(func) + ".txt");
@@ -1168,7 +1169,6 @@ void Xenia_TBI_finalest(const QString & finalPath,
 			}
 		}
 	}
-//	exit(0);
 
 	if(01)
 	{
@@ -1588,8 +1588,8 @@ void ProcessAllInOneFolder(const QString & inPath,
 
 			QStringList fileNamesToArrange;
 			for(featuresMask func : {
-				featuresMask::alpha,
-				featuresMask::spectre,
+				featuresMask::alphaPeak,
+				featuresMask::fft,
 				featuresMask::Hilbert,
 				featuresMask::fracDim,
 				featuresMask::Hjorth,
@@ -1631,8 +1631,8 @@ void ProcessAllInOneFolder(const QString & inPath,
 	{
 		QDir().mkpath(inPath + "/out2");
 		for(featuresMask func : {
-			featuresMask::alpha,
-			featuresMask::spectre,
+			featuresMask::alphaPeak,
+			featuresMask::fft,
 			featuresMask::Hilbert,
 			featuresMask::fracDim
 	})
@@ -1822,7 +1822,7 @@ void makeLabelsFile(int numChan,
 	{
 		mark.remove('_');
 
-		if(DEFS.getAutosMask() & featuresMask::spectre)
+		if(DEFS.getAutosMask() & featuresMask::fft)
 		{
 			/// FFT
 			/// 18 ranges 1-Hz-wide, 19 channels = 342 values
@@ -1840,7 +1840,7 @@ void makeLabelsFile(int numChan,
 			}
 		}
 
-		if(DEFS.getAutosMask() & featuresMask::alpha)
+		if(DEFS.getAutosMask() & featuresMask::alphaPeak)
 		{
 			/// ALPHA
 			for(const QString & lbl : labels1) /// 19 values
