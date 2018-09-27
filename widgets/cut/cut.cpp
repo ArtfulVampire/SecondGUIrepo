@@ -343,6 +343,8 @@ void Cut::resizeEvent(QResizeEvent * event)
 	}
 }
 
+
+
 bool Cut::eventFilter(QObject *obj, QEvent *event)
 {
     if(obj == ui->scrollArea)
@@ -354,6 +356,16 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			/// for one "wheel step" there are TWO identical(?) wheel events
 
 			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
+
+			/// workaround to process only the second of two QWheelEvents
+			static QWheelEvent * p = nullptr;
+			if(!p)
+			{
+				p = scrollEvent;
+				return false;
+			}
+			p = nullptr;
+
 			if(scrollEvent->modifiers().testFlag(Qt::ControlModifier) &&
 			   !scrollEvent->modifiers().testFlag(Qt::ShiftModifier))
 			{
@@ -375,16 +387,16 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			{
 				if(!scrollEvent->modifiers().testFlag(Qt::ControlModifier))
 				{
-					offset *= ui->paintLengthDoubleSpinBox->value() / 2;
+					offset *= ui->paintLengthDoubleSpinBox->value();
 				}
 				else
 				{
-					offset *= ui->paintLengthDoubleSpinBox->value() * 2.5;
+					offset *= ui->paintLengthDoubleSpinBox->value() * 5;
 				}
 			}
 			else
 			{
-				offset *= 0.4;
+				offset *= ui->paintLengthDoubleSpinBox->value() * 0.125;
 			}
 
 			switch(myFileType)
@@ -538,18 +550,21 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		case QEvent::KeyPress:
 		{
 			QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
-			if(keyEvent->key() == Qt::Key_Home)
+			switch(keyEvent->key())
+			{
+			case Qt::Key_Home:
 			{
 				ui->paintStartDoubleSpinBox->setValue(0.);
+				return true;
 			}
-			else if(keyEvent->key() == Qt::Key_End)
+			case Qt::Key_End:
 			{
 				ui->paintStartDoubleSpinBox->setValue(
-												this->dataCutLocal.cols() / edfFil.getFreq() -
-												ui->paintLengthDoubleSpinBox->value());
+							this->dataCutLocal.cols() / edfFil.getFreq() -
+							ui->paintLengthDoubleSpinBox->value());
+				return true;
 			}
-			else if(keyEvent->key() == Qt::Key_Left ||
-					keyEvent->key() == Qt::Key_Right)
+			case Qt::Key_Left | Qt::Key_Right:
 			{
 				auto * targetSpin = ui->leftLimitSpinBox;
 				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
@@ -571,11 +586,9 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				}
 				showDerivatives();
 				paintLimits();
+				return true;
 			}
-			else if(keyEvent->key() == Qt::Key_Z ||
-					keyEvent->key() == Qt::Key_X ||
-					keyEvent->key() == Qt::Key_C ||
-					keyEvent->key() == Qt::Key_V)
+			case Qt::Key_Z | Qt::Key_X | Qt::Key_C | Qt::Key_V:
 			{
 				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
 				{
@@ -589,6 +602,25 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 					default:			{ return false; }
 					}
 				}
+				return true;
+			}
+			case Qt::Key_Up | Qt::Key_Down:
+			{
+				const int step = (keyEvent->key() == Qt::Key_Up) ? +1 : -1;
+				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
+				{
+					if(keyEvent->modifiers().testFlag(Qt::AltModifier))
+					{
+						/// horzNorm
+						ui->xNormSpinBox->stepBy(step);
+					}
+					else
+					{
+						ui->yNormDoubleSpinBox->stepBy(step);
+					}
+					return true;
+				}
+			}
 			}
 			return true;
 		}
