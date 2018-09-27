@@ -968,7 +968,6 @@ void Cut::manualDraw(QPoint finP)
 	if(numChan == -1) { return; }
 	if(manualDrawStart.x() == finP.x()) { return; }
 
-
 	QPoint sta = manualDrawStart;
 	QPoint fin = finP;
 	manualDrawStart = fin;
@@ -982,9 +981,10 @@ void Cut::manualDraw(QPoint finP)
 						   * ui->scrollArea->height()
 						   / (drawData.rows() + 2.);
 	/// horzNorm
-	const int Xsta = std::round(sta.x() * ui->xNormSpinBox->value());
-	const int Xfin = std::round(fin.x() * ui->xNormSpinBox->value());
+	const int Xsta = sta.x() * ui->xNormSpinBox->value();
+	const int Xfin = fin.x() * ui->xNormSpinBox->value();
 	const double norm = normCoeff();
+
 	for(int x = Xsta; x <= Xfin; ++x)
 	{
 		dataCutLocal[numChan][x + leftDrawLimit] =
@@ -1009,20 +1009,13 @@ void Cut::repaintData(matrix & drawDataLoc, int sta, int fin)
 		if(ch < drawDataLoc.rows()) { drawDataLoc[ch] = 0; }
 	}
 
-//	currentPic = myLib::drw::drawEeg(drawDataLoc * normCoeff(),
-//									 edfFil.getFreq(),
-//									 ui->scrollArea->height(),
-//									 this->makeColouredChans())
-//				  /// horzNorm
-//				 .scaledToWidth(ui->paintLengthDoubleSpinBox->value()
-//								* edfFil.getFreq()
-//								/ ui->xNormSpinBox->value());
-
 	myLib::drw::redrawEeg(currentPic,
-						  sta,
-						  fin,
-						  drawDataLoc * normCoeff() / ui->xNormSpinBox->value(),
-						  edfFil.getFreq(),
+						  sta / ui->xNormSpinBox->value(),
+						  fin / ui->xNormSpinBox->value(),
+						  /// horzNorm
+						  drawDataLoc.subColsStride(0, ui->xNormSpinBox->value()) * normCoeff(),
+						  /// horzNorm
+						  edfFil.getFreq() / ui->xNormSpinBox->value(),
 						  /// horzNorm
 						  ui->xNormSpinBox->value(),
 						  this->makeColouredChans());

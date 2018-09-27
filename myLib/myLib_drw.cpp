@@ -767,6 +767,65 @@ void redrawEeg(QPixmap & pic,
 			   double Xnorm,
 			   const std::vector<std::pair<int, QColor> > & colouredChans)
 {
+
+#if 01
+	/// integer xNorm
+
+
+
+	QPainter paint;
+	paint.begin(&pic);
+
+	/// white before redraw
+	paint.setPen("white");
+	paint.setBrush(QBrush("white"));
+
+	 /// magic +-1
+	auto rect1 = QRect(QPoint(sta - 1,	0),
+					   QPoint(fin,		pic.height()));
+	paint.drawRect(rect1);
+
+	for(int chanNum = 0; chanNum < inData.rows(); ++chanNum)
+	{
+		/// set color
+		auto it = std::find_if(std::begin(colouredChans), std::end(colouredChans),
+							   [chanNum](const std::pair<int, QColor> & in)
+		{
+			return in.first == chanNum;
+		}
+		);
+
+		if(it != std::end(colouredChans))
+		{
+			paint.setPen(QPen(QBrush((*it).second), myLib::drw::penWidth));
+		}
+		else
+		{
+
+			paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
+		}
+
+		const double offsetY = (chanNum + 1) * pic.height() / double(inData.rows() + 2);
+
+		/// magic +-2
+		for(int currX = rect1.left() - 1; currX <= rect1.right() + 1; ++currX)
+		{
+			paint.drawLine(currX,
+						   /// horzNorm WHAAAAAAAAAAAAT
+						   offsetY + inData[chanNum][currX],
+					(currX + 1),
+					/// horzNorm WHAAAAAAAAAAAAAAT
+					offsetY + inData[chanNum][currX + 1]
+					);
+		}
+	}
+
+	/// paint seconds marks - TO DO
+	drawTime(paint, sta, fin, srate);
+	paint.end();
+
+#else
+	/// double xNorm
 #define PIECE_DRAW 0
 	QPainter paint;
 	paint.begin(&pic);
@@ -878,6 +937,35 @@ void redrawEeg(QPixmap & pic,
 	}
 	paint.end();
 #endif
+
+#endif /// double xNorm
+}
+
+void drawTime(QPainter & pnt, int start, int end, int srate)
+{
+	pnt.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
+	pnt.setFont(QFont("", 10)); /// magic const
+
+	for(int numSec = start / srate; numSec <= end / srate; ++numSec)
+	{
+		/// whole sec stick
+		pnt.drawLine(numSec * srate, pnt.device()->height(),
+					   numSec * srate, pnt.device()->height() - myLib::drw::wholeSecStick);
+
+		/// number
+		pnt.drawText(numSec * srate,
+					   pnt.device()->height() - myLib::drw::timeTextY,  /// magic const
+					   nm(numSec));
+
+		/// 0.2 sec sticks
+		for(int subSec = 1; subSec < 5; ++subSec) /// const 5
+		{
+			pnt.drawLine((numSec + subSec / 5.) * srate,
+						 pnt.device()->height(),
+						 (numSec + subSec / 5.) * srate,
+						 pnt.device()->height() - myLib::drw::fifthSecStick);
+		}
+	}
 }
 
 QPixmap drawEeg(const matrix & inData,
@@ -917,27 +1005,7 @@ QPixmap drawEeg(const matrix & inData,
 		}
 	}
 	/// paint seconds marks
-	paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
-	paint.setFont(QFont("", 10)); /// magic const
-	const int wholeSecLen = 20;
-	for(int numSec = 0; numSec < (inData.cols() / srate) + 1; ++numSec)
-	{
-		/// whole sec stick
-		paint.drawLine(numSec * srate, pic.height(),
-					   numSec * srate, pic.height() - wholeSecLen);
-
-		/// number
-		paint.drawText(numSec * srate,
-					   pic.height() - wholeSecLen - 2,  /// magic const
-					   nm(numSec));
-
-		/// 0.2 sec sticks
-		for(int subSec = 1; subSec < 5; ++subSec) /// const 5
-		{
-			paint.drawLine((numSec + subSec / 5.) * srate, pic.height(),
-						   (numSec + subSec / 5.) * srate, pic.height() - wholeSecLen * 0.8);
-		}
-	}
+	drawTime(paint, 0, inData.cols(), srate);
 	paint.end();
 	return pic;
 }

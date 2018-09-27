@@ -29,16 +29,26 @@ const int penWidth = 3; /// for signals
 const double offsetYinLine = 1 - 0.1;
 const int eegPicHeight = 600;
 const int mapSize = 240;
+
+/// sec sticks, time num text
+const int wholeSecStick = 20;
+const int timeTextY = wholeSecStick - 2;
+const int fifthSecStick = wholeSecStick * 0.8;
+
 /// Mann-Witney
 const double barWidth = 1/2.;
 const int barHeight = 5;
 const int barHeightStart = 18;
 const int barHeightStep = 8;
-const std::vector<QColor> defaultColors{ QColor("blue"),
+
+const std::vector<QColor> defaultColors
+{
+	QColor("blue"),
 			QColor("red"),
 			QColor("green"),
 			QColor("black"),
-			QColor("gray")};
+			QColor("gray"),
+};
 
 /// coordinates
 auto c = [](int in) -> double
@@ -191,6 +201,7 @@ QPixmap drawEeg(const matrix & inData,
 				double srate,
 				int picHeight,
 				const std::vector<std::pair<int, QColor>> & colouredChans = {});
+void drawTime(QPainter & paint, int start, int end,  int srate);
 
 /// colorScales
 enum class ColorScale {jet, htc, gray, matlab};
