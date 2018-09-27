@@ -153,12 +153,12 @@ void MainWindow::matiPreprocessingSlot()
 						+ "/" + dirList[dirNum]
 						+ "/amod"
 						+ "/" + lst[i];
-				fil = fopen(helpString, "r");
+				fil = fopen(helpString.toStdString().c_str(), "r");
 				helpString = DEFS.dirPath()
 						+ "/" + dirList[dirNum]
 						+ "/amod"
 						+ "/" + lst[i] + "_";
-				fil1 = fopen(helpString, "w");
+				fil1 = fopen(helpString.toStdString().c_str(), "w");
 				while(!feof(fil))
 				{
 					fread(&ch, sizeof(char), 1, fil);

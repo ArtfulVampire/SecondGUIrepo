@@ -98,8 +98,7 @@ void calculateFeatures(const QString & pathWithEdfs,
 					 const int numChan,
 					 const QString & outPath);
 
-void elenaCalculation(const QString & edfPath128);
-void elenaCalculation(const edfFile & edf128);
+void elenaCalculation(const QString & realsPath, const QString & outTableDir);
 
 /// quite useful general functions
 void rewriteNew(const QString & inPath);

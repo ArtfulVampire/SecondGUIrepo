@@ -269,15 +269,4 @@ return;
 #endif
 }
 
-void elenaCalculation(const QString & edfPath128)
-{
-	elenaCalculation(edfFile(edfPath128));
-}
-
-void elenaCalculation(const edfFile & edf128)
-{
-
-}
-
-
 } /// end of namespace autos

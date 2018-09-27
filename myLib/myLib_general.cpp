@@ -379,8 +379,8 @@ bool areEqualFiles(const QString & path1, const QString & path2)
 	myTime.start();
 
 	using byte = qint8;
-	FILE * fil1 = fopen(path1, "rb");
-	FILE * fil2 = fopen(path2, "rb");
+	FILE * fil1 = fopen(path1.toStdString().c_str(), "rb");
+	FILE * fil2 = fopen(path2.toStdString().c_str(), "rb");
 	if(fil1 == nullptr || fil2 == nullptr)
 	{
 		std::cout << "areEqualFiles: some of the files == NULL" << std::endl;
@@ -437,7 +437,7 @@ double areSimilarFiles(const QString & path1,
 int countSymbolsInFile(const QString & filePath, char inChar)
 {
 	FILE * inStr;
-	inStr = fopen(filePath, "rb");
+	inStr = fopen(filePath.toStdString().c_str(), "rb");
 	char tmpChar;
 	int res = 0;
 	while(!feof(inStr))
@@ -506,7 +506,7 @@ void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 
 
 	FILE * outFile;
-	outFile = fopen(outPath, "wb");
+	outFile = fopen(outPath.toStdString().c_str(), "wb");
 	if(outFile == nullptr)
 	{
 		std::cout << "cant open file to write" << std::endl;

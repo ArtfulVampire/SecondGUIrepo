@@ -225,8 +225,191 @@ void MainWindow::sliceWinds()
 	}
 }
 
+void MainWindow::sliceElena() /// slice only, eda in fileName
+{
+	/// CONSTS START
+	const edfFile & fil = globalEdf;
+	const int numOfTasks = 180;
+
+	/// rest "task codes"
+	/// 210 - closed start, 211 - closed end
+	/// 212 - open start, 213 - open end
+	const std::vector<std::vector<int>> eyesMarks{{210, 211}, {212, 213}};
+
+	/// rest "operational codes", 214 - closed, 215 - open
+	const std::vector<int> eyesCodes{214, 215};
+
+	/// for windows operational codes are +100
+
+	const double restWindow = 16.;	/// window length in seconds
+	const double restShift = 16.;	/// time shift between windows in seconds
+
+	const auto & marks = fil.getMarkers();
+
+	/// make a set of all task numbers (to check later which ones were not processed)
+	/// really should use smLib::range and std::set(iter1, iter2);
+	std::set<int> allNumbers;
+	for(int i = 1; i <= numOfTasks; ++i)
+	{
+		allNumbers.emplace(i);
+	}
+	/// CONSTS END
 
 
+	/// SHOULD SPECIFY PARAMETERS TO CAPTURE
+	/// DON'T USE GENERAL "BY REFERENCE"
+	auto edaBaseMean = [&fil](int startBin) -> double
+	{
+		int EDAnum = fil.findChannel("KGR");
+		if(EDAnum == -1) { return 0.; }
+		return smLib::mean(smLib::contSubsec(
+							   fil.getData(EDAnum),
+							   std::max(0., startBin - 2 * fil.getFreq()), /// -2 sec
+							   startBin)
+						   );
+	};
+
+	auto fileName = [&fil](double eda, int taskNumber, int taskMark, int operMark) -> QString
+	{
+		return fil.getDirPath()
+				+ "/Reals"
+				+ "/" + fil.getExpName()
+				+ "_eda_" + nm(eda)
+				+ "_n_" + nm(taskNumber)
+				+ "_m_" + nm(taskMark)
+				+ "_t_" + nm(operMark)
+				+"_.edf";
+	};
+
+	/// slice rest backgrounds
+	for(int typ = 0; typ < 2; ++typ)	/// 0 - closed, 1 - open
+	{
+		/// start iterator
+		auto eyesSta = std::find_if(std::begin(marks),
+									std::end(marks),
+									[eyesMarks, typ](const auto & in)
+		{ return in.second == eyesMarks[typ][0]; });
+
+		/// finish iterator
+		auto eyesFin = std::find_if(std::begin(marks),
+									std::end(marks),
+									[eyesMarks, typ](const auto & in)
+		{ return in.second == eyesMarks[typ][1]; });
+
+		/// if not found both markers - do nothing
+		if(eyesSta == std::end(marks) || eyesFin == std::end(marks)) { continue; }
+
+		/// save rest whole signal
+		fil.saveSubsection((*eyesSta).first,
+						   (*eyesFin).first,
+						   fileName(edaBaseMean((*eyesSta).first),
+									typ,
+									eyesMarks[typ][0] + 100,
+									eyesCodes[typ] + 100));
+
+
+		/// rest windows
+		int windCounter = 0;
+		for(int i = (*eyesSta).first;
+			i < (*eyesFin).first - restWindow * fil.getFreq();
+			i += restShift * fil.getFreq(), ++windCounter)
+		{
+			/// save window signal
+			fil.saveSubsection(i,
+							   i + restWindow * fil.getFreq(),
+							   fileName(edaBaseMean(i),
+										windCounter,
+										eyesMarks[typ][0],
+										eyesCodes[typ]));
+		}
+
+	}
+
+	int marker = -1;
+	int number = -1;
+	int start = -1;
+	bool startFlag = false;
+
+	/// (241-244) - instruction (task code)
+	/// (1-numOfTasks) - number(start)
+	/// (255) - optional click
+	/// (245-254) - operational code
+	/// 255 - ready for next task
+
+	for(const auto & mark : marks)
+	{
+		if(!startFlag)
+		{
+			if(241 <= mark.second && mark.second <= 244)
+			{
+				marker = mark.second;
+				startFlag = true;
+			}
+			else if(mark.second == 255)
+			{
+				/// 255 - do nothing
+			}
+			else
+			{
+				outStream << "sliceElena: startFlag == false, "
+						  << "expecting marker 241-244 or 255, but have "
+						  << mark.second
+						  << ", time = " << mark.first / fil.getFreq() << " sec" << std::endl;
+			}
+		}
+		else /// if(startFlag)
+		{
+			if(1 <= mark.second && mark.second <= 240) /// taskNumber - task started
+			{
+				number = mark.second;
+				start = mark.first;
+			}
+			else if(245 <= mark.second && mark.second <= 254) /// operMark - task ended
+			{
+				if(start != -1) /// it was already set by task start
+				{
+					if(mark.first - start < 60 * fil.getFreq()) /// task < 1 minute
+					{
+						/// save the task signal
+						fil.saveSubsection(start,
+										   mark.first,
+										   fileName(edaBaseMean(start),
+													number,
+													marker,
+													mark.second));
+						allNumbers.erase(number);
+					}
+					else /// if the task lasts more than 1 minute
+					{
+						outStream << "sliceElena: too long task, "
+								  << "start time = " << start / fil.getFreq() << " sec, "
+								  << "end time = " << mark.first / fil.getFreq() << " sec" << std::endl;
+					}
+				}
+				else /// if start was not set, but we've found task end (operMark)
+				{
+					outStream << "sliceElena: task end (operMark) found but there was no start, "
+							  << "mark = " << mark.second << ", "
+							  << "its time = " << mark.first / fil.getFreq() << " sec" << std::endl;
+				}
+				startFlag = false;
+				start = -1;
+				marker = 0;
+				ui->progressBar->setValue(mark.first * 100. / fil.getDataLen());
+				qApp->processEvents();
+				if(stopFlag)
+				{
+					stopFlag = false;
+					return;
+				}
+			}
+		}
+	}
+}
+
+
+#if 0
+/// old before edaBase sending
 void MainWindow::sliceElena()
 {
 	/// CONSTS START
@@ -238,7 +421,7 @@ void MainWindow::sliceElena()
 	/// 212 - open start, 213 - open end
 	const std::vector<std::vector<int>> eyesMarks{{210, 211}, {212, 213}};
 
-	/// rest "operational codes"
+	/// rest "operational codes", 214 - closed, 215 - open
 	const std::vector<int> eyesCodes{214, 215};
 
 	const double restWindow = 10.;	/// window length in seconds
@@ -542,10 +725,10 @@ void MainWindow::sliceElena()
 		QString restFileName = fil.getDirPath()
 							   + "/Reals"
 							   + "/" + fil.getExpName()
-							   + "_n_0_" + nm(1500 + typ * 100)	/// taskNumber (1500 - closed, 1600 - open)
-							   + "_m_" + nm(eyesMarks[typ][0])	/// taskMark
-								+ "_t_" + nm(eyesCodes[typ])
-								+ ".edf";
+							   + "_n_0_" + nm(1500 + typ * 100)		/// taskNumber (1500 - closed, 1600 - open)
+							   + "_m_" + nm(eyesMarks[typ][0])		/// taskMark
+								+ "_t_" + nm(eyesCodes[typ] + 100)	/// operMark
+				+ ".edf";
 
 		/// save rests signal
 		fil.saveSubsection((*eyesSta).first,
@@ -560,7 +743,7 @@ void MainWindow::sliceElena()
 									 (*eyesFin).first,
 									 nm(1500 + typ * 100),		/// taskNumber (1500 - closed, 1600 - open)
 									 nm(eyesMarks[typ][0]),		/// taskMark
-									nm(eyesCodes[typ])			/// operMark
+									nm(eyesCodes[typ] + 100)	/// operMark
 						)
 					);
 		}
@@ -734,6 +917,7 @@ void MainWindow::sliceElena()
 		outStream << std::endl;
 	}
 }
+#endif
 
 /// beginning - from mark1 to mark 2, end 250 Marker - included in filename
 void MainWindow::sliceBak(int marker1, int marker2, const QString & marker)

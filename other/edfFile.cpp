@@ -122,8 +122,9 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		/// traceSuccessXY, secondBit
 		/// right, wrong, skipped answers
 
+		/// remake
 		FILE* inStr;
-		inStr = fopen(txtFilePath, "r");
+		inStr = fopen(txtFilePath.toStdString().c_str(), "r");
 
 		if(inStr == nullptr)
 		{

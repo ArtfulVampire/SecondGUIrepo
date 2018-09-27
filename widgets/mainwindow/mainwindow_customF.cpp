@@ -20,7 +20,11 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-
+	const QString fileName = "Ivanov_als_12_2_eda_2.64521_d_90_g.edf";
+	const int from = fileName.indexOf("_eda_") + 5;
+	const int to = fileName.indexOf("_", from);
+	std::cout <<  fileName.mid(from, to - from) << std::endl;
+	exit(0);
 
 #if 0
 	/// rename some files in a dir
@@ -578,6 +582,34 @@ void MainWindow::customFunc()
 #endif
 
 #endif /// end Galya processing things
+
+#if 0
+	/// test coords::egi::chans128 for duplicates and lost channels
+	std::vector<int> vec(130, 0);
+	for(const auto & in : coords::egi::chans128)
+	{
+		for(const auto & in2 : in.second)
+		{
+			QString t = in2;
+			t.remove(" ");
+
+			if(vec[t.toInt()] == 1)
+			{
+				std::cout << t.toInt() << " collision" <<  std::endl;
+			}
+			vec[t.toInt()] = 1;
+		}
+	}
+
+	for(int i = 1; i < vec.size(); ++i)
+	{
+		if(vec[i] == 0)
+		{
+			std::cout << i << std::endl;
+		}
+	}
+	exit(0);
+#endif
 
 #if 0
 	/// draw the envelope picture

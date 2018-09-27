@@ -31,12 +31,8 @@ namespace myOut
 
 template <typename Typ>
 inline QString nm(Typ in) { return QString::number(in); }
-template QString nm(int in);
-template QString nm(double in);
 
 inline QString rn(int in, int num) { return myLib::rightNumber(in, num); }
-
-FILE * fopen(const QString & filePath, const char *__modes);
 
 std::istream & operator>> (std::istream & is, QString & in);
 std::ostream & operator<< (std::ostream & os, QChar toOut);

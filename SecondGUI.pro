@@ -102,7 +102,8 @@ widgets/cut/cut_iitp.cpp \
 widgets/cut/cut_files.cpp \
     myLib/myLib_ica.cpp \
     myLib/myLib_adhoc.cpp \
-    widgets/choosechans.cpp
+    widgets/choosechans.cpp \
+    other/autos_elena.cpp
 
 HEADERS += \
 myLib/drw.h \
