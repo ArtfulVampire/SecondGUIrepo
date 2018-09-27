@@ -918,18 +918,24 @@ QPixmap drawEeg(const matrix & inData,
 	}
 	/// paint seconds marks
 	paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
+	paint.setFont(QFont("", 10)); /// magic const
+	const int wholeSecLen = 20;
 	for(int numSec = 0; numSec < (inData.cols() / srate) + 1; ++numSec)
 	{
+		/// whole sec stick
 		paint.drawLine(numSec * srate, pic.height(),
-					   numSec * srate, pic.height() - 32); /// magic const
+					   numSec * srate, pic.height() - wholeSecLen);
+
+		/// number
 		paint.drawText(numSec * srate,
-					   pic.height() - 35,  /// magic const
+					   pic.height() - wholeSecLen - 2,  /// magic const
 					   nm(numSec));
 
+		/// 0.2 sec sticks
 		for(int subSec = 1; subSec < 5; ++subSec) /// const 5
 		{
 			paint.drawLine((numSec + subSec / 5.) * srate, pic.height(),
-						   (numSec + subSec / 5.) * srate, pic.height() - 25); /// magic const
+						   (numSec + subSec / 5.) * srate, pic.height() - wholeSecLen * 0.8);
 		}
 	}
 	paint.end();

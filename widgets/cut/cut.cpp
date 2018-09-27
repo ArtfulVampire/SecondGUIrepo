@@ -769,6 +769,12 @@ std::vector<std::pair<int, QColor>> Cut::makeColouredChans()
 	return res;
 }
 
+double Cut::normCoeff()
+{
+	return ui->yNormDoubleSpinBox->value()
+			* ((ui->yNormInvertCheckBox->isChecked()) ? -1 : 1);
+}
+
 void Cut::paint()
 {
 	drawData = this->makeDrawData();
@@ -786,7 +792,7 @@ matrix Cut::makeDrawData()
 
 	leftDrawLimit = ui->paintStartDoubleSpinBox->value() * edfFil.getFreq();
 	int rightDrawLimit = std::min(leftDrawLimit +
-								  /// horzNorm
+								  /// horzNorm inside paintLength
 								  int(ui->paintLengthDoubleSpinBox->value()
 									  * edfFil.getFreq()),
 								  int(dataCutLocal.cols()));
@@ -808,6 +814,97 @@ matrix Cut::makeDrawData()
 	}
 #endif
 	return dataCutLocal.subCols(leftDrawLimit, rightDrawLimit);
+}
+
+void Cut::paintData(matrix & drawDataLoc)
+{
+	int ecg = edfFil.findChannel("ECG");
+	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg != -1)
+	{
+		drawDataLoc[ecg] = 0; /// for iitp ecg
+	}
+	for(int ch : this->zeroedChannels)
+	{
+		if(ch < drawDataLoc.rows()) { drawDataLoc[ch] = 0; }
+	}
+
+	/// new horzNorm
+	currentPic = myLib::drw::drawEeg(
+					 /// horzNorm
+					 drawDataLoc.subColsStride(0, ui->xNormSpinBox->value())  * normCoeff(),
+					 /// horzNorm for time sticks
+					 edfFil.getFreq() / ui->xNormSpinBox->value(),
+					 ui->scrollArea->height(),
+					 this->makeColouredChans());
+
+	/// old horzNorm
+//	currentPic = currentPic.scaledToWidth(drawDataLoc.cols() / ui->xNormSpinBox->value());
+
+	paintMarkers(drawDataLoc);
+	paintLimits();
+}
+
+void Cut::paintMarkers(const matrix & drawDataLoc)
+{
+	int mrk{-1};
+	if(edfFil.getNs() >= coords::egi::manyChannels)
+	{
+		mrk = drawDataLoc.rows() - 1;
+	}
+	else
+	{
+		mrk = edfFil.getMarkChan();
+	}
+	if(mrk < 0) { return; }
+
+	QPainter pnt;
+	pnt.begin(&currentPic);
+
+	pnt.setFont(QFont("", 14)); /// magic const
+	for(int i = 0; i < drawDataLoc.cols(); ++i)
+	{
+		const double & toDraw = drawDataLoc[mrk][i];
+		bool allowed = marksToDraw.empty() || myLib::contains(marksToDraw, int(toDraw));
+		if(toDraw != 0. && allowed)
+		{
+			/// magic consts
+			/// horzNorm
+			pnt.drawText(i / ui->xNormSpinBox->value(),
+						 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
+						 nm(int(toDraw)));
+		}
+	}
+	pnt.end();
+}
+
+void Cut::paintLimits()
+{
+	if( !fileOpened ) { return; }
+	if(currentPic.isNull() || !drawFlag) { return; }
+
+	QPixmap tempPic = currentPic;
+	QPainter paint;
+	paint.begin(&tempPic);
+
+	/// horzNorm
+	int leftX = (ui->leftLimitSpinBox->value() - leftDrawLimit) / ui->xNormSpinBox->value();
+	if(leftX >= 0 && leftX < ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq())
+	{
+		paint.setPen(QPen(QBrush("blue"), 2));
+		paint.drawLine(leftX, 0, leftX, tempPic.height());
+	}
+
+	/// horzNorm
+	int rightX = (ui->rightLimitSpinBox->value() - leftDrawLimit) / ui->xNormSpinBox->value();
+	if(rightX >= 0 && rightX < ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq())
+	{
+		paint.setPen(QPen(QBrush("red"), 2));
+		paint.drawLine(rightX, 0, rightX, tempPic.height());
+	}
+
+	ui->picLabel->setPixmap(tempPic.scaled(tempPic.width() - 2,				/// magic const
+										   ui->scrollArea->height() - 2));	/// magic const
+	paint.end();
 }
 
 /// check - works not especially accurate
@@ -897,14 +994,7 @@ void Cut::manualDraw(QPoint finP)
 				/ norm;														/// norm
 	}
 	drawData = this->makeDrawData();
-//	paintData(drawData);
 	repaintData(drawData, Xsta, Xfin);
-}
-
-double Cut::normCoeff()
-{
-	return ui->yNormDoubleSpinBox->value()
-			* ((ui->yNormInvertCheckBox->isChecked()) ? -1 : 1);
 }
 
 void Cut::repaintData(matrix & drawDataLoc, int sta, int fin)
@@ -940,97 +1030,3 @@ void Cut::repaintData(matrix & drawDataLoc, int sta, int fin)
 //	paintMarkers(drawDataLoc);
 	paintLimits();
 }
-
-void Cut::paintData(matrix & drawDataLoc)
-{
-	int ecg = edfFil.findChannel("ECG");
-	if(ui->iitpDisableEcgCheckBox->isChecked() && ecg != -1)
-	{
-		drawDataLoc[ecg] = 0; /// for iitp ecg
-	}
-	for(int ch : this->zeroedChannels)
-	{
-		if(ch < drawDataLoc.rows()) { drawDataLoc[ch] = 0; }
-	}
-
-	/// new horzNorm
-	drawDataLoc = drawDataLoc.subColsStride(0, ui->xNormSpinBox->value());
-	currentPic = myLib::drw::drawEeg(drawDataLoc * normCoeff(),
-									 edfFil.getFreq(),
-									 ui->scrollArea->height(),
-									 this->makeColouredChans());
-
-	/// old horzNorm
-//	currentPic = currentPic.scaledToWidth(drawDataLoc.cols() / ui->xNormSpinBox->value());
-
-	paintMarkers(drawDataLoc);
-	paintLimits();
-}
-
-void Cut::paintMarkers(const matrix & drawDataLoc)
-{
-	int mrk{-1};
-	if(edfFil.getNs() >= coords::egi::manyChannels)
-	{
-		mrk = drawDataLoc.rows() - 1;
-	}
-	else
-	{
-		mrk = edfFil.getMarkChan();
-	}
-
-	if(mrk < 0) { return; }
-
-	QPainter pnt;
-	pnt.begin(&currentPic);
-
-	/// horzNorm
-	pnt.setFont(QFont("", 18)); /// magic const
-
-	for(int i = 0; i < drawDataLoc.cols(); ++i)
-	{
-		const double & toDraw = drawDataLoc[mrk][i];
-		bool allowed = marksToDraw.empty()
-					   || myLib::contains(marksToDraw, int(toDraw));
-		if(toDraw != 0. && allowed)
-		{
-			/// magic consts
-			/// horzNorm
-			pnt.drawText(i / ui->xNormSpinBox->value(),
-						 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
-						 nm(int(toDraw)));
-		}
-	}
-	pnt.end();
-}
-
-void Cut::paintLimits()
-{
-	if( !fileOpened ) { return; }
-	if(currentPic.isNull() || !drawFlag) { return; }
-
-	QPixmap tempPic = currentPic;
-	QPainter paint;
-	paint.begin(&tempPic);
-
-	/// horzNorm
-	int leftX = (ui->leftLimitSpinBox->value() - leftDrawLimit) / ui->xNormSpinBox->value();
-	if(leftX >= 0 && leftX < ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq())
-	{
-		paint.setPen(QPen(QBrush("blue"), 2));
-		paint.drawLine(leftX, 0, leftX, tempPic.height());
-	}
-
-	/// horzNorm
-	int rightX = (ui->rightLimitSpinBox->value() - leftDrawLimit) / ui->xNormSpinBox->value();
-	if(rightX >= 0 && rightX < ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq())
-	{
-		paint.setPen(QPen(QBrush("red"), 2));
-		paint.drawLine(rightX, 0, rightX, tempPic.height());
-	}
-
-	ui->picLabel->setPixmap(tempPic.scaled(tempPic.width() - 2,				/// magic const
-										   ui->scrollArea->height() - 2));	/// magic const
-	paint.end();
-}
-
