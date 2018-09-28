@@ -2423,6 +2423,14 @@ std::pair<double, double> EDAmax(const std::valarray<double> & inSignal,
 
 }
 
+std::pair<double, double> EDAmax(const std::valarray<double> & inSignal,
+								 double baseMean)
+{
+	double a = inSignal.max() - baseMean;
+	double b = myLib::indexOfMax(inSignal);
+	return std::make_pair(a, b);
+
+}
 
 std::valarray<double> smoothSpectre(const std::valarray<double> & inSpectre,
 									int numOfSmooth)

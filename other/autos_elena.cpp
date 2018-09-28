@@ -21,9 +21,8 @@ const std::vector<std::pair<double, double>> integrLimits
 	{20, 21}, {21, 22}, {22, 23}, {23, 24},
 };
 
+const int numOfTasks = 180;
 const int numSmooth = 15;
-
-
 const double hilbertFreqLimit = 40.;
 
 const std::vector<std::pair<double, double>> hilbFilters
@@ -149,18 +148,67 @@ const int sumSize{std::accumulate(std::begin(funcsWithSizes),
 				 };
 
 
-
-
 const QString RDstring{"RD"};
 const QString PPGstring{"FPG"};
 const QString EDAstring{"KGR"};
-const int sizeVeget = 5;
-using vegetFuncType = std::function<double(const std::valarray<double> &, double)>;
-/// [channelName, function, featureName]
-const std::vector<std::tuple<QString, vegetFuncType, QString>> vegetFuncs
-{
 
-};
+
+std::vector<QString> makeTableCols(const std::vector<QString> & labels)
+{
+	std::vector<QString> tableCols{};
+
+	/// fft
+	for(const auto & cluster : labels)
+	{
+		for(const auto & lim : integrLimits)
+		{
+			tableCols.push_back("fft_" + cluster + "_" + nm(lim.first) + "-" + nm(lim.second));
+		}
+	}
+
+	/// alpha peak
+	for(const auto & cluster : labels)
+	{
+		tableCols.push_back("alpha_" + cluster);
+	}
+
+	/// fracDim
+	for(const auto & cluster : labels)
+	{
+		tableCols.push_back("fracDim_" + cluster);
+	}
+
+	/// Hilbert
+	for(const auto & cluster : labels)
+	{
+		for(const auto & fil : hilbFilters)
+		{
+			tableCols.push_back("hilbCarr_"	+ cluster + "_" + nm(fil.first) + "-" + nm(fil.second));
+			tableCols.push_back("hilbSD_"	+ cluster + "_" + nm(fil.first) + "-" + nm(fil.second));
+		}
+	}
+
+	/// Hjorth
+	for(const auto & cluster : labels)
+	{
+		tableCols.push_back("mobility_" + cluster);
+		tableCols.push_back("complexity_" + cluster);
+	}
+
+	/// veget
+	tableCols.push_back("SGRval");
+	tableCols.push_back("SGRlat");
+	tableCols.push_back("RDfreq");
+	tableCols.push_back("PPGampl");
+	tableCols.push_back("PPGfreq");
+	tableCols.push_back("reacTime");
+
+	/// auxiliary
+	tableCols.push_back("taskNumber");
+	tableCols.push_back("taskMark");
+	tableCols.push_back("operMark");
+	return tableCols;
+}
 
 
 void elenaCalculation(const QString & realsPath,
@@ -177,45 +225,23 @@ void elenaCalculation(const QString & realsPath,
 		"_t_214", /// closed eyes (winds)
 		"_t_215", /// open eyes (winds)
 	};
+
+
 	const int fftLen = 4096;
 	const int numChansForSpectre = 128; /// -1
 
-
-
-#if 0
-	/// alpha peak names
-	for(int i : globalEdf.findChannels(coords::lbl19))
-	{
-		QString lab = globalEdf.getLabels(i);
-		lab.remove("EEG ");
-		lab.resize(lab.indexOf('-'));
-		tableCols.push_back("alpha_" + lab);
-	}
-	/// add average spectra names
-	for(const auto & chs : integrChans) /// from coords::egi::map
-	{
-		/// F3_F7_12-16
-		QString chanStr{};
-		for(const auto & ch : chs)
-		{
-			chanStr += ch + "_";
-		}
-
-		for(const auto & lim : integrLimits)
-		{
-			tableCols.push_back(chanStr + nm(lim.first) + "-" + nm(lim.second));
-		}
-	}
-#endif
-
-	const QString tablePath = outTableDir + "/table.txt";
 	QDir().mkpath(outTableDir);
+	const QString tablePath = outTableDir + "/table.txt";
 
 	/// RD - recursia dyhaniya (don't know how it's called in English)
 	/// FPG - FotoPletizmoGramma (PPG - PhotoPlethismoGram)
 	/// KGR - Kozhno Galvanicheskaya Reakciya (really SGR - Skin Galvanic Reaction
 	/// or EDA - ElectroDermal Activity)
 
+	matrix result{};
+
+	const auto forSet = smLib::range<std::vector<int>>(0, numOfTasks);
+	std::set<int> allNumbers(std::begin(forSet), std::end(forSet));
 
 	const QStringList reals = QDir(realsPath).entryList(def::edfFilters);
 	for(const QString & fileName : reals)
@@ -232,49 +258,114 @@ void elenaCalculation(const QString & realsPath,
 			fromFileName.push_back(fileName.mid(from, to - from));
 		}
 
-		matrix result(128, sumSize + sizeVeget);
+		/// calculate features
+		matrix features(128, sumSize);
 		for(int chanNum = 0; chanNum < 128; ++chanNum) ////////////////////
 		{
 			int currIndex{0};
 			for(const auto & func : funcsWithSizes)
 			{
-				result[chanNum][std::slice(currIndex, func.second, 1)]
+				features[chanNum][std::slice(currIndex, func.second, 1)]
 						= (func.first)(inData[chanNum], fil.getFreq());
 				currIndex += func.second;
 			}
 		}
 
 		/// integrate over clusters
+		matrix avFeatures{};
+		for(const auto & in : coords::egi::chans128)
+		{
+			std::valarray<double> av(sumSize);
+			for(QString str : in.second)
+			{
+				str.remove(" ");
+				av += features[str.toInt() - 1];
+			}
+			av /= in.second.size();
+			avFeatures.push_back(av);
+		}
 
 		/// make a long line
+		std::valarray<double> res(sumSize + 9); /////////// magic = vegetative + auxiliary
+		res[std::slice(0, sumSize, 1)] = avFeatures.toValarByRows();
 
 		/// calculate vegetative
 		int vegetIndex = sumSize;
-		for(const auto & func : vegetFuncs)
-		{
-			/// longLine[vegetIndex++] = (func.second)(fil.getData(func.first));
-		}
+		auto eda = myLib::EDAmax(fil.getData(EDAstring), fromFileName[0].toDouble());
+		res[vegetIndex++] = eda.first;
+		res[vegetIndex++] = eda.second / fil.getFreq();
+		res[vegetIndex++] = myLib::RDfreq(fil.getData(RDstring), fftLen);
+		res[vegetIndex++] = myLib::PPGrange(fil.getData(PPGstring));
+		res[vegetIndex++] = myLib::RDfreq(fil.getData(PPGstring), fftLen);
+		res[vegetIndex++] = inData.cols() / fil.getFreq();
 
-		/// write into table file (with fromFileName data and vegetative)
+		/// auxiliary
+		res[vegetIndex++] = fromFileName[1].toInt();	/// taskNumber
+		res[vegetIndex++] = fromFileName[2].toInt();	/// taskMark
+		res[vegetIndex++] = fromFileName[3].toInt();	/// operMark
+		allNumbers.erase(fromFileName[1].toInt());
+		result.push_back(res);
 	}
+#if 01
+	/// cout unprocessed tasks
+	if(!allNumbers.empty())
+	{
+		std::cout << "elenaCalculation: unprocessed reals:" << std::endl;
+		for(auto each : allNumbers)
+		{
+			std::cout << each << " ";
+		}
+		std::cout << std::endl;
+	}
+#endif
+
+
+#if 01
+	/// get averages
+	auto getAverage = [&result](int taskMark) -> std::valarray<double>
+	{
+		std::valarray<double> res(result.cols());
+		int num = 0;
+		for(const auto & row : result)
+		{
+			if(row[sumSize + 7] == taskMark)
+			{
+				res += row;
+				++num;
+			}
+		}
+		return res / static_cast<double>(num);
+	};
+	std::ofstream avStr((outTableDir + "/averages.txt").toStdString());
+	for(int taskMark : {241, 242, 244})
+	{
+		avStr << getAverage(taskMark) << std::endl;
+	}
+	avStr.close();
+#endif
+
+
+
+	/// write into table file (with fromFileName data and vegetative)
+#if 0
+	/// sort by what?
+	std::sort(std::begin(result), std::end(result),
+			  [](const auto & a1, const auto a2)
+	{
+		return a1[sumSize + 6] < a2[sumSize + 6]; /// taskNumber
+		return a1[sumSize + 7] < a2[sumSize + 7]; /// taskMark
+		return a1[sumSize + 8] < a2[sumSize + 8]; /// operMark
+	});
+#endif
+	std::ofstream outStr(tablePath.toStdString());
+	outStr << makeTableCols(coords::egi::chans128groups) << std::endl;
+	outStr << result << std::endl;
+	outStr.close();
+
+
+
 
 #if 0
-	/// finish things
-
-	/// table into file
-	std::ofstream tableStream((fil.getDirPath() + "/" + "table.txt").toStdString());
-	tableStream << tableCols << "\r\n";
-	tableStream.precision(4);
-
-	if(01) /// sort the rows of the table by pieceNumber
-	{
-		std::sort(std::begin(table), std::end(table),
-				  [](const auto & a1, const auto a2)
-		{
-			return a1[0] < a2[0];
-		});
-	}
-
 	/// remove empty rows
 	std::vector<int> inds{};
 	for(int i = 0; i < table.rows(); ++i)
@@ -285,17 +376,6 @@ void elenaCalculation(const QString & realsPath,
 
 	tableStream << table;
 	tableStream.close();
-
-	/// cout unprocessed tasks
-	if(!allNumbers.empty())
-	{
-		outStream << "sliceElena: not detected reals:" << std::endl;
-		for(auto each : allNumbers)
-		{
-			outStream << each << " ";
-		}
-		outStream << std::endl;
-	}
 #endif
-
 }
+
