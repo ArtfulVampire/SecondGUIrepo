@@ -107,7 +107,7 @@ std::vector<std::tuple<matrix, uint, QString>> sliceWindows(
 								 + "." + rn(windowCounter++, 2);
 			res.push_back(std::make_tuple(inData.subCols(startWind,
 														 startWind + windLen),
-										  uint(typ),
+										  static_cast<uint>(typ),
 										  appendName)
 						  );
 		}
@@ -125,7 +125,7 @@ std::vector<std::tuple<matrix, uint, QString>> sliceWindows(
 
 	int windowCounter = 0;
 	for(int startWind = (*itLast).first + numBinsSkipRest;
-		startWind < std::min(int(inData.cols()),
+		startWind < std::min(inData.cols(),
 							 (*itLast).first + 8 * 250) - windLen; /// 8 sec 250 Hz magic const
 		startWind += windStep)
 	{

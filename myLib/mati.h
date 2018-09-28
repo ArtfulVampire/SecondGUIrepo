@@ -15,9 +15,9 @@ void matiPrintMarker(double marker, const QString & pre  = QString());
 void matiFixMarker(double & marker);
 int matiCountDecimal(std::vector<bool> byteMarker);
 int matiCountDecimal(QString byteMarker);
-inline bool matiCountBit(double const & marker, int num)
+inline bool matiCountBit(double marker, int num)
 {
-	return (int(marker) / int(std::pow(2, num))) % 2;
+	return static_cast<int>(marker / std::pow(2, num)) % 2;
 }
 
 }

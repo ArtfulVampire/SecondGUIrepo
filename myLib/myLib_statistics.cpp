@@ -62,7 +62,7 @@ int binomialLimitOfSignificance(int n, double successRate, double pval)
 
 double binomialOneTailed(int num1, int num2, int numAll1, int numAll2)
 {
-	double p = num1 / double(numAll1);
+	double p = num1 / static_cast<double>(numAll1);
 	if(numAll2 == 0) { numAll2 = numAll1; }
 
 
@@ -164,7 +164,7 @@ QPixmap histogram(const std::valarray<double> & arr,
 	}
 	for(double i = 1; i <= valueMax; i += valueMax / 20.)
 	{
-		const double Y = pic.height() * 0.9 * (1. - double(i) / valueMax);
+		const double Y = pic.height() * 0.9 * (1. - i / valueMax);
 		pnt.drawLine(0, Y,
 					 10, Y);
 		pnt.drawText(13, Y + 5,
@@ -225,7 +225,7 @@ void kernelEst(const std::valarray<double> & arr, const QString & picPath)
 		for(int j = 0; j < length; ++j)
 		{
 			values[i] += 1 / (length * h)
-						 * smLib::gaussian((xMin + (xMax - xMin) / double(pic.width()) * i - arr[j]) / h);
+						 * smLib::gaussian((xMin + (xMax - xMin) * i / pic.width() - arr[j]) / h);
 		}
 	}
 
@@ -300,7 +300,7 @@ QPixmap kernelEst(const std::valarray<double> & arr)
 		for(int j = 0; j < length; ++j)
 		{
 			values[i] += 1. / (length * h)
-						 * smLib::gaussian((xMin + (xMax - xMin) / double(pic.width()) * i - arr[j]) / h);
+						 * smLib::gaussian((xMin + (xMax - xMin) * i / pic.width() - arr[j]) / h);
 		}
 	}
 
@@ -339,7 +339,7 @@ QPixmap kernelEst(const std::valarray<double> & arr)
 bool gaussApproval(double * arr, int length) /// kobzar page 239
 {
 	double z;
-	int m = int(length/2);
+	int m = length / 2;
 	double a[m+1];
 	double disp = variance(arr, length) * length;
 	double B = 0.;
@@ -638,7 +638,7 @@ trivector<int> countMannWhitney(const QString & spectraPath,
 					++dist1;
 				}
 			}
-			distances[i][j - i] = dist1 / double(NetLength);
+			distances[i][j - i] = dist1 / static_cast<double>(NetLength);
 		}
 	}
 

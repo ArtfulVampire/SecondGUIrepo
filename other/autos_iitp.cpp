@@ -214,9 +214,9 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 	pnt.begin(&pic);
 	for(uint i = 0; i < drawData.size() - 1; ++i)
 	{
-		pnt.drawLine( pic.width() * (leftGap + i / double(drawData.size()) * (1. - (leftGap +  rightGap))),
+		pnt.drawLine( pic.width() * (leftGap + i / static_cast<double>(drawData.size()) * (1. - (leftGap +  rightGap))),
 					  pic.height() * (1. - drawData[i] / maxVal) * graphHeight,
-					  pic.width() * (leftGap + (i + 1) / double(drawData.size()) * (1. - (leftGap +  rightGap))),
+					  pic.width() * (leftGap + (i + 1) / static_cast<double>(drawData.size()) * (1. - (leftGap +  rightGap))),
 					  pic.height() * (1. - drawData[i + 1] / maxVal) * graphHeight);
 	}
 	const QFont font = QFont("Helvetica", 8);
@@ -239,7 +239,9 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double>> & inData,
 	/// draw Hz
 	for(int i = beg; i < en; ++i)
 	{
-		const double x = pic.width() * (leftGap + (i - beg) / double(en - beg) * (1. - (leftGap +  rightGap)));
+		const double x = pic.width() * (leftGap + (i - beg)
+										/ static_cast<double>(en - beg)
+										* (1. - (leftGap +  rightGap)));
 		pnt.drawLine( x,
 					  pic.height() * graphHeight,
 					  x,
@@ -1728,9 +1730,9 @@ void IITPmaxCoh(const QString & filePath,
 			for(int fr = minFreq; fr < maxFreq; ++fr)
 			{
 				vals.push_back(std::vector<double>{std::abs(idt.coherency(c1, c2, fr)),
-												   double(c1),
-												   double(c2),
-												   double(fr)});
+												   static_cast<double>(c1),
+												   static_cast<double>(c2),
+												   static_cast<double>(fr)});
 			}
 		}
 	}

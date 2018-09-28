@@ -644,7 +644,7 @@ void sammonProj(const mat & distOld,
         /// place this dot
         placedDots.push_back(num3);
         sammonAddDot(distOld, distNew, plainCoords, placedDots);
-		if(addNum >= int(std::sqrt(size)))
+		if(addNum >= static_cast<int>(std::sqrt(size)))
         {
             //// TODO
             //            adjustSkeletonDots(distOld, distNew, plainCoords, placedDots);
@@ -803,7 +803,7 @@ void drawSammon(const coordType & plainCoords,
 			//            painter.setBrush(QBrush("red"));
 			//            painter.setPen("red");
 
-			pew = int(255. * i / NumberOfVectors);
+			pew = static_cast<int>(255. * i / NumberOfVectors);
 			painter.setBrush(QBrush(QColor(pew,0,pew)));
 			painter.setPen(QColor(pew,0,pew));
 		}

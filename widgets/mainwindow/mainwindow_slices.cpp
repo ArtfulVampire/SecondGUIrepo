@@ -175,7 +175,7 @@ void MainWindow::sliceWinds()
 	int windowCounter = 0;
 	for(int startWind = (*itLast).first + restSkipTime;
 		startWind < std::min(fil.getDataLen(),
-							 int((*itLast).first + fil.getFreq() * 8)) - windLen; /// 8 sec
+							 static_cast<int>((*itLast).first + fil.getFreq() * 8)) - windLen;
 		startWind += windStep)
 	{
 		QString helpString = DEFS.windsFromRealsDir()
@@ -1318,7 +1318,7 @@ void MainWindow::sliceMatiSimple()
         {
             if(state[2]) /// if not rest
             {
-                number = int(std::ceil((end-start)/double(piece)));
+				number = static_cast<int>(std::ceil((end-start) / static_cast<double>(piece)));
 
                 for(int j = 0; j < number; ++j) /// num of pieces
                 {
@@ -1517,7 +1517,9 @@ void MainWindow::sliceMatiPieces()
                 {
                     do
                     {
-						currEnd = std::min(int(currStart + pieceLength * DEFS.getFreq()), dataLen);
+						currEnd = std::min(static_cast<int>(currStart
+															+ pieceLength * DEFS.getFreq()),
+										   dataLen);
 
                         if(type == 0 || type == 2)
                         {
@@ -1538,7 +1540,9 @@ void MainWindow::sliceMatiPieces()
 
                         if(currEnd <= currStart) /// no count answers during pieceLength seconds
                         {
-							currEnd = std::min(int(currStart + pieceLength * DEFS.getFreq()), dataLen);
+							currEnd = std::min(static_cast<int>(currStart
+																+ pieceLength * DEFS.getFreq()),
+											   dataLen);
                         }
 
                         /// type and session already in the fil.ExpName
@@ -1560,7 +1564,9 @@ void MainWindow::sliceMatiPieces()
                 {
                     while(currStart < dataLen)
                     {
-						currEnd = std::min(int(currStart + pieceLength * DEFS.getFreq()), dataLen);
+						currEnd = std::min(static_cast<int>(currStart
+															+ pieceLength * DEFS.getFreq()),
+										   dataLen);
 						helpString = (DEFS.dirPath()
 															  + "/" + folder
 															  + "/" + fil.getExpName()

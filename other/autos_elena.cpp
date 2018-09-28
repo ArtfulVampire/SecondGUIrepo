@@ -78,7 +78,8 @@ std::valarray<double> elenaHilbert(const std::valarray<double> & inSignal,
 {
 
 	/// [filter1_carr, filter1_SD, filter2_carr, ..]
-	std::vector<double> hilb{hilbFilters.size() * 2};
+	std::vector<double> hilb{};
+	hilb.reserve(hilbFilters.size() * 2);
 
 	for(const std::pair<double,double> & filterLims : hilbFilters)
 	{

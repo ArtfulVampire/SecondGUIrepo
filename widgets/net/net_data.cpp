@@ -90,7 +90,7 @@ void Net::pca()
 	{
 		sum1 += eigenValues[k];
 	}
-	std::cout << "Part of dispersion explained = " << sum1 * 100./double(trace) << " %" << std::endl;
+	std::cout << "Part of dispersion explained = " << sum1 * 100. / trace << " %" << std::endl;
 	std::cout << "Number of Components = " << numOfPc << std::endl;
 
 	/// pcaMatrix

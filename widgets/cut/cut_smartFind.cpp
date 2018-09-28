@@ -420,7 +420,7 @@ void Cut::smartFindNextSlot()
 
 	resetLimits();
 	ui->paintStartDoubleSpinBox->setValue(
-				windNum * smartFindWindLen / double(edfFil.getFreq()) - timeLeftGap);
+				windNum * smartFindWindLen / (edfFil.getFreq()) - timeLeftGap);
 	ui->leftLimitSpinBox->setValue(windNum * smartFindWindLen);
 	paint();
 }

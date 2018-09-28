@@ -18,20 +18,19 @@ void MainWindow::markerSaveEdf()
 
 void MainWindow::markerSetSecTime(int a)
 {
-	ui->markerSecTimeDoubleSpinBox->setValue(double(a) / DEFS.getFreq());
+	ui->markerSecTimeDoubleSpinBox->setValue(a / DEFS.getFreq());
 }
 
 void MainWindow::markerGetSlot()
 {
 	bool byteMarker[16]; /// remake
 	int timeIndex = ui->markerBinTimeSpinBox->value();
-	int marker = 0;
-	marker = globalEdf.getData()[globalEdf.getMarkChan()][timeIndex];
+	int marker = globalEdf.getMarkArr()[timeIndex];
 	QString helpString;
 
 	for(int h = 0; h < 16; ++h)
 	{
-		byteMarker[16-1 - h] = (marker%(int(std::pow(2, h+1)))) / (int(std::pow(2,h)));
+		byteMarker[16-1 - h] = (marker % static_cast<int>(std::pow(2, h + 1))) / (std::pow(2, h));
 	}
 
 	helpString.clear();
@@ -84,7 +83,7 @@ void MainWindow::markerSetBinValueSlot()
 	int marker = ui->markerDecimalLineEdit->text().toInt();
 
 
-	std::vector<bool> byteMarker = myLib::matiCountByte(double(marker));
+	std::vector<bool> byteMarker = myLib::matiCountByte(marker);
 
 	QString helpString;
 	for(int h = 15; h >= 8; --h)

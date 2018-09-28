@@ -195,7 +195,7 @@ FBedf::FBedf(const QString & edfPath,
 		for(int j = 0; j < realsSignals[i].size(); ++j)
 		{
 			for(int windStart = 0 + skipStart;
-				windStart < int(realsSignals[i][j].cols()) - windLen;
+				windStart < static_cast<int>(realsSignals[i][j].cols()) - windLen;
 				windStart += windStep)
 			{
 				windSigData.push_back(realsSignals[i][j].subCols(windStart,
@@ -445,17 +445,19 @@ double FBedf::distSpec(taskType type1, taskType type2, ansType howSolved)
 			if(a != 0) { ++diff; }
 		}
 	}
-	return double(diff) / all;
+	return diff / static_cast<double>(all);
 }
 
 double FBedf::insightPartOfAll(double thres) const
 {
-	return this->getNumInsights(thres) / double(this->getNum(taskType::verb, ansType::all));
+	return this->getNumInsights(thres)
+			/ static_cast<double>(this->getNum(taskType::verb, ansType::all));
 }
 
 double FBedf::insightPartOfSolved(double thres) const
 {
-	return this->getNumInsights(thres) / double(this->getNum(taskType::verb, ansType::answrd));
+	return this->getNumInsights(thres)
+			/ static_cast<double>(this->getNum(taskType::verb, ansType::answrd));
 }
 
 void FBedf::calculateICA() const
@@ -839,7 +841,7 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 	std::transform(std::begin(this->windTypes),
 				   std::end(this->windTypes),
 				   std::begin(windTypesUint),
-				   [](taskType in) { return uint(static_cast<int>(in)); });
+				   [](taskType in) { return static_cast<uint>(static_cast<int>(in)); });
 
 	/// class by alpha ?
 	const int alphaIndex = this->individualAlphaPeakIndexWind();

@@ -602,7 +602,7 @@ std::valarray<double> spectreRtoR(const std::valarray<double> & inputSignal,
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
 	/// hope, size() is not too big
-	for(int i = 0; i < std::min(fftLen, int(inputSignal.size())); ++i)
+	for(int i = 0; i < std::min(fftLen, static_cast<int>(inputSignal.size())); ++i)
     {
 		pew[2 * i] = inputSignal[i];
     }
@@ -732,7 +732,7 @@ std::valarray<double> spectreRtoC(const std::valarray<double> & inputSignal,
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
 	/// hope, size() is not too big
-	for(int i = 0; i < std::min(fftLen, int(inputSignal.size())); ++i)
+	for(int i = 0; i < std::min(fftLen, static_cast<int>(inputSignal.size())); ++i)
 	{
 		pew[2 * i] = inputSignal[i];
 	}
@@ -760,7 +760,7 @@ std::valarray<std::complex<double>> spectreRtoC2(const std::valarray<double> & i
 	std::fill(pew, pew + 2 * fftLen, 0.);
 
 	/// hope, size() is not too big
-	for(int i = 0; i < std::min(fftLen, int(inputSignal.size())); ++i)
+	for(int i = 0; i < std::min(fftLen, static_cast<int>(inputSignal.size())); ++i)
 	{
 		pew[2 * i] = inputSignal[i];
 	}
@@ -848,7 +848,7 @@ std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 								  double srate)
 {
 	double a = log2(inputSpectre.size());
-	if(a != double(int(a)))
+	if(a != static_cast<double>(static_cast<int>(a)))
 	{
 		std::cout << "subSpectrum: inputSpectre.size() is not power of 2" << std::endl;
 		return {};
@@ -932,7 +932,7 @@ std::valarray<double> spectreCtoCrev(const std::valarray<double> & inputSpectre)
 
 double spectreNorm(int fftLen, int realSig, double srate)
 {
-	return 2. / (double(std::min(realSig, fftLen)) * srate);
+	return 2. / (std::min(realSig, fftLen) * srate);
 }
 
 /// works
@@ -977,7 +977,7 @@ matrix refilterMat(const matrix & inputMatrix,
 				   bool notTheLast)
 {
 	matrix res = matrix();
-	for(int i = 0; i < inputMatrix.rows() - int(notTheLast); ++i)
+	for(int i = 0; i < inputMatrix.rows() - static_cast<int>(notTheLast); ++i)
 	{
 		res.push_back(myLib::refilter(inputMatrix[i],
 									  lowFreq,
@@ -1096,7 +1096,7 @@ std::valarray<std::complex<double>> spectreCtoCcomplex(
 		std::copy(std::begin(inputArray),
 				  std::end(inputArray),
 				  std::begin(res));
-//		res *= fftLen / double(inputArray.size());
+//		res *= fftLen / static_cast<double>(inputArray.size());
 	}
 	else
 	{
@@ -1219,8 +1219,8 @@ double fractalDimension(const std::valarray<double> & arr,
 
         for(int m = 0; m < timeShift; ++m) /// m = startShift
         {
-			const double coeff = (N - 1) / double(timeShift)
-						   / std::floor( (N - m) / timeShift )
+			const double coeff = (N - 1) / static_cast<double>(timeShift)
+						   / std::floor( (N - m) / static_cast<double>(timeShift) )
 						   ; /// ~1
 
 			double Lm = 0.;
@@ -1271,7 +1271,7 @@ double fractalDimension(const std::valarray<double> & arr,
 					* (pic.width() - 2 * frame) - rectSize;
 			drawY = frame + (1. - std::abs(drawL[h] - minY) / lenY)
 					* (pic.height() - 2 * frame) - rectSize;
-			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
+			pnt.drawRect(QRect(drawX, drawY, rectSize, rectSize));
         }
 
 		/// draw line (passes (meanX, meanY))
@@ -1337,8 +1337,8 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 		double L = 0.;
 		for(int m = 0; m < timeShift; ++m) /// m = startShift
 		{
-			const double coeff = (N - 1) / double(timeShift)
-						   / std::floor( (N - m) / timeShift )
+			const double coeff = (N - 1) / static_cast<double>(timeShift)
+						   / std::floor( (N - m) / static_cast<double>(timeShift) )
 						   ; /// ~1
 
 			double Lm = 0.;
@@ -1418,7 +1418,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 					* (pic.width() * (1. - gap) - frame) - rectSize;
 			drawY = frame + (1. - std::abs(drawL[h] - minY) / lenY)
 					* (pic.height() * (1. - gap) - frame) - rectSize;
-			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
+			pnt.drawRect(QRect(drawX, drawY, rectSize, rectSize));
 		}
 
 		/// draw line (passes (meanX, meanY))
@@ -1640,7 +1640,7 @@ double fractalDimensionBySpectre(const std::valarray<double> & arr,
 					* (pic.width() - 2 * frame) - rectSize;
 			drawY = frame + (1. - std::abs(drawL[h] - minY) / lenY)
 					* (pic.height() - 2 * frame) - rectSize;
-			pnt.drawRect(QRect(int(drawX), int(drawY), rectSize, rectSize));
+			pnt.drawRect(QRect(drawX, drawY, rectSize, rectSize));
 		}
 
 		pnt.setPen("red");
@@ -1794,9 +1794,9 @@ std::valarray<double> hilbert(const std::valarray<double> & arr,
 {
 
     const int inLength = arr.size();
-	const int fftLen = smLib::fftL(inLength); /// int(std::pow(2., std::ceil(std::log(inLength)/std::log(2.))));
+	const int fftLen = smLib::fftL(inLength);
 	const double spStep = DEFS.getFreq() / fftLen;
-    const double normCoef = std::sqrt(fftLen / double(inLength));
+	const double normCoef = std::sqrt(fftLen / static_cast<double>(inLength));
 
 	std::valarray<double> out; /// result
 	out.resize(2 * fftLen);
@@ -2090,7 +2090,7 @@ std::valarray<double> makeSine(int numPoints,
 	std::valarray<double> res(numPoints);
 	for(int i = 0; i < numPoints; ++i)
 	{
-		res[i] = sin(freq * 2. * pi * (double(i) / srate) + startPhase);
+		res[i] = sin(freq * 2. * pi * (i / srate) + startPhase);
 	}
 	return res;
 }
@@ -2161,7 +2161,7 @@ std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 
     for(uint j = 0; j < dataIn.size(); ++j)
     {
-        helpInt = int(std::floor((dataIn[j] + maxAmpl) / (2. * maxAmpl / double(numOfIntervals))));
+		helpInt = std::floor((dataIn[j] + maxAmpl) / (2. * maxAmpl / numOfIntervals));
 
 		if(helpInt != std::min(std::max(0, helpInt), numOfIntervals - 1))
         {
@@ -2169,7 +2169,7 @@ std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
         }
         out[helpInt] += 1;
     }
-    out /= double(dataIn.size()) * 10.; /// 10 is norm coef for perceptron
+	out /= dataIn.size() * 10.; /// 10 is norm coef for perceptron
 
     return out;
 }
@@ -2318,7 +2318,7 @@ std::valarray<double> fftWindow(int N, windowName name)
 	}
 	case windowName::Parzen:
 	{
-		auto val = [N](int i) { return 2. * i / double(N); };
+		auto val = [N](int i) { return (2. * i) / N; };
 		for(int i = 0; i <= N / 4; ++i)
 //		for(int i = N / 4 + 1; i <= N / 2; ++i)
 		{
@@ -2523,7 +2523,7 @@ std::valarray<double> calcSpectre(const std::valarray<double> & inSignal,
 									   spectreNorm(fftLength, fftLength - Eyes, DEFS.getFreq());
 //	outSpectre = std::pow(outSpectre, powArg);
 
-	const double normSmooth = std::sqrt(fftLength / double(fftLength - Eyes));
+	const double normSmooth = std::sqrt(fftLength / static_cast<double>(fftLength - Eyes));
 
 	/// smooth spectre
 	const int leftSmoothLimit = 2; /// doesn't effect on zero component

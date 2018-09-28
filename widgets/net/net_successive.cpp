@@ -81,7 +81,7 @@ Classifier::avType Net::successiveByEDFnew(const QString & edfPath1, const QStri
 		{
 			myClassifierData.push_back(spec.subCols(file1.getLeftLimWind(),
 													file1.getRightLimWind()).toValarByRows(),
-									   uint(static_cast<int>(typ)),
+									   static_cast<uint>(static_cast<int>(typ)),
 									   nm(windStart));
 		}
 	}
@@ -170,7 +170,7 @@ Classifier::avType Net::successiveByEDFnew(const QString & edfPath1, const QStri
 			++counter2;
 			successiveLearning(spec.subCols(file2.getLeftLimWind(),
 											file2.getRightLimWind()).toValarByRows(),
-								uint(static_cast<int>(typ)),
+								static_cast<uint>(static_cast<int>(typ)),
 							   "T " + nm(windStart));
 		}
 	}
@@ -193,7 +193,7 @@ Classifier::avType Net::notSuccessive(const fb::FBedf & file1,
 	for(int i = 0; i < file1.getWindTypes().size(); ++i)
 	{
 		myClassifierData.push_back(file1.getWindSpectra(i),
-								   uint(static_cast<int>(file1.getWindTypes(i))),
+								   static_cast<uint>(static_cast<int>(file1.getWindTypes(i))),
 								   nm(file1.getWindStarts(i)));
 	}
 	myClassifierData.reduceSize(suc::learnSetStay);
@@ -261,7 +261,7 @@ Classifier::avType Net::successiveByEDFnew(const fb::FBedf & file1,
 	for(int i = 0; i < file1.getWindTypes().size(); ++i)
 	{
 		myClassifierData.push_back(file1.getWindSpectra(i),
-								   uint(static_cast<int>(file1.getWindTypes(i))),
+								   static_cast<uint>(static_cast<int>(file1.getWindTypes(i))),
 								   nm(file1.getWindStarts(i)));
 	}
 	myClassifierData.reduceSize(suc::learnSetStay);
@@ -323,7 +323,7 @@ Classifier::avType Net::successiveByEDFnew(const fb::FBedf & file1,
 	for(int i = 0; i < secondWindTypes.size(); ++i)
 	{
 		successiveLearning(secondWindSpec[i],
-						   uint(static_cast<int>(secondWindTypes[i])),
+						   static_cast<uint>(static_cast<int>(secondWindTypes[i])),
 						   localExpName + " " + nm(i));
 	}
 #else
@@ -332,7 +332,7 @@ Classifier::avType Net::successiveByEDFnew(const fb::FBedf & file1,
 	for(int i = 0; i < file2.getWindTypes().size(); ++i)
 	{
 		successiveLearning(file2.getWindSpectra(i),
-						   uint(static_cast<int>(file2.getWindTypes(i))),
+						   static_cast<uint>(static_cast<int>(file2.getWindTypes(i))),
 						   nm(file2.getWindStarts(i)));
 	}
 	std::cout << file2.getWindTypes().size() << std::endl;
@@ -360,7 +360,7 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 	for(int i = 0; i < file1.getWindTypes().size(); ++i)
 	{
 		myClassifierData.push_back(file1.getWindSpectra(i),
-								   uint(static_cast<int>(file1.getWindTypes(i))),
+								   static_cast<uint>(static_cast<int>(file1.getWindTypes(i))),
 								   "L " + nm(i));
 	}
 	myClassifierData.reduceSize(suc::learnSetStay);
@@ -432,7 +432,7 @@ Classifier::avType Net::successiveByEDFfinal(const fb::FBedf & file1,
 			if(!relearn.isEmpty())
 			{
 				successiveLearningFinal(relearn,
-										uint(static_cast<int>(prevType)),
+										static_cast<uint>(static_cast<int>(prevType)),
 										localExpName);
 				relearn.clear();
 			}
@@ -467,7 +467,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 	for(int i = 0; i < file1.getWindTypes().size(); ++i)
 	{
 		myClassifierData.push_back(file1.getWindSpectra(i),
-								   uint(static_cast<int>(file1.getWindTypes(i))),
+								   static_cast<uint>(static_cast<int>(file1.getWindTypes(i))),
 								   "L " + nm(i));
 	}
 	myClassifierData.reduceSize(suc::learnSetStay);
@@ -555,7 +555,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 		for(int i = 0; i < secondWindTypes.size(); ++i)
 		{
 			successiveLearning(secondWindSpec[i],
-							   uint(static_cast<int>(secondWindTypes[i])),
+							   static_cast<uint>(static_cast<int>(secondWindTypes[i])),
 							   localExpName);
 		}
 		myANN->writeWeight(def::helpPath + "/" + localExpName + "_last_pre.wts");
@@ -586,7 +586,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 				if(!relearn.isEmpty())
 				{
 					successiveLearningFinal(relearn,
-											uint(static_cast<int>(prevType)),
+											static_cast<uint>(static_cast<int>(prevType)),
 											localExpName);
 					relearn.clear();
 				}
@@ -635,7 +635,7 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ans
 		   )
 		{
 			myClassifierData.push_back(file1.getWindSpectra(i),
-									   uint(static_cast<int>(file1.getWindTypes(i))),
+									   static_cast<uint>(static_cast<int>(file1.getWindTypes(i))),
 									   "L " + nm(i));
 		}
 	}
@@ -685,7 +685,7 @@ void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ans
 		   && fb::isGoodAns(file2.getWindAns(i), howSolved))
 		{
 			myClassifierData.addItem(file2.getWindSpectra(i),
-									 uint(taskNum),
+									 static_cast<uint>(taskNum),
 									 "L " + nm(i));
 
 			/// classify (correctly solved and all)

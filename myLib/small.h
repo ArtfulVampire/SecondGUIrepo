@@ -31,7 +31,7 @@ inline bool isInt(const QString & in) { return QString::number(in.toInt()) == in
 
 inline double doubleRound(double in, int numSigns)
 {
-	return std::round(in * std::pow(10., numSigns)) / double(std::pow(10, numSigns));
+	return std::round(in * std::pow(10., numSigns)) / std::pow(10., numSigns);
 }
 
 inline std::complex<double> doubleRound(const std::complex<double> & in, int numSigns)
@@ -47,7 +47,7 @@ inline double doubleRound(double in)
 
 inline double doubleRoundFraq(double in, int denom)
 {
-	return std::round(in * denom) / double(denom);
+	return std::round(in * denom) / static_cast<double>(denom);
 }
 
 inline double gaussian(double x, double sigma = 1.) // N(0,1)
@@ -83,7 +83,7 @@ void eraseItems(std::vector<T> & inVect,
 	}
 	excludeVector.push_back(initSize);
 
-	for(int i = 0; i < int(excludeVector.size()) - 1; ++i)
+	for(int i = 0; i < excludeVector.size() - 1; ++i)
 	{
 		for(int j = excludeVector[i] - i; j < excludeVector[i + 1] - i - 1; ++j)
 		{

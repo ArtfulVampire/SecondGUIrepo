@@ -290,7 +290,7 @@ void ANN::learn(std::vector<uint> & indices)
     std::vector<double> normCoeff;
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
-        normCoeff.push_back(helpMin / double(localClassCount[i]));
+		normCoeff.push_back(helpMin / static_cast<double>(localClassCount[i]));
     }
 
     epoch = 0;

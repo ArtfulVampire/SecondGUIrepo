@@ -685,7 +685,7 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
                                           0.);
         const double realNdr = (fileSize - bytes)
                                / (sumNr * 2.); /// 2 bytes for a point
-        if(int(realNdr) != realNdr)
+		if(static_cast<double>(static_cast<int>(realNdr)) != realNdr) /// fracPart == 0
         {
 			std::cout << ExpName << ", ";
 			std::cout << "handleEdfFile(read): realNdr is not integral = "
@@ -695,14 +695,14 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 			std::cout << "Excessive data size (according to written ndr) = "
 				 << (fileSize - bytes) - ndr * sumNr * 2.<< std::endl;
         }
-///     ndr = min(int(realNdr), ndr); /// sometimes the tails are shit
-		ndr = int(realNdr); /// sometimes ndr from file is a lie
+///     ndr = std::min(static_cast<int>(realNdr), ndr); /// sometimes the tails are shit
+		ndr = static_cast<int>(realNdr); /// sometimes ndr from file is a lie
     }
 
 	handleParamArray(reserved, ns, 32, readFlag, edfStream, headerStream);
 	/// end channels read
 
-	handleParam(headerRest, int(bytes - (ns + 1) * 256), readFlag, edfStream, headerStream);
+	handleParam(headerRest, bytes - (ns + 1) * 256, readFlag, edfStream, headerStream);
 
 	/// files are already opened as binary, no need to reopen
 	if(0)
@@ -837,7 +837,7 @@ void edfFile::handleDatum(int currNs,
 			edfForDatum.read(reinterpret_cast<char*>(&a), sizeof(qint16));
 
 			currDatum = physMin[currNs]
-						+ (double(a) - digMin[currNs])
+						+ (static_cast<double>(a) - digMin[currNs])
 						* (physMax[currNs] - physMin[currNs])
 						/ (digMax[currNs] - digMin[currNs]
 						   + (this->ntFlag ? 0 : 1));
@@ -860,7 +860,7 @@ void edfFile::handleDatum(int currNs,
 			{
 				edfForDatum.read(reinterpret_cast<char*>(&markA), sizeof(qint16));
 				currDatum = physMin[currNs]
-							+ (double(markA) - digMin[currNs])
+							+ (static_cast<double>(markA) - digMin[currNs])
 							* (physMax[currNs] - physMin[currNs])
 							/ (digMax[currNs] - digMin[currNs]);
 //				currDatum = markA;
@@ -875,7 +875,7 @@ void edfFile::handleDatum(int currNs,
 				edfForDatum.read(reinterpret_cast<char*>(&a), sizeof(qint16));
 				currDatum = physMin[currNs]
 						+ (physMax[currNs] - physMin[currNs])
-						* (double(a) - digMin[currNs])
+						* (static_cast<double>(a) - digMin[currNs])
 						/ (digMax[currNs] - digMin[currNs]);
 
 //				currDatum = a; /// generality encephalan
@@ -897,7 +897,7 @@ void edfFile::handleDatum(int currNs,
 			{
 				currDatum = smLib::doubleRoundFraq
 							(currDatum,
-							 int( (digMax[currNs] - digMin[currNs] + 1)
+							 static_cast<int>( (digMax[currNs] - digMin[currNs] + 1)
 								  / (physMax[currNs] - physMin[currNs]) )
 							 ); /// need for eyes cleaned EEG only
 			}
@@ -983,13 +983,13 @@ void edfFile::writeMarkers() const
 	for(const auto & mrk : markers)
 	{
 		markersStream << mrk.first << "\t"
-					  << mrk.first / double(this->srate) << "\t"
+					  << mrk.first / this->srate << "\t"
 					  << mrk.second;
 
 		if(mrk.second == 241 || mrk.second == 247 || mrk.second == 254)
 		{
 			taskMarkersStream << mrk.first << "\t"
-							  << mrk.first / double(this->srate) << "\t"
+							  << mrk.first / this->srate << "\t"
 							  << mrk.second << "\r\n";
 			if(mrk.second == 254)
 			{
@@ -1004,7 +1004,7 @@ void edfFile::writeMarkers() const
 			markersStream << "\t";
 			for(int s = byteMarker.size() - 1; s >= 0; --s)
 			{
-				markersStream << int(byteMarker[s]);
+				markersStream << static_cast<int>(byteMarker[s]);
 				if(s == 8) { markersStream << " "; } /// divide two bytes
 			}
 			if(byteMarker[9] || byteMarker[8])	{ markersStream << " - session start"; }
@@ -1035,7 +1035,7 @@ void edfFile::writeMarker(double currDatum,
 
 	std::ofstream markersStream(helpString.toStdString(), std::ios_base::app);
 	markersStream << currTimeIndex << "\t"
-				  << currTimeIndex / double(this->srate) << "\t"
+				  << currTimeIndex / this->srate << "\t"
 				  << currDatum;
 
     if(this->matiFlag)
@@ -1119,7 +1119,7 @@ std::vector<std::pair<double, QString>> edfFile::handleAnnotations() const
 	/// WTF was here?
 	for(QString & annot : annotations)
 	{
-		auto charNum = [annot](int i) -> int { return int(annot.toStdString()[i]); };
+		auto charNum = [annot](int i) -> int { return int(annot.toStdString()[i]); }; /// ?????
 
 		int currStart = 0;
 		for(int l = 0; l < myLib::edfPlusLen(annot); ++l)
@@ -2288,7 +2288,7 @@ void edfFile::writeOtherData(const matrix & newData,
 
 void edfFile::fitData(int initSize) /// append zeros to whole ndr's
 {
-    this->ndr = std::ceil(double(initSize) / (this->srate * this->ddr)); /// generality
+	this->ndr = std::ceil(initSize / (this->srate * this->ddr)); /// generality
 	this->edfData.resizeCols(ndr * ddr * srate);
 }
 

@@ -17,7 +17,7 @@ double WARD::dist(const uint a, const uint b)
 	res = smLib::distance((myClassData->getData().subRows(clusts[a])).averageRow(),
 							 (myClassData->getData().subRows(clusts[b])).averageRow());
     /// Word distance
-    res *= clusts[a].size() * clusts[b].size() / double((clusts[a].size() + clusts[b].size()));
+	res *= clusts[a].size() * clusts[b].size() / static_cast<double>((clusts[a].size() + clusts[b].size()));
     return res;
 }
 
@@ -100,7 +100,7 @@ void WARD::merge(const uint one, const uint two)
         const uint S = clusts[i].size();
         dists[A][i] = ((S + U) * dists[A][i]
                       + (S + V) * dists[B][i]
-                      - S * dists[A][B]) / double(S + U + V);
+					  - S * dists[A][B]) / static_cast<double>(S + U + V);
         dists[i][A] = dists[A][i];
     }
 

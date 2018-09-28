@@ -145,7 +145,7 @@ QPixmap drawOneTemplate(const QString & chanName,
 		}
 	}
 	/// draw channel name
-	paint.setFont(QFont("Helvetica", int(myLib::drw::fontSizeChan), -1, false));
+	paint.setFont(QFont("Helvetica", myLib::drw::fontSizeChan, -1, false));
 	if(!chanName.isEmpty())
 	{
 		paint.drawText(QPointF(X - myLib::drw::fontSizeChan * 2. / 3.,
@@ -805,7 +805,7 @@ void redrawEeg(QPixmap & pic,
 			paint.setPen(QPen(QBrush("black"), myLib::drw::penWidth));
 		}
 
-		const double offsetY = (chanNum + 1) * pic.height() / double(inData.rows() + 2);
+		const double offsetY = (chanNum + 1) * pic.height() / static_cast<double>(inData.rows() + 2);
 
 		/// magic +-2
 		for(int currX = rect1.left() - 1; currX <= rect1.right() + 1; ++currX)
@@ -880,7 +880,7 @@ void redrawEeg(QPixmap & pic,
 #endif
 		}
 
-		const double offsetY = (chanNum + 1) * pic.height() / double(inData.rows() + 2);
+		const double offsetY = (chanNum + 1) * pic.height() / static_cast<double>(inData.rows() + 2);
 
 		/// horzNorm
 		/// magic +-2
@@ -1014,7 +1014,7 @@ QPixmap drawEeg(const matrix & inData,
 /// hot-to-cold, http:/// stackoverflow.com/questions/7706339/grayscale-to-red-green-blue-matlab-jet-color-scale
 double redOld(int range, int j)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	if(0.000 <= part && part <= 0.5)	{ return 0.; }
 	if(0.500 < part && part <= 0.800)	{ return (part - 0.5) / (0.8 - 0.5); }
 	if(0.800 < part && part <= 1.000)	{ return 1.; }
@@ -1022,7 +1022,7 @@ double redOld(int range, int j)
 }
 double greenOld(int range, int j)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	if(0.000 <= part && part <= 0.2)	{ return part * 5; }
 	if(0.200 < part && part <= 0.800)	{ return 1.; }
 	if(0.800 < part && part <= 1.000)	{ return 1. - (part - 0.8) / (1.0 - 0.8); }
@@ -1030,7 +1030,7 @@ double greenOld(int range, int j)
 }
 double blueOld(int range, int j)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	if(0.000 <= part && part <= 0.2)	{ return 1.; }
 	if(0.200 < part && part <= 0.500)	{ return 1 - (part - 0.2) / (0.5 - 0.2); }
 	if(0.500 < part && part <= 1.000)	{ return 0.; }
@@ -1048,7 +1048,7 @@ QColor hueOld(int range, int j)
 
 double redMatlab(int range, int j, double V, double S)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	/// matlab
 	if(0. <= part && part <= myLib::drw::colDots[0])					{ return V*(1.-S); }
 	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1])	{ return V*(1.-S); }
@@ -1060,7 +1060,7 @@ double redMatlab(int range, int j, double V, double S)
 
 double greenMatlab(int range, int j, double V, double S)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	/// matlab
 	if(0.0 <= part && part <= myLib::drw::colDots[0])					{ return V*(1.-S); }
 	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1])	{ return V*(1.-S) + V*S*(part-myLib::drw::colDots[0])/(myLib::drw::colDots[1] - myLib::drw::colDots[0]); }
@@ -1072,7 +1072,7 @@ double greenMatlab(int range, int j, double V, double S)
 
 double blueMatlab(int range, int j, double V, double S)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	/// matlab
 	if(0.0 <= part && part <= myLib::drw::colDots[0])					{ return V -V*S/2. + V*S*(part)/(myLib::drw::colDots[0] - 0.0)/2.; }
 	if(myLib::drw::colDots[0] < part && part <= myLib::drw::colDots[1])	{ return V; }
@@ -1094,7 +1094,7 @@ QColor hueMatlab(int range, int j)
 
 double redJet(int range, int j, double V, double S)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 
 	/// old
 	if(0.000 <= part && part <= 0.167)		{ return V*(1.-S); } /// 2. - V*S/2. + V*S*(part)*3.;
@@ -1108,7 +1108,7 @@ double redJet(int range, int j, double V, double S)
 
 double greenJet(int range, int j, double V, double S)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	double hlp = 1.0;
 
 	/// old
@@ -1123,7 +1123,7 @@ double greenJet(int range, int j, double V, double S)
 
 double blueJet(int range, int j, double V, double S)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	/// old
 	if(0.000 <= part && part <= 0.167)		{ return V -V*S/2. + V*S*(part)/(0.167-0.000)/2.; }
 	if(0.167 < part && part <= 0.400)		{ return V; }
@@ -1146,9 +1146,8 @@ QColor grayScale(int range, int j)
 {
 	if(j > range)	{ j = range; }
 	if(j < 0)		{ j = 0; }
-	return QColor(255. * (1. - double(j) / range),
-				  255. * (1. - double(j) / range),
-				  255. * (1. - double(j) / range));
+	double t = 255. * (1. - j / static_cast<double>(range));
+	return QColor(t, t, t);
 }
 
 auto colorFunction (ColorScale in) -> QColor (*)(int, int)
@@ -1202,17 +1201,17 @@ QPixmap drawColorScale(int range, ColorScale type, bool full)
 
 		if(full)
 		{
-			painter.drawRect(i * pic.width() / double(range),
+			painter.drawRect(i * pic.width() / static_cast<double>(range),
 							 0,
-							 (i + 1) * pic.width() / double(range),
+							 (i + 1) * pic.width() / static_cast<double>(range),
 							 pic.height() * 0.07); /// magic const
 		}
 		else
 		{
 			painter.drawRect(0,
-							 (1. - (i + 1) / double(range)) * pic.height(),
+							 (1. - (i + 1)/ static_cast<double>(range)) * pic.height(),
 							 pic.width(),
-							 (1. / double(range)) * pic.height()); /// vertical
+							 (1. / static_cast<double>(range)) * pic.height()); /// vertical
 		}
 
 	}
@@ -1227,43 +1226,43 @@ QPixmap drawColorScale(int range, ColorScale type, bool full)
 			case ColorScale::jet:
 			{
 				painter.setPen(QPen(QBrush("red"), 2));
-				painter.drawLine(i * pic.width() / double(range),
+				painter.drawLine(i * pic.width() / static_cast<double>(range),
 								 pic.height() * 0.95 - (pic.height() * 0.85) * redJet(range, i),
-								 (i + 1) * pic.width() / double(range),
-								 pic.height() * 0.95 - (pic.height() * 0.85) * redJet(range, int(i+1)));
+								 (i + 1) * pic.width() / static_cast<double>(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * redJet(range, i + 1));
 
 				painter.setPen(QPen(QBrush("green"), 2));
-				painter.drawLine(i * pic.width() / double(range),
+				painter.drawLine(i * pic.width() / static_cast<double>(range),
 								 pic.height() * 0.95 - (pic.height() * 0.85) * greenJet(range, i),
-								 (i + 1) * pic.width() / double(range),
-								 pic.height() * 0.95 - (pic.height() * 0.85) * greenJet(range, int(i+1)));
+								 (i + 1) * pic.width() / static_cast<double>(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * greenJet(range, i + 1));
 
 				painter.setPen(QPen(QBrush("blue"), 2));
-				painter.drawLine(i * pic.width() / double(range),
+				painter.drawLine(i * pic.width() / static_cast<double>(range),
 								 pic.height() * 0.95 - (pic.height() * 0.85) * blueJet(range, i),
-								 (i + 1) * pic.width() / double(range),
-								 pic.height() * 0.95 - (pic.height() * 0.85) * blueJet(range, int(i+1)));
+								 (i + 1) * pic.width() / static_cast<double>(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * blueJet(range, i + 1));
 				break;
 			}
 			case ColorScale::htc:
 			{
 				painter.setPen(QPen(QBrush("red"), 2));
-				painter.drawLine(i * pic.width() / double(range),
+				painter.drawLine(i * pic.width() / static_cast<double>(range),
 								 pic.height() * 0.95 - (pic.height() * 0.85) * redOld(range, i),
-								 (i + 1) * pic.width() / double(range),
-								 pic.height() * 0.95 - (pic.height() * 0.85) * redOld(range, int(i+1)));
+								 (i + 1) * pic.width() / static_cast<double>(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * redOld(range, i + 1));
 
 				painter.setPen(QPen(QBrush("green"), 2));
-				painter.drawLine(i * pic.width() / double(range),
+				painter.drawLine(i * pic.width() / static_cast<double>(range),
 								 pic.height() * 0.95 - (pic.height() * 0.85) * greenOld(range, i),
-								 (i + 1) * pic.width() / double(range),
-								 pic.height() * 0.95 - (pic.height() * 0.85) * greenOld(range, int(i+1)));
+								 (i + 1) * pic.width() / static_cast<double>(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * greenOld(range, i + 1));
 
 				painter.setPen(QPen(QBrush("blue"), 2));
-				painter.drawLine(i * pic.width() / double(range),
+				painter.drawLine(i * pic.width() / static_cast<double>(range),
 								 pic.height() * 0.95 - (pic.height() * 0.85) * blueOld(range, i),
-								 (i + 1) * pic.width() / double(range),
-								 pic.height() * 0.95 - (pic.height() * 0.85) * blueOld(range, int(i+1)));
+								 (i + 1) * pic.width() / static_cast<double>(range),
+								 pic.height() * 0.95 - (pic.height() * 0.85) * blueOld(range, i + 1));
 				break;
 			}
 			default:
@@ -1314,7 +1313,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	int drawRange = 256;
 
 	int dim = 7;
-	double scale = double(dim-1) / mapSize;
+	double scale = (dim-1) / static_cast<double>(mapSize);
 
 	matrix helpMatrix(dim, dim, 0.);
 

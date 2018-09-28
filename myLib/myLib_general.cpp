@@ -341,7 +341,7 @@ void writeBytes(FILE * fil, int value, int numBytes)
 	int tempInt;
 	for(int i = 0; i < numBytes; ++i)
 	{
-		tempInt = (value / int(std::pow(256, i)))%256;
+		tempInt = (value / static_cast<int>(std::pow(256, i))) % 256;
 		writeByte(fil, tempInt);
 	}
 }
@@ -580,8 +580,8 @@ void writeWavFile(const std::vector<double> & inData, const QString & outPath)
 	{
 		for(int j = 0; j < numChannels; ++j)
 		{
-			currVal = int(inData[i] * std::pow(256, bitsPerSample/8/numChannels) / maxAmpl);
-			writeBytes(outFile, currVal, int(bitsPerSample/8/numChannels));
+			currVal = inData[i] * std::pow(256, bitsPerSample / 8 / numChannels) / maxAmpl;
+			writeBytes(outFile, currVal, bitsPerSample / 8 / numChannels);
 		}
 	}
 	fclose(outFile);

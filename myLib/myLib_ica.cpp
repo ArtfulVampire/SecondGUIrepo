@@ -179,7 +179,7 @@ eigenValuesSVD(const matrix & initialData,
 		/// look https://en.wikipedia.org/wiki/Singular-value_decomposition
 		eigenValues[k] = smLib::normaSq(tempB) *
 						 smLib::normaSq(tempA)
-						 / double(initialData.cols() - 1.);
+						 / (initialData.cols() - 1.);
 		currTrace += eigenValues[k];
 
 		smLib::normalize(tempB);

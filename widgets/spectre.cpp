@@ -246,7 +246,8 @@ bool Spectre::eventFilter(QObject *obj, QEvent *event)
 										  mouseEvent->y(),
 										  ui->specLabel->size());
 
-				double val = (mouseEvent->x() / double(ui->specLabel->width())	/// part of click x
+				double val = (mouseEvent->x()
+							  / static_cast<double>(ui->specLabel->width())	/// part of click x
 							  - coords::x[chanNum])						/// part of origin x
 							 / coords::scale							/// part of graph width
 							 * DEFS.spLength();

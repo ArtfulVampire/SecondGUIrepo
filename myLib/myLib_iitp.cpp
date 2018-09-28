@@ -429,7 +429,7 @@ void iitpData::countContiniousTaskSpectra()
 	std::valarray<double> spectre(spLen * numCh);
 	std::valarray<double> spec(localFftLen);
 
-	this->cutPieces(localFftLen / double(this->srate));
+	this->cutPieces(localFftLen / this->srate);
 //	this->setFftLen(localFftLen); /// needed ?
 	this->countPiecesFFT();
 	for(int i = 0; i < numCh; ++i)
@@ -933,14 +933,14 @@ int iitpData::setFftLen()
 		res = std::max(smLib::fftL(in.cols()), res);
 	}
 	this->fftLen = res;
-	this->spStep = this->srate / double(this->fftLen);
+	this->spStep = this->srate / static_cast<double>(this->fftLen);
 	return res;
 }
 
 void iitpData::setFftLen(int in)
 {
 	this->fftLen = smLib::fftL(in);
-	this->spStep = this->srate / double(this->fftLen);
+	this->spStep = this->srate / static_cast<double>(this->fftLen);
 }
 
 

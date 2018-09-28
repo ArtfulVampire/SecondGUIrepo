@@ -326,7 +326,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 	double newPaintLength = smLib::doubleRound((event->size().width() - scrollAreaGapX)
 											   / edfFil.getFreq() * ui->xNormSpinBox->value(),
 									   ui->paintLengthDoubleSpinBox->decimals());
-	double newHei = std::max(int(smLib::doubleRound(event->size().height(), -1)),
+	double newHei = std::max(static_cast<int>(smLib::doubleRound(event->size().height(), -1)),
 							 this->minimumHeight())
 					- ui->scrollArea->geometry().y() - scrollAreaGapY;
 
@@ -845,9 +845,9 @@ matrix Cut::makeDrawData()
 	leftDrawLimit = ui->paintStartDoubleSpinBox->value() * edfFil.getFreq();
 	int rightDrawLimit = std::min(leftDrawLimit +
 								  /// horzNorm inside paintLength
-								  int(ui->paintLengthDoubleSpinBox->value()
+								  static_cast<int>(ui->paintLengthDoubleSpinBox->value()
 									  * edfFil.getFreq()),
-								  int(dataCutLocal.cols()));
+								  static_cast<int>(dataCutLocal.cols()));
 #if 0
 	/// deprecate fileType::real
 	if(myFileType == fileType::edf)
@@ -855,9 +855,9 @@ matrix Cut::makeDrawData()
 		leftDrawLimit = ui->paintStartDoubleSpinBox->value() * edfFil.getFreq();
 		rightDrawLimit = std::min(leftDrawLimit +
 								  /// horzNorm
-								  int(ui->paintLengthDoubleSpinBox->value()
+								  static_cast<int>(ui->paintLengthDoubleSpinBox->value()
 								  * edfFil.getFreq()),
-								  int(dataCutLocal.cols()));
+								  static_cast<int>(dataCutLocal.cols()));
 	}
 	else if(myFileType == fileType::real) /// to deprecate
 	{
@@ -915,15 +915,15 @@ void Cut::paintMarkers(const matrix & drawDataLoc)
 	pnt.setFont(QFont("", 14)); /// magic const
 	for(int i = 0; i < drawDataLoc.cols(); ++i)
 	{
-		const double & toDraw = drawDataLoc[mrk][i];
-		bool allowed = marksToDraw.empty() || myLib::contains(marksToDraw, int(toDraw));
+		int toDraw = drawDataLoc[mrk][i];
+		bool allowed = marksToDraw.empty() || myLib::contains(marksToDraw, toDraw);
 		if(toDraw != 0. && allowed)
 		{
 			/// magic consts
 			/// horzNorm
 			pnt.drawText(i / ui->xNormSpinBox->value(),
 						 pnt.device()->height() * (mrk + 1) / (drawDataLoc.rows() + 2) - 3,
-						 nm(int(toDraw)));
+						 nm(toDraw));
 		}
 	}
 	pnt.end();
@@ -1041,7 +1041,7 @@ void Cut::manualDraw(QPoint finP)
 	{
 		dataCutLocal[numChan][x + leftDrawLimit] =
 				((sta.y() - offsetY)										/// init value
-				 + (fin.y() - sta.y()) / double(Xfin - Xsta)				/// inclination
+				 + (fin.y() - sta.y()) / static_cast<double>(Xfin - Xsta)	/// inclination
 				 * (x - Xsta))												/// range
 				/ norm;														/// norm
 	}

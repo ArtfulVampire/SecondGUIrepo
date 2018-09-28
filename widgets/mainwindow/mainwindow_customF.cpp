@@ -1455,9 +1455,9 @@ void MainWindow::customFunc()
 	for(int i = 0; i < siz-1; ++i)
 	{
 //		std::cout << i << "\t" << arr[i] << std::endl;
-		pnt.drawLine( pic.width() * i / double(siz),
+		pnt.drawLine( pic.width() * i / static_cast<double>(siz),
 					  pic.height() * (1. - arr[i]),
-					  pic.width() * (i + 1) / double(siz),
+					  pic.width() * (i + 1) / static_cast<double>(siz),
 					  pic.height() * (1. - arr[i + 1]));
 	}
 	/// draw Hz
@@ -1510,9 +1510,9 @@ void MainWindow::customFunc()
 					 for(int i = 0; i < siz-1; ++i)
 					 {
 				 //		std::cout << i << "\t" << arr[i] << std::endl;
-						 pnt.drawLine( pic.width() * i / double(siz),
+						 pnt.drawLine( pic.width() * i / static_cast<double>(siz),
 									   pic.height() * (1. - arr[i]),
-									   pic.width() * (i + 1) / double(siz),
+									   pic.width() * (i + 1) / static_cast<double>(siz),
 									   pic.height() * (1. - arr[i + 1]));
 					 }
 					 /// draw Hz
@@ -1753,7 +1753,7 @@ void MainWindow::customFunc()
 
 		for(int i = 1; i < N; ++i)
 		{
-			if( (i - 1) % int(std::pow(2, 12)) == 0)
+			if( (i - 1) % std::pow(2, 12) == 0)
 			{
 				std::cout << (i - 1) / std::pow(2, 12) << std::endl;
 			}

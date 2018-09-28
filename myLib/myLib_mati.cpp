@@ -16,7 +16,7 @@ QString matiCountByteStr(double marker)
 
     for(int h = 15; h >= 0; --h)
     {
-        result += nm(int(byteMarker[h]));
+		result += nm(static_cast<int>(byteMarker[h]));
 		if(h == 8) { result += " "; }
     }
     return result;
@@ -67,7 +67,7 @@ void matiFixMarker(double & marker)
         }
         byteMarker[7] = 1;
     }
-    marker = double(matiCountDecimal(byteMarker));
+	marker = static_cast<double>(matiCountDecimal(byteMarker));
 }
 
 int matiCountDecimal(std::vector<bool> byteMarker)

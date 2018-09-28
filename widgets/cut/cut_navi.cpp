@@ -21,7 +21,8 @@ void Cut::forwardStepSlot()
 		return;
 	}
 
-	leftDrawLimit = std::min(leftDrawLimit + edfFil.getFreq(), double(dataCutLocal.cols()));
+	leftDrawLimit = std::min(leftDrawLimit + edfFil.getFreq(),
+							 static_cast<double>(dataCutLocal.cols()));
 	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / edfFil.getFreq());
 }
 void Cut::backwardStepSlot()
@@ -47,7 +48,7 @@ void Cut::forwardFrameSlot()
 	}
 	leftDrawLimit = std::min(leftDrawLimit +
 							 ui->paintLengthDoubleSpinBox->value() * edfFil.getFreq(),
-							 double(dataCutLocal.cols()));
+							 static_cast<double>(dataCutLocal.cols()));
 	ui->paintStartDoubleSpinBox->setValue(leftDrawLimit / edfFil.getFreq());
 }
 void Cut::backwardFrameSlot()
@@ -126,7 +127,8 @@ void Cut::findNextMark(int mark)
 		{
 			it = std::find(std::begin(markArr) + leftDrawLimit
 						   /// horzNorm
-						   + int(findNextGap * edfFil.getFreq() / ui->xNormSpinBox->value()),
+						   + static_cast<int>(findNextGap * edfFil.getFreq()
+											  / ui->xNormSpinBox->value()),
 						   std::end(markArr),
 						   mark);
 		}
@@ -134,7 +136,8 @@ void Cut::findNextMark(int mark)
 		{
 			it = std::find_if(std::begin(markArr) + leftDrawLimit
 							  /// horzNorm
-							  + int(findNextGap * edfFil.getFreq() / ui->xNormSpinBox->value()),
+							  + static_cast<int>(findNextGap * edfFil.getFreq()
+												 / ui->xNormSpinBox->value()),
 							  std::end(markArr),
 							  [](double in){ return in != 0.; });
 		}

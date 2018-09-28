@@ -78,7 +78,7 @@ void FeedbackClass::checkStatSolving(taskType typ, ansType howSolved)
 			<< num2 << "\t"
 			<< a << "\t"
 			<< (a <= 0.05) << "\t"
-			<< double(num2 - num1) / num1 << "\t"
+			<< (num2 - num1) / static_cast<double>(num1) << "\t"
 			   ;
 }
 
@@ -103,8 +103,8 @@ void FeedbackClass::checkStatInsight(double thres)
 	/// of solved
 	auto b = myLib::binomialOneTailed(num1, num2, numAll1, numAll2);
 	(*ostr)
-			<< num1 / double(numAll1) << "\t"
-			<< num2 / double(numAll2) << "\t"
+			<< num1 / static_cast<double>(numAll1) << "\t"
+			<< num2 / static_cast<double>(numAll2) << "\t"
 			<< b << "\t"
 			<< (b <= 0.05) << "\t"
 			   ;
@@ -171,7 +171,7 @@ void FeedbackClass::writeDispersions(ansType howSolved)
 
 void FeedbackClass::writeKDEs(const QString & prePath)
 {
-	for(int num : {int(fileNum::first), int(fileNum::third)})
+	for(int num : {static_cast<int>(fileNum::first), static_cast<int>(fileNum::third)})
 	{
 		files[num].kdeForSolvTime(taskType::spat).save(prePath + "kde_spat_" + nm(num) + ".jpg");
 		files[num].kdeForSolvTime(taskType::verb).save(prePath + "kde_verb_" + nm(num) + ".jpg");
@@ -180,7 +180,7 @@ void FeedbackClass::writeKDEs(const QString & prePath)
 
 void FeedbackClass::writeShortLongs(const QString & prePath)
 {
-	for(int num : {int(fileNum::first), int(fileNum::third)})
+	for(int num : {static_cast<int>(fileNum::first), static_cast<int>(fileNum::third)})
 	{
 		files[num].verbShortLong(4).save(prePath + "shortLong_4s_" + nm(num) + ".jpg");
 		files[num].verbShortLong(6).save(prePath + "shortLong_6s_" + nm(num) + ".jpg");
@@ -191,7 +191,10 @@ void FeedbackClass::writeShortLongs(const QString & prePath)
 
 void FeedbackClass::writeRightWrong(const QString & prePath)
 {
-	for(int num : {int(fileNum::first), int(fileNum::third), int(fileNum::second)})
+	for(int num : {
+		static_cast<int>(fileNum::first),
+		static_cast<int>(fileNum::third),
+		static_cast<int>(fileNum::second)})
 	{
 		files[num].rightWrongSpec(taskType::spat).save(prePath + "spat_" + nm(num) + ".jpg");
 		files[num].rightWrongSpec(taskType::verb).save(prePath + "verb_" + nm(num) + ".jpg");
@@ -266,7 +269,7 @@ void FeedbackClass::writeLearnedPatterns()
 {
 	ANN * ann = new ANN();
 
-	auto & fil1 = this->files[int(fileNum::first)];
+	auto & fil1 = this->files[static_cast<int>(fileNum::first)];
 	fil1.remakeWindows(0.5 * fil1.getFreq(), 0); /// magic const
 
 	auto clData = prepareClDataWinds(fileNum::first, true);
@@ -281,7 +284,7 @@ void FeedbackClass::writeLearnedPatterns()
 	ann->writeWeight(wtsPath);
 
 
-	auto & fil2 = this->files[int(fileNum::second)];
+	auto & fil2 = this->files[static_cast<int>(fileNum::second)];
 	fil2.remakeWindows(0.5 * fil2.getFreq(), 0); /// magic const
 	auto clData2 = prepareClDataWinds(fileNum::second, false);
 	ann->setClassifierData(clData2);
@@ -289,7 +292,7 @@ void FeedbackClass::writeLearnedPatterns()
 	ann->testAll();
 	auto res1 = ann->averageClassification(DEVNULL);
 
-	auto & fil3 = this->files[int(fileNum::third)];
+	auto & fil3 = this->files[static_cast<int>(fileNum::third)];
 	fil3.remakeWindows(0.5 * fil3.getFreq(), 0); /// magic const
 	auto clData3 = prepareClDataWinds(fileNum::third, false);
 	ann->setClassifierData(clData3);

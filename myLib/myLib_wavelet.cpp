@@ -133,7 +133,7 @@ void drawWaveletMtlb(const matrix & inData, const QString & picPath)
 	}
 
 	painter.setPen(Qt::SolidLine);
-	for(int i = 0; i < int(inData.cols() / DEFS.getFreq()); ++i)
+	for(int i = 0; i < std::floor(inData.cols() / DEFS.getFreq()); ++i)
 	{
 		painter.drawLine(i * DEFS.getFreq() * barL,
 						 pic.height(),
@@ -160,9 +160,9 @@ const int range = 1024;
 const double pi_sqrt = std::sqrt(M_PI);
 
 #if !WAVELET_FREQ_STEP_TYPE
-const int numberOfFreqs = int(std::log(wvlt::freqMin/wvlt::freqMax) / std::log(wvlt::freqStep)) + 1;
+const int numberOfFreqs = static_cast<int>(std::log(wvlt::freqMin/wvlt::freqMax) / std::log(wvlt::freqStep)) + 1;
 #else
-const int numberOfFreqs = int((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
+const int numberOfFreqs = static_cast<int>((wvlt::freqMax - wvlt::freqMin) / wvlt::freqStep) + 1;
 #endif
 
 
@@ -245,8 +245,9 @@ void wavelet(const QString & filePath,
 
 			/////// TO LOOK
 			/// set left & right limits of counting - should be 2.5 * morletFall... but works so
-			kMin = std::max(0, int(currSlice - 3 * morletFall * DEFS.getFreq() / freq));
-			kMax = std::min(int(fileData.cols()), int(currSlice + 3 * morletFall * DEFS.getFreq() / freq));
+			kMin = std::max(0, static_cast<int>(currSlice - 3 * morletFall * DEFS.getFreq() / freq));
+			kMax = std::min(static_cast<int>(fileData.cols()),
+							static_cast<int>(currSlice + 3 * morletFall * DEFS.getFreq() / freq));
 
 			for(int k = kMin; k < kMax; ++k)
 			{
@@ -336,7 +337,7 @@ void wavelet(const QString & filePath,
 
 	}
 	painter.setPen(Qt::SolidLine);
-	for(int i = 0; i < int(fileData.cols() / DEFS.getFreq()); ++i)
+	for(int i = 0; i < std::floor(fileData.cols() / DEFS.getFreq()); ++i)
 	{
 		painter.drawLine(pic.width() * i * DEFS.getFreq() / fileData.cols(),
 						 pic.height(),
@@ -388,8 +389,10 @@ matrix countWavelet(const signalType & inSignal)
 
 			/////// TO LOOK
 			/// set left & right limits of counting - should be 2.5 * morletFall... but works so
-			kMin = std::max(0, int(currSlice - 3 * morletFall * DEFS.getFreq() / freq));
-			kMax = std::min(NumOfSlices, int(currSlice + 3 * morletFall * DEFS.getFreq() / freq));
+			kMin = std::max(0,
+							static_cast<int>(currSlice - 3 * morletFall * DEFS.getFreq() / freq));
+			kMax = std::min(NumOfSlices,
+							static_cast<int>(currSlice + 3 * morletFall * DEFS.getFreq() / freq));
 
 			for(int k = kMin; k < kMax; ++k)
 			{
@@ -410,7 +413,7 @@ matrix countWavelet(const signalType & inSignal)
 /// look myLib_draw and _drw
 double red(int range, double j, double V, double S)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	/// matlab
 	if    (0. <= part && part <= wvlt::colDots[0])			{ return V*(1.-S); }
 	if(wvlt::colDots[0] < part && part <= wvlt::colDots[1])	{ return V*(1.-S); }
@@ -431,7 +434,7 @@ double red(int range, double j, double V, double S)
 }
 double green(int range, double j, double V, double S)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	/// matlab
 	if    (0.0 <= part && part <= wvlt::colDots[0])				{ return V*(1.-S); }
 	if(wvlt::colDots[0] < part && part <= wvlt::colDots[1])	{ return V*(1.-S) + V*S*(part-wvlt::colDots[0])/(wvlt::colDots[1] - wvlt::colDots[0]); }
@@ -454,7 +457,7 @@ double green(int range, double j, double V, double S)
 
 double blue(int range, double j, double V, double S)
 {
-	double part = j / double(range);
+	double part = j / static_cast<double>(range);
 	if    (0.0 <= part && part <= wvlt::colDots[0])			{ return V -V*S/2. + V*S*(part)/(wvlt::colDots[0] - 0.0)/2.; }
 	if(wvlt::colDots[0] < part && part <= wvlt::colDots[1])	{ return V; }
 	if(wvlt::colDots[1] < part && part <= wvlt::colDots[2])	{ return V - V*S*(part-wvlt::colDots[1])/(wvlt::colDots[2] - wvlt::colDots[1]); }
@@ -556,7 +559,7 @@ void drawWavelet(const QString & picPath,
 
 	}
 	painter.setPen(Qt::SolidLine);
-	for(int i = 0; i < int(NumOfSlices / DEFS.getFreq()); ++i)
+	for(int i = 0; i < std::floor(NumOfSlices / DEFS.getFreq()); ++i)
 	{
 		painter.drawLine(pic.width() * i * DEFS.getFreq() / NumOfSlices,
 						 pic.height(),

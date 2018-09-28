@@ -67,14 +67,14 @@ const std::valarray<double> y {c(0), c(0),
 			c(4), c(4)};
 
 /// for drawTemplate - left upper corner of oneTemplate
-const std::valarray<double> xx {(myLib::drw::x + 1/32.) * double(myLib::drw::templateWidth)
+const std::valarray<double> xx {(myLib::drw::x + 1/32.) * myLib::drw::templateWidth
 			- myLib::drw::gap};
-const std::valarray<double> yy {(myLib::drw::y + 6/32.) * double(myLib::drw::templateHeight)
+const std::valarray<double> yy {(myLib::drw::y + 6/32.) * myLib::drw::templateHeight
 			- myLib::drw::graphHeight - myLib::drw::gap};
 
 /// for drawOneArray - start of signal drawing
-const std::valarray<double> xc {(myLib::drw::x + 1/32.) * double(myLib::drw::templateWidth)};
-const std::valarray<double> yc {(myLib::drw::y + 6/32.) * double(myLib::drw::templateHeight)};
+const std::valarray<double> xc {(myLib::drw::x + 1/32.) * myLib::drw::templateWidth};
+const std::valarray<double> yc {(myLib::drw::y + 6/32.) * myLib::drw::templateHeight};
 
 
 
