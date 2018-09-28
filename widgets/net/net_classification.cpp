@@ -81,7 +81,7 @@ void Net::autoClassificationSimple()
 void Net::leaveOneOutClassification()
 {
 	const matrix & dataMatrix = myModel->getClassifierData()->getData();
-	std::vector<uint> learnIndices;
+	std::vector<uint> learnIndices{};
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
 //		std::cout << i + 1 << " "; std::cout.flush();
@@ -150,8 +150,8 @@ std::vector<uint>> Net::makeIndicesSetsCross(
 {
 	const double numOfClasses = myModel->getClassifierData()->getNumOfCl();
 
-    std::vector<uint> learnInd;
-    std::vector<uint> tallInd;
+	std::vector<uint> learnInd{};
+	std::vector<uint> tallInd{};
 
     const int fold = ui->foldSpinBox->value();
 
@@ -171,14 +171,14 @@ std::vector<uint>> Net::makeIndicesSetsCross(
 			}
 		}
 	}
-	return std::make_pair(learnInd, tallInd);
+	return {learnInd, tallInd};
 }
 
 void Net::halfHalfClassification()
 {
 	const matrix & dataMatrix = myModel->getClassifierData()->getData();
-    std::vector<uint> learnIndices;
-    std::vector<uint> tallIndices;
+	std::vector<uint> learnIndices{};
+	std::vector<uint> tallIndices{};
 
     for(uint i = 0; i < dataMatrix.rows() / 2; ++i)
     {
@@ -200,8 +200,8 @@ void Net::trainTestClassification(const QString & trainTemplate,
 	const matrix & dataMatrix = myModel->getClassifierData()->getData();
 	const std::vector<QString> & fileNames = myModel->getClassifierData()->getFileNames();
 
-    std::vector<uint> learnIndices;
-    std::vector<uint> tallIndices;
+	std::vector<uint> learnIndices{};
+	std::vector<uint> tallIndices{};
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
         if(fileNames[i].contains(trainTemplate))

@@ -31,53 +31,6 @@ class Net : public QWidget
 {
     Q_OBJECT
 
-private:
-    Ui::Net * ui;
-
-    /// ui things
-    std::vector<QButtonGroup *> myButtonGroup;
-    bool stopFlag = false;
-    bool autoFlag = false;
-
-    /// ui private methods
-    void aaDefaultSettings();
-
-    /// data
-	enum class myMode {N_fold, k_fold, train_test,  half_half, people};
-    enum class source {winds, reals, pca, bayes};
-    myMode Mode = myMode::N_fold;
-    source Source = source::reals;
-
-    /// classification
-	Classifier * myModel = nullptr;
-	ClassifierData myClassifierData{};
-
-	/// succesiive
-	std::valarray<int> passed{};
-    matrix pcaMat{};
-	void successiveLearning(const std::valarray<double> & newSpectre,
-							const uint newType,
-							const QString & newFileName);
-	void successiveLearningFinal(const matrix & newSpectra,
-								 const int newType,
-								 const QString & currExpName);
-
-
-    /// data
-    std::pair<std::vector<uint>, std::vector<uint>> makeIndicesSetsCross(
-            const std::vector<std::vector<uint> > & arr,
-            const int numOfFold);
-
-    QString filesPath;
-
-	/// class - deprecated, moved to Classifier
-	void crossClassification();
-    void leaveOneOutClassification();
-    void halfHalfClassification();
-    void trainTestClassification(const QString & trainTemplate = "_train",
-                                 const QString & testTemplate = "_test");
-    void cycleParams(std::vector<std::vector<double>> & in); /// for customF
-
 public:
     explicit Net();
     ~Net();
@@ -163,6 +116,55 @@ public slots:
 	void readWtsSlot();
     void drawWtsSlot();
     void writeWtsSlot();
+
+
+private:
+	Ui::Net * ui;
+
+	/// ui things
+	std::vector<QButtonGroup *> myButtonGroup;
+	bool stopFlag = false;
+	bool autoFlag = false; /// to deprecate
+
+	/// ui private methods
+	void aaDefaultSettings();
+	void cycleParams(std::vector<std::vector<double>> & in); /// to deprecate
+
+	/// data
+	enum class myMode {N_fold, k_fold, train_test,  half_half, people};
+	enum class source {winds, reals, pca, bayes};
+	myMode Mode{myMode::N_fold};
+	source Source{source::reals};
+
+	/// classification
+	Classifier * myModel = nullptr;
+	ClassifierData myClassifierData{};
+
+	/// succesiive
+	std::valarray<int> passed{};
+	matrix pcaMat{}; /// ???
+	void successiveLearning(const std::valarray<double> & newSpectre,
+							const uint newType,
+							const QString & newFileName);
+	void successiveLearningFinal(const matrix & newSpectra,
+								 const int newType,
+								 const QString & currExpName);
+
+
+	/// data
+	std::pair<std::vector<uint>, std::vector<uint>> makeIndicesSetsCross(
+			const std::vector<std::vector<uint> > & arr,
+			const int numOfFold);
+
+	QString filesPath;
+
+	/// class - deprecated, moved to Classifier
+	void crossClassification();
+	void leaveOneOutClassification();
+	void halfHalfClassification();
+	void trainTestClassification(const QString & trainTemplate = "_train",
+								 const QString & testTemplate = "_test");
+
 };
 
 #endif /// NET_H

@@ -260,7 +260,7 @@ void elenaCalculation(const QString & realsPath,
 		}
 
 		/// calculate features
-		matrix features(128, sumSize);
+		matrix features(128, sumSize); //////////////
 		for(int chanNum = 0; chanNum < 128; ++chanNum) ////////////////////
 		{
 			int currIndex{0};

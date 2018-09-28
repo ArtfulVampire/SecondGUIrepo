@@ -291,4 +291,9 @@ void Net::loadDataSlot()
         return;
 	}
 	myClassifierData = ClassifierData(helpString);
+
+
+	/// workaround for many channels
+	/// To DO
+
 }
