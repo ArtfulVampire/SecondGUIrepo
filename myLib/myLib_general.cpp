@@ -436,6 +436,18 @@ double areSimilarFiles(const QString & path1,
 
 int countSymbolsInFile(const QString & filePath, char inChar)
 {
+	QFile inFile(filePath);
+	inFile.open(QIODevice::ReadOnly);
+	char tmp;
+	int res{0};
+	while(inFile.getChar(&tmp))
+	{
+		if(tmp == inChar) { ++res; }
+	}
+	inFile.close();
+	return res;
+
+#if 0
 	FILE * inStr;
 	inStr = fopen(filePath.toStdString().c_str(), "rb");
 	char tmpChar;
@@ -446,6 +458,7 @@ int countSymbolsInFile(const QString & filePath, char inChar)
 		if(!feof(inStr) && tmpChar == inChar) { ++res; }
 	}
 	return res;
+#endif
 }
 
 void replaceSymbolsInFile(const QString & filePath,

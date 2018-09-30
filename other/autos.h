@@ -232,6 +232,37 @@ QPixmap IITPdrawCoh(const std::valarray<std::complex<double> > & inData,
 matrix makeTestData(const QString & outPath);
 void clustering();
 
+
+namespace marks
+{
+	/// Galya markers
+	const std::vector<QString> tactile{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
+
+	const std::vector<QString> Dasha{"_brush", "_cry", "_fire", "_flower",
+									 "_isopropanol", "_needles", "_vanilla", "_wc"};
+
+	const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+										   "_ph", "_rv", "_sc", "_sm", "_og", "_zg"};
+	const std::vector<QString> TBI{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+										   "_og", "_rv", "_sm", "_zg"};
+
+	const std::vector<QString> rhythAdoption{"_2sv", "_2zv",
+											 "_4sv", "_4zv",
+											 "_8sv", "_8zv",
+											 "_16sv", "_16zv",
+											 "_fon",
+//											 "_og",
+//											 "_zg",
+											};
+	const std::vector<QString> buben{"_bub",		"_bubAfter",
+									 "_bubAud",	"_bubAudAfter",
+									 "_time",
+									 "_og",		"_ogAfter",
+									 "_zg",
+									};
+	const std::vector<QString> burdenkoFaces{"_all", "_svoi", "_other"};
+}
+
 }
 
 #endif /// AUTOS_H

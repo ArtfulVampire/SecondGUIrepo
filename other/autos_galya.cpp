@@ -141,8 +141,8 @@ void calculateFeatures(const QString & pathWithEdfs,
 			tmpData.eraseRows({4, 9, 14}); /// skip Fz, Cz, Pz
 			break;
 		}
-		default:
-		{ /* do nothing */ }
+//		default: { /* do nothing */ } /// never get here
+
 		}
 		countFeatures(tmpData, initEdf.getFreq(), Mask, preOutPath);
 	}
@@ -154,11 +154,11 @@ void countFeatures(const matrix & inData,
 				   const QString & preOutPath)
 {
 	/// spectre will be count twice for alpha and FFT but I dont care
-	for(const auto & num : FEATURES)
+	for(const auto & feat : FEATURES)
 	{
-		if(Mask & std::get<0>(num))
+		if(Mask & std::get<0>(feat))
 		{
-			const QString outPath = preOutPath + "_" + std::get<1>(num) + ".txt";
+			const QString outPath = preOutPath + "_" + std::get<1>(feat) + ".txt";
 
 			QFile::remove(outPath);
 			std::ofstream outStr;
@@ -167,7 +167,7 @@ void countFeatures(const matrix & inData,
 			outStr << std::fixed;
 			outStr.precision(4);
 
-			const auto& f = std::get<2>(num);
+			const auto & f = std::get<2>(feat);
 			f(inData,
 			  srate,
 			  outStr);
@@ -456,8 +456,7 @@ void countHilbert(const matrix & inData,
 		}
 		break;
 	}
-	default:
-	{ /* do nothing */ }
+//	default: { /* do nothing */ } /// never get here
 	}
 
 }
@@ -474,9 +473,9 @@ void countWavelet(const matrix & inData,
 //	using funcType = double(*)(const std::valarray<double> &);
 	using funcType = std::function<double(const std::valarray<double> &)>;
 	std::vector< funcType > funcs;
-	funcs.push_back(static_cast<funcType>(smLib::mean<double>));
+//	funcs.push_back(static_cast<funcType>(smLib::mean<double>));
 	funcs.push_back(static_cast<funcType>(smLib::sigma<std::valarray<double>>));
-	funcs.push_back(static_cast<funcType>(smLib::median<std::valarray<double>>));
+//	funcs.push_back(static_cast<funcType>(smLib::median<std::valarray<double>>));
 
 	std::vector<matrix> outData{};
 	for(const auto & func : funcs)
@@ -1452,7 +1451,7 @@ void rereferenceFolder(const QString & procDirPath,
 		QString helpString = procDirPath + "/" + fileName;
 		edfFile fil;
 		fil.readEdfFile(helpString);
-		fil.rereferenceData(newRef).writeEdfFile(helpString);
+		fil.rereferenceData(strToRef.at(newRef), false, false).writeEdfFile(helpString);
 	}
 }
 
@@ -1477,11 +1476,11 @@ void refilterFolder(const QString & procDirPath,
 
 void rewriteNew(const QString & inPath)
 {
-	auto lst = QDir(inPath).entryList({"*_new.edf"});
+	auto lst = QDir(inPath).entryList(def::edfFilters);
 	for(const QString & in : lst)
 	{
 		QString oldName = in;
-		oldName.replace("_new.edf", ".edf");
+		oldName.remove("_new");
 
 		QFile::remove(inPath + "/" + oldName);
 		QFile::rename(inPath + "/" + in,
@@ -1727,7 +1726,7 @@ void ProcessByFolders(const QString & inPath,
 		if(01)
 		{
 			/// clear outFolder
-			myLib::cleanDir(guyPath + "/out", "txt", true);
+//			myLib::cleanDir(guyPath + "/out", "txt", true);
 			autos::calculateFeatures(guyPath, numChan, guyOutPath);
 		}
 
@@ -1736,7 +1735,7 @@ void ProcessByFolders(const QString & inPath,
 		{
 			for(const QString & mark : markers)
 			{
-				QStringList fileNamesToArrange;
+				QStringList fileNamesToArrange{};
 
 				for(featuresMask func : DEFS.getAutosMaskArray())
 				{
