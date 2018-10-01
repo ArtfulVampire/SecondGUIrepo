@@ -101,12 +101,12 @@ public:
 	matrix & push_back(const std::vector<double> &in);
 
 	/// for compability with vector< std::vector<Type> >
-	void clear() { this->myData.clear(); }
+	void clear()				{ myData.clear(); }
 
 	matrix & resize(int rows, int cols, double val);
 	matrix & resize(int rows, int cols);
-	matrix & resize(int i);
-	matrix & reserve(int i);
+	matrix & resize(int i)		{ myData.resize(i); return *this; }
+	matrix & reserve(int i)		{ myData.reserve(i); return *this; }
 
 	std::valarray<double> & operator[](int i)
 	{

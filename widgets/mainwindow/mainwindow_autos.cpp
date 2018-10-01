@@ -7,6 +7,8 @@
 #include <myLib/general.h>
 #include <myLib/highlevel.h>
 
+#include <other/subjects.h>
+
 using namespace myOut;
 
 matrix countEvoked(const std::vector<matrix> & inData, int length)
@@ -313,21 +315,17 @@ void MainWindow::BaklushevDraw(const QString & workPath, const QString & edfName
 
 	QString spectraPath = workPath + "/SpectraSmooth";
 
-	int numOfReals[2];
-	QStringList lst[2]; /// legacy shet remake with std::array
-	QString marker[2] = {"*_241*" , "*_247*"};
-	matrix drawMat[2];
+	const std::vector<QString> marker{"*_241*" , "*_247*"};
+	std::array<matrix, 2> drawMat{};
 
 	for(int i = 0; i < 2; ++i)
 	{
-		lst[i] = QDir(spectraPath).entryList({marker[i]});
-		numOfReals[i] = lst[i].size();
+		QStringList lst = QDir(spectraPath).entryList({marker[i]});
+		drawMat[i].reserve(lst.size());
 
-		drawMat[i] = matrix(numOfReals[i], 1);
-
-		for(int j = 0; j < numOfReals[i]; ++j)
+		for(const QString & fileName : lst)
 		{
-			drawMat[i][j] = myLib::readFileInLine(spectraPath + "/" + lst[i][j]);
+			drawMat[i].push_back(myLib::readFileInLine(spectraPath + "/" + fileName));
 		}
 	}
 	double norm = 0;
@@ -389,3 +387,602 @@ void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
     delete sp;
 }
 
+void MainWindow::iitpNamesFix()
+{
+	/// IITP filenames prep
+	const QString wrk = "/media/Files/Data/iitp/Aliev2";
+	QStringList lst = QDir(wrk).entryList({"*.*"}, QDir::Files|QDir::NoDotAndDotDot);
+	for(QString str : lst)
+	{
+		QString newName = str;
+//		newName.remove("virt");
+//		newName.remove("VR");
+//		newName.replace("Aliev", "Aliev2");
+		newName.replace(".EDF", "_eeg.edf");
+		if(0)
+		{
+			std::cout << str << std::endl;
+			std::cout << newName << std::endl;
+			std::cout << std::endl;
+		}
+		else
+		{
+			QFile::rename(wrk + "/" + str,
+						  wrk + "/" + newName);
+
+		}
+	}
+
+
+#if 0
+	/// IITP invert channels
+	const QString toInvert{"Knee_l"};
+	const QStringList guyList{"Aliev2", "Dima2", "Victor2"};
+	for(QString guy : guyList)
+	{
+		const QString workDir = def::iitpSyncFolder + "/" + guy;
+		for(const QString & fn : QDir(workDir).entryList(def::edfFilters))
+		{
+			edfFile fil;
+			fil.readEdfFile(workDir + "/" + fn);
+
+			const auto newRow = -fil.getData(toInvert);
+			fil.setData(fil.findChannel(toInvert), newRow);
+			fil.writeEdfFile(workDir + "/" + fn);
+		}
+	}
+	exit(0);
+#endif
+
+
+#if 0
+	/// IITP substitute channels
+	{
+		const QString oldChan{"Elbow_r"};
+		const QString newChan{"Elbow_l"};
+		const QStringList guyList{"Michael"};
+		const std::vector<int> nums{17, 32, 34, 35};
+		for(QString guy : guyList)
+		{
+			const QString workDir = def::iitpSyncFolder + "/" + guy;
+			for(const QString & fn : QDir(workDir).entryList(def::edfFilters))
+			{
+				bool skip{true};
+				for(int each : nums) { if(fn.contains("_" + nm(each))) { skip = false; } }
+				if(skip) { continue; }
+
+				edfFile fil;
+				fil.readEdfFile(workDir + "/" + fn);
+
+				fil.setData(fil.findChannel(oldChan),
+							-fil.getData(newChan));
+				fil.writeEdfFile(workDir + "/" + fn);
+			}
+		}
+	}
+	exit(0);
+#endif
+
+
+#if 0
+	/// insert absent channels for all files of a guy
+	{
+		const QString guy = "Isakov2";
+//		const QString guyPath = def::iitpSyncFolder + "/" + guy + "/bc_noRectify";
+		const QString guyPath = def::iitpFolder + "/" + guy;
+		const QString postfix = "_eeg";
+		auto badFiles = autos::IITPtestEegChannels(guyPath, postfix);
+//		autos::IITPinsertChannels(guyPath, badFiles);
+		exit(0);
+	}
+#endif
+
+
+#if 0
+	/// replace Knee_r with Elbow_r		when legs only
+	/// and Knee_r with -Knee_l			when legs + arms
+	for(const QString & guy : {"Elena", "Ivan"})
+	{
+		const QString pth = def::iitpSyncFolder + "/" + guy;
+		for(const QString & mrk : {"02", "30", "31"})
+		{
+			const QString filePath = pth + "/" + guy + "_" + mrk + "_sum_new.edf";
+			if(!QFile::exists(filePath)) { continue; }
+
+			edfFile dt;
+			dt.readEdfFile(filePath);
+			dt.setData(dt.findChannel("Knee_r"), dt.getData("Elbow_r"));
+			dt.setData(dt.findChannel("Elbow_r"), std::valarray<double>(0., dt.getDataLen()));
+			dt.rewriteEdfFile();
+		}
+		for(const QString & mrk : {"17", "34", "35"})
+		{
+			const QString filePath = pth + "/" + guy + "_" + mrk + "_sum_new.edf";
+			if(!QFile::exists(filePath)) { continue; }
+
+			edfFile dt;
+			dt.readEdfFile(filePath);
+			dt.setData(dt.findChannel("Knee_r"), -dt.getData("Knee_l"));
+			dt.rewriteEdfFile();
+		}
+	}
+	exit(0);
+#endif
+
+#if 0
+	/// IITP file into two files
+
+	iitp::iitpData fil;
+	fil.readEdfFile("/media/Files/Data/iitp/SYNCED/Test/Test_01_sum_new.edf");
+	std::valarray<double> iitp1 = fil.getData("P4");
+	iitp1 -= smLib::mean( iitp1 );
+//	std::valarray<double> iitp2 = fil.getData("Fcr");
+	std::valarray<double> iitp2 = fil.getData("Ta");
+	iitp2 -= smLib::mean( iitp2 );
+
+	if(0)
+	{
+		myLib::writeFileInLine("/media/Files/Data/iitp1.txt",
+							   iitp1);
+		myLib::writeFileInLine("/media/Files/Data/iitp2.txt",
+							   iitp2);
+//		exit(0);
+	}
+
+
+	/// IITP test coh two files
+	const int fftLen = 256;
+	const double srate = 250.;
+	const double overlap = 0.0;
+
+	auto usual = iitp::coherenciesUsual(iitp1,
+										iitp2,
+										overlap,
+										srate,
+										fftLen);
+	usual[0] = {0.};
+
+	const int windNum = (iitp1.size() - fftLen) / (fftLen * (1. - overlap));
+	const double confidence = 1. - std::pow(0.05, 1. / (windNum - 1));
+	std::cout << "windNum = " << windNum << std::endl;
+	std::cout << "confidence = " << confidence << std::endl;
+
+
+//	std::valarray<double> fromMatlab;
+//	fromMatlab = myLib::readFileInLineRaw("/media/Files/Data/mCoh.txt");
+//	smLib::resizeValar(fromMatlab, siz);
+//	double m = std::max(fromMatlab.max(), usualDraw.max());
+
+//	std::valarray<double> rat = usualDraw / fromMatlab;
+//	std::cout << rat << std::endl;
+//	myLib::histogram(rat, 20
+//					 , std::make_pair(5,20)
+//					 ).save("/media/Files/Data/rat.jpg", nullptr, 100);
+//	autos::IITPdrawCoh(fromMatlab, m, confidence).
+//			save("/media/Files/Data/mCoh.jpg", nullptr, 100);
+
+	autos::IITPdrawCoh(usual,
+					   8.,
+					   45.,
+					   srate,
+					   fftLen,
+					   0.,
+					   confidence).
+			save("/media/Files/Data/cCohUsual.jpg", nullptr, 100);
+
+
+
+	exit(0);
+#endif
+
+
+#if 0
+	/// IITP test model data
+	const int fftLen = 1024;
+	const int wndN = 64;
+	const double srate = 250.;
+	const double spStep = srate / fftLen;
+	const double intFr = 17.2;
+	const double interestFreq = std::round(intFr / spStep) * spStep;
+//	const double interestFreq = 17.2;
+	std::cout << "interestFreq = " << interestFreq << std::endl;
+
+	std::valarray<double> sig1 = myLib::makeSine(fftLen * wndN, interestFreq, srate, 0);
+	sig1 += myLib::makeNoise(sig1.size()) * 0.01;
+	std::valarray<double> sig2 = myLib::makeSine(fftLen * wndN, interestFreq, srate, 0.5);
+//	sig2 += myLib::makeNoise(sig2.size()) * 0.05;
+
+	for(int i = 0; i < sig1.size() - fftLen; i += fftLen)
+	{
+		auto t = myLib::makeSine(fftLen * wndN, interestFreq, srate,
+								 (rand() % 2 - 0.5) * 2 * (rand() % 100) / 100. * 0.5);
+		for(int j = 0; j < fftLen; ++j)
+		{
+			sig2[j + i] = t[j + i];
+		}
+	}
+	std::this_thread::sleep_for(std::chrono::seconds{2});
+	sig2 += myLib::makeNoise(sig2.size()) * 0.01;
+
+
+	myLib::writeFileInLine("/media/Files/Data/sig1.txt",
+						   sig1);
+	myLib::writeFileInLine("/media/Files/Data/sig2.txt",
+						   sig2);
+
+
+	auto mine = iitp::coherenciesMine(sig1,
+									  sig2,
+									  srate,
+									  fftLen);
+
+
+	auto usual = iitp::coherenciesUsual(sig1,
+										sig2,
+										srate,
+										fftLen);
+	const double confidence = 1. - std::pow(0.05, 1. / (sig1.size() / fftLen - 1));
+	std::cout << "confidence = " << confidence << std::endl;
+
+	const double freqC = fftLen / srate;
+	std::cout << "freqC = " << freqC << std::endl;
+	const int numFreq = 45;
+	const int siz = freqC * numFreq;
+	std::cout << "siz = " << siz << std::endl;
+
+
+	std::valarray<double> mineDraw(siz);
+	std::valarray<double> usualDraw(siz);
+	for(int i = 0; i < siz; ++i)
+	{
+		mineDraw[i] = std::abs(mine[i]);
+		usualDraw[i] = std::abs(usual[i]);
+	}
+
+#if 0
+	const auto & arr = mineDraw;
+	const QString nam = "Mine";
+#else
+	const auto & arr = usualDraw;
+	const QString nam = "Usual";
+#endif
+
+//	std::cout << arr.max() << std::endl;
+
+	QPixmap pic(800, 600);
+	pic.fill();
+	QPainter pnt;
+	pnt.begin(&pic);
+	for(int i = 0; i < siz-1; ++i)
+	{
+//		std::cout << i << "\t" << arr[i] << std::endl;
+		pnt.drawLine( pic.width() * i / static_cast<double>(siz),
+					  pic.height() * (1. - arr[i]),
+					  pic.width() * (i + 1) / static_cast<double>(siz),
+					  pic.height() * (1. - arr[i + 1]));
+	}
+	/// draw Hz
+	const QFont font = QFont("Helvetica", 8);
+	pnt.setFont(font);
+	for(int i = 0; i < numFreq; ++i)
+	{
+		pnt.drawLine( pic.width() * i / numFreq,
+					  pic.height() * 1,
+					  pic.width() * i / numFreq,
+					  pic.height() * (1. - 0.03));
+		pnt.drawText(pic.width() * i
+
+					 auto usual = iitp::coherenciesUsual(sig1,
+														 sig2,
+														 srate,
+														 fftLen);
+					 const double confidence = 1. - std::pow(0.05, 1. / (sig1.size() / fftLen - 1));
+					 std::cout << "confidence = " << confidence << std::endl;
+
+					 const double freqC = fftLen / srate;
+					 std::cout << "freqC = " << freqC << std::endl;
+					 const int numFreq = 45;
+					 const int siz = freqC * numFreq;
+					 std::cout << "siz = " << siz << std::endl;
+
+
+					 std::valarray<double> mineDraw(siz);
+					 std::valarray<double> usualDraw(siz);
+					 for(int i = 0; i < siz; ++i)
+					 {
+						 mineDraw[i] = std::abs(mine[i]);
+						 usualDraw[i] = std::abs(usual[i]);
+					 }
+
+				 #if 0
+					 const auto & arr = mineDraw;
+					 const QString nam = "Mine";
+				 #else
+					 const auto & arr = usualDraw;
+					 const QString nam = "Usual";
+				 #endif
+
+				 //	std::cout << arr.max() << std::endl;
+
+					 QPixmap pic(800, 600);
+					 pic.fill();
+					 QPainter pnt;
+					 pnt.begin(&pic);
+					 for(int i = 0; i < siz-1; ++i)
+					 {
+				 //		std::cout << i << "\t" << arr[i] << std::endl;
+						 pnt.drawLine( pic.width() * i / static_cast<double>(siz),
+									   pic.height() * (1. - arr[i]),
+									   pic.width() * (i + 1) / static_cast<double>(siz),
+									   pic.height() * (1. - arr[i + 1]));
+					 }
+					 /// draw Hz
+					 const QFont font = QFont("Helvetica", 8);
+					 pnt.setFont(font);
+					 for(int i = 0; i < numFreq; ++i)
+					 {
+						 pnt.drawLine( pic.width() * i / numFreq,
+									   pic.height() * 1,
+									   pic.width() * i / numFreq,
+									   pic.height() * (1. - 0.03));
+						 pnt.drawText(pic.width() * i / numFreq,
+									  pic.height() * (1. - 0.03) + QFontMetrics(font).xHeight(),
+									  QString::number(i));
+					 }
+					 /// confidence line
+					 pnt.drawLine(0,
+								  pic.height() * (1. - confidence),
+								  pic.width(),
+								  pic.height() * (1. - confidence));
+					 pnt.end();
+					 pic.save("/media/Files/Data/cCoh" + nam + ".jpg", nullptr, 100);
+
+					 exit(0); / numFreq,
+					 pic.height() * (1. - 0.03) + QFontMetrics(font).xHeight(),
+					 QString::number(i));
+	}
+	/// confidence line
+	pnt.drawLine(0,
+				 pic.height() * (1. - confidence),
+				 pic.width(),
+				 pic.height() * (1. - confidence));
+	pnt.end();
+	pic.save("/media/Files/Data/cCoh" + nam + ".jpg", nullptr, 100);
+
+	exit(0);
+#endif
+
+}
+
+void MainWindow::iitpPreproc()
+{
+	/// prepare FeedbackFinalMark for eyes clean
+	const QString path = DEFS.dirPath() + "/FeedbackNewMark";
+
+	Cut * cut = new Cut();
+	for(auto in : subj::guysFBnew)
+	{
+		const QString dr = std::get<0>(in);
+		const QString ExpName = std::get<1>(in);
+
+
+		for(int i : {1, 2, 3})
+		{
+//			if(!(ExpName == "TAA" && i == 2)) continue;
+			QString fn = path + "/" + dr + "/" + ExpName + "_" + nm(i) + "_good";
+
+			std::cout << std::endl << ExpName << " " << i << std::endl;
+
+			if(0)
+			{
+				/// rename all EDF to edf
+				if(QFile::exists(fn + ".EDF"))
+				{
+					if(QFile::exists(fn + ".edf"))
+					{
+						std::cout << "both files exist " << ExpName << " " << i << std::endl;
+						continue;
+					}
+					QFile::rename(fn + ".EDF", fn + ".edf");
+				}
+				continue;
+
+			}
+			cut->openFile(fn + ".edf");
+			cut->cutPausesSlot();
+			cut->saveSlot();
+
+			this->setEdfFile(fn + "_new.edf");
+			this->rereferenceDataSlot();
+			this->setEdfFile(fn + "_new_rr.edf");
+			this->refilterDataSlot();
+		}
+//		break;
+	}
+	cut->close();
+	delete cut;
+	exit(0);
+}
+
+void MainWindow::iitpMainProc()
+{
+	QString guy = "Isakov2";
+	{
+		if(0)
+		{
+			/// check Da/Dp channels - should appear in 15th file and further
+			const QString ph = def::iitpSyncFolder + "/" + guy;
+			for(QString fn : QDir(ph).entryList({"*_sum_new.edf"}))
+			{
+				edfFile fl;
+				fl.readEdfFile(ph + "/" + fn, true);
+				if(fl.findChannel("Da") != -1)
+				{
+					std::cout << "Da: " << fn << std::endl;
+				}
+				if(fl.findChannel("Dp") != -1)
+				{
+					std::cout << "Dp: " << fn << std::endl;
+
+				}
+				continue;
+
+			}
+		}
+
+		if(0)
+		{
+			autos::IITPremoveZchans(guy, def::iitpFolder);			/// rewrites _eeg.edf
+			autos::IITPdatToEdf(guy);								/// all dat files in dir
+			autos::IITPfilter(guy, "_emg", true, true, false);		/// rewrites all _emg.edf
+			if(!autos::IITPtestInitialFiles(guy))
+			{
+				exit(0);
+			}
+			return; /// clean init eeg - zero in the beginning for better filering
+		}
+//		return;
+		if(0)
+		{
+			if(01)
+			{
+				/// filter eeg 0.5-70, notch 45-55
+//				autos::IITPfilter(guy, "_eeg_new", false, false, true);	/// rewrites _eeg_new.edf
+				autos::IITPconcat(guy, "_eeg_new", "_emg");				/// if cleaned init eeg
+			}
+			else
+			{
+//				autos::IITPconcat(guy, "_eeg", "_emg");				/// if NOT cleaned init eeg
+			}
+			return; /// manual sync
+		}
+		/// copy files to SYNCED
+		if(0)
+		{
+			/// rectifyEMG in SYNCED
+			autos::IITPrectifyEmg(guy);
+			exit(0);
+		}
+//		return;
+		if(01)
+		{
+//			std::cout << "staging start" << std::endl;
+//			autos::IITPstaging(guy);							/// flex/extend markers
+//			std::cout << "staging end, copy start" << std::endl;
+			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
+//			std::cout << "copy end, reref start" << std::endl;
+			autos::IITPrerefCAR(guy + "_car");					/// rewrite ALL edfs in SYNCED/guy_car
+//			return;
+		}
+		/// CHECK car files if needed
+		if(01)
+		{
+//			std::cout << "copy end, process start" << std::endl;
+			autos::IITPprocessStaged(guy);						/// both -Ref and -car
+//			std::cout << "process end, draw start" << std::endl;
+			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
+//			std::cout << "all end" << std::endl;
+//			continue;
+//			exit(0);
+		}
+
+		exit(0);
+//		continue;
+
+
+#if 0
+		/// deleted lists 14.10.2017
+		myLib::drw::trueChans = iitp::interestEeg;
+
+		using Typ = std::vector<int>;
+		Typ nums = smLib::unite<Typ>({smLib::range<Typ>(0, 11 + 1),
+									  smLib::range<Typ>(24, 29 + 1)});
+//		nums.erase(std::find(std::begin(nums), std::end(nums), 8));
+		autos::IITPdrawSameScale(guy, smLib::range<Typ>(0, 11 + 1));
+		exit(0);
+#endif
+	}
+}
+
+
+void MainWindow::matiMainProc()
+{
+	if(1)
+	{
+		/// deprecated, use edfFile.concat
+//        concatenateEDFs("/media/Files/IHNA/Data/MATI/archive/NOS_1.EDF",
+//                        "/media/Files/IHNA/Data/MATI/archive/NOS_2.EDF",
+//                        "/media/Files/IHNA/Data/MATI/archive/NOS.EDF");
+//		exit(0);
+
+//        QString helpString1 = "/media/Files/Data/Mati/PYV/PY_3.edf";
+//        std::cout << fileNameOf(helpString1) << std::endl;
+
+
+//        ui->matiCheckBox->setChecked(true);
+//        ui->sliceWithMarkersCheckBox->setChecked(true);
+//        ui->reduceChannelsCheckBox->setChecked(true);
+//        ui->reduceChannelsComboBox->setCurrentText("Mati");
+//        setEdfFile("/media/Files/Data/Mati/SDA/SDA_rr_f.edf");
+
+		readData();
+		exit(0);
+//        ns = 22;
+//        cutShow();
+//        drawReals();
+//        sliceAll();
+//        ns = 19;
+//        ui->reduceChannelsLineEdit->setText("1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 28");
+		return;
+
+		QDir locDir(def::matiFolder);
+		QStringList nameFilters;
+		nameFilters << "*.edf" << "*.EDF";
+		QString fileName;
+		QString helpString;
+
+		QStringList lst = locDir.entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+		for(int i = 0; i < lst.length(); ++i)
+		{
+			locDir.cd(lst[i]);
+
+			helpString = locDir.absolutePath() + "/" + lst[i] + ".EDF";
+			setEdfFile(helpString);
+			rereferenceDataSlot();
+
+			helpString = locDir.absolutePath() + "/" + lst[i] + "_rr.edf";
+			setEdfFile(helpString);
+			refilterDataSlot();
+
+			helpString = locDir.absolutePath() + "/" + lst[i] + "_rr_f.edf";
+			setEdfFile(helpString);
+			sliceAll();
+			drawReals();
+			locDir.cdUp();
+
+		}
+		exit(0);
+	}
+
+	// test matiMarkers functions
+	if(0)
+	{
+		double doub1 = 0b0000010110000000;
+		double doub2 = 0b0000000010000000;
+
+		double & firstMarker = doub1;
+		double & lastMarker  = doub2;
+
+		myLib::matiFixMarker(firstMarker); // fix the start marker for this small edf file
+		myLib::matiFixMarker(lastMarker);  // fix the last  marker for this small edf file
+		if(myLib::matiCountBit(firstMarker, 10) != myLib::matiCountBit(lastMarker, 10)) // if not one of them is the end of some session
+		{
+			lastMarker = firstMarker
+				+ std::pow(2, 10) * (myLib::matiCountBit(firstMarker, 10) ? -1 : 1); // adjust the last marker
+		}
+		myLib::matiPrintMarker(lastMarker, "last");
+		myLib::matiPrintMarker(doub2, "newData");
+		exit(0);
+	}
+
+}

@@ -145,7 +145,27 @@ public:
 
 enum class inst {mati, iitp};
 enum class eogType {cross, correspond};
-//enum class reference{A1, A2, Ar, CAR, Base}; //// TO DO
+enum class reference {A1, A2, Ar, N, Cz, CAR, Base};
+const std::map<QString, reference> strToRef
+{
+	{"A1",		reference::A1},
+	{"A2",		reference::A2},
+	{"Ar",		reference::Ar},
+	{"N",		reference::N},
+	{"Cz",		reference::Cz},
+	{"CAR",		reference::CAR},
+	{"Base",	reference::Base},
+};
+const std::map<reference, QString> refToStr
+{
+	{reference::A1,		"A1"},
+	{reference::A2,		"A2"},
+	{reference::Ar,		"Ar"},
+	{reference::N,		"N"},
+	{reference::Cz,		"Cz"},
+	{reference::CAR,	"CAR"},
+	{reference::Base,	"Base"},
+};
 
 
 class edfFile
@@ -200,8 +220,8 @@ public:
 	/// make edfFile & func(...);
 	/// and  edfFile   func(...) const;
 	/// modify
-	edfFile vertcatFile(const QString & addEdfPath, const QString & outPath = QString()) const;
-	edfFile & concatFile(const QString & addEdfPath, const QString & outPath = QString());
+	edfFile vertcatFile(const QString & addEdfPath) const;
+	edfFile & concatFile(const QString & addEdfPath);
 	edfFile & subtractMeans(const QString & outPath = QString());
 
     void countFft();
@@ -211,10 +231,12 @@ public:
 					   std::vector<int> chanList = {});
 
 	/// need check
-	edfFile rereferenceData(const QString & newRef) const;
-//	edfFile rereferenceData(reference newRef) const; /// To DO
+	edfFile rereferenceData(reference newRef,
+							bool eogAsIs,
+							bool bipolarEog12) const;
 	/// need check
 	edfFile rereferenceDataCAR() const;
+	edfFile rereferenceDataCz() const;
 
 	/// channels modify
 	/// retain
@@ -266,7 +288,6 @@ public:
 
 
 
-	/// for iitp - remake into edfFile &
 	edfFile & downsample(double newFreq,
 					std::vector<int> chanList = std::vector<int>{});
 
@@ -405,15 +426,16 @@ public:
 	const matrix & getData() const						{ return edfData; }
 	const std::valarray<double> & getData(int i) const	{ return edfData[i]; }
 	const std::valarray<double> & getMarkArr() const	{ return edfData[markerChannel]; }
+	double getMarkArr(int i) const						{ return edfData[markerChannel][i]; }
 	int getDataLen() const								{ return edfData.cols(); }
 	int getMarkChan() const								{ return markerChannel; }
 	const std::valarray<double> & getData(const QString & ch) const;
+	std::vector<int> getAllEegChannels(const std::vector<QString> & standard) const;
 
 	/// make edfFile &
 	/// sets
 	void setData(int chanNum, int timeBin, double val)		{ edfData[chanNum][timeBin] = val; }
 	void setData(int chanNum, const std::valarray<double> & newChan) { edfData[chanNum] = newChan; }
-
 
 	const std::valarray<double> & operator [](int i) const { return edfData[i]; }
 
@@ -423,6 +445,12 @@ public:
                                    const QString & newEdfPath);
     static double checkDdr(const QString & inPath);
 	static bool isRerefChannel(const QString & inLabel);
+	static QString rerefChannel(reference initialRef,
+								reference targetRef,
+								const QString & currentNum,
+								const QString & earsChan,
+								const QString & groundChan,
+								const std::vector<QString> & sign);
 
 
     std::list<std::valarray<double>> getDataAsList() const;
@@ -434,6 +462,8 @@ public:
 	edfFile repairHoles() const;
 	edfFile repairPhysEqual() const;
 };
+
+
 
 
 /// public "static" funcs to repair edfs or filenames

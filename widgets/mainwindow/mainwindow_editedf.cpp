@@ -34,7 +34,9 @@ void MainWindow::rereferenceDataSlot()
 
 	QString helpString = globalEdf.getFilePath();
 	helpString.replace(".edf", "_rr.edf", Qt::CaseInsensitive);
-	rereferenceData(ui->rereferenceDataComboBox->currentText());
+	globalEdf.rereferenceData(strToRef.at(ui->rereferenceDataComboBox->currentText()),
+							  ui->eogAsIsCheckBox->isChecked(),
+							  ui->eogBipolarCheckBox->isChecked());
 
 	if(1)
 	{
@@ -47,7 +49,8 @@ void MainWindow::rereferenceDataSlot()
 	outStream << "rereferenceDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
-
+#if 0
+//// check remake to do
 void MainWindow::rereferenceCARSlot()
 {
 	QTime myTime;
@@ -57,7 +60,7 @@ void MainWindow::rereferenceCARSlot()
 
 #if 0
 	/// Encephalan
-	rereferenceData("N");
+	globalEdf.rereferenceData(reference::N, false, false);
 	const auto & usedChannels = coords::lbl19;	/// to build reref array
 	const auto & rerefChannels = coords::lbl21;	/// list to reref (with EOG)
 #else
@@ -138,17 +141,16 @@ void MainWindow::rereferenceCARSlot()
 	}
 	outStream << "rereferenceDataCAR: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
+#endif
 
-
-void MainWindow::rereferenceData(const QString & newRef)
+#if 0
+void MainWindow::rereferenceData(reference newRef)
 {
 	/// globalEdf is const
 
 	/// A1, A2, Ar, N
 	/// A1-A2, A1-N
     /// Ar means 0.5*(A1+A2)
-
-
 
 	int groundChan = -1;	/// A1-N
 	int earsChan1 = -1;		/// A1-A2
@@ -171,8 +173,8 @@ void MainWindow::rereferenceData(const QString & newRef)
         return;
     }
 
-    int earsChan;
-    std::vector<QString> sign;
+	int earsChan{};
+	std::vector<QString> sign{};
     if(earsChan1 != -1)
     {
         earsChan = earsChan1;
@@ -187,7 +189,7 @@ void MainWindow::rereferenceData(const QString & newRef)
 	const QString earsChanStr = nm(earsChan + 1);
 	const QString groundChanStr = nm(groundChan + 1);
 
-	QString helpString;
+	QString helpString{};
 	for(int i = 0; i < globalEdf.getNs(); ++i)
     {
 		const QString currNumStr = nm(i + 1);
@@ -234,36 +236,31 @@ void MainWindow::rereferenceData(const QString & newRef)
             refName.remove(QRegExp(R"([\-\s])"));
 
 			/// if no reference found - leave as is
-			if(refName.isEmpty()) { helpString += currNumStr + " "; continue; }
+			if(strToRef.count(refName) == 0) { helpString += currNumStr + " "; continue; }
 
 			QString chanName = myLib::getLabelName(label[i]);
 
-            QString targetRef = newRef;
-
-            /// if newRef == "Base"
-            if(!(newRef == "A1" ||
-                 newRef == "A2" ||
-                 newRef == "Ar" ||
-                 newRef == "N"))
+			reference targetRef = newRef;
+			if(newRef == reference::Base)
             {
                 if(std::find(std::begin(coords::lbl_A1),
                              std::end(coords::lbl_A1),
                              chanName) != std::end(coords::lbl_A1))
                 {
-                    targetRef = "A1";
+					targetRef = reference::A1;
                 }
                 else
                 {
-                    targetRef = "A2";
+					targetRef = reference::A2;
                 }
             }
-			helpString += myLib::rerefChannel(refName,
-											  targetRef,
-											  currNumStr,
-											  earsChanStr,
-											  groundChanStr,
-											  sign) + " ";
-			label[i].replace(refName, targetRef);
+			helpString += edfFile::rerefChannel(strToRef.at(refName),
+												targetRef,
+												currNumStr,
+												earsChanStr,
+												groundChanStr,
+												sign) + " ";
+			label[i].replace(refName, refToStr.at(targetRef));
 		}
 
     }
@@ -311,6 +308,7 @@ void MainWindow::rereferenceData(const QString & newRef)
 	/// set back channels string
 	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->currentData().toString());
 }
+#endif
 
 void MainWindow::refilterDataSlot()
 {

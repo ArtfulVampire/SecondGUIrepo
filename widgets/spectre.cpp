@@ -948,7 +948,6 @@ void Spectre::drawWavelets() /// unused
 								 + ".jpg";
 					std::cout << helpString.toStdString() << std::endl;
 #if 0
-					/// remake waveletPhase
 					waveletPhase(helpString, file1, ns, channel1, channel2, 20., 5., 0.95, 32);
 #endif
 				}

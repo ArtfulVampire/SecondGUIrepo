@@ -3,6 +3,18 @@
 namespace smLib
 {
 
+template <>
+std::vector<QString> range(int beg, int en)
+{
+	std::vector<QString> res{};
+	res.reserve(en - beg);
+	for(int i = beg; i < en; ++i)
+	{
+		res.push_back(QString::number(i));
+	}
+	return res;
+}
+
 template <class Container>
 Container range(int beg, int en)
 {

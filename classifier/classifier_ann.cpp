@@ -505,19 +505,17 @@ double ANN::adjustLearnRate(std::ostream & os)
 	auto mixNum = smLib::mixed<std::vector<uint>>(myClassData->getData().rows());
 
 	/// fold
-	if(0)
+#if 0
 	{
 		const int folds = 3;
 		mixNum.resize(mixNum.size() * (folds - 1) / folds);
 	}
-
+#endif
 
 	double res{};
     int counter = 0;
     do
-    {
-
-        /// remake with indices
+	{
         const double currVal = learnRate;
 
         this->learn(mixNum);
@@ -527,7 +525,6 @@ double ANN::adjustLearnRate(std::ostream & os)
         {
 			learnRate = currVal * std::sqrt(epoch /
 									   ((ANN::epochLowLimit + ANN::epochHighLimit) / 2.));
-
 			res = learnRate;
         }
         else

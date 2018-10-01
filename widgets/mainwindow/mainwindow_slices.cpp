@@ -61,7 +61,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 				}
 				else
 				{
-					/// remake using myLib::sliceData
+					/// remake using myLib::sliceData ??
 					sliceOneByOne();
 					sliceOneByOneNew(); /// by number after 241/247 for early research before 2015
 				}

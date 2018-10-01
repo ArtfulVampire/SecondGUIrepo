@@ -675,7 +675,7 @@ void IITPconcat(const QString & guyName,
 			filePath = ExpNamePre + emgPostfix + ".edf";
 			if(QFile::exists(filePath))
 			{
-				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum.edf");
+				fil.vertcatFile(filePath).writeEdfFile(ExpNamePre + "_sum.edf");
 			}
 		}
 #else
@@ -688,7 +688,7 @@ void IITPconcat(const QString & guyName,
 			filePath = ExpNamePre + emgPostfix + "_down.edf";
 			if(QFile::exists(filePath))
 			{
-				fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum.edf");
+				fil.vertcatFile(filePath).writeEdfFile(ExpNamePre + "_sum.edf");
 			}
 		}
 #endif
@@ -961,8 +961,8 @@ void IITPpre2(const QString & guyName)
 				filePath = ExpNamePre + "_emg_" + addName + ".edf";
 				if(QFile::exists(filePath))
 				{
-//					fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
-					fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_" + addName + "_up.edf");
+//					fil.vertcatFile(filePath).writeEdfFile(ExpNamePre + "_sum_f.edf");
+					fil.vertcatFile(filePath).writeEdfFile(ExpNamePre + "_" + addName + "_up.edf");
 				}
 			}
 			/// downsampled EMG
@@ -973,8 +973,8 @@ void IITPpre2(const QString & guyName)
 				filePath = ExpNamePre + "_emg_" + addName + "_down.edf";
 				if(QFile::exists(filePath))
 				{
-//					fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_sum_f.edf");
-					fil.vertcatFile(filePath, {}).writeEdfFile(ExpNamePre + "_" + addName + "_down.edf");
+//					fil.vertcatFile(filePath).writeEdfFile(ExpNamePre + "_sum_f.edf");
+					fil.vertcatFile(filePath).writeEdfFile(ExpNamePre + "_" + addName + "_down.edf");
 				}
 			}
 		}

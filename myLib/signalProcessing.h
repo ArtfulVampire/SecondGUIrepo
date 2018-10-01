@@ -190,10 +190,10 @@ int findJump(const std::valarray<double> & inSignal, int startSearch, double num
 
 
 std::valarray<double> calcSpectre(const std::valarray<double> & inSignal,
-				 int fftLength = DEFS.getFftLen(),
-				 int NumOfSmooth = 0,
-				 int Eyes = 0,
-				 double powArg = 1.); /// remake to return outSpectre
+								  int fftLength = DEFS.getFftLen(),
+								  int NumOfSmooth = 0,
+								  int Eyes = 0,
+								  double powArg = 1.);
 
 
 ///some features, double(const std::valarray<double> & in)

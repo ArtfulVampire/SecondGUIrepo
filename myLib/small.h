@@ -10,7 +10,6 @@
 #include <complex>
 
 
-
 #include <other/consts.h>
 
 

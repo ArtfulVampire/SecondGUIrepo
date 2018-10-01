@@ -25,7 +25,7 @@ void MainWindow::markerGetSlot()
 {
 	bool byteMarker[16]; /// remake
 	int timeIndex = ui->markerBinTimeSpinBox->value();
-	int marker = globalEdf.getMarkArr()[timeIndex];
+	int marker = globalEdf.getMarkArr(timeIndex);
 	QString helpString;
 
 	for(int h = 0; h < 16; ++h)
@@ -279,7 +279,7 @@ void MainWindow::matiPreprocessingSlot()
 							+ "_" + nm(session)
 							+ ".edf"; /// generality
 
-					tempEdf.vertcatFile(addPath, outPath);
+					tempEdf.vertcatFile(addPath).writeEdfFile(outPath);
 
 #if 0
 					/// copy the same files into amod dir

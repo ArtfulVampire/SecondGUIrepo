@@ -729,19 +729,6 @@ matrix & matrix::resize(int newRows, int newCols)
 	return *this;
 }
 
-matrix & matrix::resize(int i)
-{
-	myData.resize(i);
-	return *this;
-}
-
-matrix&  matrix::reserve(int i)
-{
-	myData.reserve(i);
-	return *this;
-}
-
-
 matrix & matrix::resizeRows(int newRows)
 {
     int cols = this->cols();

@@ -36,6 +36,30 @@ const std::valarray<double> & edfFile::getData(const QString & ch) const
 	return edfData[a];
 }
 
+std::vector<int> edfFile::getAllEegChannels(const std::vector<QString> & standard) const
+{
+	std::vector<int> res{};
+	res.reserve(this->ns);
+	for(int i = 0; i < this->ns; ++i)
+	{
+		if(labels[i].contains("EEG ", Qt::CaseInsensitive))
+		{
+			res.push_back(i);
+			continue;
+		}
+		auto it = std::find_if(std::begin(standard),
+							   std::end(standard),
+							   [this, i](const QString & in)
+		{
+			return labels[i].contains(in);
+		});
+		if(it != std::end(standard))
+		{
+			res.push_back(i);
+		}
+	}
+}
+
 edfFile & edfFile::setDataFromList(const std::list<std::valarray<double>> & inList)
 {
 	this->edfData.resize(inList.front().size(), inList.size());
@@ -122,11 +146,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 		/// traceSuccessXY, secondBit
 		/// right, wrong, skipped answers
 
-		/// remake
-		FILE* inStr;
-		inStr = fopen(txtFilePath.toStdString().c_str(), "r");
-
-		if(inStr == nullptr)
+		if(!QFile::exists(txtFilePath))
 		{
 			std::cout << "edfFile(matiLogFile): input file is NULL" << std::endl;
 			return;
@@ -199,6 +219,10 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 			/// 250 freq generality DEFS
 			this->edfData[i].resize(6 * 60 * 25); /// for 6 minutes generality
 		}
+
+		/// remake with QFile
+		FILE * inStr;
+		inStr = fopen(txtFilePath.toStdString().c_str(), "r");
 
 		currTimeIndex = 0;
 		while(!feof(inStr))
@@ -1273,8 +1297,7 @@ void edfFile::adjustMarkerChannel()
 }
 
 
-edfFile edfFile::vertcatFile(const QString & addEdfPath,
-							 const QString & outPath) const
+edfFile edfFile::vertcatFile(const QString & addEdfPath) const
 {
     edfFile temp(*this);
     edfFile addEdf;
@@ -1299,11 +1322,6 @@ edfFile edfFile::vertcatFile(const QString & addEdfPath,
 	}
 	temp.adjustMarkerChannel();
 	temp.adjustArraysByChannels();
-
-	if(!outPath.isEmpty())
-	{
-		temp.writeEdfFile(outPath);
-	}
 	return temp;
 }
 
@@ -1429,7 +1447,7 @@ edfFile & edfFile::subtractMeans(const QString & outPath)
 	return *this;
 }
 
-edfFile & edfFile::concatFile(const QString & addEdfPath, const QString & outPath) /// assume only data concat
+edfFile & edfFile::concatFile(const QString & addEdfPath)
 {
     edfFile addEdf;
     addEdf.readEdfFile(addEdfPath);
@@ -1446,11 +1464,6 @@ edfFile & edfFile::concatFile(const QString & addEdfPath, const QString & outPat
 				  std::end(addEdf.getData(i)),
 				  std::begin(this->edfData[i]) + oldLen);
 	}
-    /// remake
-    if(!outPath.isEmpty())
-    {
-        this->writeEdfFile(outPath);
-    }
 	return (*this);
 }
 
@@ -1677,12 +1690,17 @@ edfFile & edfFile::refilter(double lowFreq,
 	return *this;
 }
 
-/// need check
-edfFile edfFile::rereferenceData(const QString & newRef) const
+edfFile edfFile::rereferenceData(reference newRef,
+								 bool eogAsIs,
+								 bool bipolarEog12) const
 {
-	if(newRef.contains("CAR", Qt::CaseInsensitive))
+	if(newRef == reference::CAR)
 	{
 		return this->rereferenceDataCAR();
+	}
+	else if(newRef == reference::Cz)
+	{
+		return this->rereferenceDataCz();
 	}
 
 	/// A1, A2, Ar, N
@@ -1697,12 +1715,9 @@ edfFile edfFile::rereferenceData(const QString & newRef) const
 	int eog1 = -1;			/// EOG1
 	int eog2 = -1;			/// EOG2
 
-	bool eogAsIs = false;
-	bool bipolarEog12 = false;
-
 	for(int i = 0; i < temp.ns; ++i)
 	{
-		if(temp.labels[i].contains("A1-N"))		{ groundChan = i; }
+		if(temp.labels[i].contains("A1-N"))			{ groundChan = i; }
 		else if(temp.labels[i].contains("A1-A2"))	{ earsChan1 = i; }
 		else if(temp.labels[i].contains("A2-A1"))	{ earsChan2 = i; }
 		else if(temp.labels[i].contains("EOG1"))	{ eog1 = i; }
@@ -1730,7 +1745,7 @@ edfFile edfFile::rereferenceData(const QString & newRef) const
 	const QString earsChanStr = nm(earsChan + 1);
 	const QString groundChanStr = nm(groundChan + 1);
 
-	QString helpString;
+	QString helpString{};
 	for(int i = 0; i < temp.ns; ++i)
 	{
 		const QString currNumStr = nm(i + 1);
@@ -1777,34 +1792,32 @@ edfFile edfFile::rereferenceData(const QString & newRef) const
 			refName.remove(QRegExp(R"([\-\s])"));
 
 			/// if no reference found - leave as is
-			if(refName.isEmpty()) { helpString += currNumStr + " "; }
+			if(strToRef.count(refName) == 0) { helpString += currNumStr + " "; continue; }
 
 			QString chanName = myLib::getLabelName(temp.labels[i]);
 
-			QString targetRef = newRef;
-
-			if(newRef == "Base")
+			reference targetRef = newRef;
+			if(newRef == reference::Base)
 			{
 				if(std::find(std::begin(coords::lbl_A1),
 							 std::end(coords::lbl_A1),
 							 chanName) != std::end(coords::lbl_A1))
 				{
-					targetRef = "A1";
+					targetRef = reference::A1;
 				}
 				else
 				{
-					targetRef = "A2";
+					targetRef = reference::A2;
 				}
 			}
-			helpString += myLib::rerefChannel(refName,
-											  targetRef,
-											  currNumStr,
-											  earsChanStr,
-											  groundChanStr,
-											  sign) + " ";
-			temp.labels[i].replace(refName, targetRef);
+			helpString += edfFile::rerefChannel(strToRef.at(refName),
+												targetRef,
+												currNumStr,
+												earsChanStr,
+												groundChanStr,
+												sign) + " ";
+			temp.labels[i].replace(refName, refToStr.at(targetRef));
 		}
-
 	}
 
 	/// the very processing
@@ -1853,43 +1866,96 @@ edfFile edfFile::rereferenceDataCAR() const
 
 	/// check the same reference
 	/// if not - reref to N
-	temp = this->rereferenceData("N");
+	temp = this->rereferenceData(reference::N, false, false);
 
-	const auto & usedLabels = coords::lbl19;	/// to build reref array
-	const auto & rerefLabels = coords::lbl21;	/// list to reref (with EOG)
+	const std::vector<int> eegs
+	{(ns < coords::egi::manyChannels) ? this->getAllEegChannels(coords::lbl19) : smLib::range<std::vector<int>>(0, 128)};
+	const std::vector<QString> rerefLabels =
+	{(ns < coords::egi::manyChannels) ? coords::lbl21 : smLib::range<std::vector<QString>>(1, 129)};	/// list to reref (with EOG)
 
 	/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - N
 	std::valarray<double> refArr(temp.edfData.cols());
-	for(const QString & chanName : usedLabels)
+	for(int chanNum : eegs)
 	{
-		refArr += temp[temp.findChannel(chanName)];
+		refArr += temp[chanNum];
 	}
-	refArr /= usedLabels.size();
+	refArr /= eegs.size();
 
 	for(int i = 0; i < temp.ns; ++i)
 	{
-		auto it = std::find_if(std::begin(rerefLabels), std::end(rerefLabels),
-							   [temp, i](const QString & in)
+		auto it = std::find_if(std::begin(rerefLabels),
+							   std::end(rerefLabels),
+							   [&temp, i](const QString & in)
 		{ return temp.labels[i].contains(in); });
 
-		if(it != std::end(rerefLabels))
-		{
-			if(!(*it).contains("EOG"))
-			{
-				temp.edfData[i] -= refArr;
-			}
-			else
-			{
-				/// N-EOG1, N-EOG2
-				/// crutch because inversed EOG
-				temp.edfData[i] += refArr;
-			}
+		if(it == std::end(rerefLabels)) { continue; }
 
-			/// set new label *-CAR
-			QString newLabel = temp.labels[i];
-			newLabel = myLib::fitString(newLabel.left(newLabel.indexOf('-') + 1) + "CAR", 16);
-			temp.labels[i] = newLabel;
+		if(!(*it).contains("EOG")) /// non-EOGs
+		{
+			temp.edfData[i] -= refArr;
 		}
+		else
+		{
+			/// N-EOG1, N-EOG2
+			/// crutch because inversed EOG
+			temp.edfData[i] += refArr;
+		}
+
+		/// set new label *-CAR
+		temp.labels[i] = myLib::fitString(temp.labels[i]
+										  .left(temp.labels[i].indexOf('-'))
+										  + "-CAR",
+										  16);
+	}
+	return temp;
+}
+
+edfFile edfFile::rereferenceDataCz() const
+{
+	/// don't work for Geodesics
+	if(this->ns > coords::egi::manyChannels)
+	{
+		std::cout << "edfFile::rereferenceDataCz: intentionally doesn't work" << std::endl;
+		return *this;
+	}
+
+	edfFile temp(*this, false);
+
+	/// check the same reference
+	/// if not - reref to N
+	temp = this->rereferenceData(reference::N, false, false);
+
+	const std::vector<int> eegs = this->getAllEegChannels(coords::lbl19);
+	const std::vector<QString> & rerefLabels{coords::lbl21};	/// list to reref (with EOG)
+
+	/// Encephalan
+	const std::valarray<double> refArr = this->getData("Cz");
+
+	for(int i = 0; i < temp.ns; ++i)
+	{
+		auto it = std::find_if(std::begin(rerefLabels),
+							   std::end(rerefLabels),
+							   [&temp, i](const QString & in)
+		{ return temp.labels[i].contains(in); });
+
+		if(it == std::end(rerefLabels)) { continue; }
+
+		if(!(*it).contains("EOG")) /// non-EOGs
+		{
+			temp.edfData[i] -= refArr;
+		}
+		else
+		{
+			/// N-EOG1, N-EOG2
+			/// crutch because inversed EOG
+			temp.edfData[i] += refArr;
+		}
+
+		/// set new label *-CAR
+		temp.labels[i] = myLib::fitString(temp.labels[i]
+										  .left(temp.labels[i].indexOf('-'))
+										  + "-Cz",
+										  16);
 	}
 	return temp;
 }
@@ -2481,4 +2547,69 @@ void edfFile::transformEdfMatrix(const QString & inEdfPath,
 
     fil.writeOtherData(newData, newEdfPath);
 	std::cout << "transformEdfMaps: time elapsed = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+}
+
+QString edfFile::rerefChannel(reference initialRef,
+							  reference targetRef,
+							  const QString & currentNum,
+							  const QString & earsChan,
+							  const QString & groundChan,
+							  const std::vector<QString> & sign)
+{
+	/// assume there is only one '-' char in channel label
+	/// assume the name to be: * Name-Ref *
+	/// length of channel and ref are less than 4
+	switch(targetRef)
+	{
+	case reference::A1:
+	{
+		switch(initialRef)
+		{
+		case reference::A1:		{ break; /* can't get here */ }
+		case reference::A2:		{ return currentNum + sign[0] + earsChan; }
+		case reference::Ar:		{ return currentNum + sign[0] + earsChan + "/2"; }
+		case reference::N:		{ return currentNum + "-" + groundChan; }
+		default:				{ break; /* can't get here */ }
+		}
+		break;
+	}
+	case reference::A2:
+	{
+		switch(initialRef)
+		{
+		case reference::A1:		{ return currentNum + sign[1] + earsChan; }
+		case reference::A2:		{ break; /* can't get here */ }
+		case reference::Ar:		{ return currentNum + sign[1] + earsChan + "/2"; }
+		case reference::N:		{ return currentNum + "-" + groundChan + sign[1] + earsChan; }
+		default:				{ break; /* can't get here */ }
+		}
+		break;
+	}
+	case reference::N:
+	{
+		switch(initialRef)
+		{
+		case reference::A1:		{ return currentNum + "+" + groundChan; }
+		case reference::A2:		{ return currentNum + sign[0] + earsChan + "+" + groundChan; }
+		case reference::Ar:		{ return currentNum + sign[0] + earsChan + "/2"  + "+" + groundChan; }
+		case reference::N:		{ break; /* can't get here */ }
+		default:				{ break; /* can't get here */ }
+		}
+		break;
+	}
+	case reference::Ar:
+	{
+		switch(initialRef)
+		{
+		case reference::A1:		{ return currentNum + sign[1] + earsChan + "/2"; }
+		case reference::A2:		{ return currentNum + sign[0] + earsChan + "/2"; }
+		case reference::Ar:		{ break; /* can't get here */ }
+		case reference::N:		{ return currentNum + "-" + groundChan + sign[1] + earsChan + "/2"; }
+		default:				{ break; /* can't get here */ }
+		}
+		break;
+	}
+	default:				{ break; /* can't get here */ }
+	}
+	return currentNum;
 }

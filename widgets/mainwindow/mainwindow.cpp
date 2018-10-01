@@ -118,6 +118,8 @@ MainWindow::MainWindow() :
     ui->rereferenceDataComboBox->addItem("A2");
     ui->rereferenceDataComboBox->addItem("Ar");
     ui->rereferenceDataComboBox->addItem("N");
+	ui->rereferenceDataComboBox->addItem("Cz");
+	ui->rereferenceDataComboBox->addItem("CAR");
 	ui->rereferenceDataComboBox->addItem("Base");
     ui->rereferenceDataComboBox->setCurrentText("Ar");
 
@@ -209,7 +211,10 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
 	QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
 	QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
+#if 0
+	/// reref CAR
 	QObject::connect(ui->rereferenceCARPushButton, SIGNAL(clicked()), this, SLOT(rereferenceCARSlot()));
+#endif
 
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));

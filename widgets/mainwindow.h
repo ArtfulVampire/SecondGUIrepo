@@ -80,7 +80,9 @@ public slots:
     void ICA();
     void refilterDataSlot();
     void rereferenceDataSlot();
+#if 0
 	void rereferenceCARSlot();
+#endif
 
 	/// other
     void stop();
@@ -114,11 +116,14 @@ public:
 					 const QString & outPath,
 					 int fftLen);
 
-	void rereferenceData(const QString & newRef);
+#if 0
+	void rereferenceData(reference newRef);
+#endif
 
 
 	void customFunc();
 
+	/// autos
 	void countSpectraSimple(int fftLen, int inSmooth = -1);
 	void BaklushevDraw(const QString & workPath, const QString & edfName);
 	void makeEvoked(const QString & edfPath,
@@ -130,6 +135,10 @@ public:
 	void testNewClassifiers();
 	void testSuccessive(const std::vector<double> & vals = std::vector<double>{});
 	void testSuccessive2();
+	void iitpPreproc();
+	void iitpMainProc();
+	void iitpNamesFix();
+	void matiMainProc();
 
 private:
     Ui::MainWindow *ui;

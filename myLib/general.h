@@ -80,12 +80,6 @@ InputIterator find_back(InputIterator last, InputIterator first, const Typ & val
 template <class InputIterator, class Pred>
 InputIterator find_back_if(InputIterator last, InputIterator first, Pred pred);
 
-QString rerefChannel(const QString & initialName,
-					 const QString & targetRef = "Ar",
-					 const QString & currentNum = "1",
-					 const QString & earsChan = "20",
-					 const QString & groundChan = "21",
-					 const std::vector<QString> & sign = {"-", "+"});
 void centerMatrixRows(matrix & inData,
 				  const int howManyRows);
 

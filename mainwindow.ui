@@ -280,13 +280,6 @@
          <item row="1" column="1">
           <widget class="QComboBox" name="rereferenceDataComboBox"/>
          </item>
-         <item row="1" column="0">
-          <widget class="QPushButton" name="rereferenceCARPushButton">
-           <property name="text">
-            <string>Reref CAR -&gt; new EDF</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </item>
        <item>
@@ -767,7 +760,6 @@
   <tabstop>eogAsIsCheckBox</tabstop>
   <tabstop>eogBipolarCheckBox</tabstop>
   <tabstop>rereferenceDataComboBox</tabstop>
-  <tabstop>rereferenceCARPushButton</tabstop>
   <tabstop>netButton</tabstop>
   <tabstop>succPrecleanPushButton</tabstop>
   <tabstop>cut_e</tabstop>

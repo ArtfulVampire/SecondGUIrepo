@@ -1930,7 +1930,7 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
 	const int fftLen = smLib::fftL(inLength) / 2;
 
 	std::valarray<double> outHilbert(inLength); /// result
-	std::valarray<double> tempArr[2]; /// remake somehow
+	std::array<std::valarray<double>, 2> tempArr{};
 	int start{0};
 	for(int i = 0; i < 2; ++i)
 	{
