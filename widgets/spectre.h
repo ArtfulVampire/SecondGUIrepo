@@ -5,15 +5,9 @@
 #include <other/matrix.h>
 
 #include <QWidget>
-#include <QDir>
 #include <QString>
-#include <QStringList>
-#include <QFileDialog>
-#include <QtSvg>
-
 
 #define SPECTRA_EXP_NAME_SPECIFICITY 0
-
 
 namespace Ui {
     class Spectre;

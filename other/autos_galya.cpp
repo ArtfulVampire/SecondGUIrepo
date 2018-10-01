@@ -1,5 +1,12 @@
 #include <other/autos.h>
 
+#include <thread>
+#include <chrono>
+#include <ios>
+#include <iostream>
+#include <bits/ios_base.h>
+#include <functional>
+
 #include <myLib/clustering.h>
 #include <myLib/iitp.h>
 #include <myLib/drw.h>
@@ -10,11 +17,7 @@
 #include <myLib/output.h>
 #include <myLib/statistics.h>
 
- /// for std::defaultfloat
-#include <ios>
-#include <iostream>
-#include <bits/ios_base.h>
-#include <functional>
+#include <QTextStream>
 
 using namespace myOut;
 

@@ -1,4 +1,7 @@
 #include <classifier/classifier.h>
+
+#include <set>
+
 #include <myLib/output.h>
 
 using namespace myOut;

@@ -4,6 +4,8 @@
 #include <myLib/output.h>
 #include <myLib/signalProcessing.h>
 
+#include <QPainter>
+
 using namespace myOut;
 
 namespace myLib
@@ -300,24 +302,24 @@ void drawMapSpline(const matrix & matrixA,
         const int quot = i / dim;
 
 		if(quot % (dim - 1) == 0 || rest % (dim-1) == 0)  /// set 0 to all edge values
-        {
-            helpMatrix[quot][rest] = 0.;
-        }
-        else if(quot == 1
-                && (rest - 1) * (rest - 3) * (rest - 5) == 0) /// Fp3, Fpz, Fp4
-        {
-            helpMatrix[quot][rest] = 0.;
-        }
-        else if(quot == 5
-                && (rest - 1) * (rest - 3) * (rest - 5) == 0) /// O3, Oz, O4
-        {
-            helpMatrix[quot][rest] = 0.;
-        }
-        else
-        {
-            helpMatrix[quot][rest] = matrixA[currIndex++][numOfColoumn];
-        }
-    }
+		{
+			helpMatrix[quot][rest] = 0.;
+		}
+		else if(quot == 1
+				&& (rest - 1) * (rest - 3) * (rest - 5) == 0) /// Fp3, Fpz, Fp4
+		{
+			helpMatrix[quot][rest] = 0.;
+		}
+		else if(quot == 5
+				&& (rest - 1) * (rest - 3) * (rest - 5) == 0) /// O3, Oz, O4
+		{
+			helpMatrix[quot][rest] = 0.;
+		}
+		else
+		{
+			helpMatrix[quot][rest] = matrixA[currIndex++][numOfColoumn];
+		}
+	}
 
     /// 
 ///    for(int)
@@ -1785,8 +1787,7 @@ QPixmap drawEeg(const matrix & dataD,
 						   c1 + 1, (c2 + 1) * pic.height() / (ns + 2.) + *it  * norm);
         }
 #endif
-    }
-    norm = 1.;
+	}
     paint.setPen(QPen(QBrush("black"), lineWidth));
 	for(int c3 = 0; c3 < NumOfSlices * 10 / 250; ++c3)
 	{

@@ -4,8 +4,8 @@
 #include <vector>
 #include <map>
 #include <utility>
-#include <QString>
 
+#include <QString>
 
 namespace subj
 {

@@ -1,9 +1,11 @@
 #ifndef HIGHLEVEL_H
 #define HIGHLEVEL_H
 
-#include <other/matrix.h>
 #include <vector>
 #include <valarray>
+
+#include <other/matrix.h>
+
 
 namespace myLib
 {

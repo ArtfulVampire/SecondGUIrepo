@@ -1,6 +1,8 @@
 #include <widgets/net.h>
 #include "ui_net.h"
 
+#include <QFileDialog>
+
 using namespace myOut;
 
 Net::Net() :

@@ -1,12 +1,13 @@
 #include <myLib/ica.h>
+
+#include <iostream>
+
 #include <myLib/output.h>
 #include <myLib/draws.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/signalProcessing.h>
 
 #include <QTime>
-
-#include <iostream>
 
 using namespace myOut;
 

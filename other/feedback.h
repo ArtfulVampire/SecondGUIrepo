@@ -1,6 +1,7 @@
 #ifndef EDFFILE_FB_H
 #define EDFFILE_FB_H
 #include <other/edffile.h>
+
 #include <classifier/classifier.h>
 
 namespace fb

@@ -1,8 +1,6 @@
 #ifndef WAVELET_H
 #define WAVELET_H
 
-#include <chrono>
-
 #include <other/matrix.h>
 #include <other/consts.h>
 #include <other/defs.h>
@@ -13,8 +11,6 @@
 #endif
 
 #include <QString>
-#include <QPixmap>
-#include <QPainter>
 
 namespace wvlt
 {

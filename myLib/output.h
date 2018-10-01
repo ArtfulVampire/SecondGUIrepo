@@ -1,17 +1,16 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#include <other/consts.h>
 
 #include <ios>
 #include <iostream>
-#include <fstream>
 #include <complex>
 #include <string>
 #include <vector>
 #include <valarray>
-#include <list>
 #include <type_traits>
+
+#include <other/consts.h>
 
 #include <QString>
 #include <QStringList>

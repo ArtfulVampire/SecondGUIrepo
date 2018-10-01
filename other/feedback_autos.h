@@ -1,11 +1,13 @@
 #ifndef FEEDBACK_AUTOS_H
 #define FEEDBACK_AUTOS_H
+
 #include <map>
 #include <vector>
-#include <QString>
 
 #include <other/feedback.h>
 #include <widgets/net.h>
+
+#include <QString>
 
 namespace fb
 {

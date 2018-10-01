@@ -2,6 +2,7 @@
 #define QTLIB_H
 
 #include <QtWidgets>
+
 #include <sstream>
 #include <iostream>
 #include <fstream>

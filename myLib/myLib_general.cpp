@@ -1,5 +1,7 @@
 #include <myLib/general.h>
 
+#include <fstream>
+
 #include <myLib/output.h>
 
 using namespace myOut;

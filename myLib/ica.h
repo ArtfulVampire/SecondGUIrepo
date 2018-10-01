@@ -1,12 +1,13 @@
 #ifndef ICA_H
 #define ICA_H
 
-#include <other/matrix.h>
-#include <other/feedback.h>
 #include <utility>
 #include <vector>
 #include <valarray>
 #include <functional>
+
+#include <other/matrix.h>
+#include <other/feedback.h>
 
 namespace myLib
 {

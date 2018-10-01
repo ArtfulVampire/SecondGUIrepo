@@ -9,6 +9,9 @@
 #include <myLib/draws.h>
 #include <myLib/drw.h>
 
+#include <QButtonGroup>
+#include <QFileDialog>
+
 using namespace myOut;
 
 Spectre::Spectre() :

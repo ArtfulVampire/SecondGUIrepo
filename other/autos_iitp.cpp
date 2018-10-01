@@ -4,9 +4,10 @@
 #include <myLib/draws.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
-
 #include <myLib/iitp_consts.h>
 #include <myLib/iitp_variables.h>
+
+#include <QTextStream>
 
 using namespace myOut;
 

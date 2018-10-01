@@ -1,5 +1,8 @@
 #include <other/matrix.h>
 
+#include <random>
+#include <chrono>
+#include <cmath>
 
 matrix::matrix(int dim)
 {
@@ -502,9 +505,9 @@ matrix & matrix::vertCat(matrix && other)
 		std::cout << "matrix::vertCat(): wrong dimensionality" << std::endl;
         return *this;
     }
-	for(int i = 0; i < other.rows(); ++i)
+	for(auto && row : other)
     {
-        this->push_back(std::move(other[i]));
+		this->push_back(row);
     }
     return *this;
 }
@@ -526,7 +529,6 @@ matrix & matrix::horzCat(const matrix & other)
 				  std::begin(myData[i]) + startCopy);
 	}
 	return *this;
-
 }
 
 

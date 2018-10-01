@@ -5,6 +5,7 @@
 #include <myLib/output.h>
 
 #include <QLabel>
+#include <QCheckBox>
 
 using namespace myOut;
 
@@ -17,8 +18,6 @@ ChooseChans::ChooseChans() :
 	ui(new Ui::ChooseChans)
 {
 	ui->setupUi(this);
-
-
 
 	/// checkboxes
 	/// 8 colomns by 16 items
@@ -141,9 +140,6 @@ ChooseChans::ChooseChans() :
 							   2 * pushButtonHeight + drawGap));
 
 #endif
-
-
-
 
 	/// unite
 	both->addItem(buttons);

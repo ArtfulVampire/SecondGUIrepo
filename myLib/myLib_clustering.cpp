@@ -710,7 +710,7 @@ void drawSammon(const coordType & plainCoords,
 	rangeX *= 1.02;
 	rangeY *= 1.02;
 
-	double range = fmax(rangeX, rangeY);
+	double range = std::fmax(rangeX, rangeY);
 
 	double initX = 0.;
 	double initY = 0.;

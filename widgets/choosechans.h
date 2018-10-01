@@ -3,10 +3,7 @@
 
 #include <QWidget>
 #include <QGridLayout>
-#include <QPushButton>
-#include <QCheckBox>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
 
 namespace Ui {
 class ChooseChans;

@@ -1,5 +1,6 @@
 #ifndef IITP_CONSTS_H
 #define IITP_CONSTS_H
+
 #include <myLib/signalProcessing.h>
 #include <myLib/valar.h>
 

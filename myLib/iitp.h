@@ -6,9 +6,9 @@
 #include <vector>
 #include <cmath>
 
-#include <other/matrix.h>
-#include <other/edffile.h>
 #include <other/consts.h>
+#include <other/edffile.h>
+#include <other/matrix.h>
 #include <myLib/signalProcessing.h>
 
 

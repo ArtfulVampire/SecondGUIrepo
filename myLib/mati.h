@@ -2,7 +2,6 @@
 #define MATI_H
 
 #include <vector>
-#include <iostream>
 #include <cmath>
 
 #include <QString>

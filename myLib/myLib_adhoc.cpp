@@ -1,4 +1,5 @@
 #include <widgets/mainwindow.h>
+#include <myLib/adhoc.h>
 
 #include <iostream>
 #include <cmath>
@@ -32,7 +33,7 @@ std::vector<QString> readBurdenkoLog(const QString & logPath)
 	QFile inStr(logPath);
 	inStr.open(QIODevice::ReadOnly);
 
-	std::vector<QString> res(240);/// magic const
+	std::vector<QString> res(240); /// magic const
 
 	/// discard first 5 lines
 	for(int i = 0; i < 5; ++i)
@@ -646,7 +647,7 @@ void GalyaProcessing()
 #endif
 }
 
-std::vector<QString> composeMarkersList(const QString workPath)
+std::vector<QString> composeMarkersList(const QString & workPath)
 {
 	/// compose a list of markers
 	std::set<QString> markers{};

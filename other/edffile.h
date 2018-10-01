@@ -1,6 +1,8 @@
 #ifndef EDFFILE_H
 #define EDFFILE_H
 
+//#include <optional> /// to do (for findChannels)
+
 #include <other/matrix.h>
 #include <myLib/small.h>
 #include <myLib/output.h>
@@ -9,7 +11,6 @@
 #include <QVector>
 #include <QTime>
 
-//#include <optional> /// to do (for findChannels)
 
 using namespace myOut;
 

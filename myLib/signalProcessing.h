@@ -3,16 +3,10 @@
 
 #include <valarray>
 #include <complex>
-#include <fstream>
-#include <functional>
 
 #include <other/matrix.h>
 #include <other/consts.h>
 #include <other/defs.h>
-
-#include <QPixmap>
-#include <QPainter>
-#include <QTime>
 
 namespace myLib
 {

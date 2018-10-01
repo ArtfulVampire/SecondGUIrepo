@@ -1,22 +1,19 @@
 #ifndef COORD_H
 #define COORD_H
 
-
+#include <fstream>
+#include <cmath>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
 #include <other/consts.h> /// for uint and dataFolder
+#include <other/edffile.h>
 
-#include <cmath>
 #include <QString>
 #include <QStringList>
 #include <QDir>
 #include <QColor>
-
-#include <other/edffile.h>
-
-
 
 namespace suc
 {

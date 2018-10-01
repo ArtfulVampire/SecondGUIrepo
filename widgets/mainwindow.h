@@ -4,7 +4,6 @@
 #include <iostream>
 #include <cmath>
 #include <string>
-#include <sstream>
 
 #include <widgets/cut.h>
 #include <widgets/net.h>
@@ -19,12 +18,7 @@
 
 #include <QMainWindow>
 #include <QWidget>
-#include <QFileDialog>
 #include <QString>
-#include <QStringList>
-#include <QDir>
-#include <QDialogButtonBox>
-#include <QMessageBox>
 
 namespace Ui {
     class MainWindow;

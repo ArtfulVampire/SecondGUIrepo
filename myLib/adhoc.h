@@ -14,7 +14,7 @@ std::vector<QString> readBurdenkoLog(const QString & logPath);
 std::vector<std::pair<int, int>> handleAnnots(const std::vector<QString> & annotations, double srate);
 
 
-std::vector<QString> composeMarkersList(const QString workPath); /// really unused
+std::vector<QString> composeMarkersList(const QString & workPath); /// really unused
 
 void XeniaPretable();
 void XeniaFinalest();

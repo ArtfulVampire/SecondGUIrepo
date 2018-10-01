@@ -1,5 +1,6 @@
 #ifndef IITP_VARIABLES_H
 #define IITP_VARIABLES_H
+
 #include <myLib/iitp_consts.h>
 
 namespace iitp

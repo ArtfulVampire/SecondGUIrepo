@@ -1,18 +1,11 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#include <cmath>
-#include <chrono>
 #include <ios>
 #include <iostream>
-
-#include <string>
 #include <vector>
 #include <valarray>
-#include <set>
-#include <random>
 #include <functional>
-
 #if _OPENMP
 #include <omp.h>
 #endif

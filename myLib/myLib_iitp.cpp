@@ -1,8 +1,9 @@
 #include <myLib/iitp.h>
-#include <myLib/iitp_consts.h>
-#include <myLib/iitp_variables.h>
+
 #include <typeinfo>
 
+#include <myLib/iitp_consts.h>
+#include <myLib/iitp_variables.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
 #include <myLib/drw.h>

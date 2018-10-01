@@ -1,17 +1,12 @@
 #ifndef AUTOS_H
 #define AUTOS_H
 
-#include <chrono>
-#include <thread>
 #include <fstream>
 #include <functional>
 
 #include <other/edffile.h>
 #include <other/defs.h>
 #include <myLib/iitp.h>
-
-#include <QTime>
-#include <QTextStream>
 
 namespace autos
 {

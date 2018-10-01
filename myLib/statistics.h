@@ -2,14 +2,12 @@
 #define STATISTICS_H
 
 #include <valarray>
-#include <fstream>
 
 #include <other/matrix.h>
 #include <other/defs.h>
 
 #include <QString>
 #include <QPixmap>
-#include <QPainter>
 
 
 

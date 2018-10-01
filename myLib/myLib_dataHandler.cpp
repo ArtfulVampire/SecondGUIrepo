@@ -1,5 +1,7 @@
 #include <myLib/dataHandlers.h>
+
 #include <myLib/output.h>
+
 #include <QTextStream>
 
 using namespace myOut;

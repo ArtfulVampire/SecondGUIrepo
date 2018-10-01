@@ -1,6 +1,10 @@
 #include <myLib/signalProcessing.h>
+
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
+
+#include <QPixmap>
+#include <QPainter>
 
 using namespace myOut;
 
@@ -1400,7 +1404,7 @@ double fractalDimensionForTest(const std::valarray<double> & arr,
 		/// magic consts
 		pnt.setFont(QFont("Helvetica", 12));
 		/// y
-		pnt.drawText(0, pic.height() * (1. - gap) + 12 / 2,
+		pnt.drawText(0, pic.height() * (1. - gap) + 12. / 2,
 					 nm(smLib::doubleRound(minY, 2)));
 		pnt.drawText(0, + 12 + 12 / 2,
 					 nm(smLib::doubleRound(maxY, 2)));
@@ -2156,12 +2160,10 @@ std::valarray<double> bayesCount(const std::valarray<double> & dataIn,
 								 int numOfIntervals)
 {
 	double maxAmpl = 80.; /// generality
-    int helpInt;
 	std::valarray<double> out(0., numOfIntervals);
-
     for(uint j = 0; j < dataIn.size(); ++j)
     {
-		helpInt = std::floor((dataIn[j] + maxAmpl) / (2. * maxAmpl / numOfIntervals));
+		int helpInt = std::floor((dataIn[j] + maxAmpl) / (2. * maxAmpl / numOfIntervals));
 
 		if(helpInt != std::min(std::max(0, helpInt), numOfIntervals - 1))
         {

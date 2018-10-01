@@ -9,7 +9,6 @@
 #include <numeric>
 #include <complex>
 
-
 #include <other/consts.h>
 
 

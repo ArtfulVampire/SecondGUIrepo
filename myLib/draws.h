@@ -10,7 +10,6 @@
 #include <other/defs.h>
 
 #include <QPixmap>
-#include <QPainter>
 #include <QString>
 
 namespace myLib

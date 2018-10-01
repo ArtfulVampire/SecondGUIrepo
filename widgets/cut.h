@@ -4,23 +4,16 @@
 #include <iostream>
 #include <cmath>
 #include <functional>
+#include <fstream>
 
 #include <other/edffile.h>
 
-#include <QDir>
 #include <QWidget>
 #include <QPixmap>
-#include <QMouseEvent>
-#include <QRegExp>
-#include <QPainter>
 #include <QString>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QScrollBar>
-#include <QShortcut>
 #include <QSpinBox>
 #include <QLineEdit>
-#include <QShortcut>
+
 
 namespace Ui {
     class Cut;
@@ -81,9 +74,8 @@ private:
 	template<class...params> void logAction(const params &... par)
 	{
 		std::ofstream outStr;
-		QString name = edfFil.getExpNameShort();
 		outStr.open((edfFil.getDirPath() + "/" +
-					 name + "_cutLog.txt").toStdString(), std::ios_base::app);
+					 edfFil.getExpNameShort() + "_cutLog.txt").toStdString(), std::ios_base::app);
 		myWrite(outStr, par...);
 		outStr.close();
 	}

@@ -3,8 +3,6 @@
 
 #include <iostream>
 #include <cmath>
-#include <fstream>
-#include <ios>
 #include <vector>
 
 #include <classifier/classifier.h>
@@ -12,16 +10,10 @@
 #include <other/feedback.h>
 #include <other/defs.h>
 
-#include <QFileDialog>
-#include <QButtonGroup>
-#include <QPixmap>
-#include <QPainter>
-#include <QMouseEvent>
-#include <QTime>
 #include <QWidget>
-#include <QMessageBox>
-
-
+#include <QPixmap>
+#include <QAbstractButton>
+#include <QButtonGroup>
 
 namespace Ui {
     class Net;
@@ -122,7 +114,7 @@ private:
 	Ui::Net * ui;
 
 	/// ui things
-	std::vector<QButtonGroup *> myButtonGroup;
+	std::vector<QButtonGroup*> myButtonGroup;
 	bool stopFlag = false;
 	bool autoFlag = false; /// to deprecate
 

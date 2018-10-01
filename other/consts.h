@@ -1,10 +1,11 @@
 #ifndef DEFAULTS_H
 #define DEFAULTS_H
 
-#include <QString>
-#include <QColor>
 #include <vector>
 #include <map>
+
+#include <QString>
+#include <QColor>
 
 using uint = unsigned int;
 

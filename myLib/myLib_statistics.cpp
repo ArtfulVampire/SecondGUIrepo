@@ -5,6 +5,9 @@
 #include <myLib/small.h>
 #include <myLib/output.h>
 
+#include <QPixmap>
+#include <QPainter>
+
 using namespace myOut;
 
 namespace myLib

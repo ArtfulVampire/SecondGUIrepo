@@ -7,9 +7,13 @@
 #include <myLib/signalProcessing.h>
 #include <myLib/qtlib.h>
 #include <myLib/output.h>
-
 #include <myLib/iitp_consts.h>
 #include <myLib/iitp.h>
+
+#include <QMouseEvent>
+#include <QPainter>
+#include <QFileDialog>
+#include <QMessageBox>
 
 using namespace myOut;
 
