@@ -177,7 +177,6 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->cut_e, SIGNAL(clicked()), this, SLOT(showCut()));
 	QObject::connect(ui->netButton, SIGNAL(clicked()), this, SLOT(showNet()));
 	QObject::connect(ui->countSpectra, SIGNAL(clicked()), this, SLOT(showCountSpectra()));
-	QObject::connect(ui->reduceChannelsWidgetPushButton, SIGNAL(clicked()), this, SLOT(showReduce()));
 
 	/// small things, ~constant edf
 	QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stop()));
@@ -303,24 +302,6 @@ void MainWindow::showCountSpectra()
 {
     Spectre *sp = new Spectre();
     sp->show();
-}
-
-void MainWindow::showReduce()
-{
-	ChooseChans * ch = new ChooseChans();
-	QObject::connect(ch, &ChooseChans::strSig,
-					 [this](const std::vector<int> & chans)
-	{
-		/// consider edfFile.getChannels()
-		QString res{};
-		for(int in : chans)
-		{
-			res += nm(in) + " ";
-		}
-		res += "129"; /// markers
-		ui->reduceChannelsLineEdit->setText(res);
-	});
-	ch->show();
 }
 
 void MainWindow::processEyes()

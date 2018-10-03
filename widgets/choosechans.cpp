@@ -161,7 +161,7 @@ ChooseChans::~ChooseChans()
 		if(static_cast<QCheckBox*>
 		   (checks->itemAtPosition(pos.first, pos.second)->widget())->isChecked() )
 		{
-			chansToRetain.push_back(i);
+			chansToRetain.push_back(i - 1); /// count form 0 when sending
 		}
 	}
 	emit strSig(chansToRetain);

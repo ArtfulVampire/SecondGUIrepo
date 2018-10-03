@@ -36,8 +36,7 @@ public:
 public slots:
 	/// other widgets
     void showNet();
-    void showCountSpectra();
-	void showReduce();
+	void showCountSpectra();
     void showCut();
 
 	/// parameters processing

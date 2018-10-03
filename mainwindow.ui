@@ -369,16 +369,6 @@
        <item>
         <widget class="QComboBox" name="reduceChannelsComboBox"/>
        </item>
-       <item>
-        <widget class="QPushButton" name="reduceChannelsWidgetPushButton">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="text">
-          <string>choose chans</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
      <item row="2" column="2">

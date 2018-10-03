@@ -67,10 +67,9 @@ public:
     void setLrate(double in);
 	double getLrate() const;
     void setNumOfPairs(int num);
-    void setFold(int in);
-    void setAutoProcessingFlag(bool);
-	void setMode(const QString & in = "N-fold"); /// make myMode
-	void setSource(const QString & in = "reals"); /// make Source
+	void setFold(int in);
+	void setMode(const QString & in = "N-fold");	/// remake myMode
+	void setSource(const QString & in = "reals");	/// remake Source
     void setClassifier(const QString &);
 	void setClassifier(ModelType);
 	const Classifier & getClassifier() const { return *myModel; }
@@ -94,6 +93,7 @@ public:
 public slots:
 	void loadDataSlot();
     void pca();
+	void showReduce();
 
 	void autoClassificationSimple();			/// on SpectraSmooth + Source
 
@@ -114,9 +114,7 @@ private:
 	Ui::Net * ui;
 
 	/// ui things
-	std::vector<QButtonGroup*> myButtonGroup;
-	bool stopFlag = false;
-	bool autoFlag = false; /// to deprecate
+	bool stopFlag{false};
 
 	/// ui private methods
 	void aaDefaultSettings();
@@ -131,6 +129,7 @@ private:
 	/// classification
 	Classifier * myModel = nullptr;
 	ClassifierData myClassifierData{};
+	std::vector<int> chansToRetain{};	/// for 128 channels
 
 	/// succesiive
 	std::valarray<int> passed{};

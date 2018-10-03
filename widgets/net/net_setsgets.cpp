@@ -1,11 +1,6 @@
 #include <widgets/net.h>
 #include "ui_net.h"
 
-void Net::setAutoProcessingFlag(bool a)
-{
-    autoFlag = a;
-}
-
 double Net::getLrate() const
 {
 	if(myModel->getType() != ModelType::ANN) { return -1; }
@@ -188,15 +183,23 @@ void Net::setClassifier(QAbstractButton * but, bool i)
 			myRDA->setShrinkage(ui->rdaShrinkSpinBox->value());
 			myRDA->setLambda(ui->rdaLambdaSpinBox->value());
 		}
-		else { std::cout << "Net::setClassifier: RDA bad cast" << std::endl; }
+		else
+		{
+			std::cout << "Net::setClassifier: RDA bad cast" << std::endl;
+		}
 
     }
     else if(but->text() == "SVM")
     {
 		myModel = new SVM();
 		if(SVM * mySVM = dynamic_cast<SVM *>(myModel))
-		{ mySVM->setKernelNum(ui->svmKernelSpinBox->value()); }
-		else { std::cout << "Net::setClassifier: SVM bad cast" << std::endl; }
+		{
+			mySVM->setKernelNum(ui->svmKernelSpinBox->value());
+		}
+		else
+		{
+			std::cout << "Net::setClassifier: SVM bad cast" << std::endl;
+		}
     }
     else if(but->text() == "DIST")
     {
@@ -210,15 +213,25 @@ void Net::setClassifier(QAbstractButton * but, bool i)
     {
 		myModel = new KNN();
 		if(KNN * myKNN = dynamic_cast<KNN *>(myModel))
-		{ myKNN->setNumOfNear(ui->knnNumOfNearSpinBox->value()); }
-		else { std::cout << "Net::setClassifier: KNN bad cast" << std::endl; }
+		{
+			myKNN->setNumOfNear(ui->knnNumOfNearSpinBox->value());
+		}
+		else
+		{
+			std::cout << "Net::setClassifier: KNN bad cast" << std::endl;
+		}
     }
     else if(but->text() == "WARD")
     {
 		myModel = new WARD();
 		if(WARD * myWARD = dynamic_cast<WARD *>(myModel))
-		{ myWARD->setNumClust(ui->knnNumOfNearSpinBox->value()); }
-		else { std::cout << "Net::setClassifier: WARD bad cast" << std::endl; }
+		{
+			myWARD->setNumClust(ui->knnNumOfNearSpinBox->value());
+		}
+		else
+		{
+			std::cout << "Net::setClassifier: WARD bad cast" << std::endl;
+		}
 	}
 	myModel->setClassifierData(myClassifierData);
 }

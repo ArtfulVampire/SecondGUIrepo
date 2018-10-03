@@ -32,8 +32,8 @@ public:
 
 	/// gets
 	const matrix & getData() const								{ return dataMatrix; }
-	int size() const											{ return dataMatrix.rows(); }
 	bool isEmpty() const										{ return dataMatrix.isEmpty(); }
+	int size() const											{ return dataMatrix.rows(); }
 	uint getNumOfCl() const										{ return numOfCl; }
 	const std::vector<uint> & getTypes() const					{ return types; }
 	uint getTypes(int i) const									{ return types[i]; }
@@ -51,7 +51,7 @@ public:
 	/// matrix modifiers
 	void erase(const uint index);
 	void erase(const std::vector<uint> & eraseIndices);
-	void print();
+	void print() const;
 
 	void push_back(const std::valarray<double> & inDatum,
 				   uint inType,

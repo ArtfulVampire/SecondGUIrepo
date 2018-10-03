@@ -192,11 +192,11 @@ void XeniaFinalest()
 	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};
 	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
 	DEFS.setAutosMask(0
-					  | featuresMask::alphaPeak
+//					  | featuresMask::alphaPeak
 					  | featuresMask::fracDim
 					  | featuresMask::Hilbert
-					  | featuresMask::fft
-					  | featuresMask::logFFT
+//					  | featuresMask::fft
+//					  | featuresMask::logFFT
 					  );
 
 #if 0
@@ -301,17 +301,19 @@ void XeniaFinalest()
 	return;
 #endif
 
-#if 0
+#if 01
 	/// processing itself
 	autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
 #endif
+
 
 
 #if 0
 	/// Xenia FINAL make labels
 	const QString sep{"\t"};
 
-//	DEFS.setAutosMask(featuresMask::Hilbert);
+	DEFS.setAutosMask(featuresMask::Hilbert
+					  | featuresMask::fracDim);
 
 	std::ofstream lab;
 	lab.open((def::XeniaFolder + "/labels.txt").toStdString());
@@ -364,10 +366,14 @@ void XeniaFinalest()
 			for(const QString & fir : {
 				QString("hilbcarr")	+ initFreq,
 				QString("hilbsd")	+ initFreq,
-				QString("hilbcarr")	+ "_2-6",
-				QString("hilbsd")	+ "_2-6",
-				QString("hilbcarr")	+ "_4-7",
-				QString("hilbsd")	+ "_4-7",
+				QString("hilbcarr")	+ "_2-20",
+				QString("hilbsd")	+ "_2-20",
+				QString("hilbcarr")	+ "_8-13",
+				QString("hilbsd")	+ "_8-13",
+				QString("hilbcarr")	+ "_2-7",
+				QString("hilbsd")	+ "_2-7",
+				QString("hilbcarr")	+ "_13-18",
+				QString("hilbsd")	+ "_13-18",
 		}
 				)
 			{
@@ -380,6 +386,7 @@ void XeniaFinalest()
 				}
 			}
 		}
+
 		if(DEFS.getAutosMask() & featuresMask::wavelet)
 		{
 			/// WAVELET

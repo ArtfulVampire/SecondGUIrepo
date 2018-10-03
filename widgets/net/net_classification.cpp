@@ -1,6 +1,18 @@
 #include <widgets/net.h>
 #include "ui_net.h"
 
+#include <widgets/choosechans.h>
+
+void Net::showReduce()
+{
+	ChooseChans * ch = new ChooseChans();
+	QObject::connect(ch, &ChooseChans::strSig,
+					 [this](const std::vector<int> & chans)
+	{
+		this->chansToRetain = chans;
+	});
+	ch->show();
+}
 
 Classifier::avType Net::autoClassification(const QString & spectraDir)
 {
@@ -12,11 +24,19 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
 		loadData(spectraDir);
 	}
 
+	if()
+
 	if(myModel->getType() == ModelType::ANN)
 	{
 		/// adjust learnRate
-		if(ANN * myANN = dynamic_cast<ANN*>(myModel)) { myANN->adjustLearnRate(); }
-		else { std::cout << "Net::autoClassification: ANN bad cast (adjustLrate)" << std::endl; }
+		if(ANN * myANN = dynamic_cast<ANN*>(myModel))
+		{
+			myANN->adjustLearnRate();
+		}
+		else
+		{
+			std::cout << "Net::autoClassification: ANN bad cast (adjustLrate)" << std::endl;
+		}
 	}
 
     switch(Mode)
@@ -283,10 +303,7 @@ void Net::customF()
         outStr.close();
     }
 #endif
-
-
 }
-
 
 void Net::cycleParams(std::vector<std::vector<double> > & in)
 {

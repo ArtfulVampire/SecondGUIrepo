@@ -142,14 +142,14 @@ void ClassifierData::erase(const uint index)
 	fileNames.erase(std::begin(fileNames) + index);
 }
 
-void ClassifierData::print()
+void ClassifierData::print() const
 {
 	std::cout << "numOfClasses = " << numOfCl << std::endl;
 	std::cout << "data rows = " << dataMatrix.rows() << std::endl;
 	std::cout << "types size = " << types.size() << std::endl;
 
 #if MAP
-	for(auto in : classMarkers)
+	for(const auto & in : classMarkers)
 	{
 		std::cout << in.first << " -> " << in.second << std::endl;
 	}

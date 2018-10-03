@@ -322,13 +322,37 @@ void countFracDim(const matrix & inData,
 				  double srate,
 				  std::ostream & outStr)
 {
+	std::vector<std::pair<double, double>> filters{
+				std::make_pair(0, 0),		/// [0] no filter
+				std::make_pair(4, 7),		/// [1] theta
+				std::make_pair(8, 13),		/// [2] alpha
+				std::make_pair(8, 10),		/// [3] low_alpha
+				std::make_pair(10, 13),		/// [4] high_alpha
+				std::make_pair(2, 20),		/// [5] band of interest
+				std::make_pair(2, 6),		/// [6] delta
+				std::make_pair(2, 7),		/// [7] delta2
+				std::make_pair(13, 18),		/// [8] beta
+	};
+
 	switch(DEFS.getAutosUser())
 	{
 	case autosUser::XeniaFinalest:
 	{
 		for(int i = 0; i < inData.rows(); ++i)
 		{
-			outStr << myLib::fractalDimension(inData[i]) << "\r\n";
+			for(int numFilt : {5, 2, 7, 8})
+			{
+				const auto & filt = filters[numFilt];
+
+				outStr << myLib::fractalDimension(
+							  myLib::refilter(inData[i],
+											  filt.first,
+											  filt.second,
+											  false,
+											  srate)
+							  ) << "\t";
+			}
+			outStr << "\r\n";
 		}
 		break;
 	}
@@ -362,6 +386,8 @@ void countHilbert(const matrix & inData,
 				std::make_pair(10, 13),		/// [4] high_alpha
 				std::make_pair(2, 20),		/// [5] band of interest
 				std::make_pair(2, 6),		/// [6] delta
+				std::make_pair(2, 7),		/// [7] delta2
+				std::make_pair(13, 18),		/// [8] beta
 	};
 
 	std::vector<std::vector<std::vector<double>>> hilb(filters.size()); /// [filter][chan][0-carr, 1-SD]
@@ -447,7 +473,7 @@ void countHilbert(const matrix & inData,
 		for(int ch = 0; ch < inData.rows(); ++ch)
 		{
 //			for(int filt : {0, 1, 2, 3, 4,  5}) /// whole, theta, alpha, low-alpha, high-alpha, 2-20
-			for(int filt : {6, 1})
+			for(int filt : {5, 2, 7, 8})
 //			int filt = 5; /// 2-20
 			{
 				for(int func : {0, 1})  /// carr or SD
