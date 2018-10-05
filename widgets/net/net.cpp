@@ -230,32 +230,21 @@ void Net::writeWtsSlot()
         return;
     }
     int wtsCounter = 0;
-    QString helpString;
-	if(!autoFlag)
+	QString helpString= QFileDialog::getSaveFileName(this,
+													 tr("wts to save"),
+													 DEFS.dirPath(),
+													 tr("wts files (*.wts)"));
+	if(helpString.isEmpty())
 	{
-		helpString = QFileDialog::getSaveFileName(this,
-												  tr("wts to save"),
-												  DEFS.dirPath(),
-												  tr("wts files (*.wts)"));
-		if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
-		{
-			helpString += ".wts";
-		}
-	}
-	else
-	{
-		do
-		{
-			helpString = DEFS.dirPath() + "/Help/wts/weight_" + nm(wtsCounter) + ".wts";
-			++wtsCounter;
-		} while(QFile::exists(helpString));
+		std::cout << "saveWtsSlot: no file is chosen to save" << std::endl;
+		return;
 	}
 
-    if(helpString.isEmpty())
-    {
-		std::cout << "saveWtsSlot: no file is chosen to save" << std::endl;
-        return;
-    }
+	if(!helpString.endsWith(".wts", Qt::CaseInsensitive))
+	{
+		helpString += ".wts";
+	}
+
 	/// check bad cast?
 	dynamic_cast<ANN *>(myModel)->writeWeight(helpString);
 }

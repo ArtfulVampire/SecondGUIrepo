@@ -174,11 +174,11 @@ public:
 	auto getExpName() const						{ return this->ExpName; }
 	auto getExpNameShort() const				{ return this->ExpName.left(ExpName.indexOf('_')); }
 
-	/// to deprecate, globalEdf.getExpName()
+	/// to deprecate, globalEdf
 	void setNs(int in)							{ this->ns = in; }
 	auto getNs() const							{ return this->ns; }
 
-	/// to deprecate, globalEdf.getExpName()
+	/// to deprecate, globalEdf
 	void setFreq(double in)						{ this->freq = in; }
 	auto getFreq() const						{ return this->freq; }
 

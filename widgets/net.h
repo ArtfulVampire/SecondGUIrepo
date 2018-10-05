@@ -129,7 +129,7 @@ private:
 	/// classification
 	Classifier * myModel = nullptr;
 	ClassifierData myClassifierData{};
-	std::vector<int> chansToRetain{};	/// for 128 channels
+	std::vector<int> chansToSkip{};	/// for 128 channels
 
 	/// succesiive
 	std::valarray<int> passed{};

@@ -153,7 +153,9 @@ const std::vector<QString> lbl_all {"Fp1", "Fp2",
 								  "Cp3", "Cpz", "Cp4", "Tp8", "Po7", "Po8", "Oz",
 								  "A1", "A2"
 								 };
-const std::vector<int> leest19 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+
+/// to deprecate
+const std::vector<int> leest19 {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
 
 
 }

@@ -1,42 +1,39 @@
 #include <other/autos.h>
 
-const std::vector<std::pair<double, double>> integrLimits
-{
-	/// 4-Hz wide
-	{4, 8},
-	{8, 12},
-	{12, 16},
-	{16, 20},
-	{20, 24},
-
-	/// 2-Hz wide
-	{4, 6}, {6, 8},
-	{8, 10}, {10, 12},
-
-	/// 1-Hz wide
-	{4, 5}, {5, 6}, {6, 7}, {7, 8},
-	{8, 9}, {9, 10}, {10, 11}, {11, 12},
-	{12, 13}, {13, 14}, {14, 15}, {15, 16},
-	{16, 17}, {17, 18}, {18, 19}, {19, 20},
-	{20, 21}, {21, 22}, {22, 23}, {23, 24},
-};
-
 const int numOfTasks = 180;
 const int numSmooth = 15;
 const double hilbertFreqLimit = 40.;
 
+const QString RDstring{"RD"};
+const QString PPGstring{"FPG"};
+const QString EDAstring{"KGR"};
+
+const std::vector<std::pair<double, double>> integrLimits
+{
+	/// 4-Hz wide
+	{4, 8},		{8, 12},	{12, 16},	{16, 20},	{20, 24},
+
+	/// 2-Hz wide
+	{4, 6},		{6, 8},		{8, 10},	{10, 12},
+
+	/// 1-Hz wide
+	{4, 5},		{5, 6},		{6, 7},		{7, 8},
+	{8, 9},		{9, 10},	{10, 11},	{11, 12},
+	{12, 13},	{13, 14},	{14, 15},	{15, 16},
+	{16, 17},	{17, 18},	{18, 19},	{19, 20},
+	{20, 21},	{21, 22},	{22, 23},	{23, 24},
+};
+
 const std::vector<std::pair<double, double>> hilbFilters
 {
 	{0.,	0.},		/// [0] no filter
-	{4.,	7.},		/// [1] theta
+	{4.,	8.},		/// [1] theta
 	{8.,	13.},		/// [2] alpha
 	{8.,	10.},		/// [3] low_alpha
 	{10.,	13.},		/// [4] high_alpha
 	{2.,	20.},		/// [5] band of interest
 	{2.,	6.},		/// [6] delta
 };
-
-
 
 /// size = integrLimits.size()
 std::valarray<double> elenaFft(const std::valarray<double> & inSignal,
@@ -135,24 +132,17 @@ std::valarray<double> elenaHjorth(const std::valarray<double> & inSignal,
 using elenaFuncType = std::function<std::valarray<double>(const std::valarray<double> &, double)>;
 const std::vector<std::pair<const elenaFuncType &, int>> funcsWithSizes
 {
-	{elenaFft, integrLimits.size()},
-	{elenaAlphaPeak, 1},
-	{elenaFracDim, 1},
-	{elenaHilbert, hilbFilters.size() * 2},
-	{elenaHjorth, 2},
+	{elenaFft,			integrLimits.size()},
+	{elenaAlphaPeak,	1},
+	{elenaFracDim,		1},
+	{elenaHilbert,		hilbFilters.size() * 2},
+	{elenaHjorth,		2},
 };
 const int sumSize{std::accumulate(std::begin(funcsWithSizes),
 								  std::end(funcsWithSizes),
 								  0,
-								  [](int in1, const auto & in2)
-	{ return in1 + in2.second; })
+								  [](int in1, const auto & in2) { return in1 + in2.second; })
 				 };
-
-
-const QString RDstring{"RD"};
-const QString PPGstring{"FPG"};
-const QString EDAstring{"KGR"};
-
 
 std::vector<QString> makeTableCols(const std::vector<QString> & labels)
 {
@@ -211,8 +201,8 @@ std::vector<QString> makeTableCols(const std::vector<QString> & labels)
 	return tableCols;
 }
 
-
 void elenaCalculation(const QString & realsPath,
+					  const QString & outSpectraPath,
 					  const QString & outTableDir)
 {
 	///////////////
@@ -226,7 +216,6 @@ void elenaCalculation(const QString & realsPath,
 		"_t_214", /// closed eyes (winds)
 		"_t_215", /// open eyes (winds)
 	};
-
 
 	const int fftLen = 4096;
 	const int numChansForSpectre = 128; /// -1
@@ -245,6 +234,10 @@ void elenaCalculation(const QString & realsPath,
 	std::set<int> allNumbers(std::begin(forSet), std::end(forSet));
 
 	const QStringList reals = QDir(realsPath).entryList(def::edfFilters);
+
+	const int leftSpecLim = fftLimit(DEFS.getLeftFreq(),	DEFS.getFreq(), fftLen);
+	const int rightSpecLim = fftLimit(DEFS.getRightFreq(),	DEFS.getFreq(), fftLen);
+
 	for(const QString & fileName : reals)
 	{
 		edfFile fil(realsPath + "/" + fileName);
@@ -293,12 +286,12 @@ void elenaCalculation(const QString & realsPath,
 		/// calculate vegetative
 		int vegetIndex = sumSize;
 		auto eda = myLib::EDAmax(fil.getData(EDAstring), fromFileName[0].toDouble());
-		res[vegetIndex++] = eda.first;
-		res[vegetIndex++] = eda.second / fil.getFreq();
-		res[vegetIndex++] = myLib::RDfreq(fil.getData(RDstring), fftLen);
-		res[vegetIndex++] = myLib::PPGrange(fil.getData(PPGstring));
-		res[vegetIndex++] = myLib::RDfreq(fil.getData(PPGstring), fftLen);
-		res[vegetIndex++] = inData.cols() / fil.getFreq();
+		res[vegetIndex++] = eda.first;										/// eda magnitude
+		res[vegetIndex++] = eda.second / fil.getFreq();						/// eda latency
+		res[vegetIndex++] = myLib::RDfreq(fil.getData(RDstring), fftLen);	/// breath frequency
+		res[vegetIndex++] = myLib::PPGrange(fil.getData(PPGstring));		/// PPG magnitude
+		res[vegetIndex++] = myLib::RDfreq(fil.getData(PPGstring), fftLen);	/// PPG frequency
+		res[vegetIndex++] = inData.cols() / fil.getFreq();					/// reaction time
 
 		/// auxiliary
 		res[vegetIndex++] = fromFileName[1].toInt();	/// taskNumber
@@ -306,7 +299,36 @@ void elenaCalculation(const QString & realsPath,
 		res[vegetIndex++] = fromFileName[3].toInt();	/// operMark
 		allNumbers.erase(fromFileName[1].toInt());
 		result.push_back(res);
+
+		/// write into file for classification
+		if(inData.rows() < coords::egi::manyChannels)
+		{
+			matrix spec = myLib::countSpectre(inData.subRows(19),
+											  fftLen,
+											  numSmooth).subCols(
+							  leftSpecLim, rightSpecLim);
+
+			std::ofstream outStream;
+			outStream.open((outSpectraPath + "/" + fileName)
+						   .replace(".edf", def::spectraDataExtension)
+						   .toStdString());
+			outStream << "NumOfChannels " << 19 << '\t';
+			outStream << "spLength " << spec.cols() << "\r\n";
+
+			outStream << std::fixed;
+			outStream.precision(4);
+
+			outStream << spec;
+
+			outStream << eda.first;										/// eda magnitude
+			outStream << eda.second / fil.getFreq();					/// eda latency
+			outStream << myLib::RDfreq(fil.getData(RDstring), fftLen);	/// breath frequency
+			outStream << myLib::PPGrange(fil.getData(PPGstring));		/// PPG magnitude
+			outStream << myLib::RDfreq(fil.getData(PPGstring), fftLen);	/// PPG frequency
+			outStream.close();
+		}
 	}
+
 #if 01
 	/// cout unprocessed tasks
 	if(!allNumbers.empty())

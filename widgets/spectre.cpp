@@ -28,14 +28,6 @@ Spectre::Spectre() :
     group1->addButton(ui->svgButton);
     ui->jpgButton->setChecked(true);
 
-    QButtonGroup * group2 = new QButtonGroup;
-    group2->addButton(ui->spectraRadioButton);
-    group2->addButton(ui->brainRateRadioButton);
-    group2->addButton(ui->bayesRadioButton);
-    group2->addButton(ui->hilbertsVarRadioButton);
-    group2->addButton(ui->d2RadioButton);
-    ui->spectraRadioButton->setChecked(true);
-
     QButtonGroup * group3 = new QButtonGroup;
     group3->addButton(ui->amplitudeWaveletButton);
     group3->addButton(ui->phaseWaveletButton);
@@ -643,42 +635,38 @@ void Spectre::writeSpectra(const std::vector<int> & chanList,
 		outStream << std::fixed;
 		outStream.precision(4);
 
-        if(ui->spectraRadioButton->isChecked())
-        {
-            /// which channels to write ???
-			for(int j = 0; j < chanList.size(); ++j) //
+		/// which channels to write ???
+		for(int j = 0; j < chanList.size(); ++j) //
+		{
+			for(int k = left; k < left + rangeLimits[j].first; ++k)
 			{
-                for(int k = left; k < left + rangeLimits[j].first; ++k)
-                {
-                    outStream << "0.000" << '\t';
-                }
-                for(int k = left + rangeLimits[j].first;
-					k < left + rangeLimits[j].second;
-					++k)
-                {
-					outStream << dataFFT[dataFFTcounter][j][k] << '\t';
-                }
-				for(int k = std::max(left + rangeLimits[j].first,
-									 left + rangeLimits[j].second);
-					k < right;
-					++k)
-                {
-                    outStream << "0.000" << '\t';
-                }
-                outStream << "\r\n";
-            }
-        }
+				outStream << "0.000" << '\t';
+			}
+			for(int k = left + rangeLimits[j].first;
+				k < left + rangeLimits[j].second;
+				++k)
+			{
+				outStream << dataFFT[dataFFTcounter][j][k] << '\t';
+			}
+			for(int k = std::max(left + rangeLimits[j].first,
+								 left + rangeLimits[j].second);
+				k < right;
+				++k)
+			{
+				outStream << "0.000" << '\t';
+			}
+			outStream << "\r\n";
+		}
 		++dataFFTcounter;
         outStream.close();
     }
-
 	std::cout << "writeSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 void Spectre::countSpectraSlot()
 {
 //	defaultState(); /// why was it here? 4-Mar-18
 
-	std::vector<int> chanList = coords::leest19;
+	const auto chanList{smLib::range<std::vector<int>>(0, DEFS.getNs())};
 
 	if(!ui->bypassCountCheckBox->isChecked())
 	{
@@ -773,40 +761,33 @@ std::vector<int> Spectre::countSpectra(std::vector<int> chanList)
 	for(const QString & fileName : fileNames)
 	{
 		if(fileName.contains("_num") ||
-//		   fileName.contains("_300") ||
 		   fileName.contains("_sht")) { continue; }
 
 		/// read data file
-		QString helpString = inDirPath + "/" + fileName;
-		matrix dataIn = edfFile(helpString).getData().subRows(chanList);
+		matrix dataIn = edfFile(inDirPath + "/" + fileName).getData().subRows(chanList);
 
-		if(ui->spectraRadioButton->isChecked())
+		dataFFT[cnt] = myLib::countSpectre(dataIn, DEFS.getFftLen(), ui->smoothBox->value());
+		if(!dataFFT[cnt].isEmpty())
 		{
-			dataFFT[cnt] = myLib::countSpectre(dataIn, DEFS.getFftLen(), ui->smoothBox->value());
-			if(!dataFFT[cnt].isEmpty())
+			++cnt;
+		}
+		else
+		{
+			/// if can't calculate spectre, e.g. too short real/wind
+			QRegExp reg{};
+			if(DEFS.isUser(username::ElenaC))
 			{
-				++cnt;
+				reg = QRegExp(R"(_[0-9]{1,}_)");
 			}
 			else
 			{
-				/// if can't calculate spectre, e.g. too short real/wind
-				QRegExp reg;
-				if(DEFS.isUser(username::ElenaC))
-				{
-					reg = QRegExp(R"(_[0-9]{1,}_)");
-				}
-				else
-				{
-					reg = QRegExp(R"([._][0-9]{4}[._])");
-				}
-
-				reg.indexIn(fileName);
-				exFileNumbers.push_back(reg.cap().remove("_").remove(".").toInt());
-				exIndices.push_back(fileNumber);
+				reg = QRegExp(R"([._][0-9]{4}[._])");
 			}
-		}
-		/// here were other radioButtons like "brain rate" and so on
 
+			reg.indexIn(fileName);
+			exFileNumbers.push_back(reg.cap().remove("_").remove(".").toInt());
+			exIndices.push_back(fileNumber);
+		}
 		ui->progressBar->setValue(++fileNumber * 100. / numFiles);
 		qApp->processEvents();
 	}
@@ -828,13 +809,6 @@ std::vector<int> Spectre::countSpectra(std::vector<int> chanList)
 	/// generality
 	std::cout << "countSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
 	return chanList;
-}
-
-/// deprecated
-bool Spectre::countOneSpectre(const matrix & data2, matrix & outData)
-{	
-	outData = myLib::countSpectre(data2, DEFS.getFftLen(), ui->smoothBox->value());
-	return !outData.isEmpty();
 }
 
 void Spectre::drawWavelets() /// unused

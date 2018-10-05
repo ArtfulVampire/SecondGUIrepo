@@ -42,6 +42,7 @@ public:
 	const QString & getFileNames(int i) const					{ return fileNames[i]; }
 	const std::valarray<double> & getApriori() const			{ return apriori; }
 	const QString & getFilesPath() const						{ return filesPath; }
+	int getSpLength() const										{ return spLength; }
 	int getClassCount(uint i) const;
 
 	/// sets
@@ -52,6 +53,7 @@ public:
 	void erase(const uint index);
 	void erase(const std::vector<uint> & eraseIndices);
 	void print() const;
+	void zeroChans(const std::vector<int> & chans);
 
 	void push_back(const std::valarray<double> & inDatum,
 				   uint inType,
@@ -98,6 +100,7 @@ private:
 	matrix dataMatrix{};						/// the data, biases for Net are imaginary
 	std::vector<uint> types{};					/// vector of object types (may be any uints)
 	std::vector<QString> fileNames{};			/// used in Classifier::peopleClassification
+	int spLength{};								/// for 128 chans zeroing
 
 	std::vector<std::vector<uint>> indices{};	/// arrays of indices for each class used WHERE ???
 	std::valarray<double> apriori{};			/// for some classifiers like NBC

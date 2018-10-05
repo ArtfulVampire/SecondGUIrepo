@@ -34,9 +34,6 @@ public:
     void setOutPath(const QString &);
 	std::vector<int> countSpectra(std::vector<int> chanList = std::vector<int>{});
 
-	/// deprecated
-	bool countOneSpectre(const matrix & data2,
-						 matrix & dataFFT);
     void cleanSpectra();
 
 

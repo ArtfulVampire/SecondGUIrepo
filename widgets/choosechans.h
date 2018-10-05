@@ -17,6 +17,8 @@ public:
 	explicit ChooseChans();
 	~ChooseChans();
 
+	void sendSig();
+
 signals:
 	void strSig(const std::vector<int> & str);
 

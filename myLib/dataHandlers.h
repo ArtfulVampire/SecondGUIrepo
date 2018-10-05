@@ -46,6 +46,7 @@ void readUCIdataSet(const QString & setName,
 
 
 std::valarray<double> readFileInLine(const QString & filePath);
+std::pair<std::valarray<double>, int> readFileInLinePair(const QString & filePath); /// with cols
 
 std::valarray<double> readFileInLineRaw(const QString & filePath); /// w/o headers
 

@@ -47,7 +47,7 @@ QStringList makeFullFileList(const QString & path,
 	QStringList res{};
 	if(DEFS.getFileMarks().isEmpty())
 	{
-		res = QDir(path).entryList({"*.edf", "*.EDF"},
+		res = QDir(path).entryList(def::edfFilters,
 								   QDir::Files,
 								   QDir::Name); /// Name ~ order
 	}
@@ -128,30 +128,45 @@ std::valarray<double> readFileInLineRaw(const QString & filePath)
 	return res;
 }
 
-std::valarray<double> readFileInLine(const QString & filePath)
+std::pair<std::valarray<double>, int> readFileInLinePair(const QString & filePath)
 {
-	std::valarray<double> res;
+	std::valarray<double> res{};
 	std::ifstream file(filePath.toStdString());
-    if(!file.good())
-    {
+	if(!file.good())
+	{
 		std::cout << "readFileInLine: bad file " << filePath << std::endl;
 		return {};
-    }
-    int rows;
-    int cols;
-    file.ignore(64, ' ');
-    file >> rows;
-    file.ignore(64, ' ');
-    file >> cols;
+	}
+	int rows;
+	int cols;
+	file.ignore(64, ' ');
+	file >> rows;
+	file.ignore(64, ' ');
+	file >> cols;
 
-    int len = rows * cols;
+
+#if 0
+	int len = rows * cols;
 	res.resize(len);
-    for(int i = 0; i < len; ++i)
-    {
+	for(int i = 0; i < len; ++i)
+	{
 		file >> res[i];
-    }
-    file.close();
-	return res;
+	}
+#else
+	/// plus vegetative
+	std::vector<double> tmp{};
+	tmp.reserve(rows * cols + 15); /// 15 magic
+	int i = 0;
+	while(file >> res[i++]) {}
+	res = smLib::vecToValar(tmp);
+#endif
+	file.close();
+	return {res, cols};
+}
+
+std::valarray<double> readFileInLine(const QString & filePath)
+{
+	return myLib::readFileInLinePair(filePath).first;
 }
 
 template <typename ArrayType>

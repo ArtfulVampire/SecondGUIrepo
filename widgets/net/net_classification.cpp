@@ -9,7 +9,7 @@ void Net::showReduce()
 	QObject::connect(ch, &ChooseChans::strSig,
 					 [this](const std::vector<int> & chans)
 	{
-		this->chansToRetain = chans;
+		this->chansToSkip = chans;
 	});
 	ch->show();
 }
@@ -24,7 +24,11 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
 		loadData(spectraDir);
 	}
 
-	if()
+	if(DEFS.getNs() > coords::egi::manyChannels) /// Geodesics only
+	{
+		myClassifierData.zeroChans(chansToSkip);
+	}
+
 
 	if(myModel->getType() == ModelType::ANN)
 	{

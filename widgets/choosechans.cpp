@@ -116,10 +116,11 @@ ChooseChans::ChooseChans() :
 		chk->setGeometry(0, 0, pushButtonWidth, pushButtonHeight);
 		chk->setChecked(true);
 		QObject::connect(chk, &QCheckBox::clicked,
-						 [area, setCheckBoxes](bool ch){ setCheckBoxes(area, ch); });
+						 [area, setCheckBoxes](bool ch){ setCheckBoxes(area, ch); sendSig(); });
 		buttons->addWidget(chk, colCounter);
 		++colCounter;
 	}
+
 	/// all
 	QCheckBox * chk = new QCheckBox("all", this);
 	chk->setGeometry(0, 0, pushButtonWidth, pushButtonHeight);
@@ -154,17 +155,22 @@ ChooseChans::ChooseChans() :
 
 ChooseChans::~ChooseChans()
 {
-	std::vector<int> chansToRetain{};
-	for(int i = 1; i <= 128; ++i)
-	{
-		auto pos = getPosition(i, checkColSize);
-		if(static_cast<QCheckBox*>
-		   (checks->itemAtPosition(pos.first, pos.second)->widget())->isChecked() )
-		{
-			chansToRetain.push_back(i - 1); /// count form 0 when sending
-		}
-	}
-	emit strSig(chansToRetain);
 	delete ui;
 }
 
+void ChooseChans::sendSig()
+{
+	std::vector<int> chansToSkip{};
+	for(int i = 1; i <= 128; ++i)
+	{
+		auto pos = getPosition(i, checkColSize);
+		if(!(static_cast<QCheckBox*>
+			 (checks->itemAtPosition(pos.first, pos.second)->widget())
+			 ->isChecked())
+		   )
+		{
+			chansToSkip.push_back(i - 1); /// count form 0 when sending
+		}
+	}
+	emit strSig(chansToSkip);
+}

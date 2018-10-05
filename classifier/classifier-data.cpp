@@ -85,7 +85,7 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 ClassifierData::ClassifierData(const QString & inPath, const QStringList & filters)
 {
 
-	this->dataMatrix = matrix();
+	this->dataMatrix.clear();
 	this->types.clear();
 	this->fileNames.clear();
 	this->filesPath = inPath;
@@ -95,8 +95,9 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 	/// construct types vector, dataMatrix and fileNames, then adjust
 	for(const QString & fileName : myLib::makeFullFileList(inPath, filters))
 	{
-		auto tempArr = myLib::readFileInLine(inPath + "/" + fileName);
-		dataMatrix.push_back(tempArr);
+		auto a = myLib::readFileInLinePair(inPath + "/" + fileName);
+		dataMatrix.push_back(a.first);
+		spLength = a.second;
 		types.push_back(myLib::getTypeOfFileName(fileName, DEFS.getFileMarks()));
 		fileNames.push_back(fileName);
 	}
@@ -107,8 +108,9 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 
 	for(const QString & fileName : myLib::makeFullFileList(inPath, filters))
 	{
-		auto tempArr = myLib::readFileInLine(inPath + "/" + fileName);
-		this->push_back(tempArr,
+		auto a = myLib::readFileInLinePair(inPath + "/" + fileName);
+		spLength = a.second;
+		this->push_back(a.first,
 						myLib::getTypeOfFileName(fileName, DEFS.getFileMarks()),
 						fileName);
 	}
@@ -162,6 +164,19 @@ void ClassifierData::print() const
 	std::cout << std::endl;
 	std::cout << "fileNames size = " << fileNames.size() << std::endl;
 	std::cout << std::endl;
+}
+
+void ClassifierData::zeroChans(const std::vector<int> & chans)
+{
+	for(auto & row : dataMatrix)
+	{
+		for(int in : chans)
+		{
+			std::fill(std::begin(row) + in * spLength,
+					  std::begin(row) + (in + 1) * spLength,
+					  0.);
+		}
+	}
 }
 
 void ClassifierData::erase(const std::vector<uint> & eraseIndices)
