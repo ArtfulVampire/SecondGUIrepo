@@ -116,7 +116,7 @@ ChooseChans::ChooseChans() :
 		chk->setGeometry(0, 0, pushButtonWidth, pushButtonHeight);
 		chk->setChecked(true);
 		QObject::connect(chk, &QCheckBox::clicked,
-						 [area, setCheckBoxes](bool ch){ setCheckBoxes(area, ch); sendSig(); });
+						 [area, this, setCheckBoxes](bool ch){ setCheckBoxes(area, ch); sendSig(); });
 		buttons->addWidget(chk, colCounter);
 		++colCounter;
 	}
