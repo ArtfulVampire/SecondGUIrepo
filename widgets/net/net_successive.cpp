@@ -609,7 +609,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 	auto res2 =  myANN->averageClassification(DEVNULL);
 //	std::cout << res2.first << std::endl;
 
-	return {res1, res2, res3};
+	return Net::sucAllType{res1, res2, res3};
 }
 
 void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ansType howSolved)

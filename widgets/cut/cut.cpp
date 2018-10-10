@@ -358,9 +358,6 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		case QEvent::Wheel:
 		{
 			/// for one "wheel step" there are TWO identical(?) wheel events
-
-			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
-
 			/// workaround to process only the second of two QWheelEvents
 			static bool procFlag = false;
 			if(!procFlag)
@@ -370,6 +367,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			}
 			procFlag = false;
 
+			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
 			const int step = (scrollEvent->delta() > 0) ? -1 : 1;
 
 			if(scrollEvent->modifiers().testFlag(Qt::ControlModifier) &&

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT   += core gui svg
+QT   += core gui widgets
 
 TARGET = SecondGUI
 TEMPLATE = app
