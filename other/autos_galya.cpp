@@ -126,6 +126,9 @@ void calculateFeatures(const QString & pathWithEdfs,
 #if 0
 			/// first 30 seconds
 			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq());	/// not resizeCols
+#elif 01
+			/// first 60 seconds
+			tmpData = tmpData.subCols(0, 60 * initEdf.getFreq());	/// not resizeCols
 #else
 			/// second 30 secods
 			if(tmpData.cols() >= 60 * initEdf.getFreq())

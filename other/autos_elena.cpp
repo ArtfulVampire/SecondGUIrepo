@@ -309,7 +309,8 @@ void elenaCalculation(const QString & realsPath,
 							  leftSpecLim, rightSpecLim);
 
 			std::ofstream outStream;
-			outStream.open((outSpectraPath + "/" + fileName)
+			QString outString = outSpectraPath + "/" + fileName;
+			outStream.open(outString
 						   .replace(".edf", def::spectraDataExtension)
 						   .toStdString());
 			outStream << "NumOfChannels " << 19 << '\t';
