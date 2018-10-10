@@ -110,26 +110,20 @@ void calculateFeatures(const QString & pathWithEdfs,
 		matrix tmpData = initEdf.getData();
 		tmpData.resizeRows(numChan); /// saves the data stored in first numChan rows
 
-		switch(DEFS.getAutosUser())
+		switch(DEFS.getAutosCut())
 		{
-		case autosUser::Galya:
+		case autosCut::first30:
 		{
-			break;
-		}
-		case autosUser::Xenia:
-		{
-			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq()); /// not resizeCols
-			break;
-		}
-		case autosUser::XeniaFinalest:
-		{
-#if 0
-			/// first 30 seconds
 			tmpData = tmpData.subCols(0, 30 * initEdf.getFreq());	/// not resizeCols
-#elif 01
-			/// first 60 seconds
+			break;
+		}
+		case autosCut::first60:
+		{
 			tmpData = tmpData.subCols(0, 60 * initEdf.getFreq());	/// not resizeCols
-#else
+			break;
+		}
+		case autosCut::second30:
+		{
 			/// second 30 secods
 			if(tmpData.cols() >= 60 * initEdf.getFreq())
 			{
@@ -143,13 +137,12 @@ void calculateFeatures(const QString & pathWithEdfs,
 			{
 				/// as is
 			}
-#endif
-			tmpData.eraseRows({4, 9, 14}); /// skip Fz, Cz, Pz
 			break;
 		}
-//		default: { /* do nothing */ } /// never get here
-
+		case autosCut::none: { break; /* do nothing */ }
+		default: { /* do nothing */ } /// never get here
 		}
+		if(DEFS.getCutMedial()) { tmpData.eraseRows({4, 9, 14}); } /// skip Fz, Cz, Pz
 		countFeatures(tmpData, initEdf.getFreq(), Mask, preOutPath);
 	}
 }
@@ -343,7 +336,7 @@ void countFracDim(const matrix & inData,
 	{
 		for(int i = 0; i < inData.rows(); ++i)
 		{
-			for(int numFilt : {5, 2, 7, 8})
+			for(int numFilt : {2})
 			{
 				const auto & filt = filters[numFilt];
 
@@ -445,9 +438,9 @@ void countHilbert(const matrix & inData,
 	{
 	case autosUser::Galya:
 	{
-		for(int func : {0, 1}) /// carr or SD
+		for(int func : {0, 1}) /// carr, SD
 		{
-			for(int filt : {0, 2}) /// whole and alpha
+			for(int filt : {2}) /// alpha
 			{
 				for(int ch = 0; ch < inData.rows(); ++ch)
 				{
@@ -476,7 +469,7 @@ void countHilbert(const matrix & inData,
 		for(int ch = 0; ch < inData.rows(); ++ch)
 		{
 //			for(int filt : {0, 1, 2, 3, 4,  5}) /// whole, theta, alpha, low-alpha, high-alpha, 2-20
-			for(int filt : {5, 2, 7, 8})
+			for(int filt : {2})
 //			int filt = 5; /// 2-20
 			{
 				for(int func : {0, 1})  /// carr or SD
@@ -883,7 +876,7 @@ void Xenia_TBI(const QString & tbi_path)
 									   workPath + "_tmp");
 			}
 
-			QStringList fileNames;
+			std::vector<QString> fileNames;
 			for(const QString & marker : markers)
 			{
 				fileNames.clear();
@@ -895,9 +888,9 @@ void Xenia_TBI(const QString & tbi_path)
 					featuresMask::wavelet})
 				{
 					QString typ = "_" + autos::getFeatureString(type);
-					fileNames << ExpName + marker + typ + ".txt";
+					fileNames.push_back(ExpName + marker + typ + ".txt");
 				}
-				autos::ArrangeFilesToLine(workPath + "_tmp",
+				autos::ArrangeFilesHorzCat(workPath + "_tmp",
 										  fileNames,
 										  workPath + "_tmp2" + "/"
 										  + ExpName + marker + ".txt"); /// guy <-> ExpName
@@ -906,9 +899,9 @@ void Xenia_TBI(const QString & tbi_path)
 			fileNames.clear();
 			for(const QString & marker : markers)
 			{
-				fileNames <<  ExpName + marker + ".txt"; /// guy <-> ExpName
+				fileNames.push_back(ExpName + marker + ".txt"); /// guy <-> ExpName
 			}
-			autos::ArrangeFilesToLine(workPath + "_tmp2",
+			autos::ArrangeFilesHorzCat(workPath + "_tmp2",
 									  fileNames,
 									  workPath + "_OUT" + "/"
 									  + ExpName + ".txt"); /// guy <-> ExpName
@@ -963,46 +956,15 @@ void Xenia_TBI(const QString & tbi_path)
 
 
 void Xenia_TBI_final(const QString & finalPath,
-					 QString outPath)
+					 const QString & outPath,
+					 const std::vector<QString> tbiMarkers)
 {
-	QTime myTime;
-	myTime.start();
-
-	/// TBI Xenia cut, process, tables
 	DEFS.setNtFlag(false);
-	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+	if(!QDir(outPath).exists()) { QDir().mkpath(outPath); }
 
-	QStringList subdirs = QDir(finalPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-	if(subdirs.isEmpty())
-	{
-		subdirs = QStringList{""};
-	}
-	else
-	{
-		repair::toLatinDir(finalPath, {});
-		repair::deleteSpacesFolders(finalPath);
-		subdirs = QDir(finalPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-	}
-
-	if(outPath == QString())
-	{
-		outPath = finalPath + "_out";
-	}
-
-	if(!QDir(outPath).exists())
-	{
-		QDir().mkpath(outPath);
-	}
-
-
-	/// count
-	for(const QString & subdir : subdirs)
+	for(const QString & subdir : {"Healthy", "Moderate", "Severe"})
 	{
 		const QString groupPath = finalPath + "/" + subdir;
-
-		repair::toLatinDir(groupPath, {});
-		repair::toLowerDir(groupPath, {});
-		repair::deleteSpacesDir(groupPath, {});
 
 		/// list of guys
 		QStringList guys = QDir(groupPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
@@ -1062,12 +1024,12 @@ void Xenia_TBI_final(const QString & finalPath,
 			}
 
 
-			outPath = guyPath + "/out";
+			QString outPathOne = guyPath + "/out";
 
 			/// process?
 			if(1)
 			{
-				autos::calculateFeatures(guyPath, 19, outPath);
+				autos::calculateFeatures(guyPath, 19, outPathOne);
 			}
 
 			/// make one line file for each stimulus
@@ -1075,7 +1037,7 @@ void Xenia_TBI_final(const QString & finalPath,
 			{
 				for(const QString & mark : tbiMarkers)
 				{
-					QStringList fileNamesToArrange;
+					std::vector<QString> fileNamesToArrange;
 					for(featuresMask func : {
 						featuresMask::fft,
 						featuresMask::fracDim,
@@ -1087,25 +1049,25 @@ void Xenia_TBI_final(const QString & finalPath,
 													 + "_" + autos::getFeatureString(func) + ".txt");
 					}
 					std::cout << fileNamesToArrange << std::endl << std::endl;
-					autos::ArrangeFilesToLine(outPath,
+					autos::ArrangeFilesHorzCat(outPathOne,
 											  fileNamesToArrange,
-											  outPath + "/" + ExpName + mark + ".txt");
+											  outPathOne + "/" + ExpName + mark + ".txt");
 				}
 			}
 
 			/// make whole line from all stimuli
 			if(1)
 			{
-				QStringList fileNamesToArrange;
+				std::vector<QString> fileNamesToArrange;
 				for(const QString & mark : tbiMarkers)
 				{
 					fileNamesToArrange.push_back(ExpName + mark + ".txt");
 				}
-				autos::ArrangeFilesToLine(outPath,
+				autos::ArrangeFilesHorzCat(outPathOne,
 										  fileNamesToArrange,
-										  outPath + "/" + ExpName + ".txt");
+										  outPathOne + "/" + ExpName + ".txt");
 
-				QFile::copy(outPath + "/" + ExpName + ".txt",
+				QFile::copy(outPathOne + "/" + ExpName + ".txt",
 							finalPath + "_out/" + ExpName + ".txt");
 			}
 //			return; /// only first guy from first subdir
@@ -1116,8 +1078,6 @@ void Xenia_TBI_final(const QString & finalPath,
 							 finalPath + "_out/all.txt",
 							 true);
 
-	std::cout << "Xenia_TBI_final: time elapsed = "
-			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
 
@@ -1200,7 +1160,6 @@ void Xenia_TBI_finalest(const QString & finalPath,
 			}
 		}
 	}
-
 	if(01)
 	{
 		/// make full matrices for each type of feature
@@ -1244,7 +1203,7 @@ void Xenia_TBI_finalest(const QString & finalPath,
 
 
 
-
+/// almost the same as ArrangeFilesToTable
 void ArrangeFilesVertCat(const std::vector<QString> pathes,
 						 const QString & outPath)
 {
@@ -1252,9 +1211,8 @@ void ArrangeFilesVertCat(const std::vector<QString> pathes,
 	outStr.open(QIODevice::WriteOnly);
 	for(const QString & filePath : pathes)
 	{
-		QFile fil(filePath);
-		fil.open(QIODevice::ReadOnly);
-		auto contents = fil.readAll();
+		QFile fil(filePath); fil.open(QIODevice::ReadOnly);
+		auto contents = fil.readAll(); /// unnecessary copy, remake
 		fil.close();
 
 		outStr.write(contents);
@@ -1263,6 +1221,7 @@ void ArrangeFilesVertCat(const std::vector<QString> pathes,
 	outStr.close();
 }
 
+/// each file is one-line
 void ArrangeFilesToTable(const QString & inPath,
 						 QString outTablePath,
 						 bool writePeople,
@@ -1292,12 +1251,12 @@ void ArrangeFilesToTable(const QString & inPath,
 
 	for(const QString & fileName : deer.entryList({"*" + auxFilter + ".txt"}, //// pewpepwpewpwe
 												  QDir::Files,
-												  QDir::Name
-//												  | QDir::Reversed
+												  QDir::Time
+												  | QDir::Reversed
 												  ))
 	{
 		if((fileName == tableName)
-		   || fileName.contains("people")) { continue; }
+		   || fileName.contains("_people")) { continue; }
 
 		if(writePeople)
 		{
@@ -1320,37 +1279,12 @@ void ArrangeFilesToTable(const QString & inPath,
 
 
 
-void ArrangeFilesToLine(const QString & dirPath,
-						const QStringList & fileNames,
+void ArrangeFilesHorzCat(const QString & dirPath,
+						const std::vector<QString> & fileNames,
 						const QString & outFilePath)
 {
 	QDir().mkpath(myLib::getDirPathLib(outFilePath));
 
-#if 0
-	/// old 2.12.2017
-	std::ofstream outStr;
-	outStr.open(outFilePath.toStdString());
-
-	std::ifstream inStr;
-
-	for(const QString & fileName : fileNames)
-	{
-		inStr.open((dirPath + "/" + fileName).toStdString());
-
-		double val;
-		while(inStr.good())
-		{
-			inStr >> val;
-			if(!inStr.eof())
-			{
-				outStr << val << '\t';
-			}
-		}
-		inStr.close();
-	}
-	outStr.close();
-#else
-	/// new 2.12.2017
 	QFile out(outFilePath); out.open(QIODevice::WriteOnly);
 
 	for(const QString & fileName : fileNames)
@@ -1360,7 +1294,6 @@ void ArrangeFilesToLine(const QString & dirPath,
 		in.close();
 	}
 	out.close();
-#endif
 }
 
 
@@ -1617,7 +1550,7 @@ void ProcessAllInOneFolder(const QString & inPath,
 		{
 			ExpName = ExpName.left(ExpName.indexOf('.'));
 
-			QStringList fileNamesToArrange;
+			std::vector<QString> fileNamesToArrange{};
 			for(featuresMask func : {
 				featuresMask::alphaPeak,
 				featuresMask::fft,
@@ -1643,7 +1576,7 @@ void ProcessAllInOneFolder(const QString & inPath,
 					outStr.close();
 				}
 			}
-			autos::ArrangeFilesToLine(outPath,
+			autos::ArrangeFilesHorzCat(outPath,
 									  fileNamesToArrange,
 									  outPath + "/" + ExpName + ".txt");
 
@@ -1767,8 +1700,7 @@ void ProcessByFolders(const QString & inPath,
 		{
 			for(const QString & mark : markers)
 			{
-				QStringList fileNamesToArrange{};
-
+				std::vector<QString> fileNamesToArrange{};
 				for(featuresMask func : DEFS.getAutosMaskArray())
 				{
 					const QString fileName = ExpName + mark
@@ -1790,7 +1722,7 @@ void ProcessByFolders(const QString & inPath,
 						}
 					}
 				}
-				autos::ArrangeFilesToLine(guyOutPath,
+				autos::ArrangeFilesHorzCat(guyOutPath,
 										  fileNamesToArrange,
 										  guyOutPath + "/" + ExpName + mark + ".txt");
 			}
@@ -1799,12 +1731,12 @@ void ProcessByFolders(const QString & inPath,
 		/// make whole line from all stimuli
 		if(1)
 		{
-			QStringList fileNamesToArrange;
+			std::vector<QString> fileNamesToArrange{};
 			for(const QString & mark : markers)
 			{
 				fileNamesToArrange.push_back(ExpName + mark + ".txt");
 			}
-			autos::ArrangeFilesToLine(guyOutPath,
+			autos::ArrangeFilesHorzCat(guyOutPath,
 									  fileNamesToArrange,
 									  guyOutPath + "/" + ExpName + ".txt");
 		}
@@ -1827,28 +1759,22 @@ void ProcessByFolders(const QString & inPath,
 			  << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
-void makeLabelsFile(int numChan,
-					const QString & workPath,
+void makeLabelsFile(std::vector<QString> labels,
+					const QString & outFilePath,
 					const QString & initFreq,
 					const std::vector<QString> & usedMarkers,
 					const QString & sep)
 {
 	///make labels file
 
-	edfFile labels;
-	labels.readEdfFile(workPath + "/labels.edf");
-
-	std::vector<QString> labels1 = labels.getLabels();
-	labels1.resize(numChan);
-
-	for(QString & in : labels1)
+	for(QString & in : labels)
 	{
 		in = in.mid(in.indexOf(' ') + 1,
 					in.indexOf('-') - in.indexOf(' ') - 1).toLower();
 	}
 
 	std::ofstream lab;
-	lab.open((workPath + "/labels.txt").toStdString());
+	lab.open(outFilePath.toStdString());
 	for(QString mark : usedMarkers)
 	{
 		mark.remove('_');
@@ -1860,7 +1786,7 @@ void makeLabelsFile(int numChan,
 			/// 18 ranges 1-Hz-wide, 16 channels = 288 values
 			for(int i = 2; i < 20; ++i)
 			{
-				for(const QString & lbl : labels1)
+				for(const QString & lbl : labels)
 				{
 					lab << mark
 						<< "_" << "fft"
@@ -1874,7 +1800,7 @@ void makeLabelsFile(int numChan,
 		if(DEFS.getAutosMask() & featuresMask::alphaPeak)
 		{
 			/// ALPHA
-			for(const QString & lbl : labels1) /// 19 values
+			for(const QString & lbl : labels) /// 19 values
 			{
 				lab << mark
 					<< "_" << "alpha"
@@ -1886,7 +1812,7 @@ void makeLabelsFile(int numChan,
 		if(DEFS.getAutosMask() & featuresMask::fracDim)
 		{
 			/// Fractal Dimension numChan values
-			for(const QString & lbl : labels1)
+			for(const QString & lbl : labels)
 			{
 				lab << mark
 					<< "_fd" << initFreq
@@ -1901,14 +1827,12 @@ void makeLabelsFile(int numChan,
 			/// Hilbert 4 * 19 = 95 values
 			/// Hilbert 4 * 16 = 80 values
 			for(const QString & fir : {
-				QString("hilbcarr")	+ initFreq,
 				QString("hilbcarr")	+ "_8_13",
-				QString("hilbsd")	+ initFreq,
 				QString("hilbsd")	+ "_8_13"
 		}
 				)
 			{
-				for(const QString & lbl : labels1)
+				for(const QString & lbl : labels)
 				{
 					lab << mark
 						<< "_" << fir
@@ -1925,7 +1849,7 @@ void makeLabelsFile(int numChan,
 			/// 2 * 16 = 32 values
 			for(const QString & fir : {"hjmob", "hjcom"})
 			{
-				for(const QString & lbl : labels1)
+				for(const QString & lbl : labels)
 				{
 					lab << mark
 						<< "_" << fir
@@ -1944,7 +1868,7 @@ void makeLabelsFile(int numChan,
 			/// 19 freqs * 16 channels = 304 values
 			for(int i = 0; i < 19; ++i) /// freqs
 			{
-				for(const QString & lbl : labels1)
+				for(const QString & lbl : labels)
 				{
 					lab << mark
 						<< "_wavSD"
@@ -1962,7 +1886,7 @@ void makeLabelsFile(int numChan,
 			/// 18 freqs * 16 chans = 288 values
 			for(int i = 2; i < 20; ++i)
 			{
-				for(const QString & lbl : labels1)
+				for(const QString & lbl : labels)
 				{
 					lab << mark
 						<< "_" << "logfft"

@@ -130,9 +130,9 @@ edfFile::edfFile(const edfFile &other, bool noData)
 	this->writeHeaderFlag = other.writeHeaderFlag;
 }
 
-edfFile::edfFile(const QString & edfPath)
+edfFile::edfFile(const QString & edfPath, bool headerOnly)
 {
-	this->readEdfFile(edfPath, false);
+	this->readEdfFile(edfPath, headerOnly);
 }
 
 edfFile::edfFile(const QString & txtFilePath, inst which)

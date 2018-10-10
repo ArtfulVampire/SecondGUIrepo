@@ -181,7 +181,7 @@ public:
 
 	edfFile(const edfFile & other, bool noData = false);
 	edfFile(const QString & txtFilePath, inst which);
-	edfFile(const QString & edfPath);
+	edfFile(const QString & edfPath, bool headerOnly = false);
 
 	operator bool() { return edfData.isEmpty(); }
 	bool isEmpty() { return edfData.isEmpty(); }

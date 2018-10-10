@@ -90,6 +90,12 @@ const std::vector<QString> lbl19 {"Fp1", "Fp2",
 								  "T5", "P3", "Pz", "P4", "T6",
 								  "O1", "O2"};
 
+const std::vector<QString> lbl16 {"Fp1", "Fp2",
+								  "F7", "F3",		"F4", "F8",
+								  "T3", "C3",		"C4", "T4",
+								  "T5", "P3",		"P4", "T6",
+								  "O1", "O2"};
+
 const std::vector<QString> lbl21 {"Fp1", "Fp2",
 								  "F7", "F3", "Fz", "F4", "F8",
 								  "T3", "C3", "Cz", "C4", "T4",

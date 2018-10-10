@@ -81,8 +81,8 @@ void rereferenceFolder(const QString & procDirPath,
 					   const QString & newRef);
 
 /// labels file
-void makeLabelsFile(int numChan,
-					const QString & workPath,
+void makeLabelsFile(std::vector<QString> labels,
+					const QString & outFilePath,
 					const QString & initFreq,
 					const std::vector<QString> & usedMarkers,
 					const QString & sep);
@@ -110,8 +110,8 @@ void ArrangeFilesToTable(const QString & inPath,
 					   QString outTablePath = QString(),
 					   bool writePeople = false,
 					   const QString & auxFilter = QString());
-void ArrangeFilesToLine(const QString & dirPath,
-						const QStringList & fileNames,
+void ArrangeFilesHorzCat(const QString & dirPath,
+						const std::vector<QString> & fileNames,
 						const QString & outFilePath);
 
 
@@ -119,7 +119,8 @@ void ArrangeFilesToLine(const QString & dirPath,
 /// some special variants
 void Xenia_TBI(const QString & tbi_path);
 void Xenia_TBI_final(const QString & finalPath,
-					 QString outPath = QString());
+					 const QString & outPath,
+					 const std::vector<QString> tbiMarkers);
 void Xenia_TBI_finalest(const QString & finalPath,
 						const QString & outPath,
 						const std::vector<QString> markers);
@@ -256,6 +257,9 @@ namespace marks
 									 "_zg",
 									};
 	const std::vector<QString> burdenkoFaces{"_all", "_svoi", "_other"};
+
+	/// Xenia Markers
+	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
 }
 
 }

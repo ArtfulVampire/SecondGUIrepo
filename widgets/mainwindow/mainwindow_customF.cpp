@@ -20,9 +20,9 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-//	myLib::XeniaFinalest();
+	myLib::XeniaFinal();
 //	myLib::GalyaProcessing();
-//	exit(0);
+	exit(0);
 
 #if 0
 	/// count correctness, average times, ICA
