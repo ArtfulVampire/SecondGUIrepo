@@ -13,15 +13,17 @@ using namespace myOut;
 
 void Cut::next()
 {
-	QString helpString;
-	if(fileListIter + 1 == std::end(filesList))
+
+	std::cout << *fileListIter << std::endl;
+
+	++fileListIter;
+	if(fileListIter == std::end(filesList))
 	{
+		--fileListIter;
 		std::cout << "prev: bad number, too big" << std::endl;
 		return;
 	}
-	++fileListIter;
-	helpString = edfFil.getFilePath() + "/" + (*fileListIter);
-	openFile(helpString);
+	openFile(edfFil.getDirPath() + "/" + (*fileListIter));
 }
 
 void Cut::prev()
@@ -32,9 +34,10 @@ void Cut::prev()
 		return;
 	}
 
+	std::cout << *fileListIter << std::endl;
+
 	--fileListIter;
-	QString helpString = edfFil.getFilePath() + "/" + (*fileListIter);
-	openFile(helpString);
+	openFile(edfFil.getDirPath() + "/" + (*fileListIter));
 }
 
 
@@ -190,34 +193,23 @@ void Cut::browseSlot()
 	const QString suffix = ui->suffixComboBox->currentText();
 
 	QString filter{};
+	QStringList filterList{};
 	for(const QString & in : def::edfFilters)
 	{
-		filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + in + " ";
+		auto a = (suffix.isEmpty() ? "" :  ("*" + suffix)) + in;
+		filter += a + " ";
+		filterList.push_back(a);
 	}
-	/// deprecated plainDataExtension
-//	filter += (suffix.isEmpty() ? "" :  ("*" + suffix)) + "*." + def::plainDataExtension;
 
 	const QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
 															tr("Open file"),
 															DEFS.dirPath(),
 															filter);
 	if(helpString.isEmpty()) { return; }
-
-
 	ui->filePathLineEdit->setText(helpString);
-//	this->setFileType(helpString); /// deprecated fileType
-
 	DEFS.setDir(myLib::getDirPathLib(helpString));
-#if 0
-	/// fileType::real deprecated
-	if(this->myFileType == fileType::real)
-	{
-		DEFS.dirCdUp();
-	}
-#endif
 
-	filesList = QDir(myLib::getDirPathLib(helpString)).entryList(
-	{"*" + ui->suffixComboBox->currentText() +  "*." + myLib::getExtension(helpString)});
+	filesList = QDir(myLib::getDirPathLib(helpString)).entryList(filterList);
 
 	for(const QString & in : filesList)
 	{
@@ -231,8 +223,6 @@ void Cut::browseSlot()
 	fileListIter = std::find(std::begin(filesList),
 							 std::end(filesList),
 							 myLib::getFileName(helpString));
-
-
 	undoData.clear();
 	undoActions.clear();
 	copyData.clear();
@@ -266,15 +256,14 @@ void Cut::setValuesByEdf()
 	dataCutLocal = edfFil.getData(); /// expensive
 
 	const bool iitpFlag = edfFil.getDirPath().contains("iitp", Qt::CaseInsensitive);
-
 	const int localLimit = (edfFil.getNs() >= coords::egi::manyChannels) ?
 						  (coords::egi::chans128to20.size() - 1) : (edfFil.getNs() - 1);
-	for(auto * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
+
+	for(QSpinBox * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
 	{
 		a->setMaximum(localLimit);
 		a->setValue(localLimit); /// markers
 	}
-
 
 	ui->leftLimitSpinBox->setMinimum(0);
 	ui->leftLimitSpinBox->setMaximum(dataCutLocal.cols());
@@ -296,14 +285,11 @@ void Cut::setValuesByEdf()
 	ui->diffTimeSpinBox->setMaximum(dataCutLocal.cols() / edfFil.getFreq());
 	ui->diffTimeSpinBox->setDecimals(1);
 
-
 	ui->paintStartDoubleSpinBox->setMaximum(std::floor(dataCutLocal.cols() / edfFil.getFreq()));
 	ui->paintStartDoubleSpinBox->setValue(0); /// or not needed? -> paint
 	ui->paintStartLabel->setText("start (max " + nm(std::floor(dataCutLocal.cols() / edfFil.getFreq())) + ")");
 	ui->paintLengthDoubleSpinBox->setMinimum((this->minimumWidth() - scrollAreaGapX) / edfFil.getFreq());
 	ui->paintLengthDoubleSpinBox->setValue((this->width() - scrollAreaGapX) / edfFil.getFreq()); /// -> paint
-
-
 
 	/// set coloured channels
 	QString redStr = "EOG1";	/// ~horizontal
@@ -357,44 +343,28 @@ void Cut::openFile(const QString & dataFileName)
 	drawFlag = false;
 
 	addNum = 1;
-//	currentFile = dataFileName;
 	ui->filePathLineEdit->setText(dataFileName);
 	ui->iitpDisableEcgCheckBox->setChecked(false);
 
 	manualDrawFlag = false;
 	manualDrawStart = QPoint{};
 	manualDrawDataBackup.clear();
-
+	leftDrawLimit = 0;
+	currentPic = QPixmap{};
 	marksToDrawSet();
 
-	leftDrawLimit = 0;
+	/// to prevent dataCutLocal overflow
+	ui->derivChan1SpinBox->setValue(0);
+	ui->derivChan2SpinBox->setValue(0);
 
-	/// new, only edf is possible
 	edfFil.readEdfFile(dataFileName);
-	currentPic = QPixmap{};
 	fileOpened = true;
 	logAction(edfFil.getExpName());
+
 	drawFlag = false;
 	setValuesByEdf(); /// needs fileOpened
-
-#if 0
-	/// fileType::real deprecated
-	if(this->myFileType == fileType::real) /// to deprecate
-	{
-		dataCutLocal = edfFile(dataFileName).getData();
-		fileOpened = true;
-	}
-	else if(this->myFileType == fileType::edf)
-	{
-		edfFil.readEdfFile(dataFileName);
-		currentPic = QPixmap{};
-		fileOpened = true;
-		logAction(edfFil.getExpName());
-		drawFlag = false;
-		setValuesByEdf(); /// needs fileOpened
-	}
-#endif
 	drawFlag = true;
+
 	paint();
 }
 

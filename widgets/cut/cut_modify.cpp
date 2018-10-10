@@ -318,7 +318,11 @@ void Cut::zero(int start, int end)
 
 void Cut::zeroChannel(int chanNum, int start, int end)
 {
-	if(chanNum < 0) { return; }
+	if(chanNum < 0)
+	{
+		std::cout << "Cut::zeroChannel: you haven't chosen orange channel" << std::endl;
+		return;
+	}
 
 	undoData.push_back(dataCutLocal.subCols(start, end));
 	auto undoAction = [start, this]()

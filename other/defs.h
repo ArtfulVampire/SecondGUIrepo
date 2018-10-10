@@ -52,6 +52,8 @@ enum class username {MichaelA,
 					 IITP,
 					 PolinaM};
 enum class autosUser {Xenia, Galya, XeniaFinalest};
+enum class autosCut {first30, second30, first60, none};
+
 enum featuresMask {
 	fft			= 0x01,	/// std::pow(2, 0);
 	alphaPeak	= 0x02,	/// std::pow(2, 1);
@@ -114,6 +116,8 @@ private:
 
 	autosUser currAutosUser{autosUser::Xenia};
 	username currUser{username::MichaelA};
+	autosCut currCut{autosCut::none};
+	bool cutMedial{false};
 	int autosMask{0};
 
 	spectraNorming specNormTyp{spectraNorming::all};
@@ -158,6 +162,12 @@ public:
 
 	void setAutosUser(autosUser in);			/// set some parameters
 	auto getAutosUser() const					{ return this->currAutosUser; }
+
+	void setAutosCut(autosCut in)				{ this->currCut = in; }
+	auto getAutosCut() const					{ return this->currCut; }
+
+	void setCutMedial(bool in)					{ this->cutMedial = in; }
+	bool getCutMedial() const					{ return this->cutMedial; }
 
 	bool isUser(username in) const				{ return this->currUser == in; }
 	void setUser(username in);					/// sets many parameters

@@ -7,24 +7,18 @@ namespace myLib
 
 QString fitNumber(double input, int N) /// append spaces
 {
-	QString h;
-	h.setNum(input);
-	h += QString(N, ' ');
-	return h.left(N);
+	auto a = QString::number(input);
+	return a + QString(N - a.size(), ' ');
 }
 QString fitString(const QString & input, int N) /// append spaces
 {
-	QString h(input);
-	h += QString(N, ' ');
-	return h.left(N);
+	return input + QString(N - input.size(), ' ');
 }
 
 QString rightNumber(int input, int N) /// prepend zeros
 {
-	QString h;
-	h.setNum(input);
-	h.prepend(QString(N, '0'));
-	return h.right(N);
+	auto a = QString::number(input);
+	return QString(N - a.size(), '0') + a;
 }
 
 } /// end of namespace myLib

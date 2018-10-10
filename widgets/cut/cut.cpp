@@ -586,7 +586,8 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 							ui->paintLengthDoubleSpinBox->value());
 				return true;
 			}
-			case Qt::Key_Left | Qt::Key_Right:
+			case Qt::Key_Left:
+			case Qt::Key_Right:
 			{
 				auto * targetSpin = ui->leftLimitSpinBox;
 				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
@@ -610,7 +611,10 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				paintLimits();
 				return true;
 			}
-			case Qt::Key_Z | Qt::Key_X | Qt::Key_C | Qt::Key_V:
+			case Qt::Key_Z:
+			case Qt::Key_X:
+			case Qt::Key_C:
+			case Qt::Key_V:
 			{
 				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
 				{
@@ -626,7 +630,8 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				}
 				return true;
 			}
-			case Qt::Key_Up | Qt::Key_Down:
+			case Qt::Key_Up:
+			case Qt::Key_Down:
 			{
 				const int step = (keyEvent->key() == Qt::Key_Up) ? +1 : -1;
 				if(keyEvent->modifiers().testFlag(Qt::ControlModifier))
@@ -701,42 +706,55 @@ void Cut::drawSpectre()
 void Cut::showDerivatives()
 {
 	if( !fileOpened ) { return; }
-
 	const int st = 5;
 
+	/// set value first chan
 	int numSig1 = ui->derivChan1SpinBox->value();
 	if(edfFil.getNs() >= coords::egi::manyChannels)
 	{
 		numSig1 = coords::egi::chans128to20[ui->derivChan1SpinBox->value()];
 	}
-	const std::valarray<double> & sig1 = dataCutLocal[numSig1];
-
-	const int ind1 = ui->leftLimitSpinBox->value();
-	ui->derivVal1SpinBox->setValue(sig1[ind1]);
-	if(ind1 + st < sig1.size() && ind1 - st >=0)
+//	if(numSig1 < dataCutLocal.rows())
 	{
-		ui->derivFirst1SpinBox->setValue(sig1[ind1 + st] -  sig1[ind1 - st]);
-	}
-	if(ind1 + 2 * st < sig1.size() && ind1 - 2 * st >= 0)
-	{
-		ui->derivSecond1SpinBox->setValue(sig1[ind1 + 2 * st] + sig1[ind1 - 2 * st] - 2 * sig1[ind1]);
+		const std::valarray<double> & sig1 = dataCutLocal[numSig1];
+		const int ind1 = ui->leftLimitSpinBox->value();
+		ui->derivVal1SpinBox->setValue(sig1[ind1]);
+#if 01
+		/// set derivatives first chan
+		if(ind1 + st < sig1.size() && ind1 - st >=0)
+		{
+			ui->derivFirst1SpinBox->setValue(sig1[ind1 + st] -  sig1[ind1 - st]);
+		}
+		if(ind1 + 2 * st < sig1.size() && ind1 - 2 * st >= 0)
+		{
+			ui->derivSecond1SpinBox->setValue(sig1[ind1 + 2 * st] + sig1[ind1 - 2 * st] - 2 * sig1[ind1]);
+		}
+#endif
 	}
 
+	/// set value second chan
 	int numSig2 = ui->derivChan2SpinBox->value();
 	if(edfFil.getNs() >= coords::egi::manyChannels)
 	{
 		numSig2 = coords::egi::chans128to20[ui->derivChan2SpinBox->value()];
 	}
-	const std::valarray<double> & sig2 = dataCutLocal[numSig2];
-	const int ind2 = ui->rightLimitSpinBox->value();
-	ui->derivVal2SpinBox->setValue(sig2[ind2]);
-	if(ind2 + st < sig2.size() && ind2 - st >=0)
+//	if(numSig2 < dataCutLocal.rows())
 	{
-		ui->derivFirst2SpinBox->setValue(sig2[ind2 + st] -  sig2[ind2 - st]);
-	}
-	if(ind2 + 2 * st < sig2.size() && ind2 - 2 * st >= 0)
-	{
-		ui->derivSecond2SpinBox->setValue(sig2[ind2 + 2 * st] + sig2[ind2 - 2 * st] - 2 * sig2[ind2]);
+		const std::valarray<double> & sig2 = dataCutLocal[numSig2];
+		const int ind2 = ui->rightLimitSpinBox->value();
+		ui->derivVal2SpinBox->setValue(sig2[ind2]);
+#if 01
+
+		/// set derivatives second chan
+		if(ind2 + st < sig2.size() && ind2 - st >=0)
+		{
+			ui->derivFirst2SpinBox->setValue(sig2[ind2 + st] -  sig2[ind2 - st]);
+		}
+		if(ind2 + 2 * st < sig2.size() && ind2 - 2 * st >= 0)
+		{
+			ui->derivSecond2SpinBox->setValue(sig2[ind2 + 2 * st] + sig2[ind2 - 2 * st] - 2 * sig2[ind2]);
+		}
+#endif
 	}
 }
 

@@ -156,7 +156,6 @@ void XeniaPretable()
 		{117, 6, 2},	/// T6
 		{118, 8, 1},	/// O1
 		{119, 8, 2},	/// O2
-
 	};
 
 	std::ofstream fil;
@@ -183,6 +182,83 @@ void XeniaPretable()
 		}
 	}
 	fil.close();
+}
+
+
+void XeniaFinal()
+{
+	const QString finalPath{"/media/Files/Data/Xenia/FINAL"};
+	DEFS.setAutosUser(autosUser::Galya);
+	DEFS.setAutosMask(featuresMask::fracDim | featuresMask::Hilbert);
+	DEFS.setAutosCut(autosCut::first60);
+	DEFS.setCutMedial(true);
+
+	for(const QString & subdir : {"Healthy", "Moderate", "Severe"})
+	{
+		const QString groupPath = finalPath + "/" + subdir;
+
+		/// list of guys
+		QStringList guys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		for(const QString & guy : guys)
+		{
+			const QString guyPath = groupPath + "/" + guy;
+			const QString guyOutPath = guyPath + "/out";
+
+
+			QDir().mkdir(guyOutPath);
+			myLib::cleanDir(guyOutPath);
+			autos::calculateFeatures(guyPath, 19, guyOutPath);
+
+			/// make one line file for each stimulus
+			if(01)
+			{
+				for(const QString & mark : autos::marks::tbiMarkers)
+				{
+					std::vector<QString> fileNamesToArrange{};
+					for(featuresMask func : DEFS.getAutosMaskArray())
+					{
+						const QString fileName = guy + mark
+												 + "_" + autos::getFeatureString(func) + ".txt";
+						fileNamesToArrange.push_back(fileName);
+					}
+					autos::ArrangeFilesHorzCat(guyOutPath,
+											   fileNamesToArrange,
+											   guyOutPath + "/" + guy + mark + ".txt");
+				}
+			}
+
+			/// make whole line from all stimuli
+			if(1)
+			{
+				std::vector<QString> fileNamesToArrange{};
+				for(const QString & mark : autos::marks::tbiMarkers)
+				{
+					fileNamesToArrange.push_back(guy + mark + ".txt");
+				}
+				autos::ArrangeFilesHorzCat(guyOutPath,
+										   fileNamesToArrange,
+										   guyOutPath + "/" + guy + ".txt");
+			}
+
+			/// copy files into _out
+			if(1)
+			{
+				QFile::remove(finalPath + "_out/" + guy + ".txt");
+				QFile::copy(guyOutPath + "/" + guy + ".txt",
+							finalPath + "_out/" + guy + ".txt");
+			}
+		}
+
+	}
+	/// make tables whole and people list
+	autos::ArrangeFilesToTable(finalPath + "_out",
+							   finalPath + "_out/all.txt",
+							   true);
+	autos::makeLabelsFile(coords::lbl16,
+						  finalPath + "/labels.txt",
+						  "_8_13",
+						  autos::marks::tbiMarkers,
+						  "\t");
 }
 
 void XeniaFinalest()
@@ -551,12 +627,14 @@ void GalyaProcessing()
 		/// calculation itself
 		DEFS.setAutosUser(autosUser::Galya);
 
-//		DEFS.setAutosMask(featuresMask::wavelet);
+		DEFS.setAutosMask(featuresMask::fracDim
+						  | featuresMask::Hilbert);
 
 		for(const QString & subdir : subdirs)
 		{
 			/// usual processing
 			autos::ProcessByFolders(workPath + "/" + subdir,
+									19,
 									usedMarkers);
 #if 0
 			/// rhythm adoption
@@ -618,7 +696,9 @@ void GalyaProcessing()
 #endif
 
 		/// labels part
-		autos::makeLabelsFile(numChan, workPath, "_1.6_30", usedMarkers, "\t");
+		std::vector<QString> labels = edfFile(workPath + "/labels.edf", true).getLabels();
+		labels.resize(numChan);
+		autos::makeLabelsFile(labels, workPath + "/labels.txt", "_1.6_30", usedMarkers, "\t");
 
 #if 0
 		if(01)
