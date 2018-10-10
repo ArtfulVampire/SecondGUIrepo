@@ -3,6 +3,8 @@
 
 //#include <optional> /// to do (for findChannels)
 
+#include <fstream>
+
 #include <other/matrix.h>
 #include <myLib/small.h>
 #include <myLib/output.h>
@@ -28,10 +30,7 @@ inline QString myTransformWrite(double input, int len)
 }
 inline QString myTransformWrite(const QString & input, int len)
 {
-	QString res{input};
-	res += QString(' ', len);
-	res.resize(len);
-	return res;
+	return input + QString(' ', len - input.size());
 }
 
 template <typename Typ>
