@@ -4,12 +4,14 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+	QApplication a(argc, argv);
 
-	DEFS.setUser(username::MichaelA); /// insert your username:: and/or add DEFS.setDir(pathToEdfDir)
+	/// set your user
+	DEFS.setUser(username::MichaelA);
+	DEFS.setAutosUser(autosUser::Galya);
 
-    MainWindow w;
-    w.show();
+	MainWindow w;
+	w.show();
 
-    return a.exec();
+	return a.exec();
 }
