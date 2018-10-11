@@ -12,6 +12,9 @@
 #include <other/autos.h>
 #include <other/consts.h>
 #include <other/defs.h>
+#include <other/subjects.h>
+#include <other/feedback.h>
+#include <other/feedback_autos.h>
 
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
@@ -50,8 +53,9 @@ std::vector<QString> readBurdenkoLog(const QString & logPath)
 	return res;
 }
 
+
 /// {timeBin, marker}
-std::vector<std::pair<int, int>> handleAnnots(const std::vector<QString> & annotations,
+std::vector<std::pair<int, int>> handleBurdenkoAnnots(const std::vector<QString> & annotations,
 											  double srate)
 {
 	const std::vector<std::pair<QString, int>> markers
@@ -79,30 +83,37 @@ std::vector<std::pair<int, int>> handleAnnots(const std::vector<QString> & annot
 			if(annot[i].unicode() == 20 && annot[i + 1].unicode() != 20) { start = i; break; }
 		}
 		QString tmp = annot.mid(start + 2);
-//		std::cout << tmp << std::endl; continue;
 
 		auto marks = tmp.split(sep1, QString::SkipEmptyParts);
 		for(auto & mark : marks)
 		{
+			/// mark is like "+138.481  code1"
+
 			/// workaround "empty" parts
 			mark.replace(QRegExp(" {2,}"), " ");
 			mark.replace(QRegExp("\\0{2,}"), " ");
-			if(mark.size() < 10) { continue; } /// magic const
-			if(mark.contains(QChar(21))) { continue; } /// edf+ "duration"
+			if(mark.size() < 10) { continue; }				/// magic const
+			if(mark.contains(QChar(21))) { continue; }		/// edf+ "duration"
 
-//			std::cout << mark << std::endl; continue;
+
 			auto par = mark.split(sep2, QString::SkipEmptyParts);
+			/// par[0] is time
+			/// par[1] is annotation
+
 			int outMark{0};
 			for(const auto & mrk : markers)
 			{
 				if(par[1].contains(mrk.first)) { outMark = mrk.second; break; }
 			}
-			if(outMark)
+			if(outMark) /// != 0
 			{
-				std::pair<int, int> newPair{std::round(par[0].remove('+').toDouble() * srate),
-							outMark};
+				std::pair<int, int> newPair
+				{
+					std::round(par[0].remove('+').toDouble() * srate),	/// time in bins
+							outMark										/// marker value
+				};
 
-				/// same time (10 or 11) and 15
+				/// same time (two 10 or 11) and 15
 				if(outMark == 10 || outMark == 11) { --newPair.first; }
 
 				if(res.size() < 3
@@ -787,6 +798,225 @@ void testEgiChns128()
 	}
 }
 
+void feedbackFinal()
+{
+	/// count correctness, average times, ICA
+#if 0 /// new (~10 people)
+	const QString dear = "FeedbackNewMark";
+	const auto & guysList = subj::guysFBnew;
+	const QString postfix = "_fin";
+#else /// final (~16 people)
+	const QString dear = "FeedbackFinalMark";
+	const QString postfix = "_fin";
+//	const QString postfix = "";
+	const auto & guysList = subj::guysFBfinal.at(subj::fbGroup::all);
+#endif
+
+#if 01
+	/// calculate successive for "New" and "Final" schemes on "New" data
+	std::cout
+			<< "NEW" << "\t"
+			<< "FINAL" << "\t"
+			<< "BASE" << "\t"
+			<< std::endl;
+	auto res = fb::calculateSuccessiveBoth(dear, guysList, postfix);
+
+//	for(const auto & in : res)
+//	{
+//		std::cout
+//				<< std::get<0>(in).first << "\t"
+//				<< std::get<1>(in).first << "\t"
+//				<< std::get<2>(in).first << "\t"
+//				<< std::endl;
+//	}
+	exit(0);
+#endif
+
+//	fb::calculateICA(dear, guysList, postfix);
+
+#if 0
+	auto results = fb::coutAllFeatures(dear, guysList, postfix);
+	std::ofstream outStream("/media/Files/Data/FeedbackFinal/wlkdn.txt");
+	for(const subj::fbGroup & group :
+	{
+		subj::fbGroup::experiment,
+		subj::fbGroup::control,
+		subj::fbGroup::improved,
+		subj::fbGroup::not_improved}
+		)
+	{
+		for(const auto & in : subj::guysFBfinal.at(group))
+		{
+			outStream << in.second << "\t" << results[in.second] << std::endl;
+		}
+		outStream << std::endl << std::endl;
+	}
+#endif
+
+	exit(0);
+}
+
+void burdenkoAnnotsSimpler()
+{
+	const QString fold = "/media/Files/Data/Galya/Burd/Data";
+	for(int i = 4; i <= 34; ++i) /// 19-34
+	{
+		const QString wrk = fold + "/" + rn(i, 2);
+		QDir dr(wrk);
+
+		const auto annots = dr.entryList({"*_annots.txt"})[0];
+		QString outP = annots;
+		outP.replace(".txt", "_simple.txt");
+
+		QFile in(wrk + "/" + annots);	in.open(QIODevice::ReadOnly);
+		QFile out(wrk + "/" + outP);	out.open(QIODevice::WriteOnly);
+		auto text = in.readAll(); in.close();
+		text.replace("Presentation stimulation code: 0 (stimPresentation)", "code0");
+		text.replace("Presentation stimulation code: 1 (stimPresentation)", "code1");
+		text.replace("stimPresentation", "stimStart");
+		text.replace("eventButton", "buttonPressed");
+		out.write(text);
+		out.close();
+	}
+}
+
+void burdenkoReadEdfPlus()
+{
+	const QString fold = "/media/Files/Data/Galya/Burd/Data";
+
+	/// read EDF+ and write annotations
+	for(int i = 4; i <= 34; ++i) /// 19-34
+	{
+		const QString wrk = fold + "/" + rn(i, 2);
+		QDir dr(wrk);
+		const auto edfPlus = dr.entryList({"*.edf"});					/// logile name
+		for(const auto & edf : edfPlus)
+		{
+			if(!edf.contains("_new"))
+			{
+				edfFile fil(wrk + "/" + edf);
+			}
+		}
+	}
+}
+
+void burdenkoEdfPlusToEdf()
+{
+
+	const QString fold = "/media/Files/Data/Galya/Burd/Data";
+
+	/// Burdenko Edf+ and log to simple EDF
+	for(int i = 4; i <= 34; ++i) /// 19-34
+	{
+		const QString wrk = fold + "/" + rn(i, 2);
+		QDir dr(wrk);
+		const auto log = dr.entryList({"*.log"})[0];					/// logile name
+		auto picNums = myLib::readBurdenkoLog(wrk + "/" + log);			/// p0513 -> 0513
+
+		const auto edfPlus = dr.entryList({"*.edf"})[0];				/// edfPlus name
+		edfFile fil(wrk + "/" + edfPlus);								/// read file
+
+		auto annots = myLib::handleBurdenkoAnnots(fil.getAnnotations(), 500);	/// annots to {timeBin, marker}
+
+		auto it1 = std::begin(annots);
+		for(const auto & picNum : picNums)
+		{
+			auto itNext = std::find_if(it1, std::end(annots),
+									   [](const auto & ann)
+			{ return ann.second == 15; }); /// magic const means "stimPresentation" from myLib::handleAnnots
+
+			(*itNext).second = picNum.toInt();
+			it1 = itNext; ++it1;
+		}
+
+		fil.removeChannel(fil.getMarkChan());
+		edfChannel newMarkChan("Markers",
+							   "AgAgCl",
+							   "uV",
+							   4096,
+							   0,
+							   4096,
+							   0,
+							   "",
+							   500,
+							   "");
+		std::valarray<double> newMarkData(fil.getDataLen());
+		for(const auto & mrk : annots)
+		{
+			newMarkData[mrk.first] = mrk.second;
+		}
+
+		fil.addChannel(newMarkData, newMarkChan);
+
+		QString edfName = edfPlus;
+		edfName.replace(".edf", "_new.edf");
+		fil.writeEdfFile(wrk + "/" + edfName);
+	}
+}
+
+void burdenkoReadEdf()
+{
+	const QString fold = "/media/Files/Data/Galya/Burd/Data";
+
+	/// read EDF+ and write annotations
+	for(int i = 4; i <= 34; ++i) /// 19-34
+	{
+		const QString wrk = fold + "/" + rn(i, 2);
+		QDir dr(wrk);
+		const auto edf = dr.entryList({"*_new.edf"})[0];
+		edfFile fil(wrk + "/" + edf);
+
+		std::cout << edf << std::endl;
+		for(int mrk : {10, 11, 20, 15})
+		{
+			std::cout << mrk << " num = " << fil.countMarker(mrk) << std::endl;
+		}
+		std::cout << std::endl;
+	}
+}
+
+void burdenkoReactionTime()
+{
+	const QString fold = "/media/Files/Data/Galya/Burd/Data";
+	for(int i = 4; i <= 34; ++i) /// 19-34
+	{
+		const QString wrk = fold + "/" + rn(i, 2);
+		QDir dr(wrk);
+
+		const auto edf = dr.entryList({"*_new.edf"})[0];			/// simple edf
+		QString log = edf;
+		log.replace(".edf", "_reac.txt");
+
+		edfFile fil(wrk + "/" + edf);
+		std::ofstream outStr((wrk + "/" + log).toStdString());
+
+		auto mrks = fil.getMarkers();
+		for(int i = 0; i < mrks.size(); ++i)
+		{
+			if(mrks[i].second == 11			/// 11 - magic const (code = 1, self face)
+			   && mrks[i + 2].second != 20	/// 20 - magic const (eventButton) +2 - overnext marker
+			   )
+			{
+				outStr
+						<< mrks[i + 1].second << "\t"										/// picNum
+						<< (mrks[i + 2].first - mrks[i + 1].first) / fil.getFreq() << "\t"	/// reac time
+						<< "false-negative" << "\t"
+						<< std::endl;
+			}
+			if(mrks[i].second == 20)
+			{
+				outStr
+						<< mrks[i - 1].second << "\t" /// picNum
+						<< (mrks[i].first - mrks[i-1].first) / fil.getFreq() << "\t" /// time
+						<< ((mrks[i - 2].second == 11) ? "correct" : "wrong") << "\t"
+						<< std::endl;
+			}
+
+		}
+		outStr.close();
+	}
+}
+
 void burdenkoStuff()
 {
 
@@ -870,46 +1100,6 @@ void burdenkoStuff()
 
 	}
 	exit(0);
-#endif
-
-#if 0
-	/// Burdenko reaction Time
-	const QString fold = "/media/Files/Data/Galya/Burd/Data";
-	for(int i = 4; i <= 34; ++i) /// 19-34
-	{
-		const QString wrk = fold + "/" + rn(i, 2);
-		QDir dr(wrk);
-
-		const auto edf = dr.entryList({"*_new.edf"})[0];
-		QString log = edf;
-		log.replace(".edf", "_reac.txt");
-
-		edfFile fil(wrk + "/" + edf);
-		std::ofstream outStr((wrk + "/" + log).toStdString());
-
-		auto mrks = fil.getMarkers();
-		for(int i = 0; i < mrks.size(); ++i)
-		{
-			if(mrks[i].second == 11 && mrks[i + 2].second != 20)
-			{
-				outStr
-						<< mrks[i + 1].second << "\t" /// picNum
-						<< (mrks[i + 2].first - mrks[i + 1].first) / fil.getFreq() << "\t" /// time
-						<< "false-negative" << "\t"
-						<< std::endl;
-			}
-			if(mrks[i].second == 20)
-			{
-				outStr
-						<< mrks[i - 1].second << "\t" /// picNum
-						<< (mrks[i].first - mrks[i-1].first) / fil.getFreq() << "\t" /// time
-						<< ((mrks[i - 2].second == 11) ? "correct" : "wrong") << "\t"
-						<< std::endl;
-			}
-
-		}
-		outStr.close();
-	}
 #endif
 }
 
