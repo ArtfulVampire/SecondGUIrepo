@@ -13,9 +13,11 @@ void defs::setAutosUser(autosUser in)
 					featuresMask::Hilbert |
 					featuresMask::fracDim |
 					featuresMask::Hjorth |
-					featuresMask::wavelet |
 					featuresMask::logFFT
 			   ;
+#if WAVELET_MATLAB
+		autosMask = autosMask | featuresMask::wavelet;
+#endif
 		break;
 	}
 	case autosUser::Xenia:

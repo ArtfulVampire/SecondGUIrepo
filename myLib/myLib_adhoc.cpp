@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <thread>
+#include <map>
 
 #include <other/matrix.h>
 #include <other/edffile.h>
@@ -223,7 +224,7 @@ void XeniaFinal()
 			/// make one line file for each stimulus
 			if(01)
 			{
-				for(const QString & mark : autos::marks::tbiMarkers)
+				for(const QString & mark : subj::marksLists::tbiMarkers)
 				{
 					std::vector<QString> fileNamesToArrange{};
 					for(featuresMask func : DEFS.getAutosMaskArray())
@@ -242,7 +243,7 @@ void XeniaFinal()
 			if(1)
 			{
 				std::vector<QString> fileNamesToArrange{};
-				for(const QString & mark : autos::marks::tbiMarkers)
+				for(const QString & mark : subj::marksLists::tbiMarkers)
 				{
 					fileNamesToArrange.push_back(guy + mark + ".txt");
 				}
@@ -268,7 +269,7 @@ void XeniaFinal()
 	autos::makeLabelsFile(coords::lbl16,
 						  finalPath + "/labels.txt",
 						  "_8_13",
-						  autos::marks::tbiMarkers,
+						  subj::marksLists::tbiMarkers,
 						  "\t");
 }
 
@@ -522,71 +523,94 @@ void XeniaFinalest()
 
 }
 
-void GalyaProcessing()
+const std::map<QString, std::vector<std::pair<QString, QString>>> renamesGalya
 {
-	//	const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+	{"tactile12Oct18",
+		{
+			{"4EPHOPAEB",		"Chernoraev"},
+			{"4UJLO9lH",		"Chuloyan"},
+			{"4YP6AHOB",		"Churbanov"},
+			{"AJLELLlUH",		"Aleshin"},
+			{"BAHl~EJLUI'I",	"Vanuely"},
+			{"CYPYD)I(9lH",	"Surudzhan"},
+			{"JLblCOB",		"Lyisov"},
+			{"KBALLlHUHOB",	"Kvashinov"},
+			{"l`l9lTKUH",		"Pyiatkin"},
+			{"MAH9lXUH",		"Manyakhin"},
+			{"MAMEDOB",		"Mamedov"},
+			{"qPJLOPOBCKUI'I", "Frolovsky"},
+			{"XATATAEB",		"Khatataev"},
+			{"qPOH",			"fon"},
+		}
+	},
+};
+
+void GalyaProcessing(const QString & addPath)
+{
 	//	const QStringList subdirs{"young", "adult"};
+		const QString workPath = def::GalyaFolder + "/" + addPath;
+
+//		const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 		const QStringList subdirs{""};
-		const QString workPath = def::GalyaFolder + "/Faces";
 		const int numChan = 19;
-		const std::vector<QString> usedMarkers = autos::marks::buben;
+		const std::vector<QString> usedMarkers = {"_31", "_32", "_181", "_182", "_fon"};
+
 
 #if 0
 		/// initial repair filenames
-		for(const QString & subdir : subdirs)
+//		for(const QString & subdir : subdirs)
+		const QString subdir{""};
 		{
 			repair::toLatinDir(workPath + "/" + subdir);
 			repair::deleteSpacesDir(workPath + "/" + subdir);
 			repair::toLowerDir(workPath + "/" + subdir);
+
 			/// some special names cleaning
+			repair::renameContents(workPath + "/" + subdir,
+								   renamesGalya[addPath]);
+
+			/// check that any fileName contains some marker
 			for(const QString & fileName : QDir(workPath + "/" + subdir).entryList(def::edfFilters))
 			{
-				QString newName = fileName;
-				newName.replace("_new.edf", ".edf", Qt::CaseInsensitive);
-				newName.replace("_bub_after", "_bubAfter", Qt::CaseInsensitive);
-				newName.replace("_bub_aud", "_bubAud", Qt::CaseInsensitive);
-				newName.replace("_bubAud_after", "_bubAudAfter", Qt::CaseInsensitive);
-				newName.replace("_bub_aud_after", "_bubAudAfter", Qt::CaseInsensitive);
-				newName.replace("_og_after", "_ogAfter", Qt::CaseInsensitive);
-//				newName.replace("_4_", "_4", Qt::CaseInsensitive);
-//				newName.replace("_8_", "_8", Qt::CaseInsensitive);
-//				newName.replace("_16_", "_16", Qt::CaseInsensitive);
 
 				bool p = false;
 				for(auto mrk : usedMarkers)
 				{
-					if(newName.contains(mrk)) { p = true; break;}
+					if(fileName.contains(mrk + ".edf", Qt::CaseInsensitive))
+					{
+						p = true;
+						break;
+					}
 				}
 				if(!p)
 				{
-					std::cout << subdir + "/" + newName << std::endl;
+					std::cout << subdir + "/" + fileName << std::endl;
 				}
-
-				if(newName != fileName)
-				{
-					QFile::remove(workPath + "/" + subdir + "/" + newName);
-					QFile::rename(workPath + "/" + subdir + "/" + fileName,
-								  workPath + "/" + subdir + "/" + newName);
-				}
-
 			}
 		}
 		exit(0);
 #endif
 
+#if 0
+		/// each subject into his/her own folder
+		for(const QString & subdir : subdirs)
+		{
+//			autos::rewriteNew(workPath + "/" + subdir);
+			autos::EdfsToFolders(workPath + "/" + subdir);
+		}
+		exit(0);
+#endif
 
 #if 0
 		/// checks and corrects channels order consistency
 
-		edfFile labels;
-		labels.readEdfFile(workPath + "/labels.edf");
+		edfFile labels(workPath + "/labels.edf");
 
 		QString str19;
 		for(int i = 0; i < 19; ++i)
 		{
 			str19 += nm(labels.findChannel(coords::lbl19[i])) + " ";
 		}
-//		std::cout << str19 << std::endl;
 
 		for(const QString & subdir : subdirs)
 		{
@@ -615,31 +639,17 @@ void GalyaProcessing()
 					}
 				}
 			}
-//			autos::EdfsToFolders(workPath + "/" + subdir);
 		}
 		exit(0);
 #endif
-
-
-#if 0
-		/// each subject into his/her own folder
-		for(const QString & subdir : subdirs)
-		{
-//			autos::rewriteNew(workPath + "/" + subdir);
-			autos::EdfsToFolders(workPath + "/" + subdir);
-		}
-		exit(0);
-#endif
-
-
 
 
 #if 0
 		/// calculation itself
 		DEFS.setAutosUser(autosUser::Galya);
 
-		DEFS.setAutosMask(featuresMask::fracDim
-						  | featuresMask::Hilbert);
+//		DEFS.setAutosMask(featuresMask::fracDim
+//						  | featuresMask::Hilbert);
 
 		for(const QString & subdir : subdirs)
 		{
@@ -660,6 +670,13 @@ void GalyaProcessing()
 		exit(0);
 #endif
 
+#if 0
+		/// labels part
+		std::vector<QString> labels = edfFile(workPath + "/labels.edf", true).getLabels();
+		labels.resize(numChan);
+		autos::makeLabelsFile(labels, workPath + "/labels.txt", "_1.6_30", usedMarkers, "\t");
+		exit(0);
+#endif
 
 #if 0
 		/// test table rows lengths
@@ -677,7 +694,24 @@ void GalyaProcessing()
 #endif
 
 
-/// labels part
+#if 0
+		if(01)
+		{
+			/// cout lengths of all txts
+			for(const QString & subdir : subdirs)
+			{
+				for(QString fn : QDir(workPath + "/" + subdir + "_out").entryList({"*.txt"}))
+				{
+					std::cout << fn << "\t"
+							  << myLib::countSymbolsInFile(workPath + "/" + subdir + "_out" + "/" + fn, '\t') << std::endl;
+				}
+			}
+		}
+		std::cout << "labels.txt" << "\t"
+				  << myLib::countSymbolsInFile(workPath + "/labels.txt", '\t') << std::endl;
+		exit(0);
+#endif
+
 #if 0
 		/// labels rhythm adoption
 
@@ -706,28 +740,6 @@ void GalyaProcessing()
 		exit(0);
 #endif
 
-		/// labels part
-		std::vector<QString> labels = edfFile(workPath + "/labels.edf", true).getLabels();
-		labels.resize(numChan);
-		autos::makeLabelsFile(labels, workPath + "/labels.txt", "_1.6_30", usedMarkers, "\t");
-
-#if 0
-		if(01)
-		{
-			/// cout lengths of all txts
-			for(const QString & subdir : subdirs)
-			{
-				for(QString fn : QDir(workPath + "/" + subdir + "_out").entryList({"*.txt"}))
-				{
-					std::cout << fn << "\t"
-							  << myLib::countSymbolsInFile(workPath + "/" + subdir + "_out" + "/" + fn, '\t') << std::endl;
-				}
-			}
-		}
-		std::cout << "labels.txt" << "\t"
-				  << myLib::countSymbolsInFile(workPath + "/labels.txt", '\t') << std::endl;
-		exit(0);
-#endif
 
 #if 0
 		/// test table rows lengths

@@ -20,8 +20,8 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-//	myLib::burdenkoEdfPlusToEdf();
-//	myLib::burdenkoReadEdf();
-//	exit(0);
+	const QString workDir = "c:/Data";
+	repair::fullRepairDir(workDir);
+	autos::cutFilesInFolder(workDir, 8);
 
 }

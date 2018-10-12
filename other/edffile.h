@@ -490,15 +490,17 @@ void physMinMaxDir(const QString & dirPath, const QStringList & filters = def::e
 
 
 /// only renames files/dirs
-void deleteSpacesFileOrFolder(const QString & fileOrFolderPath);
-void deleteSpacesFolders(const QString & dirPath);
-void deleteSpacesDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void deleteSpacesItem(const QString & inPath);
+void deleteSpacesFoldersOnly(const QString & dirPath);
+void deleteSpacesContents(const QString & dirPath, const QStringList & filters = def::edfFilters);
 
-void toLatinFileOrFolder(const QString & fileOrFolderPath);
-void toLatinDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void renameContents(const QString & dirPath, const std::vector<std::pair<QString, QString>> & temp);
 
-void toLowerFileOrFolder(const QString & filePath);
-void toLowerDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void toLatinItem(const QString & inPath);
+void toLatinContents(const QString & dirPath, const QStringList & filters = def::edfFilters);
+
+void toLowerItem(const QString & inPath);
+void toLowerContents(const QString & dirPath, const QStringList & filters = def::edfFilters);
 
 void fullRepairDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
 

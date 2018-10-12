@@ -26,7 +26,7 @@ std::vector<QString> composeMarkersList(const QString & workPath); /// really un
 void XeniaPretable();
 void XeniaFinalest();
 void XeniaFinal();
-void GalyaProcessing();
+void GalyaProcessing(const QString & addPath);
 void feedbackFinal();
 
 void BaklushevHistograms();

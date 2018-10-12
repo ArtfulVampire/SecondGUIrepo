@@ -109,6 +109,7 @@ void Cut::saveSubsecSlot()
 #endif
 
 	/// new, only edf is possible
+	QDir(edfFil.getDirPath()).mkdir("winds");
 	QString newPath = edfFil.getDirPath() + "/winds/" + edfFil.getExpName();
 	const QString ad = ui->saveSubsecAddNameLineEdit->text();
 	if(!ad.isEmpty()) { newPath += "_" + ad; }

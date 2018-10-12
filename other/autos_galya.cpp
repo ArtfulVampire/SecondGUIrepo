@@ -815,8 +815,8 @@ void Xenia_TBI(const QString & tbi_path)
 	}
 	else
 	{
-		repair::toLatinDir(tbi_path, {});
-		repair::deleteSpacesFolders(tbi_path);
+		repair::toLatinContents(tbi_path, {});
+		repair::deleteSpacesFoldersOnly(tbi_path);
 		subdirs = QDir(tbi_path).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 	}
 
@@ -827,9 +827,9 @@ void Xenia_TBI(const QString & tbi_path)
 	{
 		QString workPath = tbi_path + "/" + subdir;
 
-		repair::toLatinDir(workPath, {});
-		repair::toLowerDir(workPath, {});
-		repair::deleteSpacesDir(workPath, {});
+		repair::toLatinContents(workPath, {});
+		repair::toLowerContents(workPath, {});
+		repair::deleteSpacesContents(workPath, {});
 
 		autos::cutFilesInFolder(workPath, 8);
 		continue;
@@ -839,7 +839,7 @@ void Xenia_TBI(const QString & tbi_path)
 		for(const QString & guy : guys)
 		{
 
-			repair::deleteSpacesFolders(workPath + "/" + guy);
+			repair::deleteSpacesFoldersOnly(workPath + "/" + guy);
 //			repair::toLatinDir(workPath + "/" + guy, {});
 //			repair::toLowerDir(workPath + "/" + guy, {});
 //			continue;
@@ -974,9 +974,9 @@ void Xenia_TBI_final(const QString & finalPath,
 
 			if(0) /// repair fileNames
 			{
-				repair::deleteSpacesFolders(guyPath);
-				repair::toLatinDir(guyPath);
-				repair::toLowerDir(guyPath);
+				repair::deleteSpacesFoldersOnly(guyPath);
+				repair::toLatinContents(guyPath);
+				repair::toLowerContents(guyPath);
 			}
 
 			QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
@@ -1101,9 +1101,9 @@ void Xenia_TBI_finalest(const QString & finalPath,
 
 			if(0) /// repair fileNames
 			{
-				repair::deleteSpacesFolders(guyPath);
-				repair::toLatinDir(guyPath);
-				repair::toLowerDir(guyPath);
+				repair::deleteSpacesFoldersOnly(guyPath);
+				repair::toLatinContents(guyPath);
+				repair::toLowerContents(guyPath);
 			}
 
 			QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
@@ -1301,9 +1301,7 @@ void cutOneFile(const QString & filePath,
 				const int wndLen,
 				const QString & outPath)
 {
-	edfFile initEdf;
-	initEdf.readEdfFile(filePath);
-
+	edfFile initEdf(filePath);
 
 #define ADD_DIR 0
 #if ADD_DIR
@@ -1321,66 +1319,55 @@ void cutOneFile(const QString & filePath,
 	int fr = initEdf.getFreq();
 	const int numOfWinds = std::ceil(initEdf.getDataLen() / fr / wndLen);
 
-
 	for(int i = 0; i < numOfWinds; ++i)
 	{
 		initEdf.saveSubsection(
 					i * fr * wndLen,
-					fmin((i + 1) * fr * wndLen, initEdf.getDataLen()),
-					QString(outPath
-					#if ADD_DIR
-							+ "/" + addDir
-					#endif
-							+ "/" + initEdf.getExpName()
-							+ "_wnd_" + rn(
-								i + 1,
-								floor(std::log10(numOfWinds)) + 1)
-							+ ".edf"));
+					std::min((i + 1) * fr * wndLen, initEdf.getDataLen()),
+					outPath
+			#if ADD_DIR
+					+ "/" + addDir
+			#endif
+					+ "/" + initEdf.getExpName()
+					+ "_wnd_" + rn(i + 1, floor(std::log10(numOfWinds)) + 1)
+					+ ".edf");
 	}
 }
 
 void cutFilesInFolder(const QString & path,
-			  const int wndLen,
-			  QString outPath)
+					  const int wndLen,
+					  QString outPath)
 {
 
 	const QString outDir = myLib::getFileName(path) + "_winds";
 	const QString smallsDir = myLib::getFileName(path) + "_smalls";
+	const QString smallsPath = path + "/" + smallsDir;
+
+	if(outPath.isEmpty()) { outPath = path + "/" + outDir; }
+	QDir().mkpath(outPath);
+	QDir().mkpath(smallsPath);
+
 
 	QDir tmpDir(path);
-	tmpDir.mkdir(smallsDir);
-	const QString smallsPath = tmpDir.absolutePath() + "/" + smallsDir;
-
-	if(outPath.isEmpty())
-	{
-		tmpDir.mkdir(outDir);
-		outPath = tmpDir.absolutePath() + "/" + outDir;
-	}
-	else
-	{
-		tmpDir.mkpath(outPath);
-	}
-
-	/// to change
-	const QString logPath = def::GalyaFolder + "/log.txt";
-	std::ofstream logStream(logPath.toStdString(), std::ios_base::app);
-
 	const QStringList leest1 = tmpDir.entryList(def::edfFilters);
 	const auto filesVec = leest1.toVector();
 
-	/// ??????????????????????
-//#ifdef _OPENMP
-//	omp_set_dynamic(0);
-//	omp_set_num_threads(3);
-//#pragma omp parallel
-//#pragma omp for nowait
-//#endif
+	const QString logPath = def::GalyaFolder + "/log.txt";
+	std::ofstream logStream(logPath.toStdString(), std::ios_base::app);
+
+#if 0
+#ifdef _OPENMP
+	omp_set_dynamic(0);
+	omp_set_num_threads(3);
+#pragma omp parallel
+#pragma omp for nowait
+#endif
+#endif
 	for(const auto & fileName : filesVec)
 	{
-		std::cout << fileName << std::endl;
-		QString helpString = tmpDir.absolutePath() + "/" + fileName;
-		edfFile initEdf;
-		initEdf.readEdfFile(helpString, true);
+		std::cout << fileName << "\t"; /// may be followed by "smallFile"
+		QString helpString = path + "/" + fileName;
+		edfFile initEdf(helpString, true);
 
 		/// some check for small
 		if(initEdf.getNdr() * initEdf.getDdr() <= wndLen )
@@ -1389,10 +1376,11 @@ void cutFilesInFolder(const QString & path,
 			QFile::copy(initEdf.getFilePath(),
 						smallsPath + "/" + initEdf.getFileNam());
 
-			std::cout << "smallFile \t" << initEdf.getFileNam() << std::endl;
+			std::cout << "smallFile !!!";
 			logStream << initEdf.getFilePath() << "\t" << "too small" << "\n";
 			continue;
 		}
+		std::cout << std::endl;
 
 		cutOneFile(helpString,
 				   wndLen,
@@ -1496,9 +1484,9 @@ void ProcessAllInOneFolder(const QString & inPath,
 
 	if(0) /// repair fileNames
 	{
-		repair::deleteSpacesFolders(inPath);
-		repair::toLatinDir(inPath);
-		repair::toLowerDir(inPath);
+		repair::deleteSpacesFoldersOnly(inPath);
+		repair::toLatinContents(inPath);
+		repair::toLowerContents(inPath);
 	}
 
 	if(0)
@@ -1691,7 +1679,7 @@ void ProcessByFolders(const QString & inPath,
 		if(01)
 		{
 			/// clear outFolder
-//			myLib::cleanDir(guyPath + "/out", "txt", true);
+			myLib::cleanDir(guyOutPath, "txt", true);
 			autos::calculateFeatures(guyPath, numChan, guyOutPath);
 		}
 
