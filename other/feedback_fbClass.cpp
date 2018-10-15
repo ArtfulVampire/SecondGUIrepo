@@ -225,8 +225,8 @@ void FeedbackClass::writeClass(bool aplhaOnly)
 {
 	if(01)
 	{
-		double a = files[static_cast<int>(fileNum::first)].classifyReals(aplhaOnly).first;
-		double b = files[static_cast<int>(fileNum::third)].classifyReals(aplhaOnly).first;
+		double a = std::get<0>( files[static_cast<int>(fileNum::first)].classifyReals(aplhaOnly) );
+		double b = std::get<0>( files[static_cast<int>(fileNum::third)].classifyReals(aplhaOnly) );
 		(*ostr)
 				<< a << "\t"
 				<< b << "\t"
@@ -236,8 +236,8 @@ void FeedbackClass::writeClass(bool aplhaOnly)
 
 	if(01)
 	{
-		double a = files[static_cast<int>(fileNum::first)].classifyWinds(aplhaOnly).first;
-		double b = files[static_cast<int>(fileNum::third)].classifyWinds(aplhaOnly).first;
+		double a = std::get<0>( files[static_cast<int>(fileNum::first)].classifyWinds(aplhaOnly) );
+		double b = std::get<0>( files[static_cast<int>(fileNum::third)].classifyWinds(aplhaOnly) );
 		(*ostr)
 				<< a << "\t"
 				<< b << "\t"
@@ -301,8 +301,8 @@ void FeedbackClass::writeLearnedPatterns()
 	auto res2 = ann->averageClassification(DEVNULL);
 
 	(*ostr)
-			<< res1.first << "\t"
-			<< res2.first << "\t"
+			<< std::get<0>( res1 ) << "\t"
+			<< std::get<0>( res2 ) << "\t"
 			   ;
 
 	delete ann;
@@ -312,9 +312,11 @@ void FeedbackClass::writeSuccessive()
 {
 	Net * net = new Net();
 	(*ostr)
-			<< net->successiveByEDFfinal(
+			<< std::get<0>(
+				   net->successiveByEDFfinal(
 					files[static_cast<int>(fileNum::first)],
-					files[static_cast<int>(fileNum::second)]).first
+					files[static_cast<int>(fileNum::second)])
+			)
 			<< "\t"; (*ostr).flush();
 	delete net;
 }
@@ -332,7 +334,7 @@ void FeedbackClass::writeSuccessive3()
 			+ "_last.wts");
 	ann->testAll();
 	auto res2 = ann->averageClassification(DEVNULL);
-	(*ostr) << res2.first << "\t";
+	(*ostr) << std::get<0>( res2 ) << "\t";
 }
 
 

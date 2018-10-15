@@ -301,7 +301,7 @@ double FBedf::partOfCleanedWinds()
 //		ann->cleaningNfold(-1);
 		ann->cleaningKfold(3, 2);
 	}
-	while(ann->averageClassification(DEVNULL).first != 100.);
+	while( std::get<0>( ann->averageClassification(DEVNULL) ) != 100.);
 
 	const double last = ann->getClassifierData()->size();
 

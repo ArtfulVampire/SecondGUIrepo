@@ -153,10 +153,6 @@ void Classifier::successiveRelearn()
     this->resetFlag = true;
 }
 
-void Classifier::printParams()
-{
-}
-
 Classifier::avType Classifier::averageClassification(std::ostream & os)
 {
 #if 01
@@ -186,7 +182,7 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
         }
     }
 
-	/// count averages, kappas
+	/// calculate quality
     double corrSum = 0.;
     double wholeNum = 0.;
 
@@ -195,16 +191,22 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
         corrSum += confusionMatrix[i][i];
         wholeNum += confusionMatrix[i].sum();
     }
-    averageAccuracy = corrSum * 100. / wholeNum;
 
-	/// kappa
+	/// av.acc
+	double averageAccuracy = corrSum * 100. / wholeNum;
+
+
+	/// Cohen's
 	double pE = 0.;
     const double S = confusionMatrix.sum();
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
 		pE += (confusionMatrix[i].sum() * confusionMatrix.getCol(i).sum()) / std::pow(S, 2);
     }
-    kappa = 1. - (1. - corrSum / wholeNum) / (1. - pE);
+	double kappa = 1. - (1. - corrSum / wholeNum) / (1. - pE);
+
+	/// p-val
+	double pval = 0.000;
 
     res << smLib::doubleRound(averageAccuracy, 2) << '\t';
     res << smLib::doubleRound(kappa, 3) << '\t';
@@ -219,7 +221,7 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
 
     confusionMatrix.fill(0.);
 
-    return std::make_pair(averageAccuracy, kappa);
+	return std::make_tuple(averageAccuracy, kappa, pval);
 }
 
 void Classifier::leaveOneOutClassification(std::ostream & os)
@@ -340,10 +342,11 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 		this->learn(learnSet);
 		this->test(testSet);
 
-		this->averageClassification(DEVNULL);
+		auto res = this->averageClassification(DEVNULL);
 		os << guy
-		   << "\t" << smLib::doubleRound(this->averageAccuracy, 2)
-		   << "\t" << smLib::doubleRound(this->kappa, 3)
+		   << "\t" << smLib::doubleRound(std::get<0>(res), 2)	/// accuracy
+		   << "\t" << smLib::doubleRound(std::get<1>(res), 3)	/// Cohen's
+		   << "\t" << smLib::doubleRound(std::get<2>(res), 4)	/// p-value
 		   << std::endl;
 	}
 }

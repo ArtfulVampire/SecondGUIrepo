@@ -287,7 +287,7 @@ void Net::customF()
                   [accNum](const std::vector<double> & in1, const std::vector<double> & in2)
         {
 			return true; /// comment to sort
-            if(in1[accNum] == in2[accNum]) return in1[accNum + 1] > in2[accNum + 1]; /// by kappa
+			if(in1[accNum] == in2[accNum]) return in1[accNum + 1] > in2[accNum + 1];
             return in1[accNum] > in2[accNum];
         });
 

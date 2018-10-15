@@ -36,8 +36,8 @@ std::valarray<double> oneHot(uint siz, uint hotIndex);
 class Classifier
 {
 public:
-	using avType = std::pair<double, double>;				/// average accuracy, Cohen's kappa
-	using classOneType = std::tuple<bool, int, double>;		/// correctness, outClass, error
+	using avType = std::tuple<double, double, double>;	/// av.accuracy, Cohen's kappa, p-value
+	using classOneType = std::tuple<bool, int, double>;	/// correctness, outClass, error
 protected:
 	ModelType myType;	/// don't know what to initialize with - remake
 	QString typeString{};
@@ -45,8 +45,6 @@ protected:
 	ClassifierData * myClassData;
 
 	matrix confusionMatrix;				/// [realClass] [predictedClass]
-	double averageAccuracy{};			/// to deprecate
-	double kappa{};						/// to deprecate
 	std::valarray<double> outputLayer;	/// output of classification
 
 	bool testCleanFlag  = false;		/// delete wrong classified files
@@ -63,28 +61,6 @@ protected:
 	uint curType = 15; /// not any of types
 #endif
 
-
-public:
-	const ModelType & getType() { return myType; }
-    const QString & getTypeString() { return typeString; }
-    void setTestCleanFlag(bool inFlag);
-    void deleteFile(uint vecNum, uint predClass);
-	void printResult(const QString & fileName, uint predType, uint vecNum);
-
-	void setClassifierData(ClassifierData & in);
-	ClassifierData * getClassifierData()			{ return myClassData; }
-	std::valarray<double> getOutputLayer() const	{ return outputLayer; }
-	double getOutputLayer(int i) const				{ return outputLayer[i]; }
-
-	void peopleClassification(bool indZ, std::ostream & os = std::cout);
-	void leaveOneOutClassification(std::ostream & os = std::cout);
-	void crossClassification(int numOfPairs, int fold, std::ostream & os = std::cout);
-	void trainTestClassification(const QString & trainTemplate = "_train",
-								 const QString & testTemplate = "_test");
-	void halfHalfClassification();
-	void cleaningNfold(int num = 3);
-	void cleaningKfold(int num = 3, int fold = 5);
-
 private:
 	std::pair<std::vector<uint>, std::vector<uint>> makeIndicesSetsCross(
 			const std::vector<std::vector<uint>> & arr,
@@ -92,23 +68,44 @@ private:
 			const int currentFold);
 
 public:
-    Classifier();
+	Classifier();
 	virtual ~Classifier()=default;
 
-	avType averageClassification(std::ostream & os = std::cout); /// on confusionMatrix
+	/// gets
+	const ModelType & getType() const				{ return myType; }
+	const QString & getTypeString() const			{ return typeString; }
+	ClassifierData * getClassifierData()			{ return myClassData; }
+	std::valarray<double> getOutputLayer() const	{ return outputLayer; }
+	double getOutputLayer(int i) const				{ return outputLayer[i]; }
 
-	virtual void learn(std::vector<uint> & indices) = 0;
+	/// sets
+    void setTestCleanFlag(bool inFlag);
+	void setClassifierData(ClassifierData & in);
+
+	/// classification
+	void peopleClassification(bool indZ, std::ostream & os = std::cout);
+	void leaveOneOutClassification(std::ostream & os = std::cout);
+	void crossClassification(int numOfPairs, int fold, std::ostream & os = std::cout);
+	void trainTestClassification(const QString & trainTemplate = "_train",
+								 const QString & testTemplate = "_test");
+	void halfHalfClassification();
+	avType averageClassification(std::ostream & os = std::cout); /// on confusionMatrix
+	virtual void learn(std::vector<uint> & indices) = 0;		/// not protected ???
 	void learnAll();
+	classOneType classifyDatumLast();
 
 	void test(const std::vector<uint> & indices);
 	classOneType test(uint index) { return classifyDatum(index); }
-    void testAll();
+	void testAll();
 
+	/// other
+	void cleaningNfold(int num = 3);
+	void cleaningKfold(int num = 3, int fold = 5);
+	void deleteFile(uint vecNum, uint predClass);
+	void printResult(const QString & fileName, uint predType, uint vecNum);
     virtual void successiveRelearn();
-	virtual void printParams();
+	virtual void printParams() {}
 	virtual void adjustToNewData() {}
-
-	classOneType classifyDatumLast();
 
 protected:
 	classOneType classifyDatum(uint vecNum);			/// effect on confMat
@@ -117,7 +114,7 @@ protected:
 };
 
 
-
+/// ????
 #define WEIGHT_MATRIX 0
 
 class ANN : public Classifier

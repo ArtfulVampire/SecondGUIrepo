@@ -139,9 +139,9 @@ calculateSuccessiveBoth(const QString & dear,
 						  fbItem.getFile(fileNum::first),
 						  fbItem.getFile(fileNum::third)));
 		std::cout
-				  << std::get<0>(res.back()).first << "\t"
-				  << std::get<1>(res.back()).first << "\t"
-				  << std::get<2>(res.back()).first << "\t"
+				  << std::get<0>( std::get<0>(res.back()) ) << "\t"
+				  << std::get<0>( std::get<1>(res.back()) ) << "\t"
+				  << std::get<0>( std::get<2>(res.back()) ) << "\t"
 				  << std::endl;
 
 		delete ann;

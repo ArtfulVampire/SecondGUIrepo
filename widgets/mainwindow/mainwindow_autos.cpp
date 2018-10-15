@@ -110,10 +110,8 @@ void MainWindow::testSuccessive2()
 		net->setMode("t"); /// train-test
 
 		std::cout << name << std::endl;
-		res.push_back(
-					net->successiveByEDFnew(path + name + "_train" + ".edf", "",
-										 path + name + "_test" + ".edf", "")
-					.first);
+		res.push_back(std::get<0>(net->successiveByEDFnew(path + name + "_train" + ".edf", "",
+														  path + name + "_test" + ".edf", "")));
 		delete net;
 	}
 	outStream << "average by people = "
