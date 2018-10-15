@@ -36,6 +36,19 @@ void physMinMaxCheck(const QString & dirPath)
     }
 }
 
+void deleteNewContents(const QString & inPath)
+{
+	auto lst = QDir(inPath).entryList(def::edfFilters);
+	for(const QString & in : lst)
+	{
+		QString newName = in;
+		newName.remove("_new");
+
+		QFile::remove(inPath + "/" + newName);
+		QFile::rename(inPath + "/" + in,
+					  inPath + "/" + newName);
+	}
+}
 
 void renameContents(const QString & dirPath, const std::vector<std::pair<QString, QString>> & temp)
 {

@@ -39,7 +39,7 @@ using featureFuncType = std::function<void(const matrix &, double, std::ostream 
 
 const std::vector<std::tuple<int, QString, featureFuncType, int>> FEATURES {
 	std::make_tuple(featuresMask::fft,	"spectre",	autos::countFFT,		18 * 19),
-			std::make_tuple(featuresMask::alphaPeak,	"alpha",	autos::countAlphaPeak,	1 * 19),
+			std::make_tuple(featuresMask::alphaPeak,"alpha",	autos::countAlphaPeak,	1 * 19),
 			std::make_tuple(featuresMask::fracDim,	"fracDim",	autos::countFracDim,	1 * 19),
 			std::make_tuple(featuresMask::Hilbert,	"Hilbert",	autos::countHilbert,	2 * 2 * 19),	/// 2 * 3 * 19 Xenia
 			std::make_tuple(featuresMask::wavelet,	"wavelet",	autos::countWavelet,	1 * 19 * 19),	/// 3 is a number of wavelet funcs
@@ -96,7 +96,6 @@ void calculateFeatures(const QString & pathWithEdfs,
 void elenaCalculation(const QString & realsPath, const QString & outTableDir);
 
 /// quite useful general functions
-void rewriteNew(const QString & inPath);
 void EdfsToFolders(const QString & inPath);
 void ProcessByFolders(const QString & inPath, int numChan,
 					  const std::vector<QString> & markers);

@@ -130,7 +130,7 @@ class ANN : public Classifier
 
 private:
     int epoch = 0;
-	const int epochLimit = 249;
+	static const int epochLimit = 249;
     static const int epochHighLimit = 120;
     static const int epochLowLimit = 80;
 

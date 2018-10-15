@@ -38,7 +38,7 @@ matrix readIITPfile(const QString & filePath); /// dat file emg - unused
 
 void readIITPfile(const QString & filePath,
 				  matrix & outData,
-				  std::vector<QString> & outLabels);/// dat file emg
+				  std::vector<QString> & outLabels);/// dat file emg - remake return pair
 
 void readUCIdataSet(const QString & setName,
 					matrix & outData,
@@ -53,7 +53,6 @@ std::valarray<double> readFileInLineRaw(const QString & filePath); /// w/o heade
 template <typename ArrayType>
 void writeFileInLine(const QString & filePath,
 					 const ArrayType & outData);
-
 
 }
 

@@ -58,6 +58,7 @@ std::vector<int> edfFile::getAllEegChannels(const std::vector<QString> & standar
 			res.push_back(i);
 		}
 	}
+	return res;
 }
 
 edfFile & edfFile::setDataFromList(const std::list<std::valarray<double>> & inList)

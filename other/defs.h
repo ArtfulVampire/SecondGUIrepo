@@ -51,7 +51,7 @@ enum class username {MichaelA,
 					 Mati,
 					 IITP,
 					 PolinaM};
-enum class autosUser {Xenia, Galya, XeniaFinalest};
+enum class autosUser {Xenia, Galya, XeniaFinalest, Xenia15Oct};
 enum class autosCut {first30, second30, first60, none};
 
 enum featuresMask {

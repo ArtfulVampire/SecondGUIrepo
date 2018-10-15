@@ -494,6 +494,8 @@ void deleteSpacesItem(const QString & inPath);
 void deleteSpacesFoldersOnly(const QString & dirPath);
 void deleteSpacesContents(const QString & dirPath, const QStringList & filters = def::edfFilters);
 
+void deleteNewContents(const QString & inPath);
+
 void renameContents(const QString & dirPath, const std::vector<std::pair<QString, QString>> & temp);
 
 void toLatinItem(const QString & inPath);

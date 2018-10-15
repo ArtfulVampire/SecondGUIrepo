@@ -20,8 +20,16 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-	const QString workDir = "c:/Data";
-	repair::fullRepairDir(workDir);
-	autos::cutFilesInFolder(workDir, 8);
+//	const QString workDir = "c:/Data";
+//	repair::fullRepairDir(workDir);
+//	autos::cutFilesInFolder(workDir, 8);
+	myLib::GalyaProcessing("tactile15Oct18");
+	exit(0);
 
+//	myLib::XeniaFinal();
+//	exit(0);
+//	autos::ArrangeFilesVertCat({"/media/Files/Data/Xenia/FINAL/labels.txt",
+//							   "/media/Files/Data/Xenia/FINAL/all_first60.txt"},
+//							   "/media/Files/Data/Xenia/FINAL/fin.txt");
+//	exit(0);
 }

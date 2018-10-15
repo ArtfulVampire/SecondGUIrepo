@@ -191,11 +191,22 @@ void countFFT(const matrix & inData,
 												  inData.cols(),
 												  srate),
 							   -1);
-		spectra[i] = myLib::integrateSpectre(helpSpectre,
-											 srate,
-											 2,
-											 19,
-											 1);
+
+		if(DEFS.getAutosUser() == autosUser::Xenia15Oct)
+		{
+			/// for Xenia 15-Oct
+			spectra[i] = myLib::integrateSpectre(helpSpectre,
+												 srate,
+			{{8, 13}, {2, 20}});
+		}
+		else
+		{
+			spectra[i] = myLib::integrateSpectre(helpSpectre,
+												 srate,
+												 2,
+												 19,
+												 1);
+		}
 	}
 
 
@@ -205,7 +216,7 @@ void countFFT(const matrix & inData,
 	{
 		for(uint i = 0; i < spectra.rows(); ++i)
 		{
-			for(uint j = 0; j < spectra[i].size(); ++j)
+			for(uint j = 0; j < spectra.cols(); ++j)
 			{
 				outStr << spectra[i][j] << "\t";
 			}
@@ -215,9 +226,9 @@ void countFFT(const matrix & inData,
 	}
 	default: /// Xenia and Galya
 	{
-		for(uint j = 0; j < spectra[0].size(); ++j) /// 18 freqs
+		for(uint j = 0; j < spectra.cols(); ++j) /// 18 freqs
 		{
-			for(int i = 0; i < inData.rows(); ++i) /// 19 channels
+			for(int i = 0; i < spectra.rows(); ++i) /// 19 channels
 			{
 				outStr << spectra[i][j] << "\t";
 			}
@@ -352,16 +363,34 @@ void countFracDim(const matrix & inData,
 		}
 		break;
 	}
+	case autosUser::Xenia15Oct:
+	{
+		for(int numFilt : {2, 5}) /// 8-13, 2-20
+		{
+			const auto & filt = filters[numFilt];
+			for(int i = 0; i < inData.rows(); ++i)
+			{
+				outStr << myLib::fractalDimension(
+							  myLib::refilter(inData[i],
+											  filt.first,
+											  filt.second,
+											  false,
+											  srate)
+							  ) << "\t";
+			}
+		}
+		break;
+	}
 	default:
 	{
 		for(int i = 0; i < inData.rows(); ++i)
 		{
 			outStr << myLib::fractalDimension(inData[i]) << "\t";
 		}
+
 		break;
 	}
 	}
-
 }
 
 void countHilbert(const matrix & inData,
@@ -441,6 +470,20 @@ void countHilbert(const matrix & inData,
 		for(int func : {0, 1}) /// carr, SD
 		{
 			for(int filt : {2}) /// alpha
+			{
+				for(int ch = 0; ch < inData.rows(); ++ch)
+				{
+					outStr << hilb[filt][ch][func] << "\t";
+				}
+			}
+		}
+		break;
+	}
+	case autosUser::Xenia15Oct:
+	{
+		for(int filt : {2, 5}) /// 8-13, 2-20
+		{
+			for(int func : {0, 1}) /// carr, SD
 			{
 				for(int ch = 0; ch < inData.rows(); ++ch)
 				{
@@ -1424,20 +1467,6 @@ void refilterFolder(const QString & procDirPath,
 		edfFile fil;
 		fil.readEdfFile(helpString);
 		fil.refilter(lowFreq, highFreq, isNotch).writeEdfFile(helpString);
-	}
-}
-
-void rewriteNew(const QString & inPath)
-{
-	auto lst = QDir(inPath).entryList(def::edfFilters);
-	for(const QString & in : lst)
-	{
-		QString oldName = in;
-		oldName.remove("_new");
-
-		QFile::remove(inPath + "/" + oldName);
-		QFile::rename(inPath + "/" + in,
-					  inPath + "/" + oldName);
 	}
 }
 

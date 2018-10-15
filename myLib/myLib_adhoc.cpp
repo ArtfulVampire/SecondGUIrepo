@@ -196,12 +196,81 @@ void XeniaPretable()
 	fil.close();
 }
 
+void makeLabelsXenia15Oct()
+{
+	std::vector<QString> labels = coords::lbl16;
+	QString outFilePath = "/media/Files/Data/Xenia/FINAL/labels.txt";
+	std::vector<QString> usedMarkers = subj::marksLists::tbiMarkers;
+	QString sep = "\t";
+
+	///make labels file
+
+	for(QString & in : labels)
+	{
+		in = in.mid(in.indexOf(' ') + 1,
+					in.indexOf('-') - in.indexOf(' ') - 1).toLower();
+	}
+
+	std::ofstream lab;
+	lab.open(outFilePath.toStdString());
+	for(QString mark : usedMarkers)
+	{
+		mark.remove('_');
+		if(DEFS.getAutosMask() & featuresMask::fft)
+		{
+			for(QString filt : {"8_13", "2_20"})
+			{
+				for(const QString & lbl : labels)
+				{
+					lab << mark
+						<< "_" << "fft"
+						<< "_" << filt
+						<< "_"  << lbl << sep;
+				}
+			}
+		}
+
+		if(DEFS.getAutosMask() & featuresMask::fracDim)
+		{
+			for(QString filt : {"8_13", "2_20"})
+			{
+				for(const QString & lbl : labels)
+				{
+					lab << mark
+						<< "_" << "fd"
+						<< "_" << filt
+						<< "_"  << lbl << sep;
+				}
+			}
+		}
+
+		if(DEFS.getAutosMask() & featuresMask::Hilbert)
+		{
+			for(QString filt : {"8_13", "2_20"})
+			{
+				for(QString func : {"hilbcarr", "hilbsd"})
+				{
+					for(const QString & lbl : labels)
+					{
+						lab << mark
+							<< "_" << func
+							<< "_" << filt
+							<< "_"  << lbl << sep;
+					}
+				}
+			}
+		}
+	}
+	lab.close();
+}
 
 void XeniaFinal()
 {
 	const QString finalPath{"/media/Files/Data/Xenia/FINAL"};
-	DEFS.setAutosUser(autosUser::Galya);
-	DEFS.setAutosMask(featuresMask::fracDim | featuresMask::Hilbert);
+	DEFS.setAutosUser(autosUser::Xenia15Oct);
+	DEFS.setAutosMask(featuresMask::fracDim
+					  | featuresMask::Hilbert
+					  | featuresMask::fft);
 	DEFS.setAutosCut(autosCut::first60);
 	DEFS.setCutMedial(true);
 
@@ -216,9 +285,9 @@ void XeniaFinal()
 			const QString guyPath = groupPath + "/" + guy;
 			const QString guyOutPath = guyPath + "/out";
 
-
 			QDir().mkdir(guyOutPath);
 			myLib::cleanDir(guyOutPath);
+
 			autos::calculateFeatures(guyPath, 19, guyOutPath);
 
 			/// make one line file for each stimulus
@@ -532,13 +601,31 @@ const std::map<QString, std::vector<std::pair<QString, QString>>> renamesGalya
 			{"4YP6AHOB",		"Churbanov"},
 			{"AJLELLlUH",		"Aleshin"},
 			{"BAHl~EJLUI'I",	"Vanuely"},
-			{"CYPYD)I(9lH",	"Surudzhan"},
-			{"JLblCOB",		"Lyisov"},
-			{"KBALLlHUHOB",	"Kvashinov"},
+			{"CYPYD)I(9lH",		"Surudzhan"},
+			{"JLblCOB",			"Lyisov"},
+			{"KBALLlHUHOB",		"Kvashinov"},
 			{"l`l9lTKUH",		"Pyiatkin"},
 			{"MAH9lXUH",		"Manyakhin"},
-			{"MAMEDOB",		"Mamedov"},
-			{"qPJLOPOBCKUI'I", "Frolovsky"},
+			{"MAMEDOB",			"Mamedov"},
+			{"qPJLOPOBCKUI'I",	"Frolovsky"},
+			{"XATATAEB",		"Khatataev"},
+			{"qPOH",			"fon"},
+		}
+	},
+	{"tactile15Oct18",
+		{
+			{"4EPHOPAEB",		"Chernoraev"},
+			{"4UJLO9lH",		"Chuloyan"},
+			{"4YP6AHOB",		"Churbanov"},
+			{"AJLELLlUH",		"Aleshin"},
+			{"BAHl~EJLUI'I",	"Vanuely"},
+			{"CYPYD)I(9lH",		"Surudzhan"},
+			{"JLblCOB",			"Lyisov"},
+			{"KBALLlHUHOB",		"Kvashinov"},
+			{"l`l9lTKUH",		"Pyiatkin"},
+			{"MAH9lXUH",		"Manyakhin"},
+			{"MAMEDOB",			"Mamedov"},
+			{"qPJLOPOBCKUI'I",	"Frolovsky"},
 			{"XATATAEB",		"Khatataev"},
 			{"qPOH",			"fon"},
 		}
@@ -552,7 +639,7 @@ void GalyaProcessing(const QString & addPath)
 
 //		const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
 		const QStringList subdirs{""};
-		const int numChan = 19;
+		const int numChan = 17;
 		const std::vector<QString> usedMarkers = {"_31", "_32", "_181", "_182", "_fon"};
 
 
@@ -561,13 +648,15 @@ void GalyaProcessing(const QString & addPath)
 //		for(const QString & subdir : subdirs)
 		const QString subdir{""};
 		{
-			repair::toLatinDir(workPath + "/" + subdir);
-			repair::deleteSpacesDir(workPath + "/" + subdir);
-			repair::toLowerDir(workPath + "/" + subdir);
-
 			/// some special names cleaning
+
+			repair::deleteNewContents(workPath + "/" + subdir);
 			repair::renameContents(workPath + "/" + subdir,
-								   renamesGalya[addPath]);
+								   renamesGalya.at(addPath));
+
+			repair::toLatinContents(workPath + "/" + subdir);
+			repair::deleteSpacesContents(workPath + "/" + subdir);
+			repair::toLowerContents(workPath + "/" + subdir);
 
 			/// check that any fileName contains some marker
 			for(const QString & fileName : QDir(workPath + "/" + subdir).entryList(def::edfFilters))
@@ -595,7 +684,6 @@ void GalyaProcessing(const QString & addPath)
 		/// each subject into his/her own folder
 		for(const QString & subdir : subdirs)
 		{
-//			autos::rewriteNew(workPath + "/" + subdir);
 			autos::EdfsToFolders(workPath + "/" + subdir);
 		}
 		exit(0);
@@ -606,10 +694,10 @@ void GalyaProcessing(const QString & addPath)
 
 		edfFile labels(workPath + "/labels.edf");
 
-		QString str19;
-		for(int i = 0; i < 19; ++i)
+		QString referentStr;
+		for(int i = 0; i < numChan; ++i)
 		{
-			str19 += nm(labels.findChannel(coords::lbl19[i])) + " ";
+			referentStr += nm(labels.findChannel(coords::lbl19[i])) + " ";
 		}
 
 		for(const QString & subdir : subdirs)
@@ -626,14 +714,14 @@ void GalyaProcessing(const QString & addPath)
 					edfFile file;
 					file.readEdfFile(guyPath + "/" + fl, true);
 					QString helpString{};
-					for(int i = 0; i < 19; ++i)
+					for(int i = 0; i < numChan; ++i)
 					{
 						helpString += nm(file.findChannel(coords::lbl19[i])) + " ";
 					}
 
-					if(helpString != str19)
+					if(helpString != referentStr)
 					{
-						std::cout << fl << std::endl;
+						std::cout << "wrong chans: " <<  fl << std::endl;
 						/// rewrite file with correct chan order - read with data
 //						file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
 					}
@@ -644,7 +732,7 @@ void GalyaProcessing(const QString & addPath)
 #endif
 
 
-#if 0
+#if 01
 		/// calculation itself
 		DEFS.setAutosUser(autosUser::Galya);
 
@@ -655,7 +743,7 @@ void GalyaProcessing(const QString & addPath)
 		{
 			/// usual processing
 			autos::ProcessByFolders(workPath + "/" + subdir,
-									19,
+									numChan,
 									usedMarkers);
 #if 0
 			/// rhythm adoption
