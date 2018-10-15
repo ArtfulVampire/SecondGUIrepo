@@ -115,38 +115,40 @@ const std::map<fbGroup, std::vector<std::pair<QString, QString>>> guysFBfinal{
 
 namespace marksLists
 {
-	/// Galya markers
-	const std::vector<QString> tactile{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
+const std::vector<QString> none{"_"};
 
-	const std::vector<QString> Dasha{"_brush", "_cry", "_fire", "_flower",
-									 "_isopropanol", "_needles", "_vanilla", "_wc"};
+/// Galya markers
+const std::vector<QString> tactile{"_buk", "_kis", "_rol", "_sch", "_og", "_zg"};
 
-	const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
-										   "_ph", "_rv", "_sc", "_sm", "_og", "_zg"};
-	const std::vector<QString> TBI{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
-										   "_og", "_rv", "_sm", "_zg"};
+const std::vector<QString> Dasha{"_brush", "_cry", "_fire", "_flower",
+								 "_isopropanol", "_needles", "_vanilla", "_wc"};
 
-	const std::vector<QString> rhythAdoption{"_2sv", "_2zv",
-											 "_4sv", "_4zv",
-											 "_8sv", "_8zv",
-											 "_16sv", "_16zv",
-											 "_fon",
-//											 "_og",
-//											 "_zg",
-											};
-	const std::vector<QString> buben{"_bub",		"_bubAfter",
-									 "_bubAud",	"_bubAudAfter",
-									 "_time",
-									 "_og",		"_ogAfter",
-									 "_zg",
-									};
-	const std::vector<QString> burdenkoFaces{"_all", "_svoi", "_other"};
+const std::vector<QString> usedMarkers{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+									   "_ph", "_rv", "_sc", "_sm", "_og", "_zg"};
+const std::vector<QString> TBI{"_bd", "_bw", "_cr", "_kh", "_na", "_no",
+							   "_og", "_rv", "_sm", "_zg"};
 
-	/// 15 Oct 2018
-	const std::vector<QString> tactileComa{"_31", "_32", "_181", "_182", "_fon"};
+const std::vector<QString> rhythAdoption{"_2sv", "_2zv",
+										 "_4sv", "_4zv",
+										 "_8sv", "_8zv",
+										 "_16sv", "_16zv",
+										 "_fon",
+//										 "_og",
+//										 "_zg",
+										};
+const std::vector<QString> buben{"_bub",		"_bubAfter",
+								 "_bubAud",	"_bubAudAfter",
+								 "_time",
+								 "_og",		"_ogAfter",
+								 "_zg",
+								};
+const std::vector<QString> burdenkoFaces{"_all", "_svoi", "_other"};
 
-	/// Xenia Markers
-	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
+/// 15 Oct 2018
+const std::vector<QString> tactileComa{"_31", "_32", "_181", "_182", "_fon"};
+
+/// Xenia Markers
+const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
 }
 
 

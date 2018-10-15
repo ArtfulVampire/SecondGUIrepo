@@ -197,9 +197,8 @@ void XeniaPretable()
 }
 
 
-void XeniaFinal()
+void XeniaSettings()
 {
-	const QString finalPath{"/media/Files/Data/Xenia/FINAL"};
 	AUT_SETS.setAutosMask(0
 						  | autos::feature::fft
 						  | autos::feature::fracDim
@@ -208,8 +207,13 @@ void XeniaFinal()
 	AUT_SETS.setOutputStyle(autos::outputStyle::Line);
 	AUT_SETS.setOutputSequence(autos::outputSeq::ByChans);
 	AUT_SETS.setInitialCut(autos::initialCut::first60);
-	const std::vector<QString> channs = coords::lbl16noz;
+	AUT_SETS.setChansProc(coords::lbl16noz);
+}
 
+void XeniaFinal()
+{
+	XeniaSettings();
+	const QString finalPath{"/media/Files/Data/Xenia/FINAL"};
 
 	for(const QString & subdir : {"Healthy", "Moderate", "Severe"})
 	{
@@ -225,7 +229,7 @@ void XeniaFinal()
 			QDir().mkdir(guyOutPath);
 			myLib::cleanDir(guyOutPath);
 
-			autos::calculateFeatures(guyPath, channs, guyOutPath);
+			autos::calculateFeatures(guyPath, AUT_SETS.getChansProc(), guyOutPath);
 
 			/// make one line file for each stimulus
 			if(01)
@@ -236,7 +240,7 @@ void XeniaFinal()
 					for(autos::feature func : AUT_SETS.getAutosMaskArray())
 					{
 						const QString fileName = guy + mark
-												 + "_" + autos::getFeatureString(func) + ".txt";
+												 + "_" + autos::featToStr(func) + ".txt";
 						fileNamesToArrange.push_back(fileName);
 					}
 					myLib::concatFilesHorz(guyOutPath,
@@ -277,6 +281,8 @@ void XeniaFinal()
 						  subj::marksLists::tbiMarkers,
 						  "\t");
 }
+
+
 
 void XeniaFinalest()
 {
@@ -414,47 +420,7 @@ void XeniaFinalest()
 
 }
 
-const std::map<QString, std::vector<std::pair<QString, QString>>> renamesGalya
-{
-	{"tactile12Oct18",
-		{
-			{"4EPHOPAEB",		"Chernoraev"},
-			{"4UJLO9lH",		"Chuloyan"},
-			{"4YP6AHOB",		"Churbanov"},
-			{"AJLELLlUH",		"Aleshin"},
-			{"BAHl~EJLUI'I",	"Vanuely"},
-			{"CYPYD)I(9lH",		"Surudzhan"},
-			{"JLblCOB",			"Lyisov"},
-			{"KBALLlHUHOB",		"Kvashinov"},
-			{"l`l9lTKUH",		"Pyiatkin"},
-			{"MAH9lXUH",		"Manyakhin"},
-			{"MAMEDOB",			"Mamedov"},
-			{"qPJLOPOBCKUI'I",	"Frolovsky"},
-			{"XATATAEB",		"Khatataev"},
-			{"qPOH",			"fon"},
-		}
-	},
-	{"tactile15Oct18",
-		{
-			{"4EPHOPAEB",		"Chernoraev"},
-			{"4UJLO9lH",		"Chuloyan"},
-			{"4YP6AHOB",		"Churbanov"},
-			{"AJLELLlUH",		"Aleshin"},
-			{"BAHl~EJLUI'I",	"Vanuely"},
-			{"CYPYD)I(9lH",		"Surudzhan"},
-			{"JLblCOB",			"Lyisov"},
-			{"KBALLlHUHOB",		"Kvashinov"},
-			{"l`l9lTKUH",		"Pyiatkin"},
-			{"MAH9lXUH",		"Manyakhin"},
-			{"MAMEDOB",			"Mamedov"},
-			{"qPJLOPOBCKUI'I",	"Frolovsky"},
-			{"XATATAEB",		"Khatataev"},
-			{"qPOH",			"fon"},
-		}
-	},
-};
-
-void GalyaProcessing(const QString & addPath)
+void GalyaSettings()
 {
 	AUT_SETS.setAutosMask(0
 						  | autos::feature::fft
@@ -462,11 +428,11 @@ void GalyaProcessing(const QString & addPath)
 						  | autos::feature::fracDim
 						  | autos::feature::Hilbert
 						  | autos::feature::Hjorth
+						  | autos::feature::wavelet
 						  | autos::feature::logFFT
 						  );
 	AUT_SETS.setFeatureFilter(autos::feature::fracDim,
-	{autos::filtFreqs.at(autos::filter::none),
-	 autos::filtFreqs.at(autos::filter::alpha)});
+	{autos::filtFreqs.at(autos::filter::none)});
 
 	AUT_SETS.setFeatureFilter(autos::feature::Hilbert,
 	{autos::filtFreqs.at(autos::filter::none),
@@ -475,97 +441,60 @@ void GalyaProcessing(const QString & addPath)
 	AUT_SETS.setOutputStyle(autos::outputStyle::Line);
 	AUT_SETS.setOutputSequence(autos::outputSeq::ByChans);
 	AUT_SETS.setInitialCut(autos::initialCut::none);
+	AUT_SETS.setChansProc(coords::lbl17noFP);
+}
 
+void GalyaProcessing(const QString & addPath)
+{
+	GalyaSettings();
 	const QString workPath = def::GalyaFolder + "/" + addPath;
-	const QStringList subdirs{""};
-	const std::vector<QString> channelsToProcess = coords::lbl17noFP;
-	const std::vector<QString> usedMarkers = subj::marksLists::tactileComa;
-
+	const std::vector<QString> & usedMarkers = subj::marksLists::none;
 
 #if 0
-		/// initial repair filenames
-//		for(const QString & subdir : subdirs)
-		const QString subdir{""};
-		{
-			/// some special names cleaning
-
-			repair::deleteNewContents(workPath + "/" + subdir);
-			repair::renameContents(workPath + "/" + subdir,
-								   renamesGalya.at(addPath));
-
-			repair::toLatinContents(workPath + "/" + subdir);
-			repair::deleteSpacesContents(workPath + "/" + subdir);
-			repair::toLowerContents(workPath + "/" + subdir);
-
-			/// check that any fileName contains some marker
-			for(const QString & fileName : QDir(workPath + "/" + subdir).entryList(def::edfFilters))
-			{
-
-				bool p = false;
-				for(auto mrk : usedMarkers)
-				{
-					if(fileName.contains(mrk + ".edf", Qt::CaseInsensitive))
-					{
-						p = true;
-						break;
-					}
-				}
-				if(!p)
-				{
-					std::cout << subdir + "/" + fileName << std::endl;
-				}
-			}
-		}
-		exit(0);
+	/// each subject into his/her own folder
+	autos::EdfsToFolders(workPath + "/" + subdir);
 #endif
 
 #if 0
-		/// each subject into his/her own folder
-		for(const QString & subdir : subdirs)
-		{
-			autos::EdfsToFolders(workPath + "/" + subdir);
-		}
-		exit(0);
-#endif
+	/// checks channels presence
+	std::vector<bool> refChans(channelsToProcess.size(), true);
 
-#if 0
-		/// checks channels presence
-		std::vector<bool> refChans(channelsToProcess.size(), true);
-		for(const QString & subdir : subdirs)
-		{
-			const QString groupDir = workPath + "/" + subdir;
-			const auto guyDirs = QDir(groupDir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+//	const QString subdir{""};
+	for(const QString & subdir : QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+	{
+		const QString groupDir = workPath + "/" + subdir;
+		const auto guyDirs = QDir(groupDir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 
-			for(const QString & guyDir : guyDirs) /// each guy
+		for(const QString & guyDir : guyDirs) /// each guy
+		{
+			const QString guyPath = groupDir + "/" + guyDir;
+			auto filList = QDir(guyPath).entryList(def::edfFilters); /// edfs of one guy
+			for(const QString & fl : filList)
 			{
-				const QString guyPath = groupDir + "/" + guyDir;
-				auto filList = QDir(guyPath).entryList(def::edfFilters); /// edfs of one guy
-				for(const QString & fl : filList)
+				edfFile file(guyPath + "/" + fl, true);
+				auto tmp = file.hasChannels(channelsToProcess);
+				if(refChans != tmp)
 				{
-					edfFile file(guyPath + "/" + fl, true);
-					auto tmp = file.hasChannels(channelsToProcess);
-					if(refChans != tmp)
-					{
-						std::cout << "not enough channels: " <<  fl << std::endl;
-					}
+					std::cout << "not enough channels: " <<  fl << std::endl;
 				}
 			}
 		}
-		exit(0);
+	}
+	exit(0);
 #endif
 
 
 #if 01
 		/// calculation itself
-
-		for(const QString & subdir : subdirs)
+#if 0
+		for(const QString & subdir : QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
 		{
 			/// usual processing
 			autos::ProcessByFolders(workPath + "/" + subdir,
 									workPath + "_out",
-									channelsToProcess,
+									AUT_SETS.getChansProc(),
 									usedMarkers);
-			autos::makeLabelsFile(channelsToProcess,
+			autos::makeLabelsFile(AUT_SETS.getChansProc(),
 								  workPath + "_out/labels.txt",
 								  usedMarkers,
 								  "\t");
@@ -579,14 +508,21 @@ void GalyaProcessing(const QString & addPath)
 			}
 #endif
 		}
-		exit(0);
 #endif
 
-#if 0
-		/// labels part
-		std::vector<QString> labels = edfFile(workPath + "/labels.edf", true).getLabels();
-		labels.resize(numChan);
-		autos::makeLabelsFile(labels, workPath + "/labels.txt", "_1.6_30", usedMarkers, "\t");
+#if 01
+		autos::ProcessAllInOneFolder(workPath,
+									 workPath + "_out",
+									 AUT_SETS.getChansProc());
+		autos::makeLabelsFile(AUT_SETS.getChansProc(),
+							  workPath + "_out/labels.txt",
+							  subj::marksLists::none,
+							  "\t");
+#endif
+
+
+
+
 		exit(0);
 #endif
 

@@ -102,6 +102,9 @@ public:
 	auto getAutosMask() const					{ return this->autosMask; }
 	std::vector<feature> getAutosMaskArray() const;
 
+	void setChansProc(const std::vector<QString> & in){ this->channelsToProcess = in; }
+	auto getChansProc() const					{ return this->channelsToProcess; }
+
 	void setFeatureFilter(feature in, const std::vector<filterFreqs> & f)
 	{
 		filtersSets[in] = f;
@@ -123,6 +126,12 @@ private:
 		filtersSets[feature::wavelet]		= {filtFreqs.at(filter::none)};
 		filtersSets[feature::Hjorth]		= {filtFreqs.at(filter::none)};
 		filtersSets[feature::logFFT]		= makeFilterVector(2, 20, 1);
+
+		autosMask = allFeaturesInt
+			#if !WAVELET_MATLAB
+					& ~feature::wavelet
+			#endif
+					;
 	}
 //	AutosSettings(AutosSettings && other)=delete;
 	AutosSettings(const AutosSettings & other)=delete;
@@ -130,12 +139,12 @@ private:
 
 private:
 	std::unordered_map<feature, std::vector<filterFreqs>> filtersSets;
-	std::vector<QString> channelsToProcess{coords::lbl19};
+	std::vector<QString> channelsToProcess{};
 
 	initialCut initCut{initialCut::none};
 	outputStyle outStyle{outputStyle::Line};
 	outputSeq outSeq{outputSeq::ByChans};
-	int autosMask{allFeaturesInt & ~feature::wavelet};
+	int autosMask{};
 };
 
 #define AUT_SETS autos::AutosSettings::inst()
@@ -177,7 +186,7 @@ const std::vector<std::tuple<int, QString, featureFuncType, int>> FEATURES {
 			std::make_tuple(feature::logFFT,	"logFFT",	autos::countLogFFT,		18 * 19)
 
 };
-QString getFeatureString(feature in);
+QString featToStr(feature in);
 int getFileLength(int in);
 
 
@@ -239,6 +248,9 @@ void ProcessByGroups(const QString & inPath,
 						const QString & outPath,
 						const std::vector<QString> & channs,
 						const std::vector<QString> markers);
+void ProcessAllInOneFolder(const QString & inPath,
+						   const QString & outPath,
+						   const std::vector<QString> & channs);
 
 
 void ArrangeFilesToTable(const QString & inPath,

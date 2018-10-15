@@ -340,7 +340,7 @@ void toLowerContents(const QString & dirPath, const QStringList & filters)
 	}
 	else
 	{
-		leest = QDir(dirPath).entryList();
+		leest = QDir(dirPath).entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
 	}
 
 	for(const QString & str : leest)
@@ -450,6 +450,7 @@ void testArtifacts(const QString & dirPath, const QStringList & filters)
 
 void fullRepairDir(const QString & dirPath, const QStringList & filters)
 {
+	repair::deleteNewContents(dirPath);
 	repair::deleteSpacesContents(dirPath, filters);
 	repair::toLatinContents(dirPath, filters);
 	repair::toLowerContents(dirPath, filters);

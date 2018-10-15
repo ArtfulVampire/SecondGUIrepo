@@ -24,11 +24,14 @@ void burdenkoEdfPlusToEdf();
 std::vector<QString> composeMarkersList(const QString & workPath); /// really unused
 
 
-void makeLabelsXenia15Oct();
 void XeniaPretable();
+void XeniaSettings();
 void XeniaFinalest();
 void XeniaFinal();
+
+void GalyaSettings();
 void GalyaProcessing(const QString & addPath);
+
 void feedbackFinal();
 
 void BaklushevHistograms();

@@ -70,8 +70,7 @@ void calculateFeatures(const QString & pathWithEdfs,
 	{
 		QString filePath = pathWithEdfs + "/" + filesVec[i];
 
-		edfFile initEdf;
-		initEdf.readEdfFile(filePath);
+		edfFile initEdf(filePath);
 
 		/// different checks crutches
 		if(initEdf.getNdr() == 0)
@@ -87,9 +86,11 @@ void calculateFeatures(const QString & pathWithEdfs,
 		}
 
 		/// cout fileSize
-		std::cout << edfs[i] << '\t'
-				  << smLib::doubleRound(QFile(filePath).size() / std::pow(2, 10), 1)
-				  << " kB" << std::endl;
+		std::cout
+				<< edfs[i] << '\t'
+				<< smLib::doubleRound(QFile(filePath).size() / std::pow(2, 10), 1) << " kB" << "\t"
+				<< smLib::doubleRound(initEdf.getDataLen() / initEdf.getFreq(), 1) << " sec"
+				<< std::endl;
 
 
 		const QString preOutPath = outPath + "/" + initEdf.getExpName();
@@ -162,7 +163,7 @@ void countAllFeatures(const matrix & inData,
 }
 
 
-QString getFeatureString(feature in)
+QString featToStr(feature in)
 {
 	return std::get<1>(
 				*std::find_if(std::begin(autos::FEATURES),
@@ -498,10 +499,10 @@ void countWavelet(const matrix & inData,
 	{
 		for(int i = 0; i < resRows; ++i) /// chans
 		{
-			matrix m = wvlt::cwt(inData[j], srate); /// freqs
+			matrix m = wvlt::cwt(inData[i], srate); /// freqs
 			for(int j = 0; j < resCols; ++j)
 			{
-				res[func][i][j] = func(m[i]);
+				res[func][i][j] = (funcs[func])(m[i]);
 			}
 		}
 	}
@@ -514,9 +515,9 @@ void countWavelet(const matrix & inData,
 	{
 		for(int func = 0; func < funcs.size(); ++func)
 		{
-			for(int j = 0; j < resCols; ++j)
+			for(int j = 0; j < resCols; ++j) /// freqs
 			{
-				for(int i = 0; i < resRows; ++i)
+				for(int i = 0; i < resRows; ++i) /// chans
 				{
 					outStr << res[func][i][j] << "\t";
 				}
@@ -525,13 +526,13 @@ void countWavelet(const matrix & inData,
 		}
 		break;
 	}
-	case outputSeq::ByChans:
+	case outputSeq::ByFilters:
 	{
 		for(int func = 0; func < funcs.size(); ++func)
 		{
-			for(int i = 0; i < resRows; ++i)
+			for(int i = 0; i < resRows; ++i) /// chans
 			{
-				for(int j = 0; j < resCols; ++j)
+				for(int j = 0; j < resCols; ++j) /// freqs
 				{
 					outStr << res[func][i][j] << "\t";
 				}
@@ -816,6 +817,7 @@ void ProcessByGroups(const QString & inPath,
 					 const std::vector<QString> markers)
 {
 	if(!QDir(outPath).exists()) { QDir().mkpath(outPath); }
+	myLib::cleanDir(outPath, "txt", true);
 
 	for(const QString & subdir : QDir(inPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
 	{
@@ -876,14 +878,14 @@ void ProcessByGroups(const QString & inPath,
 					filesToVertCat.push_back(
 								guy
 								+ mark
-								+ "_" + autos::getFeatureString(feat)
+								+ "_" + autos::featToStr(feat)
 								+ ".txt");
 				}
 			}
 			myLib::concatFilesVert(outPath,
 								   filesToVertCat,
 								   outPath + "/table_"
-								   + autos::getFeatureString(feat) + ".txt");
+								   + autos::featToStr(feat) + ".txt");
 		}
 	}
 
@@ -925,7 +927,9 @@ void ArrangeFilesToTable(const QString & inPath,
 												  ))
 	{
 		if((fileName == tableName)
-		   || fileName.contains("_people")) { continue; }
+		   || fileName.contains("_people")
+		   || fileName.contains("labels.txt")
+		   ) { continue; }
 
 		if(writePeople)
 		{
@@ -1095,43 +1099,103 @@ void EdfsToFolders(const QString & inPath)
 	}
 }
 
-void preprocessDir()
+void preprocessDir(const QString & inPath)
 {
 #if 0
-	/// physMinMax & holes
-	if(0)
+	/// special renames
+	std::vector<std::pair<QString, QString>> renames
 	{
-		repair::physMinMaxDir(guyPath);
-		repair::holesDir(guyPath,
-						 numChan,
-						 guyPath);	/// rewrite after repair
-		//			continue;
-	}
-
-	/// rereference
-	if(0)
-	{
-		autos::rereferenceFolder(guyPath, "Ar"); /// check Ar
-	}
-
-	/// filter?
-	if(0)
-	{
-		/// already done ?
-		autos::refilterFolder(guyPath,
-							  1.6,
-							  30.);
-		//			continue;
-	}
-
-	/// cut?
-	if(0)
-	{
-		autos::cutFilesInFolder(guyPath,
-								8,
-								inPath + "_cut/");
-	}
+		{"was1", "new1"},
+		{"was2", "new2"}
+	};
+	repair::renameContents(workPath + "/" + subdir, renames);
 #endif
+
+#if 0
+	repair::fullRepairDir(inPath, {});
+#endif
+
+#if 0
+	/// physMinMax & holes
+	repair::physMinMaxDir(inPath);
+	repair::holesDir(inPath,
+					 numChan,
+					 inPath);
+#endif
+
+#if 0
+	/// reref
+	autos::rereferenceFolder(guyPath, "Ar"); /// check Ar
+#endif
+
+#if 0
+	/// refilter
+	autos::refilterFolder(guyPath,
+						  1.6,
+						  30.);
+#endif
+
+#if 0
+	/// cut
+	autos::cutFilesInFolder(guyPath,
+							8,
+							inPath + "_cut/");
+#endif
+}
+
+void ProcessAllInOneFolder(const QString & inPath,
+						   const QString & outPath,
+						   const std::vector<QString> & channs)
+{
+	if(!QDir(outPath).exists()) { QDir().mkpath(outPath); }
+	myLib::cleanDir(outPath, "txt", true);
+
+	QStringList edfs = QDir(inPath).entryList(def::edfFilters);
+	if(edfs.isEmpty())
+	{
+		std::cout << "ProcessAllInOneFolder: inPath is empty " << inPath << std::endl;
+	}
+
+	const QString guysOutPath = inPath + "/out";
+
+	/// process?
+	if(01)
+	{
+		/// clear outFolder
+		myLib::cleanDir(guysOutPath, "txt", true);
+		autos::calculateFeatures(inPath, channs, guysOutPath);
+	}
+
+	/// make one line file for each file
+	if(1)
+	{
+		for(QString ExpName : edfs)
+		{
+			ExpName = ExpName.left(ExpName.indexOf('.'));
+
+			std::vector<QString> fileNamesToArrange{};
+			for(feature feat : AUT_SETS.getAutosMaskArray())
+			{
+				fileNamesToArrange.push_back(ExpName + "_" + autos::featToStr(feat) + ".txt");
+			}
+			myLib::concatFilesHorz(guysOutPath,
+								   fileNamesToArrange,
+								   guysOutPath + "/" + ExpName + ".txt");
+
+			/// copy files into outPath
+			if(1)
+			{
+				QFile::remove(outPath + "/" + ExpName + ".txt");
+				QFile::copy(guysOutPath + "/" + ExpName + ".txt",
+							outPath + "/" + ExpName + ".txt");
+			}
+		}
+	}
+	/// make tables whole and people list
+	autos::ArrangeFilesToTable(outPath,
+							   outPath + "/all.txt",
+							   true);
+
 }
 
 void ProcessByFolders(const QString & inPath,
@@ -1140,6 +1204,7 @@ void ProcessByFolders(const QString & inPath,
 					  const std::vector<QString> & markers)
 {
 	if(!QDir(outPath).exists()) { QDir().mkpath(outPath); }
+	myLib::cleanDir(outPath, "txt", true);
 
 	auto guyList = QDir(inPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 	for(const QString & guy : guyList)
@@ -1174,7 +1239,7 @@ void ProcessByFolders(const QString & inPath,
 				for(feature feat : AUT_SETS.getAutosMaskArray())
 				{
 					const QString fileName = ExpName + mark
-											 + "_" + autos::getFeatureString(feat) + ".txt";
+											 + "_" + autos::featToStr(feat) + ".txt";
 					fileNamesToArrange.push_back(fileName);
 
 					/// create files if they are absent
@@ -1309,17 +1374,14 @@ void makeLabelsFile(const std::vector<QString> & chans,
 		}
 
 #if WAVELET_MATLAB
-		if(DEFS.getAutosMask() & featuresMask::wavelet)
+		if(AUT_SETS.getAutosMask() & feature::wavelet)
 		{
-			/// WAVELET
-			/// 19 freqs * 19 channels = 361 values
-			/// 19 freqs * 16 channels = 304 values
-			for(int i = 0; i < 19; ++i) /// freqs
+			for(int i = 0; i < 19; ++i) /// wavelet freqs magic const
 			{
-				for(const QString & lbl : labels)
+				for(const QString & lbl : chans)
 				{
 					lab << mark
-						<< "_wavSD"
+						<< "_" << "wavSD"
 						<< "_" << nm(i + 2)
 						<< "_" << lbl << sep;
 				}

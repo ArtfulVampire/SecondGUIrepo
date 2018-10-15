@@ -23,7 +23,9 @@ void MainWindow::customFunc()
 //	const QString workDir = "c:/Data";
 //	repair::fullRepairDir(workDir);
 //	autos::cutFilesInFolder(workDir, 8);
-	myLib::GalyaProcessing("tactile15Oct18");
+//	myLib::GalyaProcessing("tactile15Oct18");
+//	repair::fullRepairDir(def::GalyaFolder + "/kids15Oct18");
+	myLib::GalyaProcessing("kids15Oct18");
 	exit(0);
 
 //	myLib::XeniaFinal();
