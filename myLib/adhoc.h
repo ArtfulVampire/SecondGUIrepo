@@ -23,6 +23,8 @@ void burdenkoEdfPlusToEdf();
 
 std::vector<QString> composeMarkersList(const QString & workPath); /// really unused
 
+
+void makeLabelsXenia15Oct();
 void XeniaPretable();
 void XeniaFinalest();
 void XeniaFinal();

@@ -28,6 +28,8 @@ void MainWindow::customFunc()
 
 //	myLib::XeniaFinal();
 //	exit(0);
+
+//	myLib::makeLabelsXenia15Oct();
 //	autos::ArrangeFilesVertCat({"/media/Files/Data/Xenia/FINAL/labels.txt",
 //							   "/media/Files/Data/Xenia/FINAL/all_first60.txt"},
 //							   "/media/Files/Data/Xenia/FINAL/fin.txt");

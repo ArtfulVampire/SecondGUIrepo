@@ -282,6 +282,7 @@ std::valarray<double> butterworthBandPassTwoSided(const std::valarray<double> & 
 												  double fHigh,
 												  double srate)
 {
+	if(fLow == 0. && fHigh == 0.) { return in; }
 	std::valarray<double> res1 = butterworthBandPass(in, fLow, fHigh, srate);
 	std::valarray<double> res2 = smLib::contReverse(res1);
 	res1 = butterworthBandPass(res2, fLow, fHigh, srate);
@@ -2086,6 +2087,41 @@ std::valarray<double> hilbertPieces(const std::valarray<double> & inArr,
     return outHilbert;
 }
 
+double hilbertCarr(const std::valarray<double> & arr, double srate)
+{
+	static const double hilbertLowLimit = 0.;
+	static const double hilbertHighLimit = 40.;
+
+	auto envSpec = myLib::spectreRtoR(myLib::hilbertPieces(arr));
+	envSpec[0] = 0.;
+
+	double res = 0.;
+	double sumSpec = 0.;
+	for(int j = fftLimit(hilbertLowLimit,
+						 srate,
+						 smLib::fftL( arr.size() ));
+		j < fftLimit(hilbertHighLimit,
+					 srate,
+					 smLib::fftL( arr.size() ));
+		++j)
+	{
+		res += envSpec[j] * j;
+		sumSpec += envSpec[j];
+	}
+	res /= sumSpec;
+	res /= fftLimit(1.,
+					srate,
+					smLib::fftL( arr.size() ));
+	return res;
+}
+
+
+double hilbertSD(const std::valarray<double> & arr, double srate)
+{
+	auto a = myLib::hilbertPieces(arr);
+	return smLib::sigma(a) / smLib::mean(a);
+}
+
 std::valarray<double> makeSine(int numPoints,
 							   double freq,
 							   double srate,
@@ -2148,12 +2184,14 @@ double hjorthMobility(const std::valarray<double> & inSignal)
 	return std::sqrt(smLib::variance(derivative(inSignal)) /
 				smLib::variance(inSignal));
 }
+
 double hjorthComplexity(const std::valarray<double> & inSignal)
 {
 	/// second derivative
 	return std::sqrt(smLib::variance(derivative(derivative(inSignal))) /
 				smLib::variance(inSignal));
 }
+
 
 
 std::valarray<double> bayesCount(const std::valarray<double> & dataIn,

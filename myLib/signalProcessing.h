@@ -211,8 +211,8 @@ double alphaPeakFreq(const std::valarray<double> & spectreR,
 					 double rightLimFreq = 13.);
 
 
-double hilbertCarr(const std::valarray<double> & arr);
-double hilbertSD(const std::valarray<double> & arr);
+double hilbertCarr(const std::valarray<double> & arr, double srate);
+double hilbertSD(const std::valarray<double> & arr, double srate);
 
 
 std::valarray<double> hilbertPieces(const std::valarray<double> & arr,

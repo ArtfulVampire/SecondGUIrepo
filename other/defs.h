@@ -51,18 +51,8 @@ enum class username {MichaelA,
 					 Mati,
 					 IITP,
 					 PolinaM};
-enum class autosUser {Xenia, Galya, XeniaFinalest, Xenia15Oct};
-enum class autosCut {first30, second30, first60, none};
 
-enum featuresMask {
-	fft			= 0x01,	/// std::pow(2, 0);
-	alphaPeak	= 0x02,	/// std::pow(2, 1);
-	fracDim		= 0x04,	/// std::pow(2, 2);
-	Hilbert		= 0x08,	/// std::pow(2, 3);
-	wavelet		= 0x10,	/// std::pow(2, 4);
-	Hjorth		= 0x20,	/// std::pow(2, 5);
-	logFFT		= 0x40	/// std::pow(2, 6);
-};
+
 enum class spectraNorming {all, each};
 
 class defs
@@ -114,11 +104,8 @@ private:
 	edfFile globalEDF;
 
 
-	autosUser currAutosUser{autosUser::Xenia};
 	username currUser{username::MichaelA};
-	autosCut currCut{autosCut::none};
-	bool cutMedial{false};
-	int autosMask{0};
+
 
 	spectraNorming specNormTyp{spectraNorming::all};
 	double drawNorm{-1.};
@@ -160,15 +147,6 @@ public:
 	auto getDir() const							{ return this->dir; }
 	auto getDirPath() const						{ return this->dir->absolutePath(); }
 
-	void setAutosUser(autosUser in);			/// set some parameters
-	auto getAutosUser() const					{ return this->currAutosUser; }
-
-	void setAutosCut(autosCut in)				{ this->currCut = in; }
-	auto getAutosCut() const					{ return this->currCut; }
-
-	void setCutMedial(bool in)					{ this->cutMedial = in; }
-	bool getCutMedial() const					{ return this->cutMedial; }
-
 	bool isUser(username in) const				{ return this->currUser == in; }
 	void setUser(username in);					/// sets many parameters
 	auto getUser() const						{ return this->currUser; }
@@ -197,10 +175,6 @@ public:
 
 	void setLeftFreq(double in)					{ this->leftFreq = in; }
 	auto getLeftFreq() const					{ return this->leftFreq; }
-
-	void setAutosMask(int in)					{ this->autosMask = in; }
-	auto getAutosMask() const					{ return this->autosMask; }
-	std::vector<featuresMask> getAutosMaskArray() const;
 
 	void setRightFreq(double in)				{ this->rightFreq = in; }
 	auto getRightFreq() const					{ return this->rightFreq; }

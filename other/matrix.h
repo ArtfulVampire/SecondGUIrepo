@@ -135,6 +135,7 @@ public:
 	/// inverse
 	matrix operator~() const { return matrix::inverted(*this); }
 
+	matrix apply(std::function<double(double)> func) const;
 	matrix apply(const std::function<std::valarray<double>(const std::valarray<double> &)> &) const;
 	matrix integrate(const std::vector<std::pair<int, int>> & intervals) const;
 

@@ -452,6 +452,17 @@ matrix matrix::apply(const std::function<std::valarray<double>(const std::valarr
 	return res;
 }
 
+matrix matrix::apply(std::function<double(double)> func) const
+{
+	matrix res{};
+	for(const auto & row : myData)
+	{
+		auto newRow = row.apply(*func.target<double(*)(double)>());
+		res.push_back(newRow);
+	}
+	return res;
+}
+
 matrix matrix::integrate(const std::vector<std::pair<int, int>> & intervals) const
 {
 	matrix res{};

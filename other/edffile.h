@@ -272,6 +272,7 @@ public:
 	int findChannel(int num) const { return num; }
 	std::vector<int> findChannels(const QString & filter) const;
 	std::vector<int> findChannels(const std::vector<QString> & strs) const;
+	std::vector<bool> hasChannels(const std::vector<QString> & strs) const;
 
 	int countMarker(int mrk) const;
 	std::vector<uint> countMarkers(const std::vector<int> & mrks) const;

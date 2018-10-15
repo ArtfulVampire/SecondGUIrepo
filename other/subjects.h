@@ -142,6 +142,9 @@ namespace marksLists
 									};
 	const std::vector<QString> burdenkoFaces{"_all", "_svoi", "_other"};
 
+	/// 15 Oct 2018
+	const std::vector<QString> tactileComa{"_31", "_32", "_181", "_182", "_fon"};
+
 	/// Xenia Markers
 	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
 }

@@ -1435,6 +1435,16 @@ std::vector<int> edfFile::findChannels(const std::vector<QString> & strs) const
 	return res;
 }
 
+std::vector<bool> edfFile::hasChannels(const std::vector<QString> & strs) const
+{
+	std::vector<bool> res(strs.size());
+	for(int i = 0; i < strs.size(); ++i)
+	{
+		res[i] = (this->findChannel(strs[i]) != -1);
+	}
+	return res;
+}
+
 edfFile & edfFile::subtractMeans(const QString & outPath)
 {
 	for(int i = 0; i < this->ns; ++i)

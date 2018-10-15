@@ -54,6 +54,14 @@ template <typename ArrayType>
 void writeFileInLine(const QString & filePath,
 					 const ArrayType & outData);
 
+void concatFilesHorz(const QString & inDirPath,
+					 const std::vector<QString> & fileNames,
+					 const QString & outFilePath);
+
+void concatFilesVert(const QString & inDirPath,
+					 const std::vector<QString> fileNames,
+					 const QString & outFilePath);
+
 }
 
 #endif /// DATAHANDLERS_H

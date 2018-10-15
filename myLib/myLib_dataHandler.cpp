@@ -9,6 +9,42 @@ using namespace myOut;
 namespace myLib
 {
 
+void concatFilesVert(const QString & inDirPath,
+					 const std::vector<QString> fileNames,
+					 const QString & outFilePath)
+{
+	QDir().mkpath(myLib::getDirPathLib(outFilePath));
+
+	QFile outStr(outFilePath); outStr.open(QIODevice::WriteOnly);
+
+	for(const QString & filePath : fileNames)
+	{
+		QFile in(inDirPath + "/" + filePath); in.open(QIODevice::ReadOnly);
+		auto contents = in.readAll();
+		outStr.write(contents);
+		if(!contents.endsWith("\n")) { outStr.write("\r\n"); }
+		in.close();
+	}
+	outStr.close();
+}
+
+void concatFilesHorz(const QString & inDirPath,
+					 const std::vector<QString> & fileNames,
+					 const QString & outFilePath)
+{
+	QDir().mkpath(myLib::getDirPathLib(outFilePath));
+
+	QFile outStr(outFilePath); outStr.open(QIODevice::WriteOnly);
+
+	for(const QString & fileName : fileNames)
+	{
+		QFile in(inDirPath + "/" + fileName); in.open(QIODevice::ReadOnly);
+		outStr.write(in.readAll());
+		in.close();
+	}
+	outStr.close();
+}
+
 std::vector<QStringList> makeFileLists(const QString & path,
 									   const QStringList & auxFilters)
 {

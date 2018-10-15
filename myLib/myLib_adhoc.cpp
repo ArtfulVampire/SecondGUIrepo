@@ -196,83 +196,20 @@ void XeniaPretable()
 	fil.close();
 }
 
-void makeLabelsXenia15Oct()
-{
-	std::vector<QString> labels = coords::lbl16;
-	QString outFilePath = "/media/Files/Data/Xenia/FINAL/labels.txt";
-	std::vector<QString> usedMarkers = subj::marksLists::tbiMarkers;
-	QString sep = "\t";
-
-	///make labels file
-
-	for(QString & in : labels)
-	{
-		in = in.mid(in.indexOf(' ') + 1,
-					in.indexOf('-') - in.indexOf(' ') - 1).toLower();
-	}
-
-	std::ofstream lab;
-	lab.open(outFilePath.toStdString());
-	for(QString mark : usedMarkers)
-	{
-		mark.remove('_');
-		if(DEFS.getAutosMask() & featuresMask::fft)
-		{
-			for(QString filt : {"8_13", "2_20"})
-			{
-				for(const QString & lbl : labels)
-				{
-					lab << mark
-						<< "_" << "fft"
-						<< "_" << filt
-						<< "_"  << lbl << sep;
-				}
-			}
-		}
-
-		if(DEFS.getAutosMask() & featuresMask::fracDim)
-		{
-			for(QString filt : {"8_13", "2_20"})
-			{
-				for(const QString & lbl : labels)
-				{
-					lab << mark
-						<< "_" << "fd"
-						<< "_" << filt
-						<< "_"  << lbl << sep;
-				}
-			}
-		}
-
-		if(DEFS.getAutosMask() & featuresMask::Hilbert)
-		{
-			for(QString filt : {"8_13", "2_20"})
-			{
-				for(QString func : {"hilbcarr", "hilbsd"})
-				{
-					for(const QString & lbl : labels)
-					{
-						lab << mark
-							<< "_" << func
-							<< "_" << filt
-							<< "_"  << lbl << sep;
-					}
-				}
-			}
-		}
-	}
-	lab.close();
-}
 
 void XeniaFinal()
 {
 	const QString finalPath{"/media/Files/Data/Xenia/FINAL"};
-	DEFS.setAutosUser(autosUser::Xenia15Oct);
-	DEFS.setAutosMask(featuresMask::fracDim
-					  | featuresMask::Hilbert
-					  | featuresMask::fft);
-	DEFS.setAutosCut(autosCut::first60);
-	DEFS.setCutMedial(true);
+	AUT_SETS.setAutosMask(0
+						  | autos::feature::fft
+						  | autos::feature::fracDim
+						  | autos::feature::Hilbert
+						  );
+	AUT_SETS.setOutputStyle(autos::outputStyle::Line);
+	AUT_SETS.setOutputSequence(autos::outputSeq::ByChans);
+	AUT_SETS.setInitialCut(autos::initialCut::first60);
+	const std::vector<QString> channs = coords::lbl16noz;
+
 
 	for(const QString & subdir : {"Healthy", "Moderate", "Severe"})
 	{
@@ -288,7 +225,7 @@ void XeniaFinal()
 			QDir().mkdir(guyOutPath);
 			myLib::cleanDir(guyOutPath);
 
-			autos::calculateFeatures(guyPath, 19, guyOutPath);
+			autos::calculateFeatures(guyPath, channs, guyOutPath);
 
 			/// make one line file for each stimulus
 			if(01)
@@ -296,13 +233,13 @@ void XeniaFinal()
 				for(const QString & mark : subj::marksLists::tbiMarkers)
 				{
 					std::vector<QString> fileNamesToArrange{};
-					for(featuresMask func : DEFS.getAutosMaskArray())
+					for(autos::feature func : AUT_SETS.getAutosMaskArray())
 					{
 						const QString fileName = guy + mark
 												 + "_" + autos::getFeatureString(func) + ".txt";
 						fileNamesToArrange.push_back(fileName);
 					}
-					autos::ArrangeFilesHorzCat(guyOutPath,
+					myLib::concatFilesHorz(guyOutPath,
 											   fileNamesToArrange,
 											   guyOutPath + "/" + guy + mark + ".txt");
 				}
@@ -316,7 +253,7 @@ void XeniaFinal()
 				{
 					fileNamesToArrange.push_back(guy + mark + ".txt");
 				}
-				autos::ArrangeFilesHorzCat(guyOutPath,
+				myLib::concatFilesHorz(guyOutPath,
 										   fileNamesToArrange,
 										   guyOutPath + "/" + guy + ".txt");
 			}
@@ -335,26 +272,25 @@ void XeniaFinal()
 	autos::ArrangeFilesToTable(finalPath + "_out",
 							   finalPath + "_out/all.txt",
 							   true);
-	autos::makeLabelsFile(coords::lbl16,
+	autos::makeLabelsFile(coords::lbl16noz,
 						  finalPath + "/labels.txt",
-						  "_8_13",
 						  subj::marksLists::tbiMarkers,
 						  "\t");
 }
 
 void XeniaFinalest()
 {
-	DEFS.setAutosUser(autosUser::XeniaFinalest);
 	const QString workPath = "/media/Files/Data/Xenia/FINAL";
 	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};
-	const std::vector<QString> tbiMarkers{"_no", "_kh", "_sm", "_cr", "_bw", "_bd", "_fon"};
-	DEFS.setAutosMask(0
-//					  | featuresMask::alphaPeak
-					  | featuresMask::fracDim
-					  | featuresMask::Hilbert
-//					  | featuresMask::fft
-//					  | featuresMask::logFFT
-					  );
+	const std::vector<QString> & tbiMarkers = subj::marksLists::tbiMarkers;
+	const std::vector<QString> & channs = coords::lbl16noz;
+	AUT_SETS.setAutosMask(0
+//						  | autos::feature::alphaPeak
+						  | autos::feature::fracDim
+						  | autos::feature::Hilbert
+//						  | autos::feature::fft
+//						  | autos::feature::logFFT
+						  );
 
 #if 0
 	/// check zeros
@@ -460,124 +396,10 @@ void XeniaFinalest()
 
 #if 01
 	/// processing itself
-	autos::Xenia_TBI_finalest(workPath, workPath + "_res", tbiMarkers);
+	autos::ProcessByGroups(workPath, workPath + "_res", channs, tbiMarkers);
+	autos::makeLabelsFile(channs, workPath + "/labels.txt", tbiMarkers, "\t");
 #endif
 
-
-
-#if 0
-	/// Xenia FINAL make labels
-	const QString sep{"\t"};
-
-	DEFS.setAutosMask(featuresMask::Hilbert
-					  | featuresMask::fracDim);
-
-	std::ofstream lab;
-	lab.open((def::XeniaFolder + "/labels.txt").toStdString());
-
-	std::vector<QString> labels1 = coords::lbl19;
-	for(QString & in : labels1)
-	{
-		in = in.toLower();
-	}
-	smLib::eraseItems(labels1, std::vector<int>{4, 9, 14});	/// skip Fz, Cz, Pz
-
-	const QString initFreq = "_1.6-30";
-	for(const QString & mark_ : tbiMarkers)
-	{
-		QString mark = mark_;
-		mark.remove("_");
-
-		if(DEFS.getAutosMask() & featuresMask::fft)
-		{
-			/// FFT
-			for(int i = 2; i < 20; ++i) /// freqs
-			{
-				for(const QString & lbl : labels1)
-				{
-					lab << mark
-						<< "_" << "fft"
-						<< "_" << nm(i)
-						<< "-" << nm(i + 1)
-						<< "_"  << lbl << sep;
-				}
-			}
-		}
-		if(DEFS.getAutosMask() & featuresMask::fracDim)
-		{
-			const QString fir = "fd" + initFreq;
-			{
-				for(const QString & lbl : labels1)
-				{
-					lab << mark
-						<< "_" << fir
-						<< "_"
-						<< lbl << sep;
-				}
-			}
-		}
-
-		if(DEFS.getAutosMask() & featuresMask::Hilbert)
-		{
-			/// CHAOS - check hilbertFilters in countHilbert (
-			for(const QString & fir : {
-				QString("hilbcarr")	+ initFreq,
-				QString("hilbsd")	+ initFreq,
-				QString("hilbcarr")	+ "_2-20",
-				QString("hilbsd")	+ "_2-20",
-				QString("hilbcarr")	+ "_8-13",
-				QString("hilbsd")	+ "_8-13",
-				QString("hilbcarr")	+ "_2-7",
-				QString("hilbsd")	+ "_2-7",
-				QString("hilbcarr")	+ "_13-18",
-				QString("hilbsd")	+ "_13-18",
-		}
-				)
-			{
-				for(const QString & lbl : labels1)
-				{
-					lab << mark
-						<< "_" << fir
-						<< "_"
-						<< lbl << sep;
-				}
-			}
-		}
-
-		if(DEFS.getAutosMask() & featuresMask::wavelet)
-		{
-			/// WAVELET
-			for(const QString & fir : {"wavmean", "wavmed", "wavsgm"})
-			{
-				for(int i = 2; i <= 20; ++i)
-				{
-					for(const QString & lbl : labels1)
-					{
-						lab << mark
-							<< "_" << fir
-							<< "_" << nm(i)
-							<< "-" << nm(i+1)
-							<< "_" << lbl << sep;
-					}
-				}
-			}
-		}
-
-		if(DEFS.getAutosMask() & featuresMask::alphaPeak)
-		{
-			/// ALPHA
-			for(const QString & lbl : labels1)
-			{
-				lab << mark
-					<< "_" << "alpha"
-					<< initFreq
-					<< "_" << lbl << sep;
-			}
-		}
-	}
-	lab.close();
-	return;
-#endif /// labels
 
 #if 0
 	/// labels check
@@ -634,13 +456,30 @@ const std::map<QString, std::vector<std::pair<QString, QString>>> renamesGalya
 
 void GalyaProcessing(const QString & addPath)
 {
-	//	const QStringList subdirs{"young", "adult"};
-		const QString workPath = def::GalyaFolder + "/" + addPath;
+	AUT_SETS.setAutosMask(0
+						  | autos::feature::fft
+						  | autos::feature::alphaPeak
+						  | autos::feature::fracDim
+						  | autos::feature::Hilbert
+						  | autos::feature::Hjorth
+						  | autos::feature::logFFT
+						  );
+	AUT_SETS.setFeatureFilter(autos::feature::fracDim,
+	{autos::filtFreqs.at(autos::filter::none),
+	 autos::filtFreqs.at(autos::filter::alpha)});
 
-//		const QStringList subdirs = QDir(workPath).entryList(QDir::Dirs|QDir::NoDotAndDotDot);
-		const QStringList subdirs{""};
-		const int numChan = 17;
-		const std::vector<QString> usedMarkers = {"_31", "_32", "_181", "_182", "_fon"};
+	AUT_SETS.setFeatureFilter(autos::feature::Hilbert,
+	{autos::filtFreqs.at(autos::filter::none),
+	 autos::filtFreqs.at(autos::filter::alpha)});
+
+	AUT_SETS.setOutputStyle(autos::outputStyle::Line);
+	AUT_SETS.setOutputSequence(autos::outputSeq::ByChans);
+	AUT_SETS.setInitialCut(autos::initialCut::none);
+
+	const QString workPath = def::GalyaFolder + "/" + addPath;
+	const QStringList subdirs{""};
+	const std::vector<QString> channelsToProcess = coords::lbl17noFP;
+	const std::vector<QString> usedMarkers = subj::marksLists::tactileComa;
 
 
 #if 0
@@ -690,16 +529,8 @@ void GalyaProcessing(const QString & addPath)
 #endif
 
 #if 0
-		/// checks and corrects channels order consistency
-
-		edfFile labels(workPath + "/labels.edf");
-
-		QString referentStr;
-		for(int i = 0; i < numChan; ++i)
-		{
-			referentStr += nm(labels.findChannel(coords::lbl19[i])) + " ";
-		}
-
+		/// checks channels presence
+		std::vector<bool> refChans(channelsToProcess.size(), true);
 		for(const QString & subdir : subdirs)
 		{
 			const QString groupDir = workPath + "/" + subdir;
@@ -711,19 +542,11 @@ void GalyaProcessing(const QString & addPath)
 				auto filList = QDir(guyPath).entryList(def::edfFilters); /// edfs of one guy
 				for(const QString & fl : filList)
 				{
-					edfFile file;
-					file.readEdfFile(guyPath + "/" + fl, true);
-					QString helpString{};
-					for(int i = 0; i < numChan; ++i)
+					edfFile file(guyPath + "/" + fl, true);
+					auto tmp = file.hasChannels(channelsToProcess);
+					if(refChans != tmp)
 					{
-						helpString += nm(file.findChannel(coords::lbl19[i])) + " ";
-					}
-
-					if(helpString != referentStr)
-					{
-						std::cout << "wrong chans: " <<  fl << std::endl;
-						/// rewrite file with correct chan order - read with data
-//						file.reduceChannels(helpString).writeEdfFile(tact + "/" + dr + "/" + fl);
+						std::cout << "not enough channels: " <<  fl << std::endl;
 					}
 				}
 			}
@@ -734,17 +557,18 @@ void GalyaProcessing(const QString & addPath)
 
 #if 01
 		/// calculation itself
-		DEFS.setAutosUser(autosUser::Galya);
-
-//		DEFS.setAutosMask(featuresMask::fracDim
-//						  | featuresMask::Hilbert);
 
 		for(const QString & subdir : subdirs)
 		{
 			/// usual processing
 			autos::ProcessByFolders(workPath + "/" + subdir,
-									numChan,
+									workPath + "_out",
+									channelsToProcess,
 									usedMarkers);
+			autos::makeLabelsFile(channelsToProcess,
+								  workPath + "_out/labels.txt",
+								  usedMarkers,
+								  "\t");
 #if 0
 			/// rhythm adoption
 			for(const QString & stimType : {"sv", "zv"})

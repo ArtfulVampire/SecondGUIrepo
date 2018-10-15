@@ -1,50 +1,6 @@
 #include <other/defs.h>
 /// begin defs Singleton
 
-void defs::setAutosUser(autosUser in)
-{
-	this->currAutosUser = in;
-	switch(in)
-	{
-	case autosUser::Galya:
-	{
-		autosMask = featuresMask::alphaPeak |
-					featuresMask::fft |
-					featuresMask::Hilbert |
-					featuresMask::fracDim |
-					featuresMask::Hjorth |
-					featuresMask::logFFT
-			   ;
-#if WAVELET_MATLAB
-		autosMask = autosMask | featuresMask::wavelet;
-#endif
-		break;
-	}
-	case autosUser::Xenia:
-	{
-		autosMask = featuresMask::alphaPeak |
-					featuresMask::fft |
-					featuresMask::Hilbert |
-					featuresMask::fracDim |
-					featuresMask::wavelet
-					;
-		break;
-	}
-	case autosUser::XeniaFinalest:
-	{
-		autosMask = featuresMask::alphaPeak |
-					featuresMask::fft |
-					featuresMask::Hilbert |
-					featuresMask::logFFT |
-//					featuresMask::wavelet |
-					featuresMask::fracDim
-					;
-		break;
-	}
-	default: { break; }
-	}
-}
-
 void defs::setUser(username in)
 {
 	/// write all the defaults, which may be changed
@@ -121,16 +77,6 @@ void defs::setUser(username in)
 	}
 }
 
-std::vector<featuresMask> defs::getAutosMaskArray() const
-{
-	std::vector<featuresMask> res{};
-	for(int i = 0; i < 10; ++i)
-	{
-		int a = std::pow(2, i);
-		if(a & this->autosMask) { res.push_back(featuresMask(a)); }
-	}
-	return res;
-}
 /// end defs Singleton
 
 
