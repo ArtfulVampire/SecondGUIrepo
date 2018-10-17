@@ -25,10 +25,10 @@ void MainWindow::customFunc()
 //	autos::cutFilesInFolder(workDir, 8);
 //	myLib::GalyaProcessing("tactile15Oct18");
 //	repair::fullRepairDir(def::GalyaFolder + "/kids15Oct18");
-	myLib::GalyaProcessing("kids15Oct18");
-	exit(0);
+//	myLib::GalyaProcessing("kids15Oct18");
+//	exit(0);
 
-//	myLib::XeniaFinal();
+	myLib::XeniaFinal();
 //	exit(0);
 
 //	myLib::makeLabelsXenia15Oct();

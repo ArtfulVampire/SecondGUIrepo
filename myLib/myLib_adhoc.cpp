@@ -196,8 +196,7 @@ void XeniaPretable()
 	fil.close();
 }
 
-
-void XeniaSettings()
+void SettingsXenia()
 {
 	AUT_SETS.setAutosMask(0
 						  | autos::feature::fft
@@ -212,7 +211,7 @@ void XeniaSettings()
 
 void XeniaFinal()
 {
-	XeniaSettings();
+	SettingsXenia();
 	const QString finalPath{"/media/Files/Data/Xenia/FINAL"};
 
 	for(const QString & subdir : {"Healthy", "Moderate", "Severe"})
@@ -420,7 +419,7 @@ void XeniaFinalest()
 
 }
 
-void GalyaSettings()
+void SettingsGalya()
 {
 	AUT_SETS.setAutosMask(0
 						  | autos::feature::fft
@@ -446,7 +445,7 @@ void GalyaSettings()
 
 void GalyaProcessing(const QString & addPath)
 {
-	GalyaSettings();
+	SettingsGalya();
 	const QString workPath = def::GalyaFolder + "/" + addPath;
 	const std::vector<QString> & usedMarkers = subj::marksLists::none;
 

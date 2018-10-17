@@ -25,11 +25,11 @@ std::vector<QString> composeMarkersList(const QString & workPath); /// really un
 
 
 void XeniaPretable();
-void XeniaSettings();
+void SettingsXenia();
 void XeniaFinalest();
 void XeniaFinal();
 
-void GalyaSettings();
+void SettingsGalya();
 void GalyaProcessing(const QString & addPath);
 
 void feedbackFinal();

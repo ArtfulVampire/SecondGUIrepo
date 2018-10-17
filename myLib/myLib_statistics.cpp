@@ -36,17 +36,17 @@ double combinationLog(int n, int k)
 	return factorialLog(n) / (factorialLog(k) * factorialLog(n - k));
 }
 
-double binomialPvalue(int n, int k, double successRate)
+double binomialPvalue(int numTries, int numSuccess, double successProb)
 {
 	double sum = 0.;
-	for(int i = k; i <= n; ++i) /// number of success - not less than k
+	for(int i = numSuccess; i <= numTries; ++i) /// number of success - not less than k
 	{
-		double b = std::pow(successRate, i) * std::pow(1. - successRate, n - i);
+		double b = std::pow(successProb, i) * std::pow(1. - successProb, numTries - i);
 
-		const auto lim = std::min(i, n-i); /// C(n, i) = C(n, n-i)
+		const auto lim = std::min(i, numTries-i); /// C(n, i) = C(n, n-i)
 		for(int j = 0; j < lim; ++j)
 		{
-			b *= (n - j);
+			b *= (numTries - j);
 			b /= (lim - j);
 		}
 		sum += b;

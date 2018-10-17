@@ -3,6 +3,7 @@
 #include <set>
 
 #include <myLib/output.h>
+#include <myLib/statistics.h>
 
 using namespace myOut;
 
@@ -184,17 +185,17 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
 
 	/// calculate quality
     double corrSum = 0.;
-    double wholeNum = 0.;
+	int wholeNum = confusionMatrix.sum();
 
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
     {
-        corrSum += confusionMatrix[i][i];
-        wholeNum += confusionMatrix[i].sum();
+		corrSum += confusionMatrix[i][i];
     }
-
 	/// av.acc
 	double averageAccuracy = corrSum * 100. / wholeNum;
 
+	/// p-val
+	double pval = myLib::binomialPvalue(wholeNum, corrSum, 1. / myClassData->getNumOfCl());
 
 	/// Cohen's
 	double pE = 0.;
@@ -205,11 +206,11 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
     }
 	double kappa = 1. - (1. - corrSum / wholeNum) / (1. - pE);
 
-	/// p-val
-	double pval = 0.000;
 
-    res << smLib::doubleRound(averageAccuracy, 2) << '\t';
-    res << smLib::doubleRound(kappa, 3) << '\t';
+
+	res << smLib::doubleRound(averageAccuracy, 2) << "\t";
+	res << smLib::doubleRound(kappa, 3) << "\t";
+	res << smLib::doubleRound(pval, 3) << "\t";
 	res << std::endl;
     res.close();
 
@@ -217,6 +218,7 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
 	os << confusionMatrix;
 	os << "average accuracy = " << smLib::doubleRound(averageAccuracy, 1) << "\t";
 	os << "kappa = " << smLib::doubleRound(kappa, 3) << "\t";
+	os << "pval = " << smLib::doubleRound(pval, 3) << "\t";
 	os << std::endl << std::endl;
 
     confusionMatrix.fill(0.);
