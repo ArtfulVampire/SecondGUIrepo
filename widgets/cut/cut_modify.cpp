@@ -620,6 +620,11 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 
 void Cut::splitSlot()
 {
+	if(edfFil.getExpName().contains("_veget"))
+	{
+		std::cout << "split is forbidden for vegetative data" << std::endl;
+		return;
+	}
 	this->splitSemiSlot(ui->leftLimitSpinBox->value(),
 						ui->rightLimitSpinBox->value());
 }

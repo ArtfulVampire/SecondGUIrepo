@@ -28,7 +28,7 @@ void MainWindow::customFunc()
 //	myLib::GalyaProcessing("kids15Oct18");
 //	exit(0);
 
-	myLib::XeniaFinal();
+//	myLib::XeniaFinal();
 //	exit(0);
 
 //	myLib::makeLabelsXenia15Oct();
