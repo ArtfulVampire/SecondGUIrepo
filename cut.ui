@@ -76,19 +76,6 @@
       <height>448</height>
      </rect>
     </property>
-    <widget class="QLabel" name="picLabel">
-     <property name="geometry">
-      <rect>
-       <x>60</x>
-       <y>60</y>
-       <width>261</width>
-       <height>131</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>TextLabel</string>
-     </property>
-    </widget>
    </widget>
   </widget>
   <widget class="QWidget" name="layoutWidget1">
@@ -205,7 +192,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>1650</x>
@@ -266,7 +253,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>3</x>
@@ -618,14 +605,14 @@
      <widget class="QLabel" name="spectreLabel">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>220</horstretch>
-        <verstretch>220</verstretch>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
        </sizepolicy>
       </property>
       <property name="minimumSize">
        <size>
-        <width>200</width>
-        <height>200</height>
+        <width>150</width>
+        <height>150</height>
        </size>
       </property>
       <property name="maximumSize">
@@ -914,6 +901,19 @@
      </spacer>
     </item>
    </layout>
+  </widget>
+  <widget class="QLabel" name="picLabel">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>290</y>
+     <width>540</width>
+     <height>430</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
   </widget>
  </widget>
  <resources/>

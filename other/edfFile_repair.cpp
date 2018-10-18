@@ -383,15 +383,15 @@ void testArtifacts(const QString & dirPath, const QStringList & filters)
 				/// magic consts
 				double theta = std::abs(std::accumulate(
 											std::begin(tmp) + smLib::fftLimit(4., srate, fftLen),
-											std::begin(tmp) + smLib::fftLimit(7.5, srate, fftLen),
+											std::begin(tmp) + smLib::fftLimit(7.5, srate, fftLen) + 1,
 											std::complex<double>{}));
 				double beta = std::abs(std::accumulate(
 											std::begin(tmp) + smLib::fftLimit(15., srate, fftLen),
-											std::begin(tmp) + smLib::fftLimit(20., srate, fftLen),
+											std::begin(tmp) + smLib::fftLimit(20., srate, fftLen) + 1,
 											std::complex<double>{}));
 				double whole = std::abs(std::accumulate(
 											std::begin(tmp) + smLib::fftLimit(5., srate, fftLen),
-											std::begin(tmp) + smLib::fftLimit(20., srate, fftLen),
+											std::begin(tmp) + smLib::fftLimit(20., srate, fftLen) + 1,
 											std::complex<double>{}));
 				thetaPart[num] = theta / whole;
 				thetaAbs[num] = theta;

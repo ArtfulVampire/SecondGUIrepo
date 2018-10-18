@@ -34,10 +34,12 @@ Cut::Cut() :
 	ui->suffixComboBox->addItem("car");
 	ui->suffixComboBox->addItem("stag");
 	ui->suffixComboBox->setCurrentText("");
+
 	if(DEFS.getUser() == username::IITP)
 	{
 		ui->suffixComboBox->setCurrentText("sum");
 	}
+
 
 	/// draws
 	ui->yNormDoubleSpinBox->setDecimals(2);
@@ -53,7 +55,7 @@ Cut::Cut() :
     ui->paintLengthDoubleSpinBox->setDecimals(1);
 	ui->paintLengthDoubleSpinBox->setSingleStep(0.2);
 
-    ui->scrollArea->setWidget(ui->picLabel);
+	ui->scrollArea->setWidget(ui->picLabel);
 	ui->scrollArea->installEventFilter(this);
 
 	ui->color1LineEdit->setText("blue");
@@ -380,7 +382,8 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			}
 
 			/// offset in seconds
-			double offset = ui->paintLengthDoubleSpinBox->value() * step;
+			/// step sign was changed 18-Oct-18
+			double offset = ui->paintLengthDoubleSpinBox->value() * step * -1;
 			if(scrollEvent->modifiers().testFlag(Qt::ShiftModifier))
 			{
 				if(!scrollEvent->modifiers().testFlag(Qt::ControlModifier))

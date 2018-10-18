@@ -1,9 +1,12 @@
-#include <other/autos.h>
+#include <myLib/adhoc.h>
 
 #include <other/defs.h>
 #include <other/coords.h>
 #include <myLib/valar.h>
 #include <myLib/signalProcessing.h>
+
+namespace myLib
+{
 
 const int numOfTasks = 180;
 const int numSmooth = 15;
@@ -107,7 +110,7 @@ std::valarray<double> elenaHilbert(const std::valarray<double> & inSignal,
 		double helpDouble = 0.;
 		double sumSpec = 0.;
 		for(int j = 0;
-			j < smLib::fftLimit(hilbertFreqLimit,
+			j <= smLib::fftLimit(hilbertFreqLimit,
 						 srate,
 						 smLib::fftL( inSignal.size() ));
 			++j)
@@ -135,7 +138,7 @@ std::valarray<double> elenaHjorth(const std::valarray<double> & inSignal,
 }
 
 using elenaFuncType = std::function<std::valarray<double>(const std::valarray<double> &, double)>;
-const std::vector<std::pair<const elenaFuncType &, int>> funcsWithSizes
+const std::vector<std::pair<elenaFuncType, int>> funcsWithSizes
 {
 	{elenaFft,			integrLimits.size()},
 	{elenaAlphaPeak,	1},
@@ -223,7 +226,7 @@ void elenaCalculation(const QString & realsPath,
 	};
 
 	const int fftLen = 4096;
-	const int numChansForSpectre = 128; /// -1
+	const int numChansForSpectre = 19; /// -1
 
 	QDir().mkpath(outTableDir);
 	const QString tablePath = outTableDir + "/table.txt";
@@ -241,14 +244,18 @@ void elenaCalculation(const QString & realsPath,
 	const QStringList reals = QDir(realsPath).entryList(def::edfFilters);
 
 	const int leftSpecLim = smLib::fftLimit(DEFS.getLeftFreq(),	DEFS.getFreq(), fftLen);
-	const int rightSpecLim = smLib::fftLimit(DEFS.getRightFreq(),	DEFS.getFreq(), fftLen);
+	const int rightSpecLim = smLib::fftLimit(DEFS.getRightFreq(), DEFS.getFreq(), fftLen) + 1;
 
 	for(const QString & fileName : reals)
 	{
+		std::cout << fileName << std::endl;
+
 		edfFile fil(realsPath + "/" + fileName);
 		const matrix & inData = fil.getData();
 
-		/// read from filename
+		if(inData.cols() < 2 * fil.getFreq()) { continue; }
+
+		/// read aux data from filename (sliceElena() was already called)
 		std::vector<QString> fromFileName{};
 		for(const QString & prefix : {"_eda_", "_n_", "_m_", "_t_"})
 		{
@@ -258,18 +265,21 @@ void elenaCalculation(const QString & realsPath,
 		}
 
 		/// calculate features
-		matrix features(128, sumSize); //////////////
-		for(int chanNum = 0; chanNum < 128; ++chanNum) ////////////////////
+		matrix features(numChansForSpectre, sumSize); //////////////
+		for(int chanNum = 0; chanNum < numChansForSpectre; ++chanNum) ////////////////////
 		{
 			int currIndex{0};
 			for(const auto & func : funcsWithSizes)
 			{
+//				std::cout << chanNum << " " << currIndex << "\t";
 				features[chanNum][std::slice(currIndex, func.second, 1)]
 						= (func.first)(inData[chanNum], fil.getFreq());
 				currIndex += func.second;
 			}
-		}
 
+		}
+//		std::cout << std::endl;
+#if 0
 		/// integrate over clusters
 		matrix avFeatures{};
 		for(const auto & in : coords::egi::chans128)
@@ -285,40 +295,57 @@ void elenaCalculation(const QString & realsPath,
 		}
 
 		/// make a long line
-		std::valarray<double> res(sumSize + 9); /////////// magic = vegetative + auxiliary
-		res[std::slice(0, sumSize, 1)] = avFeatures.toValarByRows();
+		const int wholeLen = sumSize * coords::egi::chans128.size();
+		std::valarray<double> res(wholeLen + 9); /////////// magic const 9 = vegetative + auxiliary
+		res[std::slice(0, wholeLen, 1)] = avFeatures.toValarByRows();
+#else
+		const int wholeLen = sumSize * numChansForSpectre;
+		std::valarray<double> res(wholeLen + 9); /////////// magic const 9 = vegetative + auxiliary
+		res[std::slice(0, wholeLen, 1)] = features.toValarByRows();
+#endif
 
 		/// calculate vegetative
-		int vegetIndex = sumSize;
+		int vegetIndex = wholeLen;
 		auto eda = myLib::EDAmax(fil.getData(EDAstring), fromFileName[0].toDouble());
+//		std::cout << "eda.first" << std::endl;
 		res[vegetIndex++] = eda.first;										/// eda magnitude
+//		std::cout << "eda.second" << std::endl;
 		res[vegetIndex++] = eda.second / fil.getFreq();						/// eda latency
+//		std::cout << "RDfreq" << std::endl;
 		res[vegetIndex++] = myLib::RDfreq(fil.getData(RDstring), fftLen);	/// breath frequency
+//		std::cout << "PPG range" << std::endl;
 		res[vegetIndex++] = myLib::PPGrange(fil.getData(PPGstring));		/// PPG magnitude
+//		std::cout << "PPG freq" << std::endl;
 		res[vegetIndex++] = myLib::RDfreq(fil.getData(PPGstring), fftLen);	/// PPG frequency
+//		std::cout << "reacTime" << std::endl;
 		res[vegetIndex++] = inData.cols() / fil.getFreq();					/// reaction time
 
 		/// auxiliary
+//		std::cout << "taskNum" << std::endl;
 		res[vegetIndex++] = fromFileName[1].toInt();	/// taskNumber
+//		std::cout << "taskMark" << std::endl;
 		res[vegetIndex++] = fromFileName[2].toInt();	/// taskMark
+//		std::cout << "operMark" << std::endl;
 		res[vegetIndex++] = fromFileName[3].toInt();	/// operMark
+
+
 		allNumbers.erase(fromFileName[1].toInt());
 		result.push_back(res);
 
 		/// write into file for classification
 		if(inData.rows() < coords::egi::manyChannels)
 		{
-			matrix spec = myLib::countSpectre(inData.subRows(19),
+			matrix spec = myLib::countSpectre(inData.subRows(numChansForSpectre),
 											  fftLen,
-											  numSmooth).subCols(
-							  leftSpecLim, rightSpecLim);
+											  numSmooth);
+			if(spec.isEmpty()) continue; /// less than 3 sec of real signal
+			spec = spec.subCols(leftSpecLim, rightSpecLim);
 
-			std::ofstream outStream;
 			QString outString = outSpectraPath + "/" + fileName;
-			outStream.open(outString
-						   .replace(".edf", def::spectraDataExtension)
-						   .toStdString());
-			outStream << "NumOfChannels " << 19 << '\t';
+			std::ofstream outStream(outString
+									.replace(".edf", def::spectraDataExtension)
+									.toStdString());
+			outStream << "NumOfChannels " << numChansForSpectre << '\t';
 			outStream << "spLength " << spec.cols() << "\r\n";
 
 			outStream << std::fixed;
@@ -326,11 +353,11 @@ void elenaCalculation(const QString & realsPath,
 
 			outStream << spec;
 
-			outStream << eda.first;										/// eda magnitude
-			outStream << eda.second / fil.getFreq();					/// eda latency
-			outStream << myLib::RDfreq(fil.getData(RDstring), fftLen);	/// breath frequency
-			outStream << myLib::PPGrange(fil.getData(PPGstring));		/// PPG magnitude
-			outStream << myLib::RDfreq(fil.getData(PPGstring), fftLen);	/// PPG frequency
+			outStream << eda.first << "\t";										/// eda magnitude
+			outStream << eda.second / fil.getFreq() << "\t";					/// eda latency
+			outStream << myLib::RDfreq(fil.getData(RDstring), fftLen) << "\t";	/// breath frequency
+			outStream << myLib::PPGrange(fil.getData(PPGstring)) << "\t";		/// PPG magnitude
+			outStream << myLib::RDfreq(fil.getData(PPGstring), fftLen) << "\t";	/// PPG frequency
 			outStream.close();
 		}
 	}
@@ -386,8 +413,11 @@ void elenaCalculation(const QString & realsPath,
 		return a1[sumSize + 8] < a2[sumSize + 8]; /// operMark
 	});
 #endif
+	/// write to table
 	std::ofstream outStr(tablePath.toStdString());
-	outStr << makeTableCols(coords::egi::chans128groups) << std::endl;
+	/// LABELS!!!
+//	outStr << makeTableCols(coords::egi::chans128groups) << std::endl;
+	outStr << makeTableCols(coords::lbl19) << std::endl;
 	outStr << result << std::endl;
 	outStr.close();
 
@@ -408,3 +438,4 @@ void elenaCalculation(const QString & realsPath,
 #endif
 }
 
+} /// end namespace myLib

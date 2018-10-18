@@ -237,8 +237,8 @@ void MainWindow::sliceElena() /// slice only, eda in fileName
 	const int numOfTasks = 180;
 
 	/// rest "task codes"
-	/// 210 - closed start, 211 - closed end
-	/// 212 - open start, 213 - open end
+	/// 210 - closed start,	211 - closed end
+	/// 212 - open start,	213 - open end
 	const std::vector<std::vector<int>> eyesMarks{{210, 211}, {212, 213}};
 
 	/// rest "operational codes", 214 - closed, 215 - open
@@ -260,9 +260,6 @@ void MainWindow::sliceElena() /// slice only, eda in fileName
 	}
 	/// CONSTS END
 
-
-	/// SHOULD SPECIFY PARAMETERS TO CAPTURE
-	/// DON'T USE GENERAL "BY REFERENCE"
 	auto edaBaseMean = [&fil](int startBin) -> double
 	{
 		int EDAnum = fil.findChannel("KGR");

@@ -220,7 +220,7 @@ FBedf::FBedf(const QString & edfPath,
 	this->windAns.clear();			this->windAns.reserve(windSigAns.size());
 
 	int leftLim = smLib::fftLimit(FBedf::leftFreq, this->getFreq(), windFftLen);
-	int rightLim = smLib::fftLimit(FBedf::rightFreq, this->getFreq(), windFftLen);
+	int rightLim = smLib::fftLimit(FBedf::rightFreq, this->getFreq(), windFftLen) + 1;
 
 	for(int i = 0; i < windSigData.size(); ++i)
 	{
@@ -492,7 +492,7 @@ int FBedf::individualAlphaPeakIndexWind() const
 	/// take only rest?
 	const int pz = findChannel("Pz");
 	const int lef = smLib::fftLimit(leftAlpha, srate, windFftLen);
-	const int rig = smLib::fftLimit(rightAlpha, srate, windFftLen);
+	const int rig = smLib::fftLimit(rightAlpha, srate, windFftLen) + 1;
 
 	/// get only Pz alpha range
 	matrix sub = windSpectra.subCols(pz * getSpLenWind() + lef, pz * getSpLenWind() + rig);
@@ -513,7 +513,7 @@ int FBedf::individualAlphaPeakIndexReal() const
 	/// take only rest?
 	const int pz = findChannel("Pz");
 	const int lef = smLib::fftLimit(leftAlpha, srate, realFftLen);
-	const int rig = smLib::fftLimit(rightAlpha, srate, realFftLen);
+	const int rig = smLib::fftLimit(rightAlpha, srate, realFftLen) + 1;
 
 	/// get only rest reals, prepare average spec
 	const std::vector<matrix> & spectraRef = realsSpectra[static_cast<int>(taskType::rest)];

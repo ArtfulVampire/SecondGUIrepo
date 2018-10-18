@@ -647,7 +647,7 @@ double countRhythmAdoption(const std::valarray<double> & sigRest,
 	auto specAdop = myLib::spectreRtoR(sigAdop, fftLen);
 
 	int lowFr = smLib::fftLimit(freq - 0.5, DEFS.getFreq(), fftLen);
-	int higFr = smLib::fftLimit(freq + 0.5, DEFS.getFreq(), fftLen);
+	int higFr = smLib::fftLimit(freq + 0.5, DEFS.getFreq(), fftLen) + 1;
 
 	return
 			std::accumulate(std::begin(specAdop) + lowFr,

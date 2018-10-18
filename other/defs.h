@@ -46,10 +46,7 @@ public:
 		return str;
 	}
 private:
-	defs()
-	{
-
-	}
+	defs() {}
 	defs(const defs &)=delete;
 	defs & operator=(const defs &)=delete;
 	/// Singleton end
@@ -80,9 +77,7 @@ private:
 	QDir * dir{new QDir(QDir::root())};
 	edfFile globalEDF;
 
-
 	username currUser{username::MichaelA};
-
 
 	spectraNorming specNormTyp{spectraNorming::all};
 	double drawNorm{-1.};
@@ -159,7 +154,6 @@ public:
 	void setFreqs(double lef, double rig)		{ this->leftFreq = lef; this->rightFreq = rig; }
 	auto getFreqs() const						{ return std::make_pair(this->leftFreq,
 																		this->rightFreq); }
-
 	void setFileMarks(const QStringList & in)	{ this->fileMarkers = in; }
 	auto getFileMarks() const					{ return this->fileMarkers; }
 

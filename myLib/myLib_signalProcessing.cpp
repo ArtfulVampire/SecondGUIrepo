@@ -864,7 +864,7 @@ std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 	int fftLen = inputSpectre.size();
 
 	int left = smLib::fftLimit(leftFreq, srate, fftLen);
-	int right = smLib::fftLimit(rightFreq, srate, fftLen);
+	int right = smLib::fftLimit(rightFreq, srate, fftLen) + 1;
 
 	std::valarray<double> res(right - left);
 	std::copy(std::begin(inputSpectre) + left,
@@ -1482,11 +1482,11 @@ double alphaPeakFreq(const std::valarray<double> & spectreR,
 	int helpInt = 0;
 	const int hlp = smLib::fftL(initSigLen);
 	for(int k = smLib::fftLimit(leftLimFreq,
-						 srate,
-						 hlp);
-		k < smLib::fftLimit(rightLimFreq,
-					 srate,
-					 hlp);
+								srate,
+								hlp);
+		k <= smLib::fftLimit(rightLimFreq,
+							 srate,
+							 hlp);
 		++k)
 	{
 		if(spectreR[k] > helpDouble)
@@ -1509,11 +1509,11 @@ std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
 	for(const auto & limit : limits)
 	{
 		const int leftLimit = smLib::fftLimit(limit.first,
-									   srate,
-									   smLib::fftL(initSigLen));
+											  srate,
+											  smLib::fftL(initSigLen));
 		const int rightLimit = smLib::fftLimit(limit.second,
-										srate,
-										smLib::fftL(initSigLen));
+											   srate,
+											   smLib::fftL(initSigLen)) + 1;
 
 		res[counter++] = std::accumulate(std::begin(spectreR) + leftLimit,
 										 std::begin(spectreR) + rightLimit,
@@ -1540,7 +1540,7 @@ matrix integrateSpectra(const matrix & spectraR,
 						double srate,
 						const std::vector<std::pair<double, double>> & limits)
 {
-	matrix res(spectraR);
+	matrix res(spectraR.rows(), 1);
 	/// kinda res.apply(myLib::integrateSpectre(_1, srate, limits));
 	for(int i = 0; i < spectraR.rows(); ++i)
 	{
@@ -2072,11 +2072,11 @@ double hilbertCarr(const std::valarray<double> & arr, double srate)
 	double res = 0.;
 	double sumSpec = 0.;
 	for(int j = smLib::fftLimit(hilbertLowLimit,
-						 srate,
-						 smLib::fftL( arr.size() ));
-		j < smLib::fftLimit(hilbertHighLimit,
-					 srate,
-					 smLib::fftL( arr.size() ));
+								srate,
+								smLib::fftL( arr.size() ));
+		j <= smLib::fftLimit(hilbertHighLimit,
+							 srate,
+							 smLib::fftL( arr.size() ));
 		++j)
 	{
 		res += envSpec[j] * j;

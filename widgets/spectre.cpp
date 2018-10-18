@@ -342,7 +342,7 @@ void Spectre::integrate() /// to deprecate
 						 0));
 		ends.push_back(std::min(smLib::fftLimit(limits[1].toDouble(),
 								DEFS.getFreq(),
-								DEFS.getFftLen()) - DEFS.left(),
+								DEFS.getFftLen()) + 1 - DEFS.left(),
 					   DEFS.spLength()));
 	}
 
