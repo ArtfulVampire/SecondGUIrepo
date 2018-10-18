@@ -1,5 +1,7 @@
 #include <classifier/classifier.h>
 
+#include <myLib/output.h>
+
 using namespace myOut;
 
 RDA::RDA()

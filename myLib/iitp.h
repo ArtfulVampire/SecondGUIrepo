@@ -4,14 +4,9 @@
 #include <complex>
 #include <valarray>
 #include <vector>
-#include <cmath>
 
-#include <other/consts.h>
 #include <other/edffile.h>
 #include <other/matrix.h>
-#include <myLib/signalProcessing.h>
-
-
 
 namespace iitp
 {
@@ -35,10 +30,6 @@ std::complex<double> coherencyUsual(const std::valarray<double> & sig1,
 									const std::valarray<double> & sig2,
 									double srate,
 									double freq, int fftLen);
-
-
-
-
 
 
 
@@ -129,8 +120,6 @@ public:
 };
 
 
-
-
 /// EXPERIMENTAL
 class fmRange /// ~fmValue
 {
@@ -165,7 +154,6 @@ public:
 };
 
 
-
 /// EXPERIMENTAL
 class fmRanges
 {
@@ -185,7 +173,6 @@ public:
 	int size() const { return ranges.size(); }
 };
 
-
 struct forMap
 {
 	int fileNum{-1};
@@ -204,9 +191,6 @@ struct forMap
 		   const QString & typ,
 		   const QString & gon);
 };
-
-
-
 
 } /// namespace iitp
 

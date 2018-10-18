@@ -5,8 +5,6 @@
 #include <complex>
 
 #include <other/matrix.h>
-#include <other/consts.h>
-#include <other/defs.h>
 
 namespace myLib
 {
@@ -21,12 +19,10 @@ std::valarray<double> makeNoise(int numPoints = 4096);
 
 
 /// chnage to std::vector<matrix> inputData and matrix output
-void eyesProcessingStatic(const std::vector<int> & eogChannels = {21, 22}, /// 19 eeg, 2 help, form zero
-						  const std::vector<int> & eegChannels = coords::leest19,
-						  const QString & windsDir = DEFS.dirPath()
-													   + "/winds",
-						  const QString & outFilePath = DEFS.dirPath()
-														+ "/eyes.txt");
+void eyesProcessingStatic(const std::vector<int> & eogChannels,
+						  const std::vector<int> & eegChannels,
+						  const QString & windsDir,
+						  const QString & outFilePath);
 
 
 enum class windowName {Hann, Hamming, Blackman, rect, triang, Parzen, Welch,
@@ -184,7 +180,7 @@ int findJump(const std::valarray<double> & inSignal, int startSearch, double num
 
 
 std::valarray<double> calcSpectre(const std::valarray<double> & inSignal,
-								  int fftLength = DEFS.getFftLen(),
+								  int fftLength,
 								  int NumOfSmooth = 0,
 								  int Eyes = 0,
 								  double powArg = 1.);

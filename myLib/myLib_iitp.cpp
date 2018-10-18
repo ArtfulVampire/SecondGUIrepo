@@ -1,13 +1,17 @@
 #include <myLib/iitp.h>
 
 #include <typeinfo>
+#include <cmath>
 
+#include <other/defs.h>
+#include <other/consts.h>
 #include <myLib/iitp_consts.h>
 #include <myLib/iitp_variables.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
 #include <myLib/drw.h>
 #include <myLib/dataHandlers.h>
+#include <myLib/signalProcessing.h>
 
 using namespace myOut;
 

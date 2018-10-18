@@ -1,9 +1,14 @@
 #include <widgets/mainwindow.h>
 #include "ui_mainwindow.h"
 
-#include <myLib/mati.h>
-#include <myLib/dataHandlers.h>
 #include <functional>
+
+#include <other/defs.h>
+#include <other/consts.h>
+#include <myLib/mati.h>
+#include <myLib/output.h>
+#include <myLib/dataHandlers.h>
+#include <myLib/valar.h>
 
 using namespace myOut;
 
@@ -1588,7 +1593,7 @@ void MainWindow::eegVegetSlot()
 	QStringList files = QFileDialog::getOpenFileNames(this,
 													  tr("Choose veget and eeg files"),
 													  DEFS.getDirPath(),
-													  "*.edf, *.EDF");
+													  tr("EDF files (*.EDF *.edf)"));
 	if(files.size() != 2) { return; }
 	QString veget{};
 	QString eeg{};
@@ -1609,8 +1614,8 @@ void MainWindow::eegVegetSlot()
 	fil1 = fil1.vertcatFile(veget);
 	for(int i = 0; i < fil1.getNs() - 1; ++i)
 	{
-		if(fil1.getLabels(i).contains("Status")
-		   && fil1.getLabels().back().contains("Status"))
+		if(fil1.getLabels(i).contains("Markers")
+		   && fil1.getLabels().back().contains("Markers"))
 		{
 			fil1.removeChannel(i);
 			break;

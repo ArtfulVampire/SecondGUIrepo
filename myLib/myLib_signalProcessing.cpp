@@ -1,7 +1,10 @@
 #include <myLib/signalProcessing.h>
 
+
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
+#include <myLib/valar.h>
+#include <other/defs.h>
 
 #include <QPixmap>
 #include <QPainter>
@@ -860,8 +863,8 @@ std::valarray<double> subSpectrumR(const std::valarray<double> & inputSpectre,
 	}
 	int fftLen = inputSpectre.size();
 
-	int left = fftLimit(leftFreq, srate, fftLen);
-	int right = fftLimit(rightFreq, srate, fftLen);
+	int left = smLib::fftLimit(leftFreq, srate, fftLen);
+	int right = smLib::fftLimit(rightFreq, srate, fftLen);
 
 	std::valarray<double> res(right - left);
 	std::copy(std::begin(inputSpectre) + left,
@@ -1478,10 +1481,10 @@ double alphaPeakFreq(const std::valarray<double> & spectreR,
 	double helpDouble = 0.;
 	int helpInt = 0;
 	const int hlp = smLib::fftL(initSigLen);
-	for(int k = fftLimit(leftLimFreq,
+	for(int k = smLib::fftLimit(leftLimFreq,
 						 srate,
 						 hlp);
-		k < fftLimit(rightLimFreq,
+		k < smLib::fftLimit(rightLimFreq,
 					 srate,
 					 hlp);
 		++k)
@@ -1505,10 +1508,10 @@ std::valarray<double> integrateSpectre(const std::valarray<double> & spectreR,
 	int counter = 0;
 	for(const auto & limit : limits)
 	{
-		const int leftLimit = fftLimit(limit.first,
+		const int leftLimit = smLib::fftLimit(limit.first,
 									   srate,
 									   smLib::fftL(initSigLen));
-		const int rightLimit = fftLimit(limit.second,
+		const int rightLimit = smLib::fftLimit(limit.second,
 										srate,
 										smLib::fftL(initSigLen));
 
@@ -1670,35 +1673,6 @@ double fractalDimensionBySpectre(const std::valarray<double> & arr,
 	return (5. + slope) / 2.;
 }
 #endif
-
-
-void centerMatrixRows(matrix & inData,
-					  const int howManyRows)
-{
-
-    const int dataLen = inData.cols();
-
-	/// count zero columns
-    int eyes = 0;
-    for(int i = 0; i < dataLen; ++i)
-    {
-		const std::valarray<double> temp = inData.getCol(i, howManyRows);
-		if((temp == 0.).min()) { ++eyes; }
-    }
-
-	for(int i = 0; i < howManyRows; ++i)
-    {
-		/// centering
-		const double temp = - smLib::mean(inData[i]) * dataLen / (dataLen - eyes);
-
-		std::for_each(std::begin(inData[i]),
-					  std::end(inData[i]),
-                      [temp](double & in)
-        {
-			if(in != 0.) { in += temp; }
-		});
-	}
-}
 
 /// replace DEFS.getFreq()
 double morletCos(double const freq1, const double timeShift, const double pot, const double time)
@@ -2097,10 +2071,10 @@ double hilbertCarr(const std::valarray<double> & arr, double srate)
 
 	double res = 0.;
 	double sumSpec = 0.;
-	for(int j = fftLimit(hilbertLowLimit,
+	for(int j = smLib::fftLimit(hilbertLowLimit,
 						 srate,
 						 smLib::fftL( arr.size() ));
-		j < fftLimit(hilbertHighLimit,
+		j < smLib::fftLimit(hilbertHighLimit,
 					 srate,
 					 smLib::fftL( arr.size() ));
 		++j)
@@ -2109,7 +2083,7 @@ double hilbertCarr(const std::valarray<double> & arr, double srate)
 		sumSpec += envSpec[j];
 	}
 	res /= sumSpec;
-	res /= fftLimit(1.,
+	res /= smLib::fftLimit(1.,
 					srate,
 					smLib::fftL( arr.size() ));
 	return res;

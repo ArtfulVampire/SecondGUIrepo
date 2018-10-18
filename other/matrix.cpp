@@ -4,6 +4,9 @@
 #include <chrono>
 #include <cmath>
 
+#include <myLib/small.h>
+#include <myLib/valar.h>
+
 matrix::matrix(int dim)
 {
     this->resize(dim, dim);
@@ -648,6 +651,15 @@ matrix matrix::subRows(int newRows) const /// submatrix
 	if(newRows < 0) { newRows += this->rows(); }
 	return res.resizeRows(newRows);
 }
+
+template <typename Typ>
+matrix & matrix::eraseRows(const std::vector<Typ> & indices)
+{
+	smLib::eraseItems(myData, indices);
+	return *this;
+}
+template matrix & matrix::eraseRows(const std::vector<int> & indices);
+template matrix & matrix::eraseRows(const std::vector<uint> & indices);
 
 
 matrix & matrix::centerRows(int numRows)

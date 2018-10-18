@@ -1,11 +1,17 @@
 #include <classifier/classifier.h>
 
+#include <other/defs.h>
+#include <myLib/drw.h>
+#include <myLib/valar.h>
+#include <myLib/output.h>
+
 using namespace myOut;
 
 ANN::ANN()
 {
     myType = ModelType::ANN;
     typeString = "ANN";
+	activation = smLib::softmax;
 }
 
 void ANN::adjustToNewData()

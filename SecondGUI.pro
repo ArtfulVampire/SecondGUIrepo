@@ -102,7 +102,8 @@ widgets/cut/cut_files.cpp \
     myLib/myLib_adhoc.cpp \
     widgets/choosechans.cpp \
     other/autos_elena.cpp \
-    other/autos_settings.cpp
+    other/autos_settings.cpp \
+    other/coords.cpp
 
 HEADERS += \
 myLib/drw.h \
@@ -140,7 +141,8 @@ other/consts.h \
 myLib/ica.h \
 other/feedback_autos.h \
 myLib/adhoc.h \
-widgets/choosechans.h
+widgets/choosechans.h \
+    other/coords.h
 
 FORMS +=\
 mainwindow.ui \

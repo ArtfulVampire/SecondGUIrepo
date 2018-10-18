@@ -1,5 +1,8 @@
 #include <classifier/classifier.h>
 
+#include <myLib/output.h>
+#include <myLib/valar.h>
+
 using namespace myOut;
 
 /// lowest distance to cluster center

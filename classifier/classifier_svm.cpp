@@ -1,5 +1,10 @@
 #include <classifier/classifier.h>
 
+#include <fstream>
+
+#include <myLib/output.h>
+#include <myLib/small.h>
+
 using namespace myOut;
 
 SVM::SVM()
@@ -38,8 +43,7 @@ void SVM::classifyDatum1(uint vecNum)
 	system(helpString.toStdString().c_str());
 
     uint outClass;
-    std::ifstream inStr;
-	inStr.open((workDir + "/" + outputFileName).toStdString());
+	std::ifstream inStr((workDir + "/" + outputFileName).toStdString());
     inStr >> outClass;
     inStr.close();
 

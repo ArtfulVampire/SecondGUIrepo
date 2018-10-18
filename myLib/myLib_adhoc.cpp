@@ -11,7 +11,7 @@
 #include <other/matrix.h>
 #include <other/edffile.h>
 #include <other/autos.h>
-#include <other/consts.h>
+#include <other/coords.h>
 #include <other/defs.h>
 #include <other/subjects.h>
 #include <other/feedback.h>
@@ -678,7 +678,7 @@ void feedbackFinal()
 			<< "FINAL" << "\t"
 			<< "BASE" << "\t"
 			<< std::endl;
-	auto res = fb::calculateSuccessiveBoth(dear, guysList, postfix);
+	auto res = fb::calculateSuccessiveBoth(DEFS.dirPath() + "/" + dear, guysList, postfix);
 
 //	for(const auto & in : res)
 //	{
@@ -691,10 +691,10 @@ void feedbackFinal()
 	exit(0);
 #endif
 
-//	fb::calculateICA(dear, guysList, postfix);
+//	fb::calculateICA(DEFS.dirPath() + "/" + dear, guysList, postfix);
 
 #if 0
-	auto results = fb::coutAllFeatures(dear, guysList, postfix);
+	auto results = fb::coutAllFeatures(DEFS.dirPath() + "/" + dear, guysList, postfix);
 	std::ofstream outStream("/media/Files/Data/FeedbackFinal/wlkdn.txt");
 	for(const subj::fbGroup & group :
 	{

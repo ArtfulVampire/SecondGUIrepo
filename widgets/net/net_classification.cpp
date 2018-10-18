@@ -1,6 +1,9 @@
 #include <widgets/net.h>
 #include "ui_net.h"
 
+#include <other/defs.h>
+#include <other/coords.h>
+#include <myLib/valar.h>
 #include <widgets/choosechans.h>
 
 void Net::showReduce()
@@ -57,7 +60,7 @@ Classifier::avType Net::autoClassification(const QString & spectraDir)
     }
     case myMode::train_test:
     {
-		myModel->trainTestClassification(); break;
+		myModel->trainTestClassification("_train", "_test"); break;
 	}
 	case myMode::people:
 	{

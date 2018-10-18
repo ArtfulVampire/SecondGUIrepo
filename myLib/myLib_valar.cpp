@@ -2,6 +2,14 @@
 
 #include <random>
 #include <chrono>
+#include <algorithm>
+#include <numeric>
+#include <random>
+#include <cmath>
+
+#include <QString>
+
+using uint = unsigned int; /// a copy from other/defs.h
 
 namespace smLib
 {
@@ -166,14 +174,14 @@ template std::vector<double> contSubsec(const std::vector<double> & in, int beg,
 template std::valarray<double> contSubsec(const std::valarray<double> & in, int beg, int en);
 
 template <class Container>
-Container contPopFront(const Container & in, uint numOfPop)
+Container contPopFront(const Container & in, int numOfPop)
 {
 	Container res(in.size() - numOfPop);
 	std::copy(std::begin(in) + numOfPop, std::end(in), std::begin(res));
 	return res;
 }
-template std::valarray<double> contPopFront(const std::valarray<double> & in, uint numOfPop);
-template std::vector<double> contPopFront(const std::vector<double> & in, uint numOfPop);
+template std::valarray<double> contPopFront(const std::valarray<double> & in, int numOfPop);
+template std::vector<double> contPopFront(const std::vector<double> & in, int numOfPop);
 
 
 
@@ -303,5 +311,61 @@ void mix (Container & in)
 }
 template void mix(std::vector<uint> &);
 template void mix(std::vector<int> &);
+
+std::valarray<double> randomValar(int size)
+{
+	std::valarray<double> res(size);
+	std::uniform_real_distribution<double> dist(-25., 25.);
+	std::default_random_engine eng{};
+
+	for(auto & in : res)
+	{
+		in = dist(eng);
+	}
+	smLib::normalize(res);
+	return res;
+}
+
+std::valarray<double> abs(const std::valarray<std::complex<double>> & in)
+{
+	std::valarray<double> res(in.size());
+	std::transform(std::begin(in),
+				   std::end(in),
+				   std::begin(res),
+				   [](std::complex<double> a){ return std::abs(a); });
+	return res;
+}
+
+std::valarray<double> valarErase(const std::valarray<double> & in, int index)
+{
+	std::valarray<double> res(in.size() - 1);
+	std::copy(std::begin(in),
+			  std::begin(in) + index,
+			  std::begin(res));
+	std::copy(std::begin(in) + index + 1,
+			  std::end(in),
+			  std::begin(res) + index);
+	return res;
+}
+
+std::valarray<double> valarPushBack(const std::valarray<double> & in, double val)
+{
+	std::valarray<double> res(in);
+	valarResize(res, res.size() + 1);
+	res[in.size()] = val;
+	return res;
+}
+
+template <typename Typ>
+void valarResize(std::valarray<Typ> & in, int num)
+{
+	std::valarray<Typ> temp(in);
+	in.resize(num);
+	std::copy(std::begin(temp),
+			  std::begin(temp) + std::min(in.size(), temp.size()),
+			  std::begin(in));
+}
+template void valarResize(std::valarray<double> & in, int num);
+template void valarResize(std::valarray<std::complex<double>> & in, int num);
 
 } /// end of namespace smLib

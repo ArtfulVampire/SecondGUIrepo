@@ -1,11 +1,17 @@
 #include <widgets/mainwindow.h>
 #include "ui_mainwindow.h"
 
+#include <widgets/spectre.h>
+#include <widgets/net.h>
+#include <widgets/cut.h>
+
+#include <other/autos.h>
+#include <other/defs.h>
+
 #include <myLib/drw.h>
 #include <myLib/mati.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/general.h>
-#include <myLib/highlevel.h>
 
 #include <other/subjects.h>
 

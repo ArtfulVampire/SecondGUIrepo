@@ -1,12 +1,12 @@
 #include <widgets/mainwindow.h>
 #include <ui_mainwindow.h>
-#include <myLib/mati.h>
 
+#include <other/defs.h>
+#include <myLib/mati.h>
 
 void MainWindow::markerSaveEdf()
 {
-	QString helpString;
-	helpString = DEFS.dirPath() + "/" + globalEdf.getExpName() + ui->newEdfNameLineEdit->text();
+	QString helpString = DEFS.dirPath() + "/" + globalEdf.getExpName() + ui->newEdfNameLineEdit->text();
 	if(!helpString.endsWith(".edf", Qt::CaseInsensitive))
 	{
 		helpString += ".edf";
@@ -60,9 +60,7 @@ void MainWindow::markerSetSlot()
 void MainWindow::markerSetDecValueSlot()
 {
 	int marker = 0;
-	QString helpString;
-
-	helpString = ui->markerBin0LineEdit->text();
+	QString helpString = ui->markerBin0LineEdit->text();
 	for(int h = 0; h < 8; ++h)
 	{
 		if(helpString[h] != '0' && helpString[h] != '1') { return; }

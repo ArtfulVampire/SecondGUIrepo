@@ -10,9 +10,6 @@
 #include <omp.h>
 #endif
 
-#include <myLib/small.h>
-#include <myLib/valar.h>
-
 #include <QString>
 #include <QDir>
 
@@ -179,18 +176,7 @@ public:
 //	matrix subRows(const std::vector<std::pair<int, int>> & intervals) const; //// to do
 
 	template <typename Typ>
-	matrix & eraseRows(const std::vector<Typ> & indices)
-	{
-		smLib::eraseItems(myData, indices);
-		return *this;
-	}
-
-	template <typename Typ>
-	matrix & eraseRows(const std::initializer_list<Typ> & indices)
-	{
-		smLib::eraseItems(myData, std::vector<Typ>(indices));
-		return *this;
-	}
+	matrix & eraseRows(const std::vector<Typ> & indices);
 
 	std::valarray<double> matrixSystemSolveGauss(const std::valarray<double> & inVec) const;
 public:

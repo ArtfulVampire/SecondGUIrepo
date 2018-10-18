@@ -472,12 +472,11 @@ namespace repair
 {
 
 bool testChannelsOrderConsistency(const QString & dirPath);
-void channelsOrderFile(const QString & inFilePath,
-                       QString outFilePath = QString(),
-					   const std::vector<QString> & standard = coords::lbl31_more_withEOG);
+edfFile channelsOrderFile(const QString & inFilePath,
+					   const std::vector<QString> & standard);
 void channelsOrderDir(const QString & inDirPath,
                       const QString & outDirPath,
-					  const std::vector<QString> & standard = coords::lbl31_more_withEOG);
+					  const std::vector<QString> & standard);
 
 /// void invertEogs(const QString & inFilePath);
 void holesFile(const QString & inFilePath, int numChan,
@@ -487,27 +486,27 @@ void holesDir(const QString & inDirPath,
 			  const QString & outDirPath);
 
 void physMinMaxCheck(const QString & dirPath);
-void physMinMaxDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void physMinMaxDir(const QString & dirPath, const QStringList & filters);
 
 
 /// only renames files/dirs
 void deleteSpacesItem(const QString & inPath);
 void deleteSpacesFoldersOnly(const QString & dirPath);
-void deleteSpacesContents(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void deleteSpacesContents(const QString & dirPath, const QStringList & filters);
 
 void deleteNewContents(const QString & inPath);
 
 void renameContents(const QString & dirPath, const std::vector<std::pair<QString, QString>> & temp);
 
 void toLatinItem(const QString & inPath);
-void toLatinContents(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void toLatinContents(const QString & dirPath, const QStringList & filters);
 
 void toLowerItem(const QString & inPath);
-void toLowerContents(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void toLowerContents(const QString & dirPath, const QStringList & filters);
 
-void fullRepairDir(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void fullRepairDir(const QString & dirPath, const QStringList & filters);
 
-void testArtifacts(const QString & dirPath, const QStringList & filters = def::edfFilters);
+void testArtifacts(const QString & dirPath, const QStringList & filters);
 }
 
 #endif /// EDFFILE_H

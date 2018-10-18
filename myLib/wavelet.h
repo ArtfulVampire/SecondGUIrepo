@@ -3,7 +3,6 @@
 
 #include <other/matrix.h>
 #include <other/consts.h>
-#include <other/defs.h>
 
 #if WAVELET_MATLAB
 #include <matlab/for_testing/libcwt_r.h>

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <other/matrix.h>
+#include <myLib/small.h>
 
 #include <QColor>
 #include <QString>
@@ -116,8 +117,8 @@ QPixmap drawOneSpectrum(const std::valarray<double> & inSignal,
 
 /// many
 QPixmap drawTemplate(const bool channelsFlag = true,
-					 const double leftF = 5.0,
-					 const double rightF = 20.0,
+					 const double leftF = 5.0,			/// DEFS.getLeftFreq()
+					 const double rightF = 20.0,		/// DEFS.getRightFreq()
 					 const int numOfChannels = 19);
 
 /// inData[numOfChans][chanLength]
@@ -183,7 +184,6 @@ QPixmap drawMannWitneyInLine(const QPixmap & templatePic,
 
 
 /// EEGs
-QPixmap drawRealisation(const QString & inPath, int srate);
 QPixmap redrawEegCopy(const QPixmap & prev,
 					  int sta,
 					  int fin,

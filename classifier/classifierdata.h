@@ -7,11 +7,6 @@
 #include <map>
 
 #include <other/matrix.h>
-#include <other/defs.h>
-#include <myLib/small.h>
-#include <myLib/output.h>
-
-
 
 class ClassifierData
 {
@@ -46,8 +41,7 @@ public:
 	int getClassCount(uint i) const;
 
 	/// sets
-	void setApriori(const std::valarray<double> & inApriori)
-	{ apriori = smLib::normalized(inApriori); }
+	void setApriori(const std::valarray<double> & inApriori);
 
 	/// matrix modifiers
 	void erase(const uint index);

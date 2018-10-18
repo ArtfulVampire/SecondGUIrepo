@@ -4,6 +4,7 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
+#include <myLib/valar.h>
 
 using namespace myOut;
 

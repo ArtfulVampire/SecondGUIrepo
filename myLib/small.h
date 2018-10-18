@@ -4,17 +4,16 @@
 #include <cmath>
 #include <set>
 #include <valarray>
-#include <iostream>
-#include <algorithm>
-#include <numeric>
 #include <complex>
+#include <vector>
 
-#include <other/consts.h>
-
+#include <QString>
 
 template <typename Typ>
 class trivector : public std::vector<std::vector<std::vector<Typ>>>
 {};
+
+/// for Mann-Whitney only by now
 template <typename Typ>
 class twovector : public std::vector<std::vector<Typ>>
 {};
@@ -58,6 +57,13 @@ inline int fftL(int in)
 	return std::pow(2., std::ceil(std::log2(in)));
 }
 
+inline int fftLimit(double inFreq,
+					double sampleFreq,
+					int fftL)
+{
+	return std::ceil(inFreq / sampleFreq * fftL - 0.5);
+}
+
 inline double distance(double const x1, double const y1,
 					   double const x2, double const y2)
 {
@@ -69,7 +75,7 @@ void eraseItems(std::vector<T> & inVect,
 				const std::vector<Ind> & indices)
 {
 	const int initSize = inVect.size();
-	std::set<int, std::less<int>> excludeSet; // less first
+	std::set<int> excludeSet; // less first
 	for(auto item : indices)
 	{
 		excludeSet.emplace(item);

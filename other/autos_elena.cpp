@@ -1,5 +1,10 @@
 #include <other/autos.h>
 
+#include <other/defs.h>
+#include <other/coords.h>
+#include <myLib/valar.h>
+#include <myLib/signalProcessing.h>
+
 const int numOfTasks = 180;
 const int numSmooth = 15;
 const double hilbertFreqLimit = 40.;
@@ -102,7 +107,7 @@ std::valarray<double> elenaHilbert(const std::valarray<double> & inSignal,
 		double helpDouble = 0.;
 		double sumSpec = 0.;
 		for(int j = 0;
-			j < fftLimit(hilbertFreqLimit,
+			j < smLib::fftLimit(hilbertFreqLimit,
 						 srate,
 						 smLib::fftL( inSignal.size() ));
 			++j)
@@ -111,7 +116,7 @@ std::valarray<double> elenaHilbert(const std::valarray<double> & inSignal,
 			sumSpec += envSpec[j];
 		}
 		helpDouble /= sumSpec;
-		helpDouble /= fftLimit(1.,
+		helpDouble /= smLib::fftLimit(1.,
 							   srate,
 							   smLib::fftL( inSignal.size() )); /// convert to Hz
 
@@ -235,8 +240,8 @@ void elenaCalculation(const QString & realsPath,
 
 	const QStringList reals = QDir(realsPath).entryList(def::edfFilters);
 
-	const int leftSpecLim = fftLimit(DEFS.getLeftFreq(),	DEFS.getFreq(), fftLen);
-	const int rightSpecLim = fftLimit(DEFS.getRightFreq(),	DEFS.getFreq(), fftLen);
+	const int leftSpecLim = smLib::fftLimit(DEFS.getLeftFreq(),	DEFS.getFreq(), fftLen);
+	const int rightSpecLim = smLib::fftLimit(DEFS.getRightFreq(),	DEFS.getFreq(), fftLen);
 
 	for(const QString & fileName : reals)
 	{

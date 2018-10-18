@@ -4,7 +4,6 @@
 #include <valarray>
 
 #include <other/matrix.h>
-#include <other/defs.h>
 
 #include <QString>
 

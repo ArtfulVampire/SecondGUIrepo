@@ -1,18 +1,20 @@
 #include <other/autos.h>
 
+#include <other/defs.h>
 #include <myLib/clustering.h>
 #include <myLib/iitp.h>
 #include <myLib/drw.h>
 #include <myLib/draws.h>
+#include <myLib/valar.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/wavelet.h>
 #include <myLib/output.h>
 #include <myLib/statistics.h>
 
- /// for std::defaultfloat
-#include <ios>
+#include <ios> /// for std::defaultfloat
 #include <iostream>
+#include <random>
 #include <bits/ios_base.h>
 
 using namespace myOut;

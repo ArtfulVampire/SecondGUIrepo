@@ -1,6 +1,11 @@
 #include <other/feedback.h>
 
+
+#include <other/defs.h>
+#include <other/consts.h>
 #include <myLib/statistics.h>
+#include <myLib/valar.h>
+#include <myLib/drw.h>
 #include <widgets/net.h>
 
 #include <utility>

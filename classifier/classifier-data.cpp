@@ -1,14 +1,23 @@
 #include <classifier/classifierdata.h>
 
+#include <other/defs.h>
+#include <myLib/valar.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/general.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/ica.h>
+#include <myLib/small.h>
+#include <myLib/output.h>
 
 using namespace myOut;
 
 /// use a map of class marker - class number
 #define MAP 01
+
+void ClassifierData::setApriori(const std::valarray<double> & inApriori)
+{
+	apriori = smLib::normalized(inApriori);
+}
 
 void ClassifierData::adjust()
 {	

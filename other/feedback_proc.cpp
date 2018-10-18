@@ -1,5 +1,8 @@
 #include <other/feedback_autos.h>
+
 #include <sstream>
+
+#include <widgets/net.h>
 
 namespace fb
 {
@@ -20,12 +23,10 @@ taskType operator++ (taskType & in, int) /// postfix
 
 
 std::map<QString, QString>
-coutAllFeatures(const QString & dear,
+coutAllFeatures(const QString & guysPath,
 				const std::vector<std::pair<QString, QString>> & guysList,
 				const QString & postfix)
 {
-	const QString guysPath = DEFS.dirPath() + "/" + dear;
-
 	std::map<QString, QString> results{}; ///
 
 	Net * net = new Net();
@@ -118,13 +119,12 @@ coutAllFeatures(const QString & dear,
 
 
 std::vector<Net::sucAllType>
-calculateSuccessiveBoth(const QString & dear,
+calculateSuccessiveBoth(const QString & guysPath,
 						const std::vector<std::pair<QString, QString>> & guysList,
 						const QString & postfix)
 {
 	std::vector<Net::sucAllType> res{};
 
-	const QString guysPath = DEFS.dirPath() + "/" + dear;
 	for(const auto & in : guysList)
 	{
 		/// skip all guys
@@ -151,11 +151,10 @@ calculateSuccessiveBoth(const QString & dear,
 }
 
 
-void calculateICA(const QString & dear,
+void calculateICA(const QString & guysPath,
 				  const std::vector<std::pair<QString, QString>> & guysList,
 				  const QString & postfix)
 {
-	const QString guysPath = DEFS.dirPath() + "/" + dear;
 	for(const auto & in : guysList)
 	{
 		const QString guyPath = guysPath + "/" + in.first;

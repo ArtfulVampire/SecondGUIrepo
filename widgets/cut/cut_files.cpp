@@ -1,6 +1,7 @@
 #include <widgets/cut.h>
 #include "ui_cut.h"
 
+#include <other/coords.h>
 #include <myLib/drw.h>
 #include <myLib/draws.h>
 #include <myLib/dataHandlers.h>
@@ -38,27 +39,6 @@ void Cut::prev()
 
 	--fileListIter;
 	openFile(edfFil.getDirPath() + "/" + (*fileListIter));
-}
-
-
-void Cut::rewrite()
-{
-	if( !fileOpened ) { return; }
-	/// new, only edf is possible
-	std::cout << "Cut:: Rewrite deliberately forbidden for edfs, use Save instead" << std::endl;
-
-#if 0
-	/// old
-	if(myFileType == fileType::real) /// to deprecate
-	{
-		myLib::writePlainData(currentFile, dataCutLocal);
-		currentPic.save(myLib::getPicPath(currentFile, this->edfFil.getDirPath()), nullptr, 100);
-	}
-	else if(myFileType == fileType::edf)
-	{
-		std::cout << "Cut:: Rewrite deliberately forbidden for edfs, use Save instead" << std::endl;
-	}
-#endif
 }
 
 void Cut::saveAs(const QString & addToName)
@@ -201,6 +181,8 @@ void Cut::browseSlot()
 		filter += a + " ";
 		filterList.push_back(a);
 	}
+	filter.prepend("EDF files (");
+	filter += ')';
 
 	const QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
 															tr("Open file"),

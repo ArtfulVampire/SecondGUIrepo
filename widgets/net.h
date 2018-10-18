@@ -8,12 +8,10 @@
 #include <classifier/classifier.h>
 #include <classifier/classifierdata.h>
 #include <other/feedback.h>
-#include <other/defs.h>
 
 #include <QWidget>
 #include <QPixmap>
 #include <QAbstractButton>
-#include <QButtonGroup>
 
 namespace Ui {
     class Net;
@@ -76,10 +74,10 @@ public:
 	const ClassifierData & getClassifierData() const { return myClassifierData; }
 
 	/// data
-	void loadData(const QString & spectraPath = DEFS.dirPath() + "/SpectraSmooth",
+	void loadData(const QString & spectraPath,
 				  const QStringList & filters = {"*.psd"});
 	void loadDataUCI(const QString & setName);
-	void loadDataXenia(const QString & filesPath = DEFS.dirPath() + "/Xenia_tables",
+	void loadDataXenia(const QString & filesPath,
 					   const QString & type = "bd_new");
 
 
@@ -146,8 +144,6 @@ private:
 	std::pair<std::vector<uint>, std::vector<uint>> makeIndicesSetsCross(
 			const std::vector<std::vector<uint> > & arr,
 			const int numOfFold);
-
-	QString filesPath;
 
 	/// class - deprecated, moved to Classifier
 	void crossClassification();

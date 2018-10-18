@@ -3,10 +3,10 @@
 
 #include <myLib/iitp_consts.h>
 
+#include <QVector>
+
 namespace iitp
 {
-
-
 /// [numFile] - interestingChannels
 /// commented wrists and ankles - letter 7-Nov-17
 const std::vector<std::valarray<int>> interestGonios{

@@ -1,16 +1,9 @@
 #ifndef VALAR_H
 #define VALAR_H
 
-#include <cmath>
 #include <vector>
 #include <valarray>
-#include <algorithm>
-#include <numeric>
 #include <complex>
-#include <iostream>
-#include <random>
-
-#include <other/consts.h> /// for uint
 
 namespace smLib
 {
@@ -36,7 +29,7 @@ template <typename Container = std::valarray<double>>
 Container contSubsec(const Container & in, int beg, int en);
 
 template <class Container>
-Container contPopFront(const Container & in, uint numOfPop);
+Container contPopFront(const Container & in, int numOfPop);
 
 template <class Typ>
 Typ mean(const std::valarray<Typ> & in1);
@@ -105,36 +98,25 @@ std::vector<Typ> valarToVec(const std::vector<Typ> & in);
 
 
 /// pure valarray
+
+std::valarray<double> randomValar(int size);
 inline std::valarray<double> logistic(const std::valarray<double> & in)
 {
 	const double temp = 10.;
-	return 1. / (1. + exp(-in / temp));
+	return 1. / (1. + std::exp(-in / temp));
 }
 
 
 std::valarray<double> softmax(const std::valarray<double> & in);
 
-inline std::valarray<double> abs(const std::valarray<std::complex<double>> & in)
-{
-	std::valarray<double> res(in.size());
-	std::transform(std::begin(in),
-				   std::end(in),
-				   std::begin(res),
-				   [](std::complex<double> a){ return std::abs(a); });
-	return res;
-}
+std::valarray<double> abs(const std::valarray<std::complex<double>> & in);
 
-inline std::valarray<double> valarErase(const std::valarray<double> & in, uint index)
-{
-	std::valarray<double> res(in.size() - 1);
-	std::copy(std::begin(in),
-			  std::begin(in) + index,
-			  std::begin(res));
-	std::copy(std::begin(in) + index + 1,
-			  std::end(in),
-			  std::begin(res) + index);
-	return res;
-}
+std::valarray<double> valarErase(const std::valarray<double> & in, int index);
+
+template <typename Typ>
+void valarResize(std::valarray<Typ> & in, int num);
+
+std::valarray<double> valarPushBack(const std::valarray<double> & in, double val);
 
 inline void normalize(std::valarray<double> & in)
 {
@@ -151,45 +133,10 @@ inline std::valarray<double> normalized(std::valarray<double> && in)
 	return in / norma(in);
 }
 
-inline std::valarray<double> randomValar(int size)
-{
-	std::valarray<double> res(size);
-	std::uniform_real_distribution<double> dist(-25., 25.);
-	std::default_random_engine eng{};
-
-	for(auto & in : res)
-	{
-		in = dist(eng);
-	}
-	smLib::normalize(res);
-	return res;
-}
-
 inline double distance(const std::valarray<double> & in1,
 					   const std::valarray<double> & in2)
 {
 	return norma(std::valarray<double>(in1 - in2));
-}
-
-template <typename Typ>
-inline void valarResize(std::valarray<Typ> & in, int num)
-{
-	std::valarray<Typ> temp(in);
-	in.resize(num);
-	std::copy(std::begin(temp),
-			  std::begin(temp) + std::min(in.size(), temp.size()),
-			  std::begin(in));
-}
-template void valarResize(std::valarray<double> & in, int num);
-template void valarResize(std::valarray<std::complex<double>> & in, int num);
-
-
-inline std::valarray<double> valarPushBack(const std::valarray<double> & in, double val)
-{
-	std::valarray<double> res(in);
-	valarResize(res, res.size() + 1);
-	res[in.size()] = val;
-	return res;
 }
 
 

@@ -1,5 +1,9 @@
 #include <myLib/clustering.h>
 
+#include <iostream>
+#include <cmath>
+#include <ctime>
+
 namespace clust
 {
 

@@ -1,16 +1,20 @@
 #include <widgets/mainwindow.h>
 #include "ui_mainwindow.h"
 
-#include <widgets/choosechans.h>
+#include <widgets/spectre.h>
+#include <widgets/cut.h>
+#include <widgets/net.h>
 
+#include <other/defs.h>
+#include <other/coords.h>
+#include <other/feedback.h>
+#include <other/feedback_autos.h>
 #include <myLib/drw.h>
+#include <myLib/draws.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/mati.h>
 #include <myLib/general.h>
 #include <myLib/dataHandlers.h>
-#include <myLib/qtlib.h>
-#include <other/feedback.h>
-#include <other/feedback_autos.h>
 
 using namespace myOut;
 
@@ -210,11 +214,6 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
 	QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
 	QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
-#if 0
-	/// reref CAR
-	QObject::connect(ui->rereferenceCARPushButton, SIGNAL(clicked()), this, SLOT(rereferenceCARSlot()));
-#endif
-
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));
 
@@ -248,10 +247,6 @@ void MainWindow::changeRedNsLine(int a)
 	{
 		this->readData();
 	}
-
-#if 0
-	ui->reduceChannelsLineEdit->setText(ui->reduceChannelsComboBox->itemData(a).toString());
-#else
 	const QString str = ui->reduceChannelsComboBox->itemText(a);
 	bool eeg = str.contains("EEG");
 	bool reref = str.contains("reref");
@@ -287,15 +282,14 @@ void MainWindow::changeRedNsLine(int a)
 				continue;
 			}
 		}
-		else if(lab.contains("EMG") && !emg)		{ continue; }
-		else if(lab.contains("EOG") && !eog)		{ continue; }
-		else if(lab.contains("Marker") && !mark)	{ continue; }
-		else if(!oth)								{ continue; }
+		else if(lab.contains("EMG"))		{ if(!emg) continue; }
+		else if(lab.contains("EOG"))		{ if(!eog) continue; }
+		else if(lab.contains("Marker"))		{  if(!mark) continue; }
+		else if(!oth)						{ continue; }
 
 		outStr += nm(i + 1) + " ";
 	}
 	ui->reduceChannelsLineEdit->setText(outStr);
-#endif
 }
 
 void MainWindow::showCountSpectra()
@@ -331,7 +325,9 @@ void MainWindow::processEyes()
         }
     }
     /// or (eogs, eegs)
-	myLib::eyesProcessingStatic(eogs, eegs); /// for first 19 eeg channels
+	myLib::eyesProcessingStatic(eogs, eegs,
+								fil.getDirPath() + "/winds",
+								fil.getDirPath() + "/eyes.txt"); /// for first 19 eeg channels
 }
 
 void MainWindow::showNet()

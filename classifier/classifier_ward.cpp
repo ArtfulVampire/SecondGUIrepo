@@ -1,5 +1,9 @@
 #include <classifier/classifier.h>
 
+#include <myLib/output.h>
+#include <myLib/general.h>
+#include <myLib/valar.h>
+
 using namespace myOut;
 
 WARD::WARD()

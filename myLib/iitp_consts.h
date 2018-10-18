@@ -1,7 +1,7 @@
 #ifndef IITP_CONSTS_H
 #define IITP_CONSTS_H
 
-#include <myLib/signalProcessing.h>
+#include <myLib/signalProcessing.h>		/// for windowName
 #include <myLib/valar.h>
 
 namespace iitp

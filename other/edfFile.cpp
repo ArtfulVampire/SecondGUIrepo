@@ -1,5 +1,8 @@
 #include <other/edffile.h>
 
+#include <other/coords.h>
+#include <other/defs.h>
+#include <myLib/valar.h>
 #include <myLib/mati.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/drw.h>
@@ -419,7 +422,7 @@ void edfFile::rewriteEdfFile()
 
 void edfFile::writeEdfFile(const QString & EDFpath)
 {
-	if(*this == edfFile{}) { return; }
+	if(*this == edfFile{} || isEmpty()) { return; }
 
     QTime myTime;
     myTime.start();
@@ -1301,11 +1304,7 @@ void edfFile::adjustMarkerChannel()
 edfFile edfFile::vertcatFile(const QString & addEdfPath) const
 {
     edfFile temp(*this);
-    edfFile addEdf;
-    addEdf.readEdfFile(addEdfPath);
-
-	edfChannel addChan;
-	std::valarray<double> addData;
+	edfFile addEdf(addEdfPath);
 
 	double time1 = temp.getDataLen() / temp.getFreq();
 	double time2 = addEdf.getDataLen() / addEdf.getFreq();
@@ -1316,8 +1315,8 @@ edfFile edfFile::vertcatFile(const QString & addEdfPath) const
 
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
-		addChan = addEdf.getChannels()[i];
-		addData = addEdf.getData()[i];
+		edfChannel addChan = addEdf.getChannels()[i];
+		std::valarray<double> addData = addEdf.getData()[i];
 		temp.channels.push_back(addChan);
 		temp.edfData.push_back(addData);
 	}

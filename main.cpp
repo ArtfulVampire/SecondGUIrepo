@@ -1,6 +1,7 @@
 #include <QtGui>
 #include <QApplication>
 #include <widgets/mainwindow.h>
+#include <other/defs.h>
 
 int main(int argc, char *argv[])
 {

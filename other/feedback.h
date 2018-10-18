@@ -1,7 +1,7 @@
 #ifndef EDFFILE_FB_H
 #define EDFFILE_FB_H
-#include <other/edffile.h>
 
+#include <other/edffile.h>
 #include <classifier/classifier.h>
 
 namespace fb
@@ -85,15 +85,15 @@ public:
 
 	/// ~static but srate is not
 	int getLeftLimWind() const { static int leftLim{-1}; return (leftLim == -1)
-				? fftLimit(leftFreq, srate, windFftLen) : leftLim; }
+				? smLib::fftLimit(leftFreq, srate, windFftLen) : leftLim; }
 	int getRightLimWind() const { static int rightLim{-1}; return (rightLim == -1)
-				? fftLimit(rightFreq, srate, windFftLen) + 1 : rightLim; }
+				? smLib::fftLimit(rightFreq, srate, windFftLen) + 1 : rightLim; }
 	int getSpLenWind() const { return getRightLimWind() - getLeftLimWind(); }
 
 	int getLeftLim() const { static int leftLim{-1}; return (leftLim == -1)
-				? fftLimit(leftFreq, srate, realFftLen) : leftLim; }
+				? smLib::fftLimit(leftFreq, srate, realFftLen) : leftLim; }
 	int getRightLim() const { static int rightLim{-1}; return (rightLim == -1)
-				? fftLimit(rightFreq, srate, realFftLen) + 1 : rightLim; }
+				? smLib::fftLimit(rightFreq, srate, realFftLen) + 1 : rightLim; }
 	int getSpLen() const { return getRightLim() - getLeftLim(); }
 
 private:

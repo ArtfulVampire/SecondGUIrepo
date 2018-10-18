@@ -1,5 +1,6 @@
 #include <myLib/draws.h>
 
+#include <other/coords.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
 #include <myLib/signalProcessing.h>
@@ -1716,24 +1717,6 @@ void drawColorScale(const QString & filePath, int range, ColorScale type, bool f
     }
     painter.end();
 	pic.save(filePath, nullptr, 100);
-}
-
-
-
-
-void drawRealisation(const QString & inPath)
-{
-	matrix inData = edfFile(inPath).getData();
-
-	QString outPath = inPath;
-	outPath.resize(outPath.lastIndexOf('.'));
-	outPath += ".jpg";
-
-	drawEeg(inData,
-			inData.rows(),
-			inData.cols(),
-			DEFS.getFreq(),
-			outPath);
 }
 
 QPixmap drawEeg(const matrix & dataD,

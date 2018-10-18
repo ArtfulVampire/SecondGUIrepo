@@ -27,13 +27,6 @@ void MainWindow::customFunc()
 //	repair::fullRepairDir(def::GalyaFolder + "/kids15Oct18");
 //	myLib::GalyaProcessing("kids15Oct18");
 //	exit(0);
-
 //	myLib::XeniaFinal();
-//	exit(0);
-
-//	myLib::makeLabelsXenia15Oct();
-//	autos::ArrangeFilesVertCat({"/media/Files/Data/Xenia/FINAL/labels.txt",
-//							   "/media/Files/Data/Xenia/FINAL/all_first60.txt"},
-//							   "/media/Files/Data/Xenia/FINAL/fin.txt");
 //	exit(0);
 }

@@ -3,22 +3,11 @@
 
 #include <vector>
 #include <utility>
-#include <ios>
-#include <iostream>
 
-#include <myLib/small.h>
-#include <myLib/output.h>
-#include <myLib/draws.h>
-#include <myLib/drw.h>
-#include <myLib/general.h>
-
-#include <other/consts.h>
-#include <other/defs.h>
 #include <other/matrix.h>
 #include <classifier/classifierdata.h>
 
 #include <QString>
-#include <QTime>
 
 enum class ModelType {ANN, RDA, SVM, DIST, NBC, KNN, WARD};
 
@@ -52,9 +41,9 @@ protected:
 
 
 /// sheeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeet
-	QString resultsPath = DEFS.dirPath() + "/results.txt";
-	QString workDir = DEFS.dirPath() + "/Help/PA";
-	QString filesPath = DEFS.windsSpectraDir();
+	QString resultsPath{};
+	QString workDir{};
+	QString filesPath{};
 
 #if INERTIA
 	std::valarray<double> fbVal;
@@ -86,8 +75,8 @@ public:
 	void peopleClassification(bool indZ, std::ostream & os = std::cout);
 	void leaveOneOutClassification(std::ostream & os = std::cout);
 	void crossClassification(int numOfPairs, int fold, std::ostream & os = std::cout);
-	void trainTestClassification(const QString & trainTemplate = "_train",
-								 const QString & testTemplate = "_test");
+	void trainTestClassification(const QString & trainTemplate,
+								 const QString & testTemplate);
 	void halfHalfClassification();
 	avType averageClassification(std::ostream & os = std::cout); /// on confusionMatrix
 	virtual void learn(std::vector<uint> & indices) = 0;		/// not protected ???
@@ -150,7 +139,7 @@ private:
     /// deleberately private functions
     void allocParams(weightType & inMat);
     void zeroParams();
-    std::valarray<double> (*activation)(const std::valarray<double> & in) = smLib::softmax;
+	std::valarray<double> (*activation)(const std::valarray<double> & in);
 	void loadVector(uint vecNum, uint & type);
     void countOutput();
     void countOutputDelta();

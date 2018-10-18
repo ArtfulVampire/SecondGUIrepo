@@ -1,8 +1,12 @@
 #include <myLib/drw.h>
 
+#include <other/defs.h>
+
+#include <other/coords.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
+#include <myLib/valar.h>
 
 using namespace myOut;
 
@@ -418,7 +422,7 @@ std::vector<QPixmap> drawArraysSameScale(const QPixmap & templatePic,
 	/// zero some channels - IITP
 	for(std::valarray<double> & row : dat)
 	{
-		zeroChans = coords::leest19;
+		zeroChans = smLib::range<std::vector<int>>(0, 19);
 		for(int trueNum : trueChans)
 		{
 			zeroChans.erase(std::find(std::begin(zeroChans),
@@ -731,13 +735,6 @@ QPixmap drawMannWitneyInLine(const QPixmap & templatePic,
 	}
 	paint.end();
 	return pic;
-}
-
-QPixmap drawRealisation(const QString & inPath, int srate)
-{
-	matrix inData = edfFile(inPath).getData();
-
-	return drawEeg(inData, srate, myLib::drw::eegPicHeight);
 }
 
 QPixmap redrawEegCopy(const QPixmap & prev,

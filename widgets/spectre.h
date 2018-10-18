@@ -1,7 +1,6 @@
 #ifndef SPECTRE_H
 #define SPECTRE_H
 
-#include <other/defs.h>
 #include <other/matrix.h>
 
 #include <QWidget>
@@ -26,12 +25,10 @@ public:
     void setPow(double);
     void setFftLength(int);
 
-	void writeSpectra(const std::vector<int> & chanList = std::vector<int>{},
-					  const double leftFreq = DEFS.getLeftFreq(),
-					  const double rightFreq = DEFS.getRightFreq());
+	void writeSpectra(const std::vector<int> & chanList,
+					  const double leftFreq,
+					  const double rightFreq);
 
-    void setInPath(const QString &);
-    void setOutPath(const QString &);
 	std::vector<int> countSpectra(std::vector<int> chanList = std::vector<int>{});
 
     void cleanSpectra();
@@ -53,25 +50,17 @@ public slots:
 
 private:
     Ui::Spectre * ui;
-    QString backupDirPath;
 
-	/// replace in code
-	QString defaultInPath = DEFS.dirPath()
-							+ "/" + "Reals";
-	QString defaultOutPath = DEFS.dirPath()
-							 + "/" + "SpectraSmooth";
+	QString backupDirPath{};
+	QString defaultInPath{};
+	QString defaultOutPath{};
+	QString defaultInPathW{};
+	QString defaultOutPathW{};
 
-	QString defaultInPathW = DEFS.dirPath()
-                             + "/winds"
-                             + "/fromreal";
-	QString defaultOutPathW = DEFS.dirPath()
-                             + "/SpectraSmooth"
-                             + "/winds";
+	std::vector<std::pair<int, int>> rangeLimits{};
 
-    std::vector<std::pair<int, int>> rangeLimits;
-
-    std::vector<matrix> dataFFT;
-    std::vector<QString> fileNames;
+	std::vector<matrix> dataFFT{};
+	std::vector<QString> fileNames{};
 };
 
 #endif /// SPECTRE_H

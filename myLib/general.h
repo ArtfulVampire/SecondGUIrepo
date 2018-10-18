@@ -3,8 +3,7 @@
 
 #include <chrono>
 #include <iostream>
-
-#include <other/matrix.h>
+#include <vector>
 
 #include <QString>
 #include <QTime>
@@ -79,10 +78,6 @@ InputIterator find_back(InputIterator last, InputIterator first, const Typ & val
 
 template <class InputIterator, class Pred>
 InputIterator find_back_if(InputIterator last, InputIterator first, Pred pred);
-
-void centerMatrixRows(matrix & inData,
-				  const int howManyRows);
-
 
 } /// myLib namespace
 

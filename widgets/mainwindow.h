@@ -1,23 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <iostream>
-#include <cmath>
-#include <string>
-
-#include <widgets/cut.h>
-#include <widgets/net.h>
-#include <widgets/spectre.h>
-
-#include <other/matrix.h>
-#include <other/edffile.h>
-#include <other/autos.h>
-#include <other/consts.h>
-#include <other/defs.h>
 #include <myLib/qtlib.h>
 
 #include <QMainWindow>
-#include <QWidget>
 #include <QString>
 
 namespace Ui {
@@ -126,7 +112,7 @@ public:
 					const QStringList & fileFilters,
 					const QString & outPath);
 	void testNewClassifiers();
-	void testSuccessive(const std::vector<double> & vals = std::vector<double>{});
+	void testSuccessive(const std::vector<double> & vals);
 	void testSuccessive2();
 	void iitpPreproc();
 	void iitpMainProc();
@@ -139,7 +125,6 @@ private:
 
 	/// for different outputs
 	qtLib::MyTextStream outStream{qtLib::outputType::cout};
-
 	void setOutputStream(qtLib::outputType in);
 
 };

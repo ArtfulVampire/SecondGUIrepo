@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 #include <other/edffile.h>
-#include <other/defs.h>
+#include <other/consts.h>
 #include <myLib/iitp.h>
 
 namespace autos

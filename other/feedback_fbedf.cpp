@@ -1,5 +1,6 @@
 #include <other/feedback.h>
 
+#include <other/defs.h>
 #include <myLib/output.h>
 #include <myLib/statistics.h>
 #include <myLib/valar.h>
@@ -218,8 +219,8 @@ FBedf::FBedf(const QString & edfPath,
 	this->windTypes.clear();		this->windTypes.reserve(windSigTypes.size());
 	this->windAns.clear();			this->windAns.reserve(windSigAns.size());
 
-	int leftLim = fftLimit(FBedf::leftFreq, this->getFreq(), windFftLen);
-	int rightLim = fftLimit(FBedf::rightFreq, this->getFreq(), windFftLen);
+	int leftLim = smLib::fftLimit(FBedf::leftFreq, this->getFreq(), windFftLen);
+	int rightLim = smLib::fftLimit(FBedf::rightFreq, this->getFreq(), windFftLen);
 
 	for(int i = 0; i < windSigData.size(); ++i)
 	{
@@ -490,14 +491,14 @@ int FBedf::individualAlphaPeakIndexWind() const
 {
 	/// take only rest?
 	const int pz = findChannel("Pz");
-	const int lef = fftLimit(leftAlpha, srate, windFftLen);
-	const int rig = fftLimit(rightAlpha, srate, windFftLen);
+	const int lef = smLib::fftLimit(leftAlpha, srate, windFftLen);
+	const int rig = smLib::fftLimit(rightAlpha, srate, windFftLen);
 
 	/// get only Pz alpha range
 	matrix sub = windSpectra.subCols(pz * getSpLenWind() + lef, pz * getSpLenWind() + rig);
 
 	/// get only rest windows
-	std::vector<uint> rowsToErase{};
+	std::vector<int> rowsToErase{};
 	for(int i = 0; i < windTypes.size(); ++i)
 	{
 		if(windTypes[i] != taskType::rest) { rowsToErase.push_back(i); }
@@ -511,8 +512,8 @@ int FBedf::individualAlphaPeakIndexReal() const
 {
 	/// take only rest?
 	const int pz = findChannel("Pz");
-	const int lef = fftLimit(leftAlpha, srate, realFftLen);
-	const int rig = fftLimit(rightAlpha, srate, realFftLen);
+	const int lef = smLib::fftLimit(leftAlpha, srate, realFftLen);
+	const int rig = smLib::fftLimit(rightAlpha, srate, realFftLen);
 
 	/// get only rest reals, prepare average spec
 	const std::vector<matrix> & spectraRef = realsSpectra[static_cast<int>(taskType::rest)];
@@ -798,7 +799,7 @@ Classifier::avType FBedf::classifyReals(bool alphaFlag) const
 	if(alphaFlag)
 	{
 		const int alphaIndex = this->individualAlphaPeakIndexReal();
-		const int twoHzRange = fftLimit(2., srate, realFftLen);
+		const int twoHzRange = smLib::fftLimit(2., srate, realFftLen);
 		leftLim = alphaIndex - twoHzRange;
 		rightLim = alphaIndex + twoHzRange;
 	}
@@ -845,7 +846,7 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 
 	/// class by alpha ?
 	const int alphaIndex = this->individualAlphaPeakIndexWind();
-	const int twoHzRange = fftLimit(2., srate, windFftLen);
+	const int twoHzRange = smLib::fftLimit(2., srate, windFftLen);
 
 	std::vector<std::pair<int, int>> alphaRange(this->getNs() - 1);
 

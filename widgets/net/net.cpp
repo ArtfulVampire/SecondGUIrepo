@@ -1,7 +1,10 @@
 #include <widgets/net.h>
 #include "ui_net.h"
 
+#include <other/defs.h>
+
 #include <QFileDialog>
+#include <QButtonGroup>
 
 using namespace myOut;
 

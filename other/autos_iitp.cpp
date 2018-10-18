@@ -1,5 +1,6 @@
 #include <other/autos.h>
 
+#include <other/coords.h>
 #include <myLib/drw.h>
 #include <myLib/draws.h>
 #include <myLib/signalProcessing.h>

@@ -84,6 +84,4 @@ std::ostream & operator<< (std::ostream & os, const QStringList & toOut)
 //template std::ostream & operator << (std::ostream & os, const std::valarray<double> & toOut);
 //template std::ostream & operator << (std::ostream & os, const std::valarray<std::complex<double>> & toOut);
 //template std::ostream & operator << (std::ostream & os, const std::valarray<int> & toOut);
-//template std::ostream & operator << (std::ostream & os, const QList<int> & toOut);
-//template std::ostream & operator << (std::ostream & os, const QList<double> & toOut);
 } /// end of namespace myOut

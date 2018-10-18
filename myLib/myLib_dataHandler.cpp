@@ -1,6 +1,12 @@
 #include <myLib/dataHandlers.h>
 
+#include <fstream>
+
+#include <other/defs.h>
+#include <other/consts.h>
 #include <myLib/output.h>
+#include <myLib/valar.h>
+#include <myLib/general.h>
 
 #include <QTextStream>
 
@@ -390,8 +396,7 @@ matrix readMatrixFile(const QString & filePath)
 
 matrix readIITPfile(const QString & filePath)
 {
-	std::ifstream inStr;
-	inStr.open(filePath.toStdString());
+	std::ifstream inStr(filePath.toStdString());
 	if(!inStr.good())
 	{
 		std::cout << "readIITPfile: file not good - " << filePath << std::endl;
@@ -429,8 +434,7 @@ void readIITPfile(const QString & filePath,
 				  matrix & outData,
 				  std::vector<QString> & outLabels)
 {
-	std::ifstream inStr;
-	inStr.open(filePath.toStdString());
+	std::ifstream inStr(filePath.toStdString());
 	if(!inStr.good())
 	{
 		std::cout << "readIITPfile: file not good - " << filePath << std::endl;

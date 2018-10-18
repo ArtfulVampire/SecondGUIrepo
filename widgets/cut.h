@@ -1,8 +1,6 @@
 #ifndef CUT_H
 #define CUT_H
 
-#include <iostream>
-#include <cmath>
 #include <functional>
 #include <fstream>
 
@@ -89,8 +87,6 @@ public slots:
 	void prev();
 	void saveSlot();
 	void saveSubsecSlot();
-	void rewrite();
-
 	void zeroSlot();
 	void splitSlot();
 	void zeroFromZeroSlot();
@@ -177,7 +173,6 @@ private:
 	/// next/prev
 	QStringList filesList{};
 	QStringList::iterator fileListIter{};
-//	QString currentFile{}; /// deprecate to edfFile filePath (as fileType::real will be deprecated)
 	int addNum = 0; /// for cut() winds
 
 	/// markers
@@ -190,7 +185,7 @@ private:
 
 	/// for auto lookup for bad points
 	const int smartFindNumCh = 19;
-	const int smartFindWindLen = std::pow(2, 7); /// = 128 = 0.5 sec
+	const int smartFindWindLen{128}; /// ~0.5 sec
 	std::vector<matrix> smartFindLearnData{}; /// to find bad points
 
 	std::vector<std::vector<thrParam>> smartFindThresholds{}; /// [channel][param]

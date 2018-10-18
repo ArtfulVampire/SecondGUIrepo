@@ -2,6 +2,8 @@
 
 #include <set>
 
+#include <other/defs.h>
+#include <myLib/valar.h>
 #include <myLib/output.h>
 #include <myLib/statistics.h>
 
@@ -12,6 +14,8 @@ Classifier::Classifier()
 	myClassData = new ClassifierData();
 	resultsPath = DEFS.dirPath() + "/results.txt";
 	workDir = DEFS.dirPath() + "/Help/PA";
+	filesPath = DEFS.windsSpectraDir();
+
 	/// by myClassData
 	confusionMatrix = matrix(myClassData->getNumOfCl(), myClassData->getNumOfCl(), 0.);
 	outputLayer = std::valarray<double>(0., myClassData->getNumOfCl());

@@ -7,10 +7,12 @@
 #include <bits/ios_base.h>
 #include <functional>
 
+#include <other/coords.h>
 #include <myLib/clustering.h>
 #include <myLib/iitp.h>
 #include <myLib/drw.h>
 #include <myLib/draws.h>
+#include <myLib/valar.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/wavelet.h>
@@ -644,8 +646,8 @@ double countRhythmAdoption(const std::valarray<double> & sigRest,
 	auto specRest = myLib::spectreRtoR(sigRest, fftLen);
 	auto specAdop = myLib::spectreRtoR(sigAdop, fftLen);
 
-	int lowFr = fftLimit(freq - 0.5, DEFS.getFreq(), fftLen);
-	int higFr = fftLimit(freq + 0.5, DEFS.getFreq(), fftLen);
+	int lowFr = smLib::fftLimit(freq - 0.5, DEFS.getFreq(), fftLen);
+	int higFr = smLib::fftLimit(freq + 0.5, DEFS.getFreq(), fftLen);
 
 	return
 			std::accumulate(std::begin(specAdop) + lowFr,

@@ -1,9 +1,11 @@
 #include <myLib/statistics.h>
 
+#include <other/defs.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/draws.h>
 #include <myLib/small.h>
 #include <myLib/output.h>
+#include <myLib/valar.h>
 
 #include <QPixmap>
 #include <QPainter>

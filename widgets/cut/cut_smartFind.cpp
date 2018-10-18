@@ -4,6 +4,7 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
+#include <myLib/valar.h>
 
 using namespace myOut;
 
@@ -124,8 +125,8 @@ void Cut::smartFindSetFuncs()
 		smartFindFuncs.push_back([this](const std::valarray<double> & in) -> double
 		{
 			std::valarray<double> spec = myLib::spectreRtoR(in, smartFindWindLen) * norm;
-			return std::accumulate(std::begin(spec) + fftLimit(4, edfFil.getFreq(), smartFindWindLen),
-								   std::begin(spec) + fftLimit(8, edfFil.getFreq(), smartFindWindLen),
+			return std::accumulate(std::begin(spec) + smLib::fftLimit(4, edfFil.getFreq(), smartFindWindLen),
+								   std::begin(spec) + smLib::fftLimit(8, edfFil.getFreq(), smartFindWindLen),
 								   0.);
 		});
 		paramNames.push_back("theta");
@@ -139,8 +140,8 @@ void Cut::smartFindSetFuncs()
 		smartFindFuncs.push_back([this](const std::valarray<double> & in) -> double
 		{
 			std::valarray<double> spec = myLib::spectreRtoR(in, smartFindWindLen) * norm;
-			return std::accumulate(std::begin(spec) + fftLimit(8, edfFil.getFreq(), smartFindWindLen),
-								   std::begin(spec) + fftLimit(13, edfFil.getFreq(), smartFindWindLen),
+			return std::accumulate(std::begin(spec) + smLib::fftLimit(8, edfFil.getFreq(), smartFindWindLen),
+								   std::begin(spec) + smLib::fftLimit(13, edfFil.getFreq(), smartFindWindLen),
 								   0.);
 		});
 		paramNames.push_back("alpha");
@@ -155,8 +156,8 @@ void Cut::smartFindSetFuncs()
 		smartFindFuncs.push_back([this](const std::valarray<double> & in) -> double
 		{
 			std::valarray<double> spec = myLib::spectreRtoR(in, smartFindWindLen) * norm;
-			return std::accumulate(std::begin(spec) + fftLimit(13, edfFil.getFreq(), smartFindWindLen),
-								   std::begin(spec) + fftLimit(25, edfFil.getFreq(), smartFindWindLen),
+			return std::accumulate(std::begin(spec) + smLib::fftLimit(13, edfFil.getFreq(), smartFindWindLen),
+								   std::begin(spec) + smLib::fftLimit(25, edfFil.getFreq(), smartFindWindLen),
 								   0.);
 		});
 		paramNames.push_back("beta");
@@ -170,8 +171,8 @@ void Cut::smartFindSetFuncs()
 		smartFindFuncs.push_back([this](const std::valarray<double> & in) -> double
 		{
 			std::valarray<double> spec = myLib::spectreRtoR(in, smartFindWindLen) * norm;
-			return std::accumulate(std::begin(spec) + fftLimit(25, edfFil.getFreq(), smartFindWindLen),
-								   std::begin(spec) + fftLimit(40, edfFil.getFreq(), smartFindWindLen),
+			return std::accumulate(std::begin(spec) + smLib::fftLimit(25, edfFil.getFreq(), smartFindWindLen),
+								   std::begin(spec) + smLib::fftLimit(40, edfFil.getFreq(), smartFindWindLen),
 								   0.);
 		});
 		paramNames.push_back("gamma");
@@ -200,8 +201,8 @@ void Cut::smartFindSetFuncs()
 		smartFindFuncs.push_back([this](const std::valarray<double> & in) -> double
 		{
 			std::valarray<double> spec = myLib::spectreRtoR(in, smartFindWindLen) * norm;
-			return std::accumulate(std::begin(spec) + fftLimit(4, edfFil.getFreq(), smartFindWindLen),
-								   std::begin(spec) + fftLimit(40, edfFil.getFreq(), smartFindWindLen),
+			return std::accumulate(std::begin(spec) + smLib::fftLimit(4, edfFil.getFreq(), smartFindWindLen),
+								   std::begin(spec) + smLib::fftLimit(40, edfFil.getFreq(), smartFindWindLen),
 								   0.);
 		});
 #endif

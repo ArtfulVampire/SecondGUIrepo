@@ -1,6 +1,8 @@
 #include <widgets/mainwindow.h>
 #include "ui_mainwindow.h"
 
+#include <other/defs.h>
+#include <myLib/valar.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
 #include <myLib/dataHandlers.h>

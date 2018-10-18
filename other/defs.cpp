@@ -1,4 +1,5 @@
 #include <other/defs.h>
+#include <other/consts.h>
 /// begin defs Singleton
 
 void defs::setUser(username in)
@@ -7,7 +8,6 @@ void defs::setUser(username in)
 	this->leftFreq = 5.;
 	this->rightFreq = 20.;
 	this->ntFlag = false;
-
 	this->currUser = in;
 
 	switch(in)
@@ -73,7 +73,7 @@ void defs::setUser(username in)
 		this->dir->cd("/media/Files/Data/Ossadtchi");
 		break;
 	}
-	default: { break; } /// never get here
+//	default: { break; /* do nothing */ } /// never get here
 	}
 }
 
@@ -95,3 +95,5 @@ double shiftTest = 0.5;
 double overlap125 = (1024 - 125) / 1024.;
 double numSmooth = 5;
 }
+
+

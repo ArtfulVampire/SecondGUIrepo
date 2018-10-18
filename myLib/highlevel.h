@@ -6,7 +6,6 @@
 
 #include <other/matrix.h>
 
-
 namespace myLib
 {
 

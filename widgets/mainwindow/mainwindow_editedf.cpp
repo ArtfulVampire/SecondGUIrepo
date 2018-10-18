@@ -1,6 +1,9 @@
 #include <widgets/mainwindow.h>
 #include "ui_mainwindow.h"
 
+
+#include <other/defs.h>
+#include <myLib/output.h>
 #include <myLib/mati.h>
 #include <myLib/dataHandlers.h>
 

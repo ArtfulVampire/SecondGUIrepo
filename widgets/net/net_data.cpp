@@ -1,10 +1,12 @@
 #include <widgets/net.h>
 #include "ui_net.h"
 
+#include <myLib/draws.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/output.h>
 #include <myLib/ica.h>
+#include <myLib/valar.h>
 
 using namespace myOut;
 

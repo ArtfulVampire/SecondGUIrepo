@@ -1,6 +1,7 @@
 #include <widgets/cut.h>
 #include "ui_cut.h"
 
+#include <other/coords.h>
 #include <myLib/drw.h>
 #include <myLib/draws.h>
 #include <myLib/dataHandlers.h>
@@ -23,13 +24,6 @@ Cut::Cut() :
 	ui->setupUi(this);
 	this->setAttribute(Qt::WA_DeleteOnClose);
 	this->setWindowTitle("Cut");
-
-	/// files
-	ui->subdirComboBox->addItem("");
-	ui->subdirComboBox->addItem("Reals");
-	ui->subdirComboBox->addItem("winds");
-	ui->subdirComboBox->addItem("winds/fromreal"); /// generality
-	ui->subdirComboBox->setCurrentText(""); /// me
 
 	ui->suffixComboBox->addItem("");
 	ui->suffixComboBox->addItem("eeg");
@@ -113,17 +107,16 @@ Cut::Cut() :
 	ui->iitpSaveNewNumSpinBox->setValue(24);
 
 	/// shortcuts
-	ui->nextButton->setShortcut(tr("d"));
-	ui->prevButton->setShortcut(tr("a"));
+//	ui->nextButton->setShortcut(tr("d"));
+//	ui->prevButton->setShortcut(tr("a"));
 	ui->saveSubsecPushButton->setShortcut(tr("c"));
 	ui->saveButton->setShortcut(tr("s"));
-	ui->rewriteButton->setShortcut(tr("r"));
 	ui->zeroButton->setShortcut(tr("z"));
 	ui->splitButton->setShortcut(tr("x"));
-	ui->forwardFrameButton->setShortcut(QKeySequence::Forward);
-	ui->backwardFrameButton->setShortcut(QKeySequence::Back);
-	ui->forwardFrameButton->setShortcut(tr("e"));
-	ui->backwardFrameButton->setShortcut(tr("q"));
+//	ui->forwardFrameButton->setShortcut(QKeySequence::Forward);
+//	ui->backwardFrameButton->setShortcut(QKeySequence::Back);
+//	ui->forwardFrameButton->setShortcut(tr("e"));
+//	ui->backwardFrameButton->setShortcut(tr("q"));
 	ui->linearApproxPushButton->setShortcut(tr("l"));
 	ui->refilterFramePushButton->setShortcut(tr("f"));
 	ui->iitpInverseCheckBox->setShortcut(tr("i"));
@@ -132,11 +125,10 @@ Cut::Cut() :
 
 	/// files
 	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browseSlot()));
-    QObject::connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(next()));
-	QObject::connect(ui->prevButton, SIGNAL(clicked()), this, SLOT(prev()));
+//	QObject::connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(next()));
+//	QObject::connect(ui->prevButton, SIGNAL(clicked()), this, SLOT(prev()));
 	QObject::connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(saveSlot()));
 	QObject::connect(ui->saveSubsecPushButton, SIGNAL(clicked()), this, SLOT(saveSubsecSlot()));
-	QObject::connect(ui->rewriteButton, SIGNAL(clicked()), this, SLOT(rewrite()));
 
 	/// modify
 	QObject::connect(ui->linearApproxPushButton, SIGNAL(clicked()), this, SLOT(linearApproxSlot()));
@@ -157,10 +149,10 @@ Cut::Cut() :
 					 [this]() { this->setMarkerSlot(false); });
 
 	/// navi
-    QObject::connect(ui->forwardStepButton, SIGNAL(clicked()), this, SLOT(forwardStepSlot()));
-    QObject::connect(ui->backwardStepButton, SIGNAL(clicked()), this, SLOT(backwardStepSlot()));
-    QObject::connect(ui->forwardFrameButton, SIGNAL(clicked()), this, SLOT(forwardFrameSlot()));
-	QObject::connect(ui->backwardFrameButton, SIGNAL(clicked()), this, SLOT(backwardFrameSlot()));
+//	QObject::connect(ui->forwardStepButton, SIGNAL(clicked()), this, SLOT(forwardStepSlot()));
+//	QObject::connect(ui->backwardStepButton, SIGNAL(clicked()), this, SLOT(backwardStepSlot()));
+//	QObject::connect(ui->forwardFrameButton, SIGNAL(clicked()), this, SLOT(forwardFrameSlot()));
+//	QObject::connect(ui->backwardFrameButton, SIGNAL(clicked()), this, SLOT(backwardFrameSlot()));
 	QObject::connect(ui->findNextMarkPushButton, &QPushButton::clicked,
 					 [this](){ findNextMark(ui->findNextMarkSpinBox->value()); });
 	QObject::connect(ui->findNextNonzeroMarkPushButton, &QPushButton::clicked,
@@ -264,8 +256,8 @@ Cut::Cut() :
 	});
 
 	/// IITP
-	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
-	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
+//	QObject::connect(ui->iitpAutoCorrPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoCorrSlot()));
+//	QObject::connect(ui->iitpAutoJumpPushButton, SIGNAL(clicked()), this, SLOT(iitpAutoJumpSlot()));
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->iitpSaveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
 	QObject::connect(ui->iitpRectifyEmgPushButton, SIGNAL(clicked()), this, SLOT(rectifyEmgSlot()));
@@ -367,8 +359,9 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 			}
 			procFlag = false;
 
+
 			QWheelEvent * scrollEvent = static_cast<QWheelEvent*>(event);
-			const int step = (scrollEvent->delta() > 0) ? -1 : 1;
+			const int step = (scrollEvent->delta() > 0) ? 1 : -1;
 
 			if(scrollEvent->modifiers().testFlag(Qt::ControlModifier) &&
 			   !scrollEvent->modifiers().testFlag(Qt::ShiftModifier))
@@ -556,12 +549,12 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 					}
 					else
 					{
-						ui->yNormInvertCheckBox->click();
+						ui->yNormDoubleSpinBox->setValue(1.);
 					}
 				}
 				else
 				{
-					ui->yNormDoubleSpinBox->setValue(1.);
+					ui->yNormInvertCheckBox->click();
 				}
 				break;
 			}

@@ -1,10 +1,13 @@
 #include <widgets/net.h>
 #include <other/edffile.h>
 
+#include <other/defs.h>
+#include <other/consts.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/highlevel.h>
 #include <myLib/statistics.h>
+#include <myLib/valar.h>
 
 using namespace myOut;
 

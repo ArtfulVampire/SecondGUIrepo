@@ -1,6 +1,8 @@
 #include <widgets/spectre.h>
 #include "ui_spectre.h"
 
+#include <other/coords.h>
+#include <other/defs.h>
 #include <myLib/signalProcessing.h>
 #include <myLib/wavelet.h>
 #include <myLib/statistics.h>
@@ -8,9 +10,11 @@
 #include <myLib/dataHandlers.h>
 #include <myLib/draws.h>
 #include <myLib/drw.h>
+#include <myLib/valar.h>
 
 #include <QButtonGroup>
 #include <QFileDialog>
+#include <QMouseEvent>
 
 using namespace myOut;
 
@@ -22,6 +26,10 @@ Spectre::Spectre() :
     this->setWindowTitle("Spectra Counter");
 
 	backupDirPath = DEFS.dirPath();
+	defaultInPath = DEFS.dirPath() + "/Reals";
+	defaultOutPath = DEFS.dirPath() + "/SpectraSmooth";
+	defaultInPathW = DEFS.dirPath() + "/winds/fromreal";
+	defaultOutPathW = DEFS.dirPath() + "/SpectraSmooth/winds";
 
     QButtonGroup * group1 = new QButtonGroup;
     group1->addButton(ui->jpgButton);
@@ -328,11 +336,11 @@ void Spectre::integrate() /// to deprecate
 	{
 		QStringList limits = item.split('-', QString::SkipEmptyParts);
 
-		begins.push_back(std::max(fftLimit(limits[0].toDouble(),
+		begins.push_back(std::max(smLib::fftLimit(limits[0].toDouble(),
 								  DEFS.getFreq(),
 								  DEFS.getFftLen()) - DEFS.left(),
 						 0));
-		ends.push_back(std::min(fftLimit(limits[1].toDouble(),
+		ends.push_back(std::min(smLib::fftLimit(limits[1].toDouble(),
 								DEFS.getFreq(),
 								DEFS.getFftLen()) - DEFS.left(),
 					   DEFS.spLength()));
@@ -604,8 +612,8 @@ void Spectre::writeSpectra(const std::vector<int> & chanList,
         return;
     }
 
-	const int left = fftLimit(leftFreq, globalEdf.getFreq(), DEFS.getFftLen());
-	const int right = fftLimit(rightFreq, globalEdf.getFreq(), DEFS.getFftLen()) + 1;
+	const int left = smLib::fftLimit(leftFreq, globalEdf.getFreq(), DEFS.getFftLen());
+	const int right = smLib::fftLimit(rightFreq, globalEdf.getFreq(), DEFS.getFftLen()) + 1;
 
     QStringList lst = ui->dropChannelsLineEdit->text().split(
                           QRegExp("[,;\\s]"), QString::SkipEmptyParts);
@@ -674,7 +682,7 @@ void Spectre::countSpectraSlot()
 	}
 	if(!ui->bypassWriteCheckBox->isChecked())
 	{
-		writeSpectra(chanList);
+		writeSpectra(chanList, DEFS.getLeftFreq(), DEFS.getRightFreq());
 	}
 
 #if 0
@@ -720,17 +728,8 @@ void Spectre::cleanSpectra()
     }
 	std::cout << "cleanSpectra: num of zeroed points = " << cnt << std::endl;
 	ui->outputDirLineEdit->setText(ui->outputDirLineEdit->text() + "/Clean");
-    writeSpectra();
+	writeSpectra({}, DEFS.getLeftFreq(), DEFS.getRightFreq());
 	std::cout << "cleanSpectra: time elapsed " << myTime.elapsed() / 1000. << " sec" << std::endl;
-}
-
-void Spectre::setInPath(const QString & in)
-{
-    defaultInPath = in;
-}
-void Spectre::setOutPath(const QString & out)
-{
-    defaultOutPath = out;
 }
 
 std::vector<int> Spectre::countSpectra(std::vector<int> chanList)
@@ -740,7 +739,8 @@ std::vector<int> Spectre::countSpectra(std::vector<int> chanList)
 
 	if(chanList.empty())
 	{
-		chanList = coords::leest19;
+		///////////////////// oooooooooo remake
+		chanList = smLib::range<std::vector<int>>(0, 19);
 		chanList = globalEdf.findChannels("EEG ");
 	}
 

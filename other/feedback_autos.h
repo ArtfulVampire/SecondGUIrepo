@@ -5,23 +5,24 @@
 #include <vector>
 
 #include <other/feedback.h>
-#include <widgets/net.h>
 
 #include <QString>
 
 namespace fb
 {
+/// copy from net.h
+using sucAllType = std::tuple<Classifier::avType, Classifier::avType, Classifier::avType>;
 
-std::map<QString, QString> coutAllFeatures(const QString & dear,
+std::map<QString, QString> coutAllFeatures(const QString & guysPath,
 					 const std::vector<std::pair<QString, QString>> & guysList,
 					 const QString & postfix);
-void calculateICA(const QString & dear,
+void calculateICA(const QString & guysPath,
 				  const std::vector<std::pair<QString, QString>> & guysList,
 				  const QString & postfix);
 
-std::vector<Net::sucAllType> calculateSuccessiveBoth(const QString & dear,
-													 const std::vector<std::pair<QString, QString>> & guysList,
-													 const QString & postfix);
+std::vector<sucAllType> calculateSuccessiveBoth(const QString & guysPath,
+												const std::vector<std::pair<QString, QString>> & guysList,
+												const QString & postfix);
 
 void createAnsFiles(const QString & guyPath, const QString & guyName);
 void checkMarkFBfinal(const QString & filePath);

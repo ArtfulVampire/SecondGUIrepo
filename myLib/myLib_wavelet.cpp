@@ -3,6 +3,7 @@
 #include <myLib/wavelet.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/output.h>
+#include <other/defs.h>
 
 #include <QPixmap>
 #include <QPainter>

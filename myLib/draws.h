@@ -6,8 +6,8 @@
 #include <vector>
 
 #include <other/matrix.h>
-#include <other/consts.h>
 #include <other/defs.h>
+#include <other/consts.h>
 
 #include <QPixmap>
 #include <QString>
@@ -41,7 +41,6 @@ enum class ColorScale {jet,
 
 void drawColorScale(const QString & filename, int range, ColorScale type = ColorScale::jet, bool full = false);
 
-void drawRealisation(const QString & inPath);
 
 QPixmap drawEeg(const matrix & dataD,
 				int ns,
@@ -56,7 +55,7 @@ QPixmap drawEeg(const matrix & dataD,
 				int ns,
 				int startSlice,
 				int endSlice,
-				int freq = DEFS.getFreq(),
+				int freq,
 				const QString & picPath = QString(),
 				double norm = 1.,
 				int blueChan = -1,

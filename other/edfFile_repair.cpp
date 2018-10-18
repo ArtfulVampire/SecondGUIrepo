@@ -1,5 +1,7 @@
 #include <other/edffile.h>
 
+#include <other/consts.h>
+#include <myLib/valar.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/signalProcessing.h>
 
@@ -67,22 +69,9 @@ void renameContents(const QString & dirPath, const std::vector<std::pair<QString
 
 void toLatinItem(const QString & inPath)
 {
-	QString dirName = myLib::getDirPathLib(inPath);
-	QString fileName = myLib::getFileName(inPath);
-	QString newFileName;
-	for(const QChar & ch : fileName)
-	{
-		int num = ch.unicode();
-		if(coords::kyrToLatin.find(num) != coords::kyrToLatin.end())
-		{
-			newFileName += coords::kyrToLatin.at(num);
-		}
-		else
-		{
-			newFileName += ch;
-		}
-	}
-	QDir().rename(inPath,  dirName + "/" + newFileName);
+	QDir().rename(inPath,
+				  myLib::getDirPathLib(inPath)
+				  + "/" + myLib::kyrToLatin( myLib::getFileName(inPath) ));
 }
 
 void toLatinContents(const QString & dirPath, const QStringList & filters)
@@ -197,18 +186,10 @@ bool testChannelsOrderConsistency(const QString & dirPath)
 }
 
 
-void channelsOrderFile(const QString & inFilePath,
-                         QString outFilePath,
-                         const std::vector<QString> & standard)
+edfFile channelsOrderFile(const QString & inFilePath,
+						 const std::vector<QString> & standard)
 {
-    if(outFilePath.isEmpty())
-    {
-        outFilePath = inFilePath;
-        outFilePath.replace(".edf", "_goodChan.edf");
-    }
-
-    edfFile initFile;
-	initFile.readEdfFile(inFilePath, true);
+	edfFile initFile(inFilePath, true);
 
 	std::vector<int> reorderChanList{};
 	reorderChanList.reserve(initFile.getNs());
@@ -230,18 +211,15 @@ void channelsOrderFile(const QString & inFilePath,
 	}
 	for(int j : leftChannels) { reorderChanList.push_back(j); }
 
-	std::vector<int> ident = smLib::range<std::vector<int>>(0, initFile.getNs() + 1);
+	std::vector<int> ident = smLib::range<std::vector<int>>(0, initFile.getNs());
 
     if(reorderChanList != ident)
     {
         initFile.readEdfFile(inFilePath);
 		initFile = initFile.reduceChannels(reorderChanList);
-        initFile.writeEdfFile(outFilePath);
-    }
-    else
-    {
-        QFile::copy(inFilePath, outFilePath);
-    }
+		return initFile;
+	}
+	return {};
 }
 
 void channelsOrderDir(const QString & inDirPath,
@@ -256,8 +234,8 @@ void channelsOrderDir(const QString & inDirPath,
 	for(const QString & outName : vec)
 	{
 		channelsOrderFile(inDirPath + "/" + outName,
-						  outDirPath + "/" + outName,
-						  standard);
+						  standard)
+				.writeEdfFile(outDirPath + "/" + outName);
     }
 }
 
@@ -404,16 +382,16 @@ void testArtifacts(const QString & dirPath, const QStringList & filters)
 
 				/// magic consts
 				double theta = std::abs(std::accumulate(
-											std::begin(tmp) + fftLimit(4., srate, fftLen),
-											std::begin(tmp) + fftLimit(7.5, srate, fftLen),
+											std::begin(tmp) + smLib::fftLimit(4., srate, fftLen),
+											std::begin(tmp) + smLib::fftLimit(7.5, srate, fftLen),
 											std::complex<double>{}));
 				double beta = std::abs(std::accumulate(
-											std::begin(tmp) + fftLimit(15., srate, fftLen),
-											std::begin(tmp) + fftLimit(20., srate, fftLen),
+											std::begin(tmp) + smLib::fftLimit(15., srate, fftLen),
+											std::begin(tmp) + smLib::fftLimit(20., srate, fftLen),
 											std::complex<double>{}));
 				double whole = std::abs(std::accumulate(
-											std::begin(tmp) + fftLimit(5., srate, fftLen),
-											std::begin(tmp) + fftLimit(20., srate, fftLen),
+											std::begin(tmp) + smLib::fftLimit(5., srate, fftLen),
+											std::begin(tmp) + smLib::fftLimit(20., srate, fftLen),
 											std::complex<double>{}));
 				thetaPart[num] = theta / whole;
 				thetaAbs[num] = theta;

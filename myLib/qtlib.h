@@ -72,8 +72,6 @@ public:
 		return *this;
 	}
 
-
-
 private:
 	QTextEdit * te;
 	outputType typ{outputType::cout};

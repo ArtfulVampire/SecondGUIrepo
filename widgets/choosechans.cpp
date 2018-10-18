@@ -1,7 +1,8 @@
 #include "choosechans.h"
 #include "ui_choosechans.h"
 
-#include <other/consts.h>
+#include <other/coords.h>
+#include <other/defs.h>
 #include <myLib/output.h>
 
 #include <QLabel>
@@ -33,7 +34,7 @@ ChooseChans::ChooseChans() :
 							  std::ceil(128. / checkColSize) * checkBoxWidth,
 							  checkColSize * checkBoxHeight));
 
-	///
+	/// check/uncheck cluster
 	auto setCheckBoxes = [this](const QString & area, bool ch)
 	{
 		if(!coords::egi::chans128.count(area)) { return; }
@@ -48,66 +49,7 @@ ChooseChans::ChooseChans() :
 		}
 	};
 
-#if 0
-	/// buttons
-	/// consider 128 channels + status
-	QLabel * checkLabel = new QLabel("check", this);
-	QLabel * uncheckLabel = new QLabel("unchek", this);
-
-
-	checkLabel->setGeometry(drawGap,
-							drawGap,
-							checkUncheckWidth,
-							pushButtonHeight);
-	uncheckLabel->setGeometry(drawGap,
-							  drawGap + pushButtonHeight + drawGap,
-							  checkUncheckWidth,
-							  pushButtonHeight);
-
-
-	QGridLayout * buttons{new QGridLayout()};
-	buttons->addWidget(uncheckLabel, 0, 0);
-	buttons->addWidget(checkLabel, 1, 0);
-
-	int colCounter = 1;
-	for(const auto & area : coords::egi::chans128groups)
-	{
-		for(int i = 0; i < 2; ++i) /// 0 - check, 1 - uncheck
-		{
-			QPushButton * but = new QPushButton(area, this);
-			but->setGeometry(0, 0, pushButtonWidth, pushButtonHeight);
-			QObject::connect(but, &QPushButton::clicked,
-							 [this, i, area, setCheckBoxes](){ setCheckBoxes(area, i); });
-			buttons->addWidget(but, i, colCounter);
-		}
-		++colCounter;
-	}
-	/// all
-	for(int i = 0; i < 2; ++i) /// 0 - check, 1 - uncheck
-	{
-		QPushButton * but = new QPushButton("all", this);
-		but->setGeometry(0, 0, pushButtonWidth, pushButtonHeight);
-		QObject::connect(but, &QPushButton::clicked,
-						 [this, i]()
-		{
-			for(int num = 1; num <= 128; ++num)
-			{
-				auto pos = getPosition(num, checkColSize);
-				static_cast<QCheckBox*>
-				   (checks->itemAtPosition(pos.first, pos.second)->widget())->setChecked(i);
-			}
-		});
-		buttons->addWidget(but, i, colCounter);
-	}
-
-	buttons->setGeometry(QRect(drawGap, drawGap,
-							   checkUncheckWidth + (colCounter - 1) * pushButtonWidth,
-							   2 * pushButtonHeight + drawGap));
-#else
-	/// checkboxes
-//	buttons->addWidget(uncheckLabel, 0, 0);
-//	buttons->addWidget(checkLabel, 1, 0);
-
+	/// cluster checkboxes
 	QHBoxLayout * buttons{new QHBoxLayout()};
 	int colCounter = 1;
 	for(const auto & area : coords::egi::chans128groups)
@@ -121,7 +63,7 @@ ChooseChans::ChooseChans() :
 		++colCounter;
 	}
 
-	/// all
+	/// "all" cluster
 	QCheckBox * chk = new QCheckBox("all", this);
 	chk->setGeometry(0, 0, pushButtonWidth, pushButtonHeight);
 	chk->setChecked(true);
@@ -139,8 +81,6 @@ ChooseChans::ChooseChans() :
 	buttons->setGeometry(QRect(drawGap, drawGap,
 							   checkUncheckWidth + (colCounter - 1) * pushButtonWidth,
 							   2 * pushButtonHeight + drawGap));
-
-#endif
 
 	/// unite
 	both->addItem(buttons);

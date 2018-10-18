@@ -4,12 +4,10 @@
 #include <valarray>
 
 #include <other/matrix.h>
-#include <other/defs.h>
+#include <myLib/small.h>
 
 #include <QString>
 #include <QPixmap>
-
-
 
 namespace myLib
 {

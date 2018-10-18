@@ -4,8 +4,10 @@
 
 #include <myLib/output.h>
 #include <myLib/draws.h>
+#include <myLib/drw.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/signalProcessing.h>
+#include <myLib/valar.h>
 
 #include <QTime>
 
@@ -437,8 +439,8 @@ void ICAclass::drawSpectraWithMaps() const
 	const double rf = fb::FBedf::rightFreq;
 
 	/// magic const
-	const int lef = fftLimit(lf, 250., fftLenLoc);
-	const int rig = fftLimit(rf, 250., fftLenLoc) + 1;
+	const int lef = smLib::fftLimit(lf, 250., fftLenLoc);
+	const int rig = smLib::fftLimit(rf, 250., fftLenLoc) + 1;
 
 	matrix drawMatrix = this->getComponents().apply(spectreWelch).subCols(lef, rig);
 

@@ -3,42 +3,19 @@
 
 #include <fstream>
 #include <cmath>
+#include <map>
+#include <vector>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <other/consts.h> /// for uint and dataFolder
 #include <other/edffile.h>
 
 #include <QString>
 #include <QStringList>
 #include <QDir>
 #include <QColor>
-
-namespace suc
-{
-extern int numGoodNewLimit;
-extern int learnSetStay;
-extern double decayRate;
-extern double errorThreshold;
-
-extern double inertiaCoeff;
-
-/// new successive by edf files
-extern double windLength;
-extern double overlap125;
-extern double shiftLearn;
-extern double shiftTest;
-extern double numSmooth;
-}
-
-
-inline int fftLimit(double inFreq,
-					double sampleFreq,
-					int fftL)
-{
-	return std::ceil(inFreq / sampleFreq * fftL - 0.5);
-}
 
 
 enum class username {MichaelA,
@@ -51,7 +28,6 @@ enum class username {MichaelA,
 					 Mati,
 					 IITP,
 					 PolinaM};
-
 
 enum class spectraNorming {all, each};
 
@@ -91,10 +67,11 @@ public:
 
 
 	/// legacy
-	int left() const		{ return fftLimit(this->leftFreq, this->freq, this->fftLength); }
-	int right() const		{ return fftLimit(this->rightFreq, this->freq, this->fftLength) + 1; }
+	int left() const		{ return smLib::fftLimit(this->leftFreq, this->freq, this->fftLength); }
+	int right() const		{ return smLib::fftLimit(this->rightFreq, this->freq, this->fftLength) + 1; }
 	int spLength() const	{ return this->right() - this->left(); }
 	double spStep() const	{ return this->freq / this->fftLength; }
+
 	/// to deprecate
 	int numOfClasses() const{ return this->fileMarkers.length(); }
 	int nsWOM() const		{ return this->ns - 1; }
@@ -195,6 +172,23 @@ public:
 #define globalEdf defs::inst().getEdfRef()
 #define DEVNULL defs::nullStream()
 
+
+namespace suc
+{
+extern int numGoodNewLimit;
+extern int learnSetStay;
+extern double decayRate;
+extern double errorThreshold;
+
+extern double inertiaCoef;
+
+/// new successive by edf files
+extern double windLength;
+extern double overlap125;
+extern double shiftLearn;
+extern double shiftTest;
+extern double numSmooth;
+} /// end namespace suc
 
 #endif /// COORD_H
 

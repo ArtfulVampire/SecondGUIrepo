@@ -1,7 +1,6 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-
 #include <ios>
 #include <iostream>
 #include <complex>
@@ -14,7 +13,6 @@
 
 #include <QString>
 #include <QStringList>
-#include <QList>
 
 namespace myLib
 {
