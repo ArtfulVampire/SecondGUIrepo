@@ -20,9 +20,9 @@ using namespace myOut;
 void MainWindow::customFunc()
 {
 //	return;
-	myLib::elenaCalculation("/media/Files/Data/Elena/Karpenuk/Reals",
-							"/media/Files/Data/Elena/Karpenuk/SpectraSmooth",
-							"/media/Files/Data/Elena/Karpenuk");
+//	myLib::elenaCalculation("/media/Files/Data/Elena/Karpenuk/Reals",
+//							"/media/Files/Data/Elena/Karpenuk/SpectraSmooth",
+//							"/media/Files/Data/Elena/Karpenuk");
 
 //	const QString workDir = "c:/Data";
 //	repair::fullRepairDir(workDir);

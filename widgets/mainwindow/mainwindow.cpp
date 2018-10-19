@@ -344,10 +344,11 @@ void MainWindow::showCut()
 
 void MainWindow::setEdfFileSlot()
 {
-	QString helpString = QFileDialog::getOpenFileName(static_cast<QWidget*>(this),
-													  tr("EDF to open"),
-													  DEFS.dirPath(),
-													  tr("EDF files (*.EDF *.edf)"));
+	QString helpString = QFileDialog::getOpenFileName(
+							 this,
+							 tr("EDF to open"),
+							 DEFS.dirPath(),
+							 tr("EDF files (*.EDF *.edf)"));
 
 	if(!helpString.isEmpty()) { setEdfFile(helpString); }
 }
@@ -540,10 +541,11 @@ void MainWindow::cleanDirs()
 
 void MainWindow::drawMapsSlot()
 {
-    QString helpString = QFileDialog::getOpenFileName(this,
-                                                      tr("Choose maps file"),
-													  DEFS.dirPath(),
-                                                      tr("*.txt"));
+	QString helpString = QFileDialog::getOpenFileName(
+							 this,
+							 tr("Choose maps file"),
+							 DEFS.dirPath(),
+							 tr("*.txt"));
     if(helpString.isEmpty())
     {
 		helpString = DEFS.dirPath()

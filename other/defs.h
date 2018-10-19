@@ -46,7 +46,7 @@ public:
 		return str;
 	}
 private:
-	defs() {}
+	defs() { }
 	defs(const defs &)=delete;
 	defs & operator=(const defs &)=delete;
 	/// Singleton end
@@ -62,7 +62,6 @@ public:
 	QString pcaSpectraDir() const		{ return this->dirPath() + "/SpectraSmooth/PCA"; }
 	QString paDir() const				{ return this->dirPath() + "/Help/PA"; }
 
-
 	/// legacy
 	int left() const		{ return smLib::fftLimit(this->leftFreq, this->freq, this->fftLength); }
 	int right() const		{ return smLib::fftLimit(this->rightFreq, this->freq, this->fftLength) + 1; }
@@ -75,7 +74,7 @@ public:
 
 private:
 	QDir * dir{new QDir(QDir::root())};
-	edfFile globalEDF;
+	edfFile globalEDF{};
 
 	username currUser{username::MichaelA};
 
@@ -87,7 +86,7 @@ private:
 	bool opencl{false};		/// unused now
 	bool openmp{false};		/// unused now
 
-	QString ExpName;		/// to deprecate, edfFile.getExpName()
+	QString ExpName{};		/// to deprecate, edfFile.getExpName()
 	int ns{20};				/// to deprecate, edfFile.getNs();
 	double freq{250.};		/// to deprecate, edfFile.getFreq()
 	int fftLength{4096};
@@ -108,7 +107,6 @@ public:
 	QStringList dirEntryList(QDir::Filters filter = QDir::NoFilter,
 							 QDir::SortFlags sort = QDir::NoSort) const
 	{ return this->dir->entryList(filter, sort); }
-
 
 public:
 	/// HOLY INCAPSULATION

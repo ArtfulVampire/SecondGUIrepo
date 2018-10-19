@@ -35,7 +35,7 @@ using uint = unsigned int;
 
 
 #ifndef SHOW_IITP_WIDGETS
-#define SHOW_IITP_WIDGETS 01
+#define SHOW_IITP_WIDGETS 0
 #endif
 
 #ifndef M_PI

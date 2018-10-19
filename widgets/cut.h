@@ -98,6 +98,7 @@ public slots:
 	void subtractMeansSlot();
 	void subtractMeanFrameSlot();
 	void setMarkerSlot(bool);
+	void xNormSlot();
 
 	void mousePressSlot(Qt::MouseButton btn, int coord);
 	void timesAndDiffSlot();

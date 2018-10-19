@@ -5,7 +5,6 @@
 #include <myLib/draws.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/signalProcessing.h>
-#include <myLib/qtlib.h>
 #include <myLib/output.h>
 
 using namespace myOut;

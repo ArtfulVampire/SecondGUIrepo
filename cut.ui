@@ -201,7 +201,7 @@
      <height>119</height>
     </rect>
    </property>
-   <layout class="QGridLayout" name="gridLayout_5">
+   <layout class="QGridLayout" name="iitpGrid">
     <item row="0" column="0">
      <widget class="QCheckBox" name="iitpDisableEcgCheckBox">
       <property name="text">
@@ -828,7 +828,7 @@
          <number>1</number>
         </property>
         <property name="maximum">
-         <number>10</number>
+         <number>15</number>
         </property>
        </widget>
       </item>

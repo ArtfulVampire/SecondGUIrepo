@@ -6,17 +6,16 @@
 #include <myLib/draws.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/signalProcessing.h>
-#include <myLib/qtlib.h>
 #include <myLib/output.h>
+
+#include <QFileDialog>
 
 using namespace myOut;
 
 
 void Cut::next()
 {
-
-	std::cout << *fileListIter << std::endl;
-
+//	std::cout << *fileListIter << std::endl;
 	++fileListIter;
 	if(fileListIter == std::end(filesList))
 	{
@@ -34,9 +33,7 @@ void Cut::prev()
 		std::cout << "prev: bad number, too little" << std::endl;
 		return;
 	}
-
-	std::cout << *fileListIter << std::endl;
-
+//	std::cout << *fileListIter << std::endl;
 	--fileListIter;
 	openFile(edfFil.getDirPath() + "/" + (*fileListIter));
 }
@@ -170,29 +167,18 @@ void Cut::saveSubsecSlot()
 
 void Cut::browseSlot()
 {
-	/// filter bu suffix
-	const QString suffix = ui->suffixComboBox->currentText();
-
-	QString filter{};
-	QStringList filterList{};
-	for(const QString & in : def::edfFilters)
-	{
-		auto a = (suffix.isEmpty() ? "" :  ("*" + suffix)) + in;
-		filter += a + " ";
-		filterList.push_back(a);
-	}
-	filter.prepend("EDF files (");
-	filter += ')';
-
-	const QString helpString = QFileDialog::getOpenFileName((QWidget*)this,
-															tr("Open file"),
-															DEFS.dirPath(),
-															filter);
+	const auto suffix = ui->suffixComboBox->currentText();
+	const QString helpString = QFileDialog::getOpenFileName(
+								   this,
+								   tr("Open file"),
+								   DEFS.dirPath(),
+								   myLib::getDialogFilter(suffix));
 	if(helpString.isEmpty()) { return; }
+
 	ui->filePathLineEdit->setText(helpString);
 	DEFS.setDir(myLib::getDirPathLib(helpString));
 
-	filesList = QDir(myLib::getDirPathLib(helpString)).entryList(filterList);
+	filesList = QDir(myLib::getDirPathLib(helpString)).entryList(myLib::getFilters(suffix));
 
 	for(const QString & in : filesList)
 	{

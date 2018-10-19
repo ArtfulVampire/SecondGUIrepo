@@ -21,6 +21,30 @@ QString rightNumber(int input, int N) /// prepend zeros
 	return QString(N - a.size(), '0') + a;
 }
 
+QString getDialogFilter(const QString & suffix)
+{
+	QString filter{};
+	for(const QString & in : def::edfFilters)
+	{
+		auto a = (suffix.isEmpty() ? "" :  ("*" + suffix)) + in;
+		filter += a + " ";
+	}
+	filter.prepend("EDF files (");
+	filter += ')';
+	return filter;
+}
+
+QStringList getFilters(const QString & suffix)
+{
+	QStringList filters{};
+	for(const QString & in : def::edfFilters)
+	{
+		auto a = (suffix.isEmpty() ? "" :  ("*" + suffix)) + in;
+		filters.push_back(a);
+	}
+	return filters;
+}
+
 } /// end of namespace myLib
 
 

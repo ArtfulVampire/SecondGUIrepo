@@ -9,7 +9,7 @@
 #include <valarray>
 #include <type_traits>
 
-#include <other/consts.h>
+#include <other/consts.h> /// for CPP17 macro
 
 #include <QString>
 #include <QStringList>
@@ -20,7 +20,8 @@ namespace myLib
 QString rightNumber(int input, int N);					/// prepend zeros
 QString fitNumber(double input, int N);					/// append spaces
 QString fitString(const QString & input, int N);		/// append spaces
-
+QString getDialogFilter(const QString & suffix = {});	/// for QFileDialogs
+QStringList getFilters(const QString & suffix = {});	/// for broweSlots
 }
 
 namespace myOut

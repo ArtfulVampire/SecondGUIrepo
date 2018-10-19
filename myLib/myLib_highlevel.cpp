@@ -2,6 +2,7 @@
 
 #include <myLib/general.h>
 #include <myLib/output.h>
+
 using namespace myOut;
 
 namespace myLib

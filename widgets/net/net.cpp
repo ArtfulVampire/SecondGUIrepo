@@ -214,10 +214,11 @@ void Net::drawWtsSlot()
     {
         return;
     }
-	QString helpString = QFileDialog::getOpenFileName(this,
-                                                      tr("wts to draw"),
-													  DEFS.dirPath(),
-                                                      tr("wts files (*.wts)"));
+	QString helpString = QFileDialog::getOpenFileName(
+							 this,
+							 tr("wts to draw"),
+							 DEFS.dirPath(),
+							 tr("wts files (*.wts)"));
     if(helpString.isEmpty())
     {
         return;
@@ -258,10 +259,11 @@ void Net::readWtsSlot()
     {
         return;
     }
-	QString helpString = QFileDialog::getOpenFileName(nullptr,
-                                                      tr("load wts"),
-													  DEFS.dirPath(),
-                                                      tr("wts files (*.wts)"));
+	QString helpString = QFileDialog::getOpenFileName(
+							 this,
+							 tr("load wts"),
+							 DEFS.dirPath(),
+							 tr("wts files (*.wts)"));
     if(helpString.isEmpty())
 	{
         return;

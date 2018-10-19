@@ -10,6 +10,22 @@
 
 using namespace myOut;
 
+void Cut::xNormSlot()
+{
+	/// horzNorm
+	const double newXnorm = ui->xNormSpinBox->value();
+	const double prevStart = ui->paintStartDoubleSpinBox->value();
+	double newStart{prevStart};
+	auto pos = ui->scrollArea->mapFromGlobal(QCursor::pos());
+	if(pos.y() >= 0) /// xNorm widget is higher than scrollArea
+	{
+		newStart += pos.x() / edfFil.getFreq() * (prevXnorm - newXnorm);
+	}
+	ui->paintLengthDoubleSpinBox->setValue(ui->paintLengthDoubleSpinBox->value() * newXnorm / prevXnorm);
+	ui->paintStartDoubleSpinBox->setValue(newStart);
+	prevXnorm = newXnorm;
+	paint();
+}
 
 void Cut::forwardStepSlot()
 {
