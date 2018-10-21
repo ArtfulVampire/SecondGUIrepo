@@ -19,7 +19,6 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
-//	return;
 //	myLib::elenaCalculation("/media/Files/Data/Elena/Karpenuk/Reals",
 //							"/media/Files/Data/Elena/Karpenuk/SpectraSmooth",
 //							"/media/Files/Data/Elena/Karpenuk");
@@ -27,6 +26,7 @@ void MainWindow::customFunc()
 //	const QString workDir = "c:/Data";
 //	repair::fullRepairDir(workDir);
 //	autos::cutFilesInFolder(workDir, 8);
+
 //	myLib::GalyaProcessing("tactile15Oct18");
 //	repair::fullRepairDir(def::GalyaFolder + "/kids15Oct18");
 //	myLib::GalyaProcessing("kids15Oct18");

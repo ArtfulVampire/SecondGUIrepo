@@ -278,7 +278,6 @@ void elenaCalculation(const QString & realsPath,
 			}
 
 		}
-//		std::cout << std::endl;
 #if 0
 		/// integrate over clusters
 		matrix avFeatures{};
@@ -307,25 +306,16 @@ void elenaCalculation(const QString & realsPath,
 		/// calculate vegetative
 		int vegetIndex = wholeLen;
 		auto eda = myLib::EDAmax(fil.getData(EDAstring), fromFileName[0].toDouble());
-//		std::cout << "eda.first" << std::endl;
 		res[vegetIndex++] = eda.first;										/// eda magnitude
-//		std::cout << "eda.second" << std::endl;
 		res[vegetIndex++] = eda.second / fil.getFreq();						/// eda latency
-//		std::cout << "RDfreq" << std::endl;
 		res[vegetIndex++] = myLib::RDfreq(fil.getData(RDstring), fftLen);	/// breath frequency
-//		std::cout << "PPG range" << std::endl;
 		res[vegetIndex++] = myLib::PPGrange(fil.getData(PPGstring));		/// PPG magnitude
-//		std::cout << "PPG freq" << std::endl;
 		res[vegetIndex++] = myLib::RDfreq(fil.getData(PPGstring), fftLen);	/// PPG frequency
-//		std::cout << "reacTime" << std::endl;
 		res[vegetIndex++] = inData.cols() / fil.getFreq();					/// reaction time
 
 		/// auxiliary
-//		std::cout << "taskNum" << std::endl;
 		res[vegetIndex++] = fromFileName[1].toInt();	/// taskNumber
-//		std::cout << "taskMark" << std::endl;
 		res[vegetIndex++] = fromFileName[2].toInt();	/// taskMark
-//		std::cout << "operMark" << std::endl;
 		res[vegetIndex++] = fromFileName[3].toInt();	/// operMark
 
 
@@ -393,7 +383,7 @@ void elenaCalculation(const QString & realsPath,
 		return res / static_cast<double>(num);
 	};
 	std::ofstream avStr((outTableDir + "/averages.txt").toStdString());
-	for(int taskMark : {241, 242, 244})
+	for(int taskMark : {241, 242, 244}) /// markers
 	{
 		avStr << getAverage(taskMark) << std::endl;
 	}

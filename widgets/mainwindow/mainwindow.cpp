@@ -15,6 +15,7 @@
 #include <myLib/mati.h>
 #include <myLib/general.h>
 #include <myLib/dataHandlers.h>
+#include <myLib/adhoc.h>
 
 using namespace myOut;
 
@@ -205,6 +206,13 @@ MainWindow::MainWindow() :
 
 	/// process edf
 	QObject::connect(ui->icaPushButton, SIGNAL(clicked()), this, SLOT(ICA()));
+	QObject::connect(ui->elenaProcessingPushButton, &QPushButton::clicked,
+					 [this]()
+	{
+		myLib::elenaCalculation(globalEdf.getDirPath() + "/Reals",
+								globalEdf.getDirPath() + "/SpectraSmooth",
+								globalEdf.getDirPath());
+	});
 
 	/// edit edf
 	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(highlighted(int)),
