@@ -91,7 +91,8 @@ private:
 private:
 	std::map<uint, uint> classMarkers{};		/// key - input marker, value - number from zero
 	uint numOfCl{};								/// = classMarkers.size(), to deprecate
-	matrix dataMatrix{};						/// the data, biases for Net are imaginary
+	matrix dataMatrix{};						/// the data
+	matrix bcMatrix{};							/// backup data for zeroing
 	std::vector<uint> types{};					/// vector of object types (may be any uints)
 	std::vector<QString> fileNames{};			/// used in Classifier::peopleClassification
 	int spLength{};								/// for 128 chans zeroing

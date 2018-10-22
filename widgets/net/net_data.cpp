@@ -23,6 +23,7 @@ void Net::loadData(const QString & spectraPath,
 				   const QStringList & filters)
 {
 	myClassifierData = ClassifierData(spectraPath, filters);
+
 }
 
 void Net::loadDataXenia(const QString & filesPath, const QString & type)
