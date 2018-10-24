@@ -850,7 +850,11 @@
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox"/>
+       <widget class="QDoubleSpinBox" name="paintLengthDoubleSpinBox">
+        <property name="maximum">
+         <double>200.000000000000000</double>
+        </property>
+       </widget>
       </item>
       <item row="1" column="3">
        <widget class="QLabel" name="label_6">

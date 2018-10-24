@@ -27,6 +27,7 @@ public:
 
 	/// gets
 	const matrix & getData() const								{ return dataMatrix; }
+	const std::valarray<double> & getData(int i) const			{ return dataMatrix[i]; }
 	bool isEmpty() const										{ return dataMatrix.isEmpty(); }
 	int size() const											{ return dataMatrix.rows(); }
 	uint getNumOfCl() const										{ return numOfCl; }

@@ -228,12 +228,6 @@ void Cut::setValuesByEdf()
 	const int localLimit = (edfFil.getNs() >= coords::egi::manyChannels) ?
 						  (coords::egi::chans128to20.size() - 1) : (edfFil.getNs() - 1);
 
-	for(QSpinBox * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
-	{
-		a->setMaximum(localLimit);
-		a->setValue(localLimit); /// markers
-	}
-
 	ui->leftLimitSpinBox->setMinimum(0);
 	ui->leftLimitSpinBox->setMaximum(dataCutLocal.cols());
 	ui->leftTimeSpinBox->setMinimum(0);
@@ -247,6 +241,12 @@ void Cut::setValuesByEdf()
 	ui->rightTimeSpinBox->setDecimals(1);
 
 	resetLimits();
+
+	for(QSpinBox * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
+	{
+		a->setMaximum(localLimit);
+		a->setValue(localLimit); /// side effects - dependent on rightLimitSpinBox
+	}
 
 	ui->diffLimitSpinBox->setMinimum(0);
 	ui->diffLimitSpinBox->setMaximum(dataCutLocal.cols());

@@ -582,17 +582,33 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				}
 				break; /// simple up/down has no effect
 			}
-			case Qt::Key_A: { this->prev(); return true; }
-			case Qt::Key_D: { this->next(); return true; }
 			case Qt::Key_Q: { this->backwardFrameSlot(); return true; }
 			case Qt::Key_E: { this->forwardFrameSlot(); return true; }
-			case Qt::Key_O: { this->browseSlot(); return true; }
 			}
 			break;
 		} /// end of KeyPress
 		default: { /* do nothing */ }
 		}
-    }
+	}
+	/// global Shortcuts
+	{
+		switch(event->type())
+		{
+		case QEvent::KeyPress:
+		{
+			QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
+			switch(keyEvent->key())
+			{
+			case Qt::Key_A: { this->prev(); return true; }
+			case Qt::Key_D: { this->next(); return true; }
+			case Qt::Key_O: { this->browseSlot(); return true; }
+			default: { break; }
+			}
+			break;
+		}
+		default: { break; }
+		}
+	}
     return QWidget::eventFilter(obj, event);
 }
 
@@ -953,7 +969,6 @@ int Cut::getDrawnChannel(const QPoint & clickPos)
 			num = i;
 		}
 	}
-	std::cout << std::endl;
 	return num;
 }
 

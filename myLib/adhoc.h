@@ -23,11 +23,6 @@ void burdenkoEdfPlusToEdf();
 
 std::vector<QString> composeMarkersList(const QString & workPath); /// really unused
 
-
-void elenaCalculation(const QString & realsPath,
-					  const QString & outSpectraPath,
-					  const QString & outTableDir);
-
 void XeniaPretable();
 void SettingsXenia();
 void XeniaFinalest();
@@ -35,6 +30,11 @@ void XeniaFinal();
 
 void SettingsGalya();
 void GalyaProcessing(const QString & addPath);
+
+
+void elenaCalculation(const QString & realsPath,
+					  const QString & outSpectraPath,
+					  const QString & outTableDir);
 
 void feedbackFinal();
 

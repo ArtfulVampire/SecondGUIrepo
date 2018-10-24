@@ -18,7 +18,8 @@ void defs::setUser(username in)
 		this->rightFreq = 24.;
 		this->dir->cd("C:/Users/dell/Desktop/NEUROPHYSIOLOGY/02_EXPERIMENTS"); /// check
 //		fileMarkers = QStringList{"_241", "_243", "_244", "_215"}; /// check
-		fileMarkers = QStringList{"_241", "_242", "_244", "_210", "_212"}; /// new for tables
+//		fileMarkers = QStringList{"_241", "_242", "_244", "_210", "_212"}; /// new for tables
+		fileMarkers = QStringList{"_m_241", "_m_242", "_m_244", "_m_210", "_m_212"}; /// newest
 		break;
 	}
 	case username::GalyaP:
