@@ -12,9 +12,9 @@ const int numOfTasks = 180;
 const int numSmooth = 15;
 const double hilbertFreqLimit = 40.;
 
-const QString RDstring{" Resp "};
-const QString PPGstring{" PPG "};
-const QString EDAstring{" SGR "};
+const QString RDstring	{" Resp "};
+const QString PPGstring	{" PPG "};
+const QString EDAstring	{" SGR "};
 
 const std::vector<std::pair<double, double>> integrLimits
 {
