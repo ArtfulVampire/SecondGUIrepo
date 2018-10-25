@@ -229,8 +229,7 @@ void elenaCalculation(const QString & realsPath,
 	const int numChansForSpectre = 19; /// -1
 	const int wholeLen = sumSize * numChansForSpectre; /// len of all feature except veget and aux
 
-	QDir().mkpath(outTableDir);
-	const QString tablePath = outTableDir + "/table.txt";
+    QDir().mkpath(outTableDir);
 
 	/// RD - recursia dyhaniya (don't know how it's called in English)
 	/// FPG - FotoPletizmoGramma (PPG - PhotoPlethismoGram)
@@ -406,6 +405,12 @@ void elenaCalculation(const QString & realsPath,
 		avStr << getAverage(taskMark) << std::endl;
 	}
 	avStr.close();
+
+    QFile avDot(outTableDir + "/average.txt");         avDot.open(QIODevice::ReadOnly);
+    QFile avCom(outTableDir + "/average_comma.txt");   avCom.open(QIODevice::WriteOnly);
+    avCom.write(avDot.readAll().replace(".", ","));
+    avDot.close();
+    avCom.close();
 #endif
 
 
@@ -421,16 +426,19 @@ void elenaCalculation(const QString & realsPath,
 //		return a1[wholeLen + 8] < a2[wholeLen + 8]; /// operMark
 	});
 #endif
-	/// write to table
-	std::ofstream outStr(tablePath.toStdString());
-	/// LABELS!!!
-//	outStr << makeTableCols(coords::egi::chans128groups) << std::endl;
-	outStr << makeTableCols(coords::lbl19) << std::endl;
-	outStr << result << std::endl;
-	outStr.close();
 
+    /// write to table
+    std::ofstream outStr((outTableDir + "/table.txt").toStdString());
+    /// LABELS!!!
+    outStr << makeTableCols(coords::lbl19) << std::endl;
+    outStr << result << std::endl;
+    outStr.close();
 
-
+    QFile tableDot(outTableDir + "/table.txt");         tableDot.open(QIODevice::ReadOnly);
+    QFile tableCom(outTableDir + "/table_comma.txt");   tableCom.open(QIODevice::WriteOnly);
+    tableCom.write(tableDot.readAll().replace(".", ","));
+    tableDot.close();
+    tableCom.close();
 
 #if 0
 	/// remove empty rows
