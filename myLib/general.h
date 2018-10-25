@@ -47,6 +47,7 @@ QString setFileName(const QString & initNameOrPath); /// -> initName_i.ext
 
 
 
+void fileDotsToCommas(const QString & in, const QString & out);
 bool areEqualFiles(const QString & path1, const QString & path2);
 double areSimilarFiles(const QString & path1,
 					   const QString & path2);
