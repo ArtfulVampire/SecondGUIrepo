@@ -22,6 +22,7 @@ enum feature {
 	Hjorth		= 0x20,	/// std::pow(2, 5);
 	logFFT		= 0x40	/// std::pow(2, 6);
 };
+using featureEnumType = int; /// or feature if enum class : int (hash problems)
 const int allFeaturesInt = std::pow(2, 7) - 1;
 inline std::vector<feature> getFeatures(int in)
 {
@@ -43,7 +44,7 @@ enum class initialCut {first30, second30, first60, none};
 using filterFreqs = std::pair<double, double>;
 enum filter : int
 {
-    none = 0,	/// = std::pair<double, double>{0, 0},
+	none,		/// = std::pair<double, double>{0, 0},
 	interest,	/// = std::pair<double, double>{2, 20},
 //	delta,		/// = std::pair<double, double>{0, 2},
 //	delta_low,	/// = std::pair<double, double>{0, 1},
@@ -59,7 +60,8 @@ enum filter : int
 	beta_low,	/// = std::pair<double, double>{13, 18},
 //	beta_high,	/// = std::pair<double, double>{18, 30},
 };
-const std::unordered_map<int, filterFreqs> filtFreqs
+using filterEnumType = int; /// or feature if enum class : int (hash problems)
+const std::unordered_map<filterEnumType, filterFreqs> filtFreqs
 {
 	{filter::none,			{0, 0}},
 	{filter::interest,		{2, 20}},
@@ -141,7 +143,7 @@ private:
 	AutosSettings & operator=(const AutosSettings &)=delete;
 
 private:
-    std::unordered_map<int, std::vector<filterFreqs>> filtersSets;
+	std::unordered_map<featureEnumType, std::vector<filterFreqs>> filtersSets;
 	std::vector<QString> channelsToProcess{};
 	std::vector<QString> usedMarkers{};
 

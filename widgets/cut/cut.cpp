@@ -595,14 +595,13 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				break; /// simple up/down has no effect
 			}
 			case Qt::Key_Q: { this->backwardFrameSlot(); return true; }
-            case Qt::Key_E: { this->forwardFrameSlot(); return true; }
+			case Qt::Key_E: { this->forwardFrameSlot(); return true; }
 			}
 			break;
 		} /// end of KeyPress
 		default: { /* do nothing */ }
 		}
     }
-
     /// global Shortcuts
     {
         switch(event->type())
@@ -708,7 +707,7 @@ void Cut::showDerivatives()
     {
         const std::valarray<double> & sig2 = dataCutLocal[numSig2];
         const int ind2 = ui->rightLimitSpinBox->value();
-        ui->derivVal2SpinBox->setValue(sig2[ind2 - 1]);
+		ui->derivVal2SpinBox->setValue(sig2[ind2]);
 #if 01
 		/// set derivatives second chan
 		if(ind2 + st < sig2.size() && ind2 - st >=0)
@@ -980,7 +979,6 @@ int Cut::getDrawnChannel(const QPoint & clickPos)
 			num = i;
 		}
 	}
-	std::cout << std::endl;
 	return num;
 }
 

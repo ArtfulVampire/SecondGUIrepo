@@ -27,3 +27,10 @@ Ctrl+C - copy the interval
 Ctrl+V - paste the interval (where the left edge is)
 Ctrl+Z - undo (should store the whole history on a file but can even crash the program)
 C - save the interval
+Ctrl+MouseWheel - change Y scale
+Ctrl+MouseWheelClick - default Y scale
+MouseWheelClick - invert Y axis
+Ctrl+Alt+MouseWheel - change X scale
+Ctrl+Alt+MouseWheelClick - default X scale
+Ctrl+MouseClickLeft - set the channel as "target" to manual draw, linear approx or spectra draw
+Ctrl+Alt+MouseClick - set a channel to track values and derivatives (left/right)

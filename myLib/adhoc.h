@@ -38,6 +38,10 @@ void preprocessDir(const QString & inPath);
 void SettingsGalya();
 void GalyaProcessing(const QString & workPath);
 
+void elenaCalculation(const QString & realsPath,
+					  const QString & outSpectraPath,
+					  const QString & outTableDir);
+
 void feedbackFinal();
 
 void BaklushevHistograms();

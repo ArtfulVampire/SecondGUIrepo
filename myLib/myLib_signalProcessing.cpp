@@ -2377,7 +2377,7 @@ double RDfreq(const std::valarray<double> & inSignal, int fftWind)
 {
 	auto RDspec = myLib::smoothSpectre(myLib::spectreRtoR(inSignal, fftWind), -1);
 	auto RDargmax = myLib::indexOfMax(RDspec);
-	auto RDfreq_ = RDargmax * fftWind / globalEdf.getFreq();
+	auto RDfreq_ = RDargmax * globalEdf.getFreq() / fftWind;
 	return RDfreq_;
 }
 
