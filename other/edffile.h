@@ -406,8 +406,8 @@ public:
 	const QString & getFilePath() const								{ return filePath; }
 	const QString & getDirPath() const								{ return dirPath; }
 	const QString & getExpName() const								{ return ExpName; }
-	QString getExpNameShort() const				{ return ExpName.left(ExpName.indexOf('_')); }
-	QString getFileNam() const					{ return myLib::getFileName(filePath); }
+	QString getExpNameShort() const					{ return ExpName.left(ExpName.indexOf('_')); }
+	QString getFileName(bool ext) const				{ return myLib::getFileName(filePath, ext); }
 
 	/// flags
 	/// gets

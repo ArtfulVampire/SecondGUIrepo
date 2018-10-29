@@ -793,7 +793,7 @@ iitpData & iitpData::staging(const QString & chanName,
 	if(chanNum == -1)
 	{
 		std::cout << "iitpData::staging: no such channel: " << chanName << "\n"
-				  << "fileName: " << this->getFileNam() << ", return *this;" << std::endl;
+				  << "fileName: " << this->getFileName(false) << ", return *this;" << std::endl;
 		return *this;
 	}
 	const std::valarray<double> & chan = this->edfData[chanNum];

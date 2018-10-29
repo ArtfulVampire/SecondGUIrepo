@@ -3,6 +3,7 @@
 
 #include <other/subjects.h>
 #include <other/feedback_autos.h>
+#include <other/autos.h>
 #include <myLib/adhoc.h>
 #include <myLib/drw.h>
 #include <myLib/iitp.h>
@@ -13,24 +14,13 @@
 #include <myLib/statistics.h>
 #include <myLib/wavelet.h>
 
-#include <thread>
-
 using namespace myOut;
 
 void MainWindow::customFunc()
 {
-//	myLib::elenaCalculation("/media/Files/Data/Elena/Karpenuk/Reals",
-//							"/media/Files/Data/Elena/Karpenuk/SpectraSmooth",
-//							"/media/Files/Data/Elena/Karpenuk");
-
-//	const QString workDir = "c:/Data";
-//	repair::fullRepairDir(workDir);
+//	const QString workDir = "c:/Data/tactile";
 //	autos::cutFilesInFolder(workDir, 8);
 
-//	myLib::GalyaProcessing("tactile15Oct18");
-//	repair::fullRepairDir(def::GalyaFolder + "/kids15Oct18");
-//	myLib::GalyaProcessing("kids15Oct18");
-//	exit(0);
-//	myLib::XeniaFinal();
-//	exit(0);
+//	myLib::preprocessDir("C:/Data/tactile/coma_processed");
+//	myLib::GalyaProcessing("C:/Data/tactile/coma_processed");
 }

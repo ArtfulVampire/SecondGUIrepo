@@ -815,83 +815,35 @@ void EEG_MRI_FD()
 
 void ProcessByGroups(const QString & inPath,
 					 const QString & outPath,
-					 const std::vector<QString> & channs,
-					 const std::vector<QString> markers)
+					 const std::vector<QString> & channs)
 {
 	if(!QDir(outPath).exists()) { QDir().mkpath(outPath); }
-	myLib::cleanDir(outPath, "txt", true);
+	myLib::cleanDir(outPath);
 
-	for(const QString & subdir : QDir(inPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+	for(const QString & group : QDir(inPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
 	{
-		const QString groupPath = inPath + "/" + subdir;
+		const QString groupPath = inPath + "/" + group;
 
 		/// list of guys
-		QStringList guys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		const QStringList guys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 		for(const QString & guy : guys)
 		{
 			const QString guyPath = groupPath + "/" + guy;
-			QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
+			const QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
 			if(edfs.isEmpty())
 			{
 				std::cout << "Xenia_TBI_finalest: guyPath is empty " << guyPath << std::endl;
 				continue;
 			}
-			QString ExpName = edfs[0];
-			ExpName = ExpName.left(ExpName.lastIndexOf('_'));
 
 			const QString guyOutPath = guyPath + "/out";
+			if(!QDir(guyOutPath).exists()) { QDir().mkpath(guyOutPath); }
 
-			/// process?
-			if(01)
-			{
-				/// clear guyOutPath
-				myLib::cleanDir(guyOutPath, "txt", true);
-				autos::calculateFeatures(guyPath, channs, guyOutPath);
-			}
+			/// clear guyOutPath
+			myLib::cleanDir(guyOutPath);
+			autos::calculateFeatures(guyPath, channs, guyOutPath);
 		}
 	}
-
-	/// special Xenia table making
-	if(01)
-	{
-		/// make matrix for each feature separately
-
-		/// read guys_finalest.txt to guys
-		std::vector<QString> guys{};
-		QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
-		fil.open(QIODevice::ReadOnly);
-		while(1)
-		{
-			QString guy = fil.readLine();
-			guy.chop(1); /// chop '\n'
-			if(guy.isEmpty()) { break; }
-			guys.push_back(guy);
-		}
-		fil.close();
-
-		for(feature feat : AUT_SETS.getAutosMaskArray())
-		{
-			std::vector<QString> filesToVertCat{};
-			for(const QString & mark : markers)
-			{
-				for(const QString & guy : guys)
-				{
-					/// each file is supposed to consist of numOfChannels rows
-					filesToVertCat.push_back(
-								guy
-								+ mark
-								+ "_" + autos::featToStr(feat)
-								+ ".txt");
-				}
-			}
-			myLib::concatFilesVert(outPath,
-								   filesToVertCat,
-								   outPath + "/table_"
-								   + autos::featToStr(feat) + ".txt");
-		}
-	}
-
-
 }
 
 /// each file is one-line
@@ -1030,9 +982,9 @@ void cutFilesInFolder(const QString & path,
 		/// some check for small
 		if(initEdf.getNdr() * initEdf.getDdr() <= wndLen )
 		{
-			QFile::remove(smallsPath + "/" + initEdf.getFileNam());
+			QFile::remove(smallsPath + "/" + initEdf.getFileName(false));
 			QFile::copy(initEdf.getFilePath(),
-						smallsPath + "/" + initEdf.getFileNam());
+						smallsPath + "/" + initEdf.getFileName(false));
 
 			std::cout << "smallFile !!!";
 			logStream << initEdf.getFilePath() << "\t" << "too small" << "\n";
@@ -1051,7 +1003,7 @@ void cutFilesInFolder(const QString & path,
 
 
 void rereferenceFolder(const QString & procDirPath,
-					   const QString & newRef)
+					   reference newRef)
 {
 	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
 															  QDir::NoFilter,
@@ -1060,9 +1012,8 @@ void rereferenceFolder(const QString & procDirPath,
 	for(const QString & fileName : filesList)
 	{
 		QString helpString = procDirPath + "/" + fileName;
-		edfFile fil;
-		fil.readEdfFile(helpString);
-		fil.rereferenceData(strToRef.at(newRef), false, false).writeEdfFile(helpString);
+		edfFile fil(helpString);
+		fil.rereferenceData(newRef, false, false).writeEdfFile(helpString);
 	}
 }
 
@@ -1071,16 +1022,10 @@ void refilterFolder(const QString & procDirPath,
 					  double highFreq,
 					  bool isNotch)
 {
-
-	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
-															  QDir::NoFilter,
-															  QDir::Size | QDir::Reversed);
-
-	for(const QString & fileName : filesList)
+	for(const QString & fileName : QDir(procDirPath).entryList(def::edfFilters))
 	{
 		QString helpString = procDirPath + "/" + fileName;
-		edfFile fil;
-		fil.readEdfFile(helpString);
+		edfFile fil(helpString);
 		fil.refilter(lowFreq, highFreq, isNotch).writeEdfFile(helpString);
 	}
 }
@@ -1099,50 +1044,6 @@ void EdfsToFolders(const QString & inPath)
 		QFile::rename(inPath + "/" + in,
 					  inPath + "/" + ExpName + "/" + in);
 	}
-}
-
-void preprocessDir(const QString & inPath)
-{
-#if 0
-	/// special renames
-	std::vector<std::pair<QString, QString>> renames
-	{
-		{"was1", "new1"},
-		{"was2", "new2"}
-	};
-	repair::renameContents(workPath + "/" + subdir, renames);
-#endif
-
-#if 0
-	repair::fullRepairDir(inPath, {});
-#endif
-
-#if 0
-	/// physMinMax & holes
-	repair::physMinMaxDir(inPath);
-	repair::holesDir(inPath,
-					 numChan,
-					 inPath);
-#endif
-
-#if 0
-	/// reref
-	autos::rereferenceFolder(guyPath, "Ar"); /// check Ar
-#endif
-
-#if 0
-	/// refilter
-	autos::refilterFolder(guyPath,
-						  1.6,
-						  30.);
-#endif
-
-#if 0
-	/// cut
-	autos::cutFilesInFolder(guyPath,
-							8,
-							inPath + "_cut/");
-#endif
 }
 
 void ProcessAllInOneFolder(const QString & inPath,
@@ -1223,6 +1124,7 @@ void ProcessByFolders(const QString & inPath,
 		ExpName = ExpName.left(ExpName.lastIndexOf('_'));
 
 		const QString guyOutPath = guyPath + "/out";
+		if(!QDir(guyOutPath).exists()) { QDir().mkpath(guyOutPath); }
 
 		/// process?
 		if(01)

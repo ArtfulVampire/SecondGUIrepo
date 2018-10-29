@@ -342,12 +342,12 @@ void MainWindow::sliceElena() /// slice only, eda in fileName
 	{
 		if(!startFlag)
 		{
-			if(241 <= mark.second && mark.second <= 244) /// task start
+			if(241 <= mark.second && mark.second <= 244)
 			{
 				marker = mark.second;
 				startFlag = true;
 			}
-			else if(mark.second == 255) /// optional click ???
+			else if(mark.second == 255)
 			{
 				/// 255 - do nothing
 			}

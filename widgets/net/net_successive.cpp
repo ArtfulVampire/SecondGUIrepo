@@ -617,7 +617,7 @@ Net::sucAllType Net::successiveByEDFall(const fb::FBedf & file1,
 
 void Net::innerClassHistogram(const fb::FBedf & file1, fb::taskType typ, fb::ansType howSolved)
 {
-	std::cout << file1.getFileNam()
+	std::cout << file1.getFileName(false)
 			  << " " << fb::toStr(typ)
 			  << " " << fb::toStr(howSolved)
 			  << std::endl;

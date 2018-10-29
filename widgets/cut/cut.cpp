@@ -118,6 +118,18 @@ Cut::Cut() :
 //	ui->iitpInverseCheckBox->setShortcut(tr("i"));
 //	ui->iitpDisableEcgCheckBox->setShortcut(tr("p"));
 
+	/// stuff
+	if(DEFS.getUser() == username::GalyaP)
+	{
+		ui->refilterLowFreqSpinBox->setValue(1.6);
+		ui->refilterHighFreqSpinBox->setValue(30);
+	}
+	else
+	{
+		ui->refilterLowFreqSpinBox->setValue(DEFS.getLeftFreq());
+		ui->refilterHighFreqSpinBox->setValue(DEFS.getRightFreq());
+	}
+
 
 	/// files
 	QObject::connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browseSlot()));
@@ -583,39 +595,39 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				break; /// simple up/down has no effect
 			}
 			case Qt::Key_Q: { this->backwardFrameSlot(); return true; }
-			case Qt::Key_E: { this->forwardFrameSlot(); return true; }
+            case Qt::Key_E: { this->forwardFrameSlot(); return true; }
 			}
 			break;
 		} /// end of KeyPress
 		default: { /* do nothing */ }
 		}
-	}
-	/// global Shortcuts
-	{
-		switch(event->type())
-		{
-		case QEvent::KeyPress:
-		{
-			QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
-			switch(keyEvent->key())
-			{
-			case Qt::Key_A: { this->prev(); return true; }
-			case Qt::Key_D: { this->next(); return true; }
-			case Qt::Key_O: { this->browseSlot(); return true; }
-			default: { break; }
-			}
-			break;
-		}
-		default: { break; }
-		}
-	}
+    }
+
+    /// global Shortcuts
+    {
+        switch(event->type())
+        {
+        case QEvent::KeyPress:
+        {
+            QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
+            switch(keyEvent->key())
+            {
+            case Qt::Key_A: { this->prev(); return true; }
+            case Qt::Key_D: { this->next(); return true; }
+            case Qt::Key_O: { this->browseSlot(); return true; }
+            default: { break; }
+            }
+            break;
+        }
+        default: { break; }
+        }
+    }
     return QWidget::eventFilter(obj, event);
 }
 
 void Cut::resetLimits()
 {
 	if( !fileOpened ) { return; }
-
 	ui->rightLimitSpinBox->setValue(dataCutLocal.cols());
 	ui->leftLimitSpinBox->setValue(0); /// sometimes fails under Windows
 }
@@ -669,10 +681,10 @@ void Cut::showDerivatives()
 		numSig1 = coords::egi::chans128to20[ui->derivChan1SpinBox->value()];
 	}
 //	if(numSig1 < dataCutLocal.rows())
-	{
+    {
 		const std::valarray<double> & sig1 = dataCutLocal[numSig1];
 		const int ind1 = ui->leftLimitSpinBox->value();
-		ui->derivVal1SpinBox->setValue(sig1[ind1]);
+        ui->derivVal1SpinBox->setValue(sig1[ind1]);
 #if 01
 		/// set derivatives first chan
 		if(ind1 + st < sig1.size() && ind1 - st >=0)
@@ -693,12 +705,11 @@ void Cut::showDerivatives()
 		numSig2 = coords::egi::chans128to20[ui->derivChan2SpinBox->value()];
 	}
 //	if(numSig2 < dataCutLocal.rows())
-	{
-		const std::valarray<double> & sig2 = dataCutLocal[numSig2];
-		const int ind2 = ui->rightLimitSpinBox->value();
-		ui->derivVal2SpinBox->setValue(sig2[ind2]);
+    {
+        const std::valarray<double> & sig2 = dataCutLocal[numSig2];
+        const int ind2 = ui->rightLimitSpinBox->value();
+        ui->derivVal2SpinBox->setValue(sig2[ind2 - 1]);
 #if 01
-
 		/// set derivatives second chan
 		if(ind2 + st < sig2.size() && ind2 - st >=0)
 		{
@@ -969,6 +980,7 @@ int Cut::getDrawnChannel(const QPoint & clickPos)
 			num = i;
 		}
 	}
+	std::cout << std::endl;
 	return num;
 }
 

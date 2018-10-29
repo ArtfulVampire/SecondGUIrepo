@@ -86,8 +86,15 @@ void Cut::saveSubsecSlot()
 #endif
 
 	/// new, only edf is possible
-	QDir(edfFil.getDirPath()).mkdir("winds");
-	QString newPath = edfFil.getDirPath() + "/winds/" + edfFil.getExpName();
+
+	QString newPath = edfFil.getDirPath() + "/";
+	if(DEFS.getUser() != username::GalyaP)
+	{
+		QDir(edfFil.getDirPath()).mkdir("winds");
+		newPath += "winds/";
+	}
+	newPath += edfFil.getFileName(false);
+
 	const QString ad = ui->saveSubsecAddNameLineEdit->text();
 	if(!ad.isEmpty()) { newPath += "_" + ad; }
 	newPath += ".edf";
@@ -222,6 +229,10 @@ void Cut::setValuesByEdf()
 {
 	if( !fileOpened ) { return; }
 
+    /// to prevent dataCutLocal overflow
+    ui->derivChan1SpinBox->setValue(0);
+    ui->derivChan2SpinBox->setValue(0);
+
 	dataCutLocal = edfFil.getData(); /// expensive
 
 	const bool iitpFlag = edfFil.getDirPath().contains("iitp", Qt::CaseInsensitive);
@@ -242,11 +253,13 @@ void Cut::setValuesByEdf()
 
 	resetLimits();
 
-	for(QSpinBox * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
-	{
-		a->setMaximum(localLimit);
-		a->setValue(localLimit); /// side effects - dependent on rightLimitSpinBox
-	}
+    for(QSpinBox * a : {ui->derivChan1SpinBox, ui->derivChan2SpinBox})
+    {
+        a->setMaximum(localLimit);
+        a->setValue(localLimit); /// markers
+    }
+
+
 
 	ui->diffLimitSpinBox->setMinimum(0);
 	ui->diffLimitSpinBox->setMaximum(dataCutLocal.cols());
@@ -321,10 +334,6 @@ void Cut::openFile(const QString & dataFileName)
 	leftDrawLimit = 0;
 	currentPic = QPixmap{};
 	marksToDrawSet();
-
-	/// to prevent dataCutLocal overflow
-	ui->derivChan1SpinBox->setValue(0);
-	ui->derivChan2SpinBox->setValue(0);
 
 	edfFil.readEdfFile(dataFileName);
 	fileOpened = true;

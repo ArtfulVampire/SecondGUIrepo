@@ -16,7 +16,7 @@ void Cut::iitpAutoCorrSlot()
 	tmpFile.iitpSyncAutoCorr(ui->rightLimitSpinBox->value(),
 							 ui->leftLimitSpinBox->value(),
 							 ui->iitpByEegCheckBox->isChecked());
-	QString newName = tmpFile.getFileNam();
+	QString newName = tmpFile.getFileName(false);
 	newName.replace(".edf", "_sync.edf");
 	std::cout << "iitpAutoSlot: newFileName = " << newName << std::endl;
 	tmpFile.writeEdfFile(tmpFile.getDirPath() + "/" + newName);
@@ -90,7 +90,7 @@ void Cut::iitpLog(const QString & typ, int num, const QString & add)
 
 void Cut::saveNewNumSlot()
 {
-	QString newName = edfFil.getFileNam();
+	QString newName = edfFil.getFileName(false);
 	newName.replace(QRegExp("[0-9]{2}"), rn(ui->iitpSaveNewNumSpinBox->value(), 2));
 
 	edfFil.writeOtherData(dataCutLocal.subCols(ui->leftLimitSpinBox->value(),

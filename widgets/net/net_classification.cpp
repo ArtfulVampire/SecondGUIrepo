@@ -8,18 +8,6 @@
 
 void Net::showReduce()
 {
-	if(this->myClassifierData.isEmpty())
-	{
-		std::cout << "won't open Choose Chans - load data first" << std::endl;
-		return;
-	}
-	if(myClassifierData.getData(0).size() / myClassifierData.getSpLength()
-	   < coords::egi::manyChannels)
-	{
-		std::cout << "Won't open Choose Chans - choose 128 channels data" << std::endl;
-		return;
-	}
-
 	ChooseChans * ch = new ChooseChans();
 	QObject::connect(ch, &ChooseChans::strSig,
 					 [this](const std::vector<int> & chans)

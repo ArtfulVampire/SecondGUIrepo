@@ -196,44 +196,63 @@ void XeniaPretable()
 	fil.close();
 }
 
-void SettingsXenia()
+
+/// special Xenia table making
+void TablingXenia(const QString & outPath)
 {
-	AUT_SETS.setAutosMask(0
-						  | autos::feature::fft
-						  | autos::feature::fracDim
-						  | autos::feature::Hilbert
-						  );
-	AUT_SETS.setOutputStyle(autos::outputStyle::Line);
-	AUT_SETS.setOutputSequence(autos::outputSeq::ByChans);
-	AUT_SETS.setInitialCut(autos::initialCut::first60);
-	AUT_SETS.setChansProc(coords::lbl16noz);
+	/// make matrix for each feature separately
+	/// read guys_finalest.txt to guys
+	std::vector<QString> guys{};
+	QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
+	fil.open(QIODevice::ReadOnly);
+	while(1)
+	{
+		QString guy = fil.readLine();
+		guy.chop(1); /// chop \n
+		if(guy.isEmpty()) { break; }
+		guys.push_back(guy);
+	}
+	fil.close();
+
+	for(autos::feature feat : AUT_SETS.getAutosMaskArray())
+	{
+		std::vector<QString> filesToVertCat{};
+		for(const QString & mark : AUT_SETS.getMarkers())
+		{
+			for(const QString & guy : guys)
+			{
+				/// each file is supposed to consist of numOfChannels rows
+				filesToVertCat.push_back(
+							guy
+							+ mark
+							+ "_" + autos::featToStr(feat)
+							+ ".txt");
+			}
+		}
+		myLib::concatFilesVert(outPath,
+							   filesToVertCat,
+							   outPath + "/table_"
+							   + autos::featToStr(feat) + ".txt");
+	}
 }
 
-void XeniaFinal()
+void TablingUsual(const QString & workPath, const QString & outPath)
 {
-	SettingsXenia();
-	const QString finalPath{"/media/Files/Data/Xenia/FINAL"};
-
-	for(const QString & subdir : {"Healthy", "Moderate", "Severe"})
+	auto groups = QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	if(groups.isEmpty()) { groups = QStringList{""}; }
+	for(const QString & group : groups)
 	{
-		const QString groupPath = finalPath + "/" + subdir;
-
+		const QString groupPath = workPath + "/" + group;
 		/// list of guys
-		QStringList guys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		const QStringList guys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 		for(const QString & guy : guys)
 		{
-			const QString guyPath = groupPath + "/" + guy;
-			const QString guyOutPath = guyPath + "/out";
-
-			QDir().mkdir(guyOutPath);
-			myLib::cleanDir(guyOutPath);
-
-			autos::calculateFeatures(guyPath, AUT_SETS.getChansProc(), guyOutPath);
+			const QString guyOutPath = groupPath + "/" + guy + "/out";
 
 			/// make one line file for each stimulus
 			if(01)
 			{
-				for(const QString & mark : subj::marksLists::tbiMarkers)
+				for(const QString & mark : AUT_SETS.getMarkers())
 				{
 					std::vector<QString> fileNamesToArrange{};
 					for(autos::feature func : AUT_SETS.getAutosMaskArray())
@@ -243,8 +262,8 @@ void XeniaFinal()
 						fileNamesToArrange.push_back(fileName);
 					}
 					myLib::concatFilesHorz(guyOutPath,
-											   fileNamesToArrange,
-											   guyOutPath + "/" + guy + mark + ".txt");
+										   fileNamesToArrange,
+										   guyOutPath + "/" + guy + mark + ".txt");
 				}
 			}
 
@@ -252,118 +271,130 @@ void XeniaFinal()
 			if(1)
 			{
 				std::vector<QString> fileNamesToArrange{};
-				for(const QString & mark : subj::marksLists::tbiMarkers)
+				for(const QString & mark : AUT_SETS.getMarkers())
 				{
 					fileNamesToArrange.push_back(guy + mark + ".txt");
 				}
 				myLib::concatFilesHorz(guyOutPath,
-										   fileNamesToArrange,
-										   guyOutPath + "/" + guy + ".txt");
+									   fileNamesToArrange,
+									   guyOutPath + "/" + guy + ".txt");
 			}
 
 			/// copy files into _out
 			if(1)
 			{
-				QFile::remove(finalPath + "_out/" + guy + ".txt");
+				QFile::remove(outPath + "/" + guy + ".txt");
 				QFile::copy(guyOutPath + "/" + guy + ".txt",
-							finalPath + "_out/" + guy + ".txt");
+							outPath + "/" + guy + ".txt");
 			}
 		}
 
 	}
 	/// make tables whole and people list
-	autos::ArrangeFilesToTable(finalPath + "_out",
-							   finalPath + "_out/all.txt",
+	autos::ArrangeFilesToTable(outPath,
+							   outPath + "/all.txt",
 							   true);
-	autos::makeLabelsFile(coords::lbl16noz,
-						  finalPath + "/labels.txt",
-						  subj::marksLists::tbiMarkers,
+}
+
+
+void XeniaFinal()
+{
+	SettingsXenia();
+	const QString inPath{"/media/Files/Data/Xenia/FINAL"};
+
+	for(const QString & group : {"Healthy", "Moderate", "Severe"})
+	{
+		const QString groupPath = inPath + "/" + group;
+
+		/// list of guys
+		const QStringList guys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		for(const QString & guy : guys)
+		{
+			const QString guyPath = groupPath + "/" + guy;
+			const QString guyOutPath = guyPath + "/out";
+			if(!QDir(guyOutPath).exists()) { QDir().mkpath(guyOutPath); }
+
+			myLib::cleanDir(guyOutPath);
+			autos::calculateFeatures(guyPath, AUT_SETS.getChansProc(), guyOutPath);
+
+			/// make one line file for each stimulus
+			if(01)
+			{
+				for(const QString & mark : AUT_SETS.getMarkers())
+				{
+					std::vector<QString> fileNamesToArrange{};
+					for(autos::feature func : AUT_SETS.getAutosMaskArray())
+					{
+						const QString fileName = guy + mark
+												 + "_" + autos::featToStr(func) + ".txt";
+						fileNamesToArrange.push_back(fileName);
+					}
+					myLib::concatFilesHorz(guyOutPath,
+										   fileNamesToArrange,
+										   guyOutPath + "/" + guy + mark + ".txt");
+				}
+			}
+
+			/// make whole line from all stimuli
+			if(1)
+			{
+				std::vector<QString> fileNamesToArrange{};
+				for(const QString & mark : AUT_SETS.getMarkers())
+				{
+					fileNamesToArrange.push_back(guy + mark + ".txt");
+				}
+				myLib::concatFilesHorz(guyOutPath,
+									   fileNamesToArrange,
+									   guyOutPath + "/" + guy + ".txt");
+			}
+
+			/// copy files into _out
+			if(1)
+			{
+				QFile::remove(inPath + "_out/" + guy + ".txt");
+				QFile::copy(guyOutPath + "/" + guy + ".txt",
+							inPath + "_out/" + guy + ".txt");
+			}
+		}
+
+	}
+	/// make tables whole and people list
+	autos::ArrangeFilesToTable(inPath + "_out",
+							   inPath + "_out/all.txt",
+							   true);
+	autos::makeLabelsFile(AUT_SETS.getChansProc(),
+						  inPath + "/labels.txt",
+						  AUT_SETS.getMarkers(),
 						  "\t");
 }
 
 
-
-void XeniaFinalest()
+void checkMarkersFiles(const QString & workPath, const std::vector<QString> & inMarkers)
 {
-	const QString workPath = "/media/Files/Data/Xenia/FINAL";
-	const std::vector<QString> subdirs{"Healthy", "Moderate", "Severe"};
-	const std::vector<QString> & tbiMarkers = subj::marksLists::tbiMarkers;
-	const std::vector<QString> & channs = coords::lbl16noz;
-	AUT_SETS.setAutosMask(0
-//						  | autos::feature::alphaPeak
-						  | autos::feature::fracDim
-						  | autos::feature::Hilbert
-//						  | autos::feature::fft
-//						  | autos::feature::logFFT
-						  );
-
-#if 0
-	/// check zeros
-	const QString dr = "/media/Files/Data/Xenia/FINAL_res";
-	auto lst = QDir(dr).entryList({"Nemirov*_spectre.txt"});
-	int cc = 0;
-	for(auto fn : lst)
-	{
-		std::ifstream in;
-		in.open((dr + "/" + fn).toStdString());
-		double tmp;
-		while(in >> tmp)
-		{
-			if(tmp <= 0.0001) { ++cc; }
-			{ std::cout << fn << std::endl; break; }
-		}
-		in.close();
-	}
-	std::cout << cc << std::endl;
-	return;
-#endif
-
-#if 0
-	/// initial rename guyDirs as edfs inside
-	for(const QString & subdir : subdirs)
-	{
-		const QString groupPath = workPath + "/" + subdir;
-		const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-		for(const QString & guy : groupGuys)
-		{
-			const QString guyPath = groupPath + "/" + guy;
-			repair::deleteSpacesDir(guyPath);
-			QString firstFile = QDir(guyPath).entryList(def::edfFilters)[0];
-			firstFile.resize(firstFile.lastIndexOf('_'));
-			QDir().rename(guyPath,
-						  groupPath + "/" + firstFile);
-			continue;
-		}
-	}
-	return;
-#endif
-
-#if 0
 	/// check each guy has all stimuli files - OK
-	for(const QString & subdir : subdirs)
+	for(const QString & group : QDir(workPath).entryList(QDir::Files | QDir::NoDotAndDotDot))
 	{
-		const QString groupPath = workPath + "/" + subdir;
-		const QStringList groupGuys = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-		for(const QString & guy : groupGuys)
+		const QString groupPath = workPath + "/" + group;
+		const QStringList guysList = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		for(const QString & guy : guysList)
 		{
 			const QString guyPath = groupPath + "/" + guy;
-			const QStringList guyFiles = QDir(guyPath).entryList(def::edfFilters);
-			for(const QString & mark : tbiMarkers)
+			const QStringList edfs = QDir(guyPath).entryList(def::edfFilters);
+			for(const QString & mark : inMarkers)
 			{
 				bool ok = false;
-				for(const QString guyFile : guyFiles)
+				for(const QString & edfName : edfs)
 				{
-					if(guyFile.contains(mark)) { ok = true; break; }
+					if(edfName.contains(mark)) { ok = true; break; }
 				}
 				if(!ok) { std::cout << guy << mark << " not found!!!" << std::endl; }
 			}
-
 		}
 	}
-	return;
-#endif
+}
 
-
+void checkGuysFinalest()
+{
 #if 0
 	/// find absent guyNames in guys_finalest.txt and rename properly (manually)
 	/// read guys_finalest.txt
@@ -398,25 +429,113 @@ void XeniaFinalest()
 	}
 	return;
 #endif
+}
 
+void SettingsXenia()
+{
+	AUT_SETS.setAutosMask(0
+						  | autos::feature::fft
+						  | autos::feature::fracDim
+						  | autos::feature::Hilbert
+						  );
+
+	AUT_SETS.setOutputStyle(autos::outputStyle::Line);	/// Xenia Final
+//	AUT_SETS.setOutputStyle(autos::outputStyle::Table);	/// Xenia Finalest
+	AUT_SETS.setOutputSequence(autos::outputSeq::ByChans);
+	AUT_SETS.setInitialCut(autos::initialCut::first60);
+
+	AUT_SETS.setChansProc(coords::lbl16noz);
+	AUT_SETS.setMarkers(subj::marksLists::tbiMarkers);
+}
+
+void XeniaProcessing(const QString & workPath)
+{
+	SettingsXenia();
 #if 01
 	/// processing itself
-	autos::ProcessByGroups(workPath, workPath + "_res", channs, tbiMarkers);
-	autos::makeLabelsFile(channs, workPath + "/labels.txt", tbiMarkers, "\t");
+	autos::ProcessByGroups(workPath,
+						   workPath + "_res",
+						   AUT_SETS.getChansProc());
+	autos::makeLabelsFile(AUT_SETS.getChansProc(),
+						  workPath + "/labels.txt",
+						   AUT_SETS.getMarkers(),
+						  "\t");
 #endif
 
+	if(AUT_SETS.getOutputStyle() == autos::outputStyle::Table)
+	{
+		/// special Xenia tabling, aka finalest
+		TablingXenia(workPath + "_res");
+	}
+	else /// if(AUT_SETS.getOutputStyle() == autos::outputStyle::Line)
+	{
+		/// usual, like for Galya, aka Final
+		TablingUsual(workPath, workPath + "_res");
+	}
+}
+
+void preprocessDir(const QString & inPath)
+{
+#if 0
+	/// special renames
+	const std::vector<std::pair<QString, QString>> rnm1
+	{
+		{"_new", ""},
+		{"4EPHOPAEB_32",		"Chernoraev32"},
+		{"4UJLO9lH_55",			"Chuloyan55"},
+		{"4YP6AHOB_30",			"Churbanov30"},
+		{"AJLELLlUH_31",		"Aleshin31"},
+		{"BAHl~EJLUI'I_37",		"Vangely37"},
+		{"baykov_58",			"Baykov58"},
+		{"syputdinov_38",		"Suputdinov38"},
+		{"JLblCOB_53",			"Lyisov53"},
+		{"KBALLlHUHOB_51",		"Kvashninov51"},
+		{"l`l9lTKUH",			"Pyatkin"},
+		{"MAH9lXUH_34",			"Manyahin34"},
+		{"MAMEDOB_16",			"Mamedov16"},
+		{"qPJLOPOBCKUI'I_18",	"Frolovsky18"},
+		{"qPOH",				"fon"},
+		{"XATATAEB_26",			"Khatataev26"},
+
+		{"_31",	"_coma_31"},
+		{"_32",	"_coma_32"},
+		{"_181",	"_coma_181"},
+		{"_182",	"_coma_182"},
+		{"_fon",	"_coma_fon"},
+		{"_coma_coma",	"_coma"},
+	};
+	const std::vector<std::pair<QString, QString>> renames
+	{
+		{"was1", "new1"},
+		{"was2", "new2"}
+	};
+	repair::renameContents(workPath + "/" + subdir, renames);
+#endif
+
+#if 01
+	repair::fullRepairDir(inPath, {});
+#endif
 
 #if 0
-	/// labels check
-	std::cout << myLib::countSymbolsInFile(
-					 def::XeniaFolder + "/table_Hilbert_first30.txt", '\t') / 41 << std::endl;
-
-	std::cout << myLib::countSymbolsInFile(
-					 def::XeniaFolder + "/labels.txt", '\t') << std::endl;
-
-	return;
+	/// physMinMax & holes
+	repair::physMinMaxDir(inPath);
+	repair::holesDir(inPath,
+					 numChan,
+					 inPath);
 #endif
 
+#if 0
+	/// reref
+	autos::rereferenceFolder(guyPath, reference::Ar);
+#endif
+
+#if 0
+	/// refilter
+	autos::refilterFolder(guyPath,
+						  1.6,
+						  30.);
+#endif
+	exit(0);
 }
 
 void SettingsGalya()
@@ -427,7 +546,7 @@ void SettingsGalya()
 						  | autos::feature::fracDim
 						  | autos::feature::Hilbert
 						  | autos::feature::Hjorth
-						  | autos::feature::wavelet
+//						  | autos::feature::wavelet
 						  | autos::feature::logFFT
 						  );
 	AUT_SETS.setFeatureFilter(autos::feature::fracDim,
@@ -440,29 +559,26 @@ void SettingsGalya()
 	AUT_SETS.setOutputStyle(autos::outputStyle::Line);
 	AUT_SETS.setOutputSequence(autos::outputSeq::ByChans);
 	AUT_SETS.setInitialCut(autos::initialCut::none);
+
 	AUT_SETS.setChansProc(coords::lbl17noFP);
+	AUT_SETS.setMarkers(subj::marksLists::tactileComa);
 }
 
-void GalyaProcessing(const QString & addPath)
+void GalyaProcessing(const QString & workPath)
 {
 	SettingsGalya();
-	const QString workPath = def::GalyaFolder + "/" + addPath;
-	const std::vector<QString> & usedMarkers = subj::marksLists::none;
-
-#if 0
-	/// each subject into his/her own folder
-	autos::EdfsToFolders(workPath + "/" + subdir);
-#endif
 
 #if 0
 	/// checks channels presence
-	std::vector<bool> refChans(channelsToProcess.size(), true);
+	const std::vector<bool> refChans(AUT_SETS.getChansProc().size(), true);
 
-//	const QString subdir{""};
-	for(const QString & subdir : QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+	auto subdirs = QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	if(subdirs.isEmpty()) { subdirs = QStringList{""}; }
+	for(const QString & subdir : subdirs)
 	{
 		const QString groupDir = workPath + "/" + subdir;
-		const auto guyDirs = QDir(groupDir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		auto guyDirs = QDir(groupDir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		if(guyDirs.isEmpty()) { guyDirs = QStringList{""}; }
 
 		for(const QString & guyDir : guyDirs) /// each guy
 		{
@@ -471,10 +587,14 @@ void GalyaProcessing(const QString & addPath)
 			for(const QString & fl : filList)
 			{
 				edfFile file(guyPath + "/" + fl, true);
-				auto tmp = file.hasChannels(channelsToProcess);
+				auto tmp = file.hasChannels(AUT_SETS.getChansProc());
 				if(refChans != tmp)
 				{
 					std::cout << "not enough channels: " <<  fl << std::endl;
+				}
+				else
+				{
+//					std::cout << "OK: " <<  fl << std::endl;
 				}
 			}
 		}
@@ -482,48 +602,63 @@ void GalyaProcessing(const QString & addPath)
 	exit(0);
 #endif
 
-
-#if 01
-		/// calculation itself
 #if 0
-		for(const QString & subdir : QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+	{
+		/// each subject into his/her own folder
+		auto subdirs = QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		if(subdirs.isEmpty()) { subdirs = QStringList{""}; }
+		for(const QString & subdir : subdirs)
 		{
-			/// usual processing
-			autos::ProcessByFolders(workPath + "/" + subdir,
-									workPath + "_out",
-									AUT_SETS.getChansProc(),
-									usedMarkers);
-			autos::makeLabelsFile(AUT_SETS.getChansProc(),
-								  workPath + "_out/labels.txt",
-								  usedMarkers,
-								  "\t");
-#if 0
-			/// rhythm adoption
-			for(const QString & stimType : {"sv", "zv"})
-			{
-				autos::rhythmAdoptionGroup(workPath + "/" + subdir,
-										   "_fon",
-										   stimType);
-			}
-#endif
+			autos::EdfsToFolders(workPath + "/" + subdir);
 		}
+	}
+	exit(0);
 #endif
 
 #if 01
-		autos::ProcessAllInOneFolder(workPath,
-									 workPath + "_out",
-									 AUT_SETS.getChansProc());
-		autos::makeLabelsFile(AUT_SETS.getChansProc(),
-							  workPath + "_out/labels.txt",
-							  subj::marksLists::none,
-							  "\t");
+	/// calculation itself
+	///
+#if 01
+	/// usual processing - each guy in his folder
+	autos::ProcessByFolders(workPath,
+							workPath + "_out",
+							AUT_SETS.getChansProc(),
+							AUT_SETS.getMarkers());
+	autos::makeLabelsFile(AUT_SETS.getChansProc(),
+						  workPath + "_out/labels.txt",
+						  AUT_SETS.getMarkers(),
+						  "\t");
+#endif
+
+#if 0
+	/// rhythm adoption
+	for(const QString & subdir : QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+	{
+		for(const QString & stimType : {"sv", "zv"})
+		{
+			autos::rhythmAdoptionGroup(workPath + "/" + subdir,
+									   "_fon",
+									   stimType);
+		}
+	}
+#endif
+
+#if 0
+	/// all in one
+	autos::ProcessAllInOneFolder(workPath,
+								 workPath + "_out",
+								 AUT_SETS.getChansProc());
+	autos::makeLabelsFile(AUT_SETS.getChansProc(),
+						  workPath + "_out/labels.txt",
+						  subj::marksLists::none,
+						  "\t");
+#endif
+	exit(0);
 #endif
 
 
 
 
-		exit(0);
-#endif
 
 #if 0
 		/// test table rows lengths

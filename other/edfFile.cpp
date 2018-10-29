@@ -2413,7 +2413,7 @@ double edfFile::checkDdr(const QString & inPath)
     }
 	QFile inStr(inPath);
 	inStr.open(QIODevice::ReadOnly|QIODevice::Text);
-	inStr.skip(244); /// all before ddr
+    inStr.read(244); /// all before ddr
 	return QString(inStr.read(8)).toInt();
 }
 

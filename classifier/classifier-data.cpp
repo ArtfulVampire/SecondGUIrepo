@@ -88,7 +88,6 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 
 	adjust();
 	this->z_transform();
-	bcMatrix = dataMatrix;
 }
 
 
@@ -128,7 +127,6 @@ ClassifierData::ClassifierData(const QString & inPath, const QStringList & filte
 #endif
 
 	this->z_transform();
-	bcMatrix = dataMatrix;
 }
 
 void ClassifierData::erase(const uint index)
@@ -179,7 +177,6 @@ void ClassifierData::print() const
 
 void ClassifierData::zeroChans(const std::vector<int> & chans)
 {
-	dataMatrix = bcMatrix;
 	for(auto & row : dataMatrix)
 	{
 		for(int in : chans)

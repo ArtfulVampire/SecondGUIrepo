@@ -353,7 +353,7 @@ void testArtifacts(const QString & dirPath, const QStringList & filters)
 
 		if(fil.getData().maxAbsVal() > amplThreshold)
 		{
-			std::cout << fil.getFileNam() << ": amplitude " << std::endl;
+			std::cout << fil.getFileName(false) << ": amplitude " << std::endl;
 			continue;
 		}
 
@@ -402,22 +402,22 @@ void testArtifacts(const QString & dirPath, const QStringList & filters)
 			/// magic consts
 			if(thetaPart.max() > 0.5)
 			{
-				std::cout << fil.getFileNam() << ": thetaPart " << std::endl;
+				std::cout << fil.getFileName(false) << ": thetaPart " << std::endl;
 				continue;
 			}
 			if(thetaAbs.max() > 300)
 			{
-				std::cout << fil.getFileNam() << ": thetaAbs " << std::endl;
+				std::cout << fil.getFileName(false) << ": thetaAbs " << std::endl;
 				continue;
 			}
 			if(betaPart.max() > 0.5)
 			{
-				std::cout << fil.getFileNam() << ": betaPart " << std::endl;
+				std::cout << fil.getFileName(false) << ": betaPart " << std::endl;
 				continue;
 			}
 			if(betaAbs.max() > 300)
 			{
-				std::cout << fil.getFileNam() << ": betaAbs " << std::endl;
+				std::cout << fil.getFileName(false) << ": betaAbs " << std::endl;
 				continue;
 			}
 

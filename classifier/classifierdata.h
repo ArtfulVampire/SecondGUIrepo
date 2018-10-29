@@ -27,7 +27,6 @@ public:
 
 	/// gets
 	const matrix & getData() const								{ return dataMatrix; }
-	const std::valarray<double> & getData(int i) const			{ return dataMatrix[i]; }
 	bool isEmpty() const										{ return dataMatrix.isEmpty(); }
 	int size() const											{ return dataMatrix.rows(); }
 	uint getNumOfCl() const										{ return numOfCl; }
@@ -92,8 +91,7 @@ private:
 private:
 	std::map<uint, uint> classMarkers{};		/// key - input marker, value - number from zero
 	uint numOfCl{};								/// = classMarkers.size(), to deprecate
-	matrix dataMatrix{};						/// the data
-	matrix bcMatrix{};							/// backup data for zeroing
+	matrix dataMatrix{};						/// the data, biases for Net are imaginary
 	std::vector<uint> types{};					/// vector of object types (may be any uints)
 	std::vector<QString> fileNames{};			/// used in Classifier::peopleClassification
 	int spLength{};								/// for 128 chans zeroing

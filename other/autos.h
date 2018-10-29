@@ -22,8 +22,6 @@ enum feature {
 	Hjorth		= 0x20,	/// std::pow(2, 5);
 	logFFT		= 0x40	/// std::pow(2, 6);
 };
-using featureEnumType = int; /// or feature if enum class : int (hash problems)
-
 const int allFeaturesInt = std::pow(2, 7) - 1;
 inline std::vector<feature> getFeatures(int in)
 {
@@ -43,9 +41,9 @@ enum class outputStyle {Line, Table};
 enum class outputSeq {ByChans, ByFilters};
 enum class initialCut {first30, second30, first60, none};
 using filterFreqs = std::pair<double, double>;
-enum filter
+enum filter : int
 {
-	none = 1,		/// = std::pair<double, double>{0, 0},
+    none = 0,	/// = std::pair<double, double>{0, 0},
 	interest,	/// = std::pair<double, double>{2, 20},
 //	delta,		/// = std::pair<double, double>{0, 2},
 //	delta_low,	/// = std::pair<double, double>{0, 1},
@@ -61,9 +59,7 @@ enum filter
 	beta_low,	/// = std::pair<double, double>{13, 18},
 //	beta_high,	/// = std::pair<double, double>{18, 30},
 };
-using filterEnumType = int; /// or filter if enum class : int (hash problems)
-
-const std::unordered_map<filterEnumType, filterFreqs> filtFreqs
+const std::unordered_map<int, filterFreqs> filtFreqs
 {
 	{filter::none,			{0, 0}},
 	{filter::interest,		{2, 20}},
@@ -81,8 +77,6 @@ const std::unordered_map<filterEnumType, filterFreqs> filtFreqs
 	{filter::beta_low,		{13, 18}},
 //	{filter::beta_high,		{0, 0}},
 };
-
-
 std::vector<filterFreqs> makeFilterVector(double start, double finish, double width);
 
 /// Singleton
@@ -103,6 +97,9 @@ public:
 
 	void setInitialCut(initialCut in)			{ this->initCut = in; }
 	auto getInitialCut() const					{ return this->initCut; }
+
+	void setMarkers(const std::vector<QString> & in){ this->usedMarkers = in; }
+	auto getMarkers() const						{ return this->usedMarkers; }
 
 	void setAutosMask(int in)					{ this->autosMask = in; }
 	auto getAutosMask() const					{ return this->autosMask; }
@@ -144,13 +141,15 @@ private:
 	AutosSettings & operator=(const AutosSettings &)=delete;
 
 private:
-	std::unordered_map<featureEnumType, std::vector<filterFreqs>> filtersSets;
+    std::unordered_map<int, std::vector<filterFreqs>> filtersSets;
 	std::vector<QString> channelsToProcess{};
+	std::vector<QString> usedMarkers{};
 
 	initialCut initCut{initialCut::none};
 	outputStyle outStyle{outputStyle::Line};
 	outputSeq outSeq{outputSeq::ByChans};
 	int autosMask{};
+
 };
 
 #define AUT_SETS autos::AutosSettings::inst()
@@ -228,7 +227,7 @@ void refilterFolder(const QString & procDirPath,
 					double highFreq,
 					bool isNotch = false);
 void rereferenceFolder(const QString & procDirPath,
-					   const QString & newRef);
+					   reference newRef);
 
 /// labels file
 void makeLabelsFile(const std::vector<QString> & chans,
@@ -252,8 +251,7 @@ void ProcessByFolders(const QString & inPath,
 					  const std::vector<QString> & markers);
 void ProcessByGroups(const QString & inPath,
 						const QString & outPath,
-						const std::vector<QString> & channs,
-						const std::vector<QString> markers);
+						const std::vector<QString> & channs);
 void ProcessAllInOneFolder(const QString & inPath,
 						   const QString & outPath,
 						   const std::vector<QString> & channs);

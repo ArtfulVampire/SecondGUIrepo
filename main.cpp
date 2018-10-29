@@ -7,8 +7,9 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
-	/// set your user
-	DEFS.setUser(username::MichaelA);
+    /// set your user
+    DEFS.setUser(username::GalyaP);
+    DEFS.setDir("c:/Data");
 
 	MainWindow w;
 	w.show();
