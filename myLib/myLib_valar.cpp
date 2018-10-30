@@ -15,11 +15,11 @@ namespace smLib
 {
 
 template <>
-std::vector<QString> range(int beg, int en)
+std::vector<QString> range(double beg, double en, double step)
 {
 	std::vector<QString> res{};
 	res.reserve(en - beg);
-	for(int i = beg; i < en; ++i)
+	for(double i = beg; i < en; i += step)
 	{
 		res.push_back(QString::number(i));
 	}
@@ -27,19 +27,39 @@ std::vector<QString> range(int beg, int en)
 }
 
 template <class Container>
-Container range(int beg, int en)
+Container range(double beg, double en, double step)
 {
 	if(en <= beg) { return Container{}; }
 
-	Container res(en - beg);
-	std::iota(std::begin(res), std::end(res), beg);
+	Container res( std::floor((en - beg) / step) );
+	res[0] = beg;
+	for(int i = 1; i < res.size(); ++i)
+	{
+		res[i] = res[i - 1] + step;
+	}
 	return res;
 }
-template std::vector<uint> range(int beg, int en);
-template std::vector<int> range(int beg, int en);
-template std::vector<double> range(int beg, int en);
-template std::valarray<int> range(int beg, int en);
-template std::valarray<double> range(int beg, int en);
+template std::vector<uint> range(double beg, double en, double step);
+template std::vector<int> range(double beg, double en, double step);
+template std::vector<double> range(double beg, double en, double step);
+template std::valarray<int> range(double beg, double en, double step);
+template std::valarray<double> range(double beg, double en, double step);
+
+template <class Container>
+Container slice(double sta, int siz, double step)
+{
+	if(siz <= 0) { return Container{}; }
+
+	Container res(siz);
+	res[0] = sta;
+	for(int i = 1; i < siz; ++i)
+	{
+		res[i] = res[i - 1] + step;
+	}
+	return res;
+}
+template std::vector<double> slice(double sta, int siz, double step);
+template std::valarray<double> slice(double sta, int siz, double step);
 
 template <class Container>
 Container unite(const std::vector<Container> & ranges)

@@ -10,8 +10,11 @@ namespace smLib
 
 /// any Container
 /// usually std::vector<double> and std::valarray<double>
-template <class Container = std::valarray<double>>
-Container range(int beg, int en); /// [beg, en)
+template <class Container>
+Container range(double beg, double en, double step = 1.); /// [beg, en)
+
+template <class Container>
+Container slice(double sta, int siz, double step);
 
 template <class Container = std::valarray<double>>
 Container unite(const std::vector<Container> & ranges);
@@ -25,7 +28,7 @@ void mix (Container & in);
 template <class Container>
 Container contReverse(const Container & in);
 
-template <typename Container = std::valarray<double>>
+template <typename Container>
 Container contSubsec(const Container & in, int beg, int en);
 
 template <class Container>

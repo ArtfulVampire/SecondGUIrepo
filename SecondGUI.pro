@@ -66,6 +66,8 @@ myLib/myLib_temp.cpp \
 myLib/myLib_qtlib.cpp \
 myLib/myLib_vectr.cpp \
 myLib/myLib_highlevel.cpp \
+myLib/myLib_ica.cpp \
+myLib/myLib_adhoc.cpp \
 classifier/classifier-data.cpp \
 classifier/classifier_lib.cpp \
 classifier/classifier.cpp \
@@ -81,6 +83,9 @@ other/matrix.cpp \
 other/autos_iitp.cpp \
 other/autos_galya.cpp \
 other/autos.cpp \
+other/autos_elena.cpp \
+other/autos_settings.cpp \
+other/coords.cpp \
 other/edfFile.cpp \
 other/defs.cpp \
 other/feedback_proc.cpp \
@@ -98,12 +103,7 @@ widgets/cut/cut_modify.cpp \
 widgets/cut/cut_navi.cpp \
 widgets/cut/cut_iitp.cpp \
 widgets/cut/cut_files.cpp \
-    myLib/myLib_ica.cpp \
-    myLib/myLib_adhoc.cpp \
-    widgets/choosechans.cpp \
-    other/autos_elena.cpp \
-    other/autos_settings.cpp \
-    other/coords.cpp
+widgets/choosechans.cpp
 
 HEADERS += \
 myLib/drw.h \
@@ -142,7 +142,7 @@ myLib/ica.h \
 other/feedback_autos.h \
 myLib/adhoc.h \
 widgets/choosechans.h \
-    other/coords.h
+other/coords.h
 
 FORMS +=\
 mainwindow.ui \

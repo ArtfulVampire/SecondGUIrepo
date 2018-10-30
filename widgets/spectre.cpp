@@ -854,7 +854,7 @@ void Spectre::drawWavelets() /// unused
 
 		for(int chanNum = 0; chanNum < DEFS.nsWOM(); ++chanNum)
         {
-            coefs = wvlt::countWavelet(signal[chanNum]);
+			coefs = wvlt::myCWT(signal[chanNum], smLib::range<std::vector<double>>(1, 19));
             tempVec.emplace(coefs.maxVal());
             continue;
 
@@ -903,7 +903,9 @@ void Spectre::drawWavelets() /// unused
 							 + "_wavelet_" + nm(channel)
 							 + ".jpg";
 				std::cout << helpString.toStdString() << std::endl;
-				wvlt::wavelet(filePath, helpString, channel, DEFS.getNs());
+
+				/// myCWT
+//				wvlt::myCWT(filePath, helpString, channel, DEFS.getNs());
 			}
 		}
 		if(ui->phaseWaveletButton->isChecked())
