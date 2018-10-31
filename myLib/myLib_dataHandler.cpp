@@ -196,11 +196,11 @@ std::pair<std::valarray<double>, int> readFileInLinePair(const QString & filePat
 	}
 #else
 	/// plus vegetative
-	std::vector<double> tmp{};
-	tmp.reserve(rows * cols + 15); /// 15 magic
-	int i = 0;
-	while(file >> res[i++]) {}
-	res = smLib::vecToValar(tmp);
+	std::vector<double> tmpVec{};
+	tmpVec.reserve(rows * cols + 15); /// 15 magic
+	double tmp{};
+	while(file >> tmp) { tmpVec.push_back(tmp); }
+	res = smLib::vecToValar(tmpVec);
 #endif
 	file.close();
 	return {res, cols};

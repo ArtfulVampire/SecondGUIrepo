@@ -25,7 +25,7 @@ void MainWindow::customFunc()
 //	myLib::preprocessDir("C:/Data/tactile/coma_processed");
 //	myLib::GalyaProcessing("C:/Data/tactile/coma_processed");
 
-#if 01
+#if 0
 	edfFile fl("/media/Files/Data/AAX/AAX_final.edf");
 	std::valarray<double> sig = smLib::contSubsec(fl.getData(10), 0, 2000); /// 10 sec
 	auto m = wvlt::myCWT(sig, smLib::range<std::vector<double>>(5., 21., 1.));
