@@ -771,7 +771,7 @@ void EEG_MRI(const QStringList & guyList, bool cutOnlyFlag)
 		system(cmd.toStdString().c_str());
 
 		/// copy link
-		std::this_thread::sleep_for(std::chrono::seconds(15)); /// wait for copy to end?
+//		std::this_thread::sleep_for(std::chrono::seconds(15)); /// wait for copy to end?
 		cmd = "./dropbox.py sharelink " +  dropPath + "/" + guy + ".rar" +
 			  " | xclip -selection clipboard";
 		system(cmd.toStdString().c_str());

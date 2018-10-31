@@ -3,6 +3,7 @@
 #include <other/defs.h>
 #include <other/coords.h>
 #include <myLib/valar.h>
+#include <myLib/statistics.h>
 #include <myLib/signalProcessing.h>
 
 namespace myLib
@@ -312,17 +313,17 @@ void elenaCalculation(const QString & realsPath,
 		/// calculate vegetative
 		int vegetIndex = wholeLen;
 		auto eda = myLib::EDAmax(fil.getData(EDAstring), fromFileName[0].toDouble());
-		res[vegetIndex++] = eda.first;										/// eda magnitude
-		res[vegetIndex++] = eda.second / fil.getFreq();						/// eda latency
-		res[vegetIndex++] = myLib::RDfreq(fil.getData(RDstring), fftLen);	/// breath frequency
-		res[vegetIndex++] = myLib::PPGrange(fil.getData(PPGstring));		/// PPG magnitude
-		res[vegetIndex++] = myLib::RDfreq(fil.getData(PPGstring), fftLen);	/// PPG frequency
-		res[vegetIndex++] = inData.cols() / fil.getFreq();					/// reaction time
+		res[vegetIndex++] = eda.first;										/// +0 eda magnitude
+		res[vegetIndex++] = eda.second / fil.getFreq();						/// +1 eda latency
+		res[vegetIndex++] = myLib::RDfreq(fil.getData(RDstring), fftLen);	/// +2 breath frequency
+		res[vegetIndex++] = myLib::PPGrange(fil.getData(PPGstring));		/// +3 PPG magnitude
+		res[vegetIndex++] = myLib::RDfreq(fil.getData(PPGstring), fftLen);	/// +4 PPG frequency
+		res[vegetIndex++] = inData.cols() / fil.getFreq();					/// +5 reaction time
 
 		/// auxiliary
-		res[vegetIndex++] = fromFileName[1].toInt();	/// taskNumber
-		res[vegetIndex++] = fromFileName[2].toInt();	/// taskMark
-		res[vegetIndex++] = fromFileName[3].toInt();	/// operMark
+		res[vegetIndex++] = fromFileName[1].toInt();						/// +6 taskNumber
+		res[vegetIndex++] = fromFileName[2].toInt();						/// +7 taskMark
+		res[vegetIndex++] = fromFileName[3].toInt();						/// +8 operMark
 
 
 		allNumbers.erase(fromFileName[1].toInt());
@@ -382,13 +383,13 @@ void elenaCalculation(const QString & realsPath,
 
 #if 01
 	/// get averages
-	auto getAverage = [&result](int taskMark) -> std::valarray<double>
+	auto getAverage = [&result, wholeLen](int taskMark) -> std::valarray<double>
 	{
 		std::valarray<double> res(result.cols());
 		int num = 0;
 		for(const auto & row : result)
 		{
-			if(row[sumSize + 7] == taskMark)
+			if(row[wholeLen + 7] == taskMark)
 			{
 				res += row;
 				++num;
@@ -429,6 +430,17 @@ void elenaCalculation(const QString & realsPath,
 	myLib::fileDotsToCommas(outTableDir + "/table.txt",
 							outTableDir + "/table_comma.txt");
 
+
+#if 01
+	/// print Mann-Whitney things
+	myLib::writeMannWhitney(myLib::countMannWhitney(outSpectraPath, nullptr, nullptr),
+							outTableDir + "/MannWhitney.txt",
+							" ");
+	/// pValues
+	myLib::writeMannWhitney(myLib::countMannWhitneyD(outSpectraPath),
+							outTableDir + "/MannWhitneyD.txt",
+							"\t");
+#endif
 
 
 #if 0

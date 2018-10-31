@@ -605,7 +605,7 @@ void MainWindow::iitpNamesFix()
 			sig2[j + i] = t[j + i];
 		}
 	}
-	std::this_thread::sleep_for(std::chrono::seconds{2});
+//	std::this_thread::sleep_for(std::chrono::seconds{2});
 	sig2 += myLib::makeNoise(sig2.size()) * 0.01;
 
 

@@ -397,14 +397,14 @@ void Spectre::psaSlot()
 		MW = myLib::countMannWhitney(ui->inputDirLineEdit->text(),
 									 nullptr,
 									 nullptr);
-		QString helpString;
-		helpString = DEFS.dirPath() + "/" + DEFS.getExpName() + "_MannWhitney.txt";
-		myLib::writeMannWhitney(MW, helpString, " ");
+		myLib::writeMannWhitney(MW,
+								DEFS.dirPath() + "/" + DEFS.getExpName() + "_MannWhitney.txt",
+								" ");
 
 		/// pValues
-		trivector<double> MWD = myLib::countMannWhitneyD(ui->inputDirLineEdit->text());
-		helpString = DEFS.dirPath() + "/" + DEFS.getExpName() + "_MannWhitneyD.txt";
-		myLib::writeMannWhitney(MWD, helpString, "\t");
+		myLib::writeMannWhitney(myLib::countMannWhitneyD(ui->inputDirLineEdit->text()),
+								DEFS.dirPath() + "/" + DEFS.getExpName() + "_MannWhitneyD.txt",
+								"\t");
     }
 
 
