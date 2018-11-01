@@ -50,9 +50,9 @@ void RDA::learn(std::vector<uint> & indices)
     {
         for(int ind : indices)
         {
-			if(myClassData->getTypes()[ind] == i)
+			if(myClassData->getTypes(ind) == i)
             {
-				oneClass[i].push_back(myClassData->getData()[ind]);
+				oneClass[i].push_back(myClassData->getData(ind));
             }
         }
         covMat[i] = oneClass[i].covMatCols(&(centers[i]));
@@ -83,7 +83,7 @@ void RDA::classifyDatum1(uint vecNum)
 
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
 	{
-		std::valarray<double> a = (myClassData->getData()[vecNum] - centers[i]);
+		std::valarray<double> a = (myClassData->getData(vecNum) - centers[i]);
         matrix m1(a, 'r'); /// row
         matrix m2(a, 'c'); /// col
 		double tmp = (m1 * covMat[i] * m2)[0][0];

@@ -129,7 +129,7 @@ void WARD::classifyDatum1(uint vecNum)
     for(uint j = 0; j < numOfClust; ++j)
     {
         /// Word distance
-		distances[j] = -smLib::distance(myClassData->getData()[vecNum],
+		distances[j] = -smLib::distance(myClassData->getData(vecNum),
                                            centers[j]) * clusts[j].size() / (clusts[j].size() + 1);
     }
     /// add fuzzy solving for first N clusters

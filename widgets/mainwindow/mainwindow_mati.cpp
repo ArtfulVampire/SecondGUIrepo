@@ -335,12 +335,12 @@ void MainWindow::matiPreprocessingSlot()
 
 					for(int i = 0; i < fil.getDataLen(); ++i)
 					{
-						if(fil.getData()[fil.getMarkChan()][i] == 0) { continue; }
-						if(myLib::matiCountBit(fil.getData()[fil.getMarkChan()][i], 14))
+						if(fil.getMarkArr(i) == 0) { continue; }
+						if(myLib::matiCountBit(fil.getMarkArr(i), 14))
 						{
 							for(int j = i - 40; j < i + 40; ++j)
 							{
-								if(fil.getData()[37][j+1] != fil.getData()[37][j]) /// 37 for EEG + AMOD
+								if(fil.getData(37)[j+1] != fil.getData(37)[j]) /// 37 for EEG + AMOD
 								{
 									outStr << i << "\t" << j+1 << "\t" << (i-j-1)*4 << '\n';
 									break;

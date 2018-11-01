@@ -76,6 +76,8 @@ public:
 	/// data
 	void loadData(const QString & spectraPath,
 				  const QStringList & filters = {"*.psd"});
+	void loadData(const QString & dataFilePath,
+				  const QString & typesFilePath);
 	void loadDataUCI(const QString & setName);
 	void loadDataXenia(const QString & filesPath,
 					   const QString & type = "bd_new");

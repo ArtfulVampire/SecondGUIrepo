@@ -31,8 +31,8 @@ public:
 	bool isEmpty() const										{ return dataMatrix.isEmpty(); }
 	int size() const											{ return dataMatrix.rows(); }
 	uint getNumOfCl() const										{ return numOfCl; }
-	const std::vector<uint> & getTypes() const					{ return types; }
-	uint getTypes(int i) const									{ return types[i]; }
+//	const std::vector<uint> & getTypes() const					{ return types; }
+	uint getTypes(int i) const									{ return classMarkers.at(types[i]); }
 	const std::vector<std::vector<uint>> & getIndices() const	{ return indices; }
 	const std::vector<QString> & getFileNames() const			{ return fileNames; }
 	const QString & getFileNames(int i) const					{ return fileNames[i]; }
@@ -94,7 +94,7 @@ private:
 	uint numOfCl{};								/// = classMarkers.size(), to deprecate
 	matrix dataMatrix{};						/// the data
 	matrix bcMatrix{};							/// backup for data zeroing
-	std::vector<uint> types{};					/// vector of object types (may be any uints)
+	std::vector<uint> types{};					/// vector of object types (may be ANY UINTs)
 	std::vector<QString> fileNames{};			/// used in Classifier::peopleClassification
 	int spLength{};								/// for 128 chans zeroing
 

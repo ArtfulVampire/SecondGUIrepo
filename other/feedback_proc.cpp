@@ -315,7 +315,7 @@ void repairMarkersInNewFB(QString edfPath, int numSession)
 void successiveNetPrecleanWinds(const QString & windsPath)
 {
 	Net * ann = new Net();
-	ann->loadData(windsPath, {"*.psd"});
+	ann->loadData(windsPath, QStringList{"*.psd"});
 	ann->setClassifier(ModelType::ANN);
 	ann->successivePreclean(windsPath, {});
 	delete ann;

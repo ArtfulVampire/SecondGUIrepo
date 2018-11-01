@@ -139,11 +139,11 @@ void ANN::setLrate(double inRate)
 void ANN::loadVector(uint vecNum, uint & type)
 {
 	/// out.size() == myClassData->getData().cols() + 1
-	std::copy(std::begin(myClassData->getData()[vecNum]),
-			  std::end(myClassData->getData()[vecNum]),
+	std::copy(std::begin(myClassData->getData(vecNum)),
+			  std::end(myClassData->getData(vecNum)),
               std::begin(output[0]));
 	output[0][output[0].size() - 1] = 1.; /// bias
-	type = myClassData->getTypes()[vecNum]; /// true class
+	type = myClassData->getTypes(vecNum); /// true class
 }
 
 void ANN::countOutput()
@@ -289,7 +289,7 @@ void ANN::learn(std::vector<uint> & indices)
 	std::vector<int> localClassCount(myClassData->getNumOfCl(), 0);
     for(int index : indices)
     {
-		++localClassCount[myClassData->getTypes()[index]];
+		++localClassCount[myClassData->getTypes(index)];
     }
     const double helpMin = *std::min_element(std::begin(localClassCount),
                                              std::end(localClassCount));
@@ -311,9 +311,18 @@ void ANN::learn(std::vector<uint> & indices)
 		{
 			loadVector(index, type);
 			countOutput();
+
+//			std::cout << currentError << std::endl;
 			countError(type, currentError);
+//			if(isnanf(currentError))
+//			{
+//				std::cout << "asddddddddddddddd   " << index << std::endl;
+//				break;
+//			}
+
 			moveWeights(normCoeff, type);
 		}
+
         ++epoch;
 
 		/// count error
@@ -381,7 +390,7 @@ void ANN::classifyDatum1(uint vecNum)
 		std::cout << smLib::doubleRound(output[numOfLayers - 1][i], 3) << '\t';
 	}
 	std::cout << ") " << ((type == outClass) ? "+ " : "- ") << "\t"
-			  << myClassData->getFileNames()[vecNum] << std::endl;
+			  << myClassData->getFileNames(vecNum) << std::endl;
 
 #if TO_FILE
 	std::cout.rdbuf(tmp);

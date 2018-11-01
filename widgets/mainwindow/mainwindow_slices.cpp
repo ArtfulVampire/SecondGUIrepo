@@ -932,7 +932,7 @@ void MainWindow::sliceBak(int marker1, int marker2, const QString & marker)
 	int j = 0;                                     /// flag of marker1 read
 	int h = 0;                                     /// flag of marker2 read
     const edfFile & fil = globalEdf;
-	const auto & markerChan = fil.getData()[fil.getMarkChan()];
+	const auto & markerChan = fil.getMarkArr();
 
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
@@ -1121,7 +1121,7 @@ void MainWindow::sliceOneByOneNew()
 
     const edfFile & fil = globalEdf;
 
-    const std::valarray<double> & markChanArr = fil.getData()[fil.getMarkChan()];
+	const std::valarray<double> & markChanArr = fil.getMarkArr();
 
     /// 200, 255, (241||247, num, 254, 255)
     /// with feedback 200 (241||247, num, 231||237, (234), 254, 255)
@@ -1273,7 +1273,7 @@ void MainWindow::sliceMatiSimple()
 
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
-        currMarker = fil.getData()[fil.getMarkChan()][i];
+		currMarker = fil.getMarkArr(i);
         if(currMarker == 0)
         {
             continue;
@@ -1381,7 +1381,7 @@ void MainWindow::sliceMati()
 
     for(int i = 0; i < fil.getDataLen(); ++i)
     {
-        currMarker = fil.getData()[fil.getMarkChan()][i];
+		currMarker = fil.getMarkArr(i);
 		if(currMarker == 0.)
         {
             continue;
@@ -1526,15 +1526,15 @@ void MainWindow::sliceMatiPieces()
                         if(type == 0 || type == 2)
                         {
                             /// std::search
-							while ( ! (myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 14) ||
-									   myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd-1], 10)) ) /// while not (given answer OR session End)
+							while ( ! (myLib::matiCountBit(fil.getMarkArr(currEnd - 1), 14) ||
+									   myLib::matiCountBit(fil.getMarkArr(currEnd - 1), 10)) ) /// while not (given answer OR session End)
                             {
                                 --currEnd;
                             }
                         }
                         else if(currEnd == dataLen) /// should do nothing due to edfFile::cutZerosAtEnd
                         {
-							while ( ! (myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10)) ) /// while not session end
+							while ( ! (myLib::matiCountBit(fil.getMarkArr(currEnd - 1), 10)) ) /// while not session end
                             {
                                 --currEnd;
                             }
@@ -1560,7 +1560,7 @@ void MainWindow::sliceMatiPieces()
                         ++pieceNum;
                         currStart = currEnd;
 
-					} while (!myLib::matiCountBit(fil.getData()[fil.getMarkChan()][currEnd - 1], 10) );
+					} while (!myLib::matiCountBit(fil.getMarkArr(currEnd - 1), 10) );
                 }
                 else
                 {

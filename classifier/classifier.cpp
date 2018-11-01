@@ -48,9 +48,9 @@ void Classifier::setTestCleanFlag(bool inFlag)
 
 void Classifier::deleteFile(uint vecNum, uint predType)
 {
-	if(this->testCleanFlag && (predType != myClassData->getTypes()[vecNum]))
+	if(this->testCleanFlag && (predType != myClassData->getTypes(vecNum)))
     {
-		QFile::remove(filesPath + "/" + myClassData->getFileNames()[vecNum]);
+		QFile::remove(filesPath + "/" + myClassData->getFileNames(vecNum));
     }
 }
 
@@ -60,9 +60,9 @@ void Classifier::deleteFile(uint vecNum, uint predType)
 void Classifier::classifyDatum1(uint vecNum)
 {
 	/// ALWAYS TRUE WITH ZERO ERROR
-	this->confusionMatrix[myClassData->getTypes()[vecNum]][myClassData->getTypes()[vecNum]] += 1.;
+	this->confusionMatrix[myClassData->getTypes(vecNum)][myClassData->getTypes(vecNum)] += 1.;
 	outputLayer = clLib::oneHot(myClassData->getNumOfCl(),
-								myClassData->getTypes()[vecNum]);
+								myClassData->getTypes(vecNum));
 }
 #endif
 
@@ -71,17 +71,16 @@ Classifier::classOneType Classifier::classifyDatum(uint vecNum)
 	this->classifyDatum1(vecNum);
 
 	const int outClass = myLib::indexOfMax(outputLayer);
-
 	if(this->testCleanFlag) /// here or inside deleteFile ?
 	{
 		this->deleteFile(vecNum, outClass); /// delete if wrong class
 	}
-	confusionMatrix[myClassData->getTypes()[vecNum]][outClass] += 1.;
+	confusionMatrix[myClassData->getTypes(vecNum)][outClass] += 1.;
 	printResult(typeString + ".txt", outClass, vecNum);
 	smLib::normalize(outputLayer); /// for clLib::countError
-	return std::make_tuple(myClassData->getTypes()[vecNum] == outClass,
+	return std::make_tuple(myClassData->getTypes(vecNum) == outClass,
 						   outClass,
-						   clLib::countError(outputLayer, myClassData->getTypes()[vecNum]));
+						   clLib::countError(outputLayer, myClassData->getTypes(vecNum)));
 }
 
 Classifier::classOneType Classifier::classifyDatumLast()
@@ -115,7 +114,7 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
 
     QString pew;
 
-	if(predType == myClassData->getTypes()[vecNum])
+	if(predType == myClassData->getTypes(vecNum))
 	{
 		pew = "";
 	}
@@ -123,7 +122,7 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
 	{
 		pew = nm(vecNum) + "\n";
 
-		outStr << vecNum + 2 << ":\ttrue = " << myClassData->getTypes()[vecNum] << "\tpred = " << predType << "\n";
+		outStr << vecNum + 2 << ":\ttrue = " << myClassData->getTypes(vecNum) << "\tpred = " << predType << "\n";
 	}
 	outStr.close();
 }
@@ -237,7 +236,10 @@ void Classifier::leaveOneOutClassification(std::ostream & os)
 	os << "LOO: max = " << dataMatrix.rows() << std::endl;
 	for(int i = 0; i < dataMatrix.rows(); ++i)
 	{
-		if((i + 1) % 10 == 0) { os << i + 1 << " "; os.flush(); }
+		if((i + 1) % 10 == 0)
+		{
+//			os << i + 1 << " "; os.flush();
+		}
 
 		learnIndices.clear();
 		learnIndices.resize(dataMatrix.rows() - 1);
@@ -247,9 +249,8 @@ void Classifier::leaveOneOutClassification(std::ostream & os)
 		std::iota(std::begin(learnIndices) + i,
 				  std::end(learnIndices),
 				  i + 1);
-
 		this->learn(learnIndices);
-		this->test(uint(i));
+		this->test(static_cast<uint>(i));
 	}
 }
 
@@ -293,7 +294,7 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 	std::map<QString, std::vector<uint>> zSets{};
 	for(int i = 0; i < size; ++i)
 	{
-		const QString a = this->myClassData->getFileNames()[i];
+		const QString a = this->myClassData->getFileNames(i);
 		const QString guy = a.left(a.indexOf('_'));
 		people.emplace(guy);
 
@@ -305,7 +306,7 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 	{
 		for(auto in : zSets[guy])
 		{
-			std::cout << this->myClassData->getFileNames()[in] << std::endl;
+			std::cout << this->myClassData->getFileNames(in) << std::endl;
 		}
 		std::cout << std::endl;
 	}
@@ -336,7 +337,7 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 		testSet.clear();
 		for(int i = 0; i < size; ++i)
 		{
-			if(this->myClassData->getFileNames()[i].startsWith(guy))
+			if(this->myClassData->getFileNames(i).startsWith(guy))
 			{
 				testSet.push_back(i);
 			}
@@ -360,13 +361,12 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 void Classifier::crossClassification(int numOfPairs, int fold, std::ostream & os)
 {
 	const matrix & dataMatrix = this->myClassData->getData();
-	const auto & types = this->myClassData->getTypes();
 
 	std::vector<std::vector<uint>> arr; /// [class][index]
 	arr.resize(this->myClassData->getNumOfCl());
 	for(int i = 0; i < dataMatrix.rows(); ++i)
 	{
-		arr[ types[i] ].push_back(i);
+		arr[ this->myClassData->getTypes(i) ].push_back(i);
 	}
 
 	os << "Cross-Class: max = " << numOfPairs << std::endl;

@@ -10,6 +10,23 @@
 
 using namespace myOut;
 
+void Net::loadData(const QString & dataFilePath,
+				   const QString & typesFilePath)
+{
+	auto a = myLib::readFileInLineRaw(typesFilePath);
+	std::vector<uint> types{};
+	types.reserve(a.size());
+
+	for(auto in : a)
+	{
+		types.push_back(static_cast<uint>(in));
+	}
+	matrix dt = myLib::readMatrixFileRaw(dataFilePath);
+
+	myClassifierData = ClassifierData(dt,
+									  types);
+}
+
 void Net::loadDataUCI(const QString & setName)
 {
 	matrix uciData{};

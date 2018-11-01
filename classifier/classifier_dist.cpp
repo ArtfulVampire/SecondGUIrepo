@@ -25,9 +25,9 @@ void DIST::learn(std::vector<uint> & indices)
         matrix oneClass{};
         for(int ind : indices)
         {
-			if(myClassData->getTypes()[ind] == i)
+			if(myClassData->getTypes(ind) == i)
             {
-				oneClass.push_back(myClassData->getData()[ind]);
+				oneClass.push_back(myClassData->getData(ind));
             }
         }
         centers[i] = oneClass.averageRow();
@@ -39,7 +39,7 @@ void DIST::classifyDatum1(uint vecNum)
 	outputLayer.resize(myClassData->getNumOfCl()); outputLayer = 0;
 	for(uint j = 0; j < myClassData->getNumOfCl(); ++j)
     {
-		outputLayer[j] = -smLib::distance(myClassData->getData()[vecNum],
+		outputLayer[j] = -smLib::distance(myClassData->getData(vecNum),
                                            centers[j]);
 	}
 }

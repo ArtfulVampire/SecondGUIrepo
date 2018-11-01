@@ -1315,8 +1315,8 @@ edfFile edfFile::vertcatFile(const QString & addEdfPath) const
 
     for(int i = 0; i < addEdf.getNs(); ++i)
     {
-		edfChannel addChan = addEdf.getChannels()[i];
-		std::valarray<double> addData = addEdf.getData()[i];
+		edfChannel addChan = addEdf.getChannels(i);
+		std::valarray<double> addData = addEdf.getData(i);
 		temp.channels.push_back(addChan);
 		temp.edfData.push_back(addData);
 	}
@@ -1569,8 +1569,8 @@ edfFile & edfFile::iitpSyncAutoCorr(int startSearchEeg,
 
 	if(byEeg) { numECG = 0; }
 
-	const std::valarray<double> & eegMarkChan = this->getData()[numECG];
-	const std::valarray<double> & emgMarkChan = this->getData()[numArtefac];
+	const std::valarray<double> & eegMarkChan = this->getData(numECG);
+	const std::valarray<double> & emgMarkChan = this->getData(numArtefac);
 
 	std::valarray<double> eegMarkSignal(corrLength);
 	std::valarray<double> emgMarkSignal(corrLength);
@@ -1617,8 +1617,8 @@ std::pair<int, int> edfFile::iitpSyncAutoJump(int startSearchEeg,
 
 	if(byEeg) { numECG = 0; }
 
-	const std::valarray<double> & eegMarkChan = this->getData()[numECG];
-	const std::valarray<double> & emgMarkChan = this->getData()[numArtefac];
+	const std::valarray<double> & eegMarkChan = this->getData(numECG);
+	const std::valarray<double> & emgMarkChan = this->getData(numArtefac);
 
 	int eegPoint = myLib::findJump(eegMarkChan, startSearchEeg);
 	int emgPoint = myLib::findJump(emgMarkChan, startSearchEmg);
@@ -1695,7 +1695,7 @@ edfFile & edfFile::refilter(double lowFreq,
 										   lowFreq,
 										   highFreq,
 										   isNotch,
-										   this->getNr()[j] / this->getDdr());
+										   this->getNr(j) / this->getDdr());
 	}
 	return *this;
 }

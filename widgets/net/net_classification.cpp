@@ -142,7 +142,6 @@ void Net::leaveOneOutClassification()
 void Net::crossClassification()
 {
 	const matrix & dataMatrix = myModel->getClassifierData()->getData();
-	const std::vector<uint> & types = myModel->getClassifierData()->getTypes();
 
     const int numOfPairs = ui->numOfPairsBox->value();
     const int fold = ui->foldSpinBox->value();
@@ -151,7 +150,7 @@ void Net::crossClassification()
     arr.resize(DEFS.numOfClasses());
     for(uint i = 0; i < dataMatrix.rows(); ++i)
     {
-        arr[ types[i] ].push_back(i);
+		arr[ myModel->getClassifierData()->getTypes(i) ].push_back(i);
     }
     std::cout << "Net: crossClass (max " << numOfPairs << "):" << std::endl;
 

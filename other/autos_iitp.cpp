@@ -373,7 +373,7 @@ void IITPfilterGonios(const QString & guyName,
 		{
 			for(const QString & joint : joints)
 			{
-				if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive))
+				if(fil.getLabels(i).contains(joint, Qt::CaseInsensitive))
 				{
 					chanList.push_back(i);
 					break;
@@ -859,7 +859,7 @@ void IITPpre2(const QString & guyName)
 				{
 					for(auto joint : {"elbow", "wrist", "knee", "ankle"})
 					{
-						if(fil.getLabels()[i].contains(joint, Qt::CaseInsensitive))
+						if(fil.getLabels(i).contains(joint, Qt::CaseInsensitive))
 						{
 							chanList.push_back(i);
 							break;

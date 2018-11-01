@@ -396,6 +396,7 @@ public:
 	const std::valarray<double> & getDigMax() const					{ return digMax; }
 	const std::valarray<double> & getDigMin() const					{ return digMin; }
 	const std::valarray<double> & getNr() const						{ return nr; }
+	double getNr(int i) const										{ return nr[i]; }
 	const QString & getHeaderRest() const							{ return headerRest; }
 
 	const std::vector<std::pair<int, int>> & getMarkers() const		{ return markers; }
