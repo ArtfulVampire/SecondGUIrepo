@@ -579,16 +579,16 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 		it != std::begin(dataCutLocal.back()) + end;
 		++it, ++bin)
 	{
-		auto a = *it;
-		if((a != 0)
-		   && (a != 201)	/// magic const pause
-		   && (a != 202)	/// magic const resume
+		int val = static_cast<int>(*it);
+		if((val != 0)
+		   && (val != 201)	/// magic const pause
+		   && (val != 202)	/// magic const resume
 		   )
 		{
 			std::cout << "Cut::splitSemiSlot: nonzero marker "
 					  << bin << "\t"
 					  << bin / edfFil.getFreq() << "\t"
-					  << a << std::endl;
+					  << val << std::endl;
 		}
 	}
 
@@ -606,12 +606,21 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 	this->split(start, end);
 	logAction("split", start, end);
 
-	ui->paintStartLabel->setText("start (max " + nm(std::floor(dataCutLocal.cols() / edfFil.getFreq())) + ")");
+	ui->paintStartLabel->setText("start (max " + nm(std::floor(dataCutLocal.cols()
+															   / edfFil.getFreq())) + ")");
 
 	/// crutch with drawFlag
 	this->drawFlag = false;
 	resetLimits();
-	ui->paintStartDoubleSpinBox->setValue(start / edfFil.getFreq() - 1.5);
+
+	if(!(ui->paintStartDoubleSpinBox->value() * edfFil.getFreq() < start
+	   && (ui->paintStartDoubleSpinBox->value()
+		   + ui->paintLengthDoubleSpinBox->value()) * edfFil.getFreq() > start))
+	{
+		ui->paintStartDoubleSpinBox->setValue(start / edfFil.getFreq()
+											  - 1.5 * ui->xNormSpinBox->value());
+	}
+
 	ui->leftLimitSpinBox->setValue(start); /// really needed?
 	this->drawFlag = true;
 
