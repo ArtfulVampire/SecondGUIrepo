@@ -19,7 +19,7 @@
 using namespace myOut;
 
 Cut::Cut() :
-    ui(new Ui::Cut)
+	ui(new Ui::Cut)
 {
 	ui->setupUi(this);
 	this->setAttribute(Qt::WA_DeleteOnClose);
@@ -48,11 +48,11 @@ Cut::Cut() :
 	ui->yNormDoubleSpinBox->setValue(1.);
 	ui->yNormDoubleSpinBox->setSingleStep(0.05);
 
-    ui->paintStartDoubleSpinBox->setDecimals(1);
-    ui->paintStartDoubleSpinBox->setSingleStep(0.1);
+	ui->paintStartDoubleSpinBox->setDecimals(1);
+	ui->paintStartDoubleSpinBox->setSingleStep(0.1);
 	ui->paintStartDoubleSpinBox->setValue(0);
 
-    ui->paintLengthDoubleSpinBox->setDecimals(1);
+	ui->paintLengthDoubleSpinBox->setDecimals(1);
 	ui->paintLengthDoubleSpinBox->setSingleStep(0.2);
 
 	ui->scrollArea->setWidget(ui->picLabel);
@@ -171,9 +171,9 @@ Cut::Cut() :
 					 [this](){ findPrevMark(-1); });
 
 	/// deriv
-	QObject::connect(ui->derivChan1SpinBox,  SIGNAL( valueChanged() ),
+	QObject::connect(ui->derivChan1SpinBox,  SIGNAL( valueChanged(int) ),
 					 this, SLOT( showDerivatives() ));
-	QObject::connect(ui->derivChan2SpinBox, SIGNAL( valueChanged() ),
+	QObject::connect(ui->derivChan2SpinBox, SIGNAL( valueChanged(int) ),
 					 this, SLOT( showDerivatives() ));
 
 
@@ -266,10 +266,10 @@ Cut::Cut() :
 
 Cut::~Cut()
 {
-    delete ui;
+	delete ui;
 }
 
-void Cut::paintResizedSlot(int a)
+void Cut::paintResizedSlot(double a)
 {
 	if(this->size().width() == a * edfFil.getFreq() + scrollAreaGapX) { return; }
 	/// horzNorm
@@ -280,9 +280,9 @@ void Cut::paintResizedSlot(int a)
 void Cut::connectStuff()
 {
 	/// deriv
-	QObject::connect(ui->derivChan1SpinBox,  SIGNAL( valueChanged() ),
+	QObject::connect(ui->derivChan1SpinBox,  SIGNAL(valueChanged(int)),
 					 this, SLOT( showDerivatives() ));
-	QObject::connect(ui->derivChan2SpinBox, SIGNAL( valueChanged() ),
+	QObject::connect(ui->derivChan2SpinBox, SIGNAL( valueChanged(int) ),
 					 this, SLOT( showDerivatives() ));
 
 
@@ -308,9 +308,9 @@ void Cut::connectStuff()
 void Cut::disconnectStuff()
 {
 	/// deriv
-	QObject::disconnect(ui->derivChan1SpinBox,  SIGNAL( valueChanged() ),
+	QObject::disconnect(ui->derivChan1SpinBox,  SIGNAL( valueChanged(int) ),
 					 this, SLOT( showDerivatives() ));
-	QObject::disconnect(ui->derivChan2SpinBox, SIGNAL( valueChanged() ),
+	QObject::disconnect(ui->derivChan2SpinBox, SIGNAL( valueChanged(int) ),
 					 this, SLOT( showDerivatives() ));
 
 
@@ -372,7 +372,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 {
 	if(event->size() == event->oldSize()) { return; }
 
-    /// adjust scrollArea size
+	/// adjust scrollArea size
 	double newPaintLength = smLib::doubleRound((event->size().width() - scrollAreaGapX)
 											   / edfFil.getFreq() * ui->xNormSpinBox->value(),
 									   ui->paintLengthDoubleSpinBox->decimals());
@@ -380,8 +380,8 @@ void Cut::resizeEvent(QResizeEvent * event)
 							 this->minimumHeight())
 					- ui->scrollArea->geometry().y() - scrollAreaGapY;
 
-    ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
-                                ui->scrollArea->geometry().y(),
+	ui->scrollArea->setGeometry(ui->scrollArea->geometry().x(),
+								ui->scrollArea->geometry().y(),
 								/// horzNorm
 								newPaintLength * edfFil.getFreq() / ui->xNormSpinBox->value(),
 								newHei);
@@ -397,7 +397,7 @@ void Cut::resizeEvent(QResizeEvent * event)
 
 bool Cut::eventFilter(QObject *obj, QEvent *event)
 {
-    if(obj == ui->scrollArea)
+	if(obj == ui->scrollArea)
 	{
 		switch(event->type())
 		{
@@ -527,7 +527,7 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 				else
 				{
 					this->mousePressSlot(clickEvent->button(),  clickEvent->x());
-				}				
+				}
 				return true;
 			}
 			case Qt::RightButton:
@@ -654,27 +654,27 @@ bool Cut::eventFilter(QObject *obj, QEvent *event)
 		} /// end of KeyPress
 		default: { /* do nothing */ }
 		}
-    }
-    /// global Shortcuts
-    {
-        switch(event->type())
-        {
-        case QEvent::KeyPress:
-        {
-            QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
-            switch(keyEvent->key())
-            {
-            case Qt::Key_A: { this->prev(); return true; }
-            case Qt::Key_D: { this->next(); return true; }
-            case Qt::Key_O: { this->browseSlot(); return true; }
-            default: { break; }
-            }
-            break;
-        }
-        default: { break; }
-        }
-    }
-    return QWidget::eventFilter(obj, event);
+	}
+	/// global Shortcuts
+	{
+		switch(event->type())
+		{
+		case QEvent::KeyPress:
+		{
+			QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
+			switch(keyEvent->key())
+			{
+			case Qt::Key_A: { this->prev(); return true; }
+			case Qt::Key_D: { this->next(); return true; }
+			case Qt::Key_O: { this->browseSlot(); return true; }
+			default: { break; }
+			}
+			break;
+		}
+		default: { break; }
+		}
+	}
+	return QWidget::eventFilter(obj, event);
 }
 
 void Cut::resetLimits()
@@ -733,10 +733,10 @@ void Cut::showDerivatives()
 		numSig1 = coords::egi::chans128to20[ui->derivChan1SpinBox->value()];
 	}
 //	if(numSig1 < dataCutLocal.rows())
-    {
+	{
 		const std::valarray<double> & sig1 = dataCutLocal[numSig1];
 		const int ind1 = ui->leftLimitSpinBox->value();
-        ui->derivVal1SpinBox->setValue(sig1[ind1]);
+		ui->derivVal1SpinBox->setValue(sig1[ind1]);
 #if 01
 		/// set derivatives first chan
 		if(ind1 + st < sig1.size() && ind1 - st >=0)
@@ -757,9 +757,9 @@ void Cut::showDerivatives()
 		numSig2 = coords::egi::chans128to20[ui->derivChan2SpinBox->value()];
 	}
 //	if(numSig2 < dataCutLocal.rows())
-    {
-        const std::valarray<double> & sig2 = dataCutLocal[numSig2];
-        const int ind2 = ui->rightLimitSpinBox->value();
+	{
+		const std::valarray<double> & sig2 = dataCutLocal[numSig2];
+		const int ind2 = ui->rightLimitSpinBox->value();
 		ui->derivVal2SpinBox->setValue(sig2[ind2]);
 #if 01
 		/// set derivatives second chan

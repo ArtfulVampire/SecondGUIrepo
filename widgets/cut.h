@@ -106,7 +106,7 @@ public slots:
 	void mousePressSlot(Qt::MouseButton btn, int coord);
 	void timesAndDiffSlot();
 	void showDerivatives();
-	void paintResizedSlot(int a);
+	void paintResizedSlot(double a);
 
 	void undoSlot();
 	void copySlot();
