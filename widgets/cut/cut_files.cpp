@@ -339,9 +339,11 @@ void Cut::openFile(const QString & dataFileName)
 	fileOpened = true;
 	logAction(edfFil.getExpName());
 
+	disconnectStuff();
 	drawFlag = false;
 	setValuesByEdf(); /// needs fileOpened
 	drawFlag = true;
+	connectStuff();
 
 	paint();
 }

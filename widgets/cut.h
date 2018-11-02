@@ -60,10 +60,13 @@ private:
 	void paintMarkers(const matrix & drawDataLoc);
 	void setValuesByEdf();
 	void resetLimits();
-	void showDerivatives();
-	void smartFindCountParams();
+
+	void connectStuff();
+	void disconnectStuff();
 	void findNextMark(int mark);
 	void findPrevMark(double mark);
+
+	void smartFindCountParams();
 	void smartFindFind(bool forward);
 	void smartFindShowValues();
 //	bool smartFindCheck(); /// return true if bad window
@@ -102,6 +105,8 @@ public slots:
 
 	void mousePressSlot(Qt::MouseButton btn, int coord);
 	void timesAndDiffSlot();
+	void showDerivatives();
+	void paintResizedSlot(int a);
 
 	void undoSlot();
 	void copySlot();

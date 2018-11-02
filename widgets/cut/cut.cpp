@@ -171,12 +171,10 @@ Cut::Cut() :
 					 [this](){ findPrevMark(-1); });
 
 	/// deriv
-	QObject::connect(ui->derivChan1SpinBox,
-					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-					 [this]() { this->showDerivatives(); });
-	QObject::connect(ui->derivChan2SpinBox,
-					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-					 [this]() { this->showDerivatives(); });
+	QObject::connect(ui->derivChan1SpinBox,  SIGNAL( valueChanged() ),
+					 this, SLOT( showDerivatives() ));
+	QObject::connect(ui->derivChan2SpinBox, SIGNAL( valueChanged() ),
+					 this, SLOT( showDerivatives() ));
 
 
 	/// draws
@@ -189,15 +187,8 @@ Cut::Cut() :
 					 this, &Cut::xNormSlot);
 	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
 					 this, SLOT(paint()));
-	QObject::connect(ui->paintLengthDoubleSpinBox,
-					 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-					 [this](double a)
-	{
-		if(this->size().width() == a * edfFil.getFreq() + scrollAreaGapX) { return; }
-		/// horzNorm
-		this->resize(a * edfFil.getFreq() / ui->xNormSpinBox->value()
-					 + scrollAreaGapX, this->height());
-	});
+	QObject::connect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT( paintResizedSlot(double)) );
 	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
 					 this, SLOT(timesAndDiffSlot()));
 	QObject::connect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
@@ -278,6 +269,68 @@ Cut::~Cut()
     delete ui;
 }
 
+void Cut::paintResizedSlot(int a)
+{
+	if(this->size().width() == a * edfFil.getFreq() + scrollAreaGapX) { return; }
+	/// horzNorm
+	this->resize(a * edfFil.getFreq() / ui->xNormSpinBox->value()
+				 + scrollAreaGapX, this->height());
+}
+
+void Cut::connectStuff()
+{
+	/// deriv
+	QObject::connect(ui->derivChan1SpinBox,  SIGNAL( valueChanged() ),
+					 this, SLOT( showDerivatives() ));
+	QObject::connect(ui->derivChan2SpinBox, SIGNAL( valueChanged() ),
+					 this, SLOT( showDerivatives() ));
+
+
+	/// draws
+	QObject::connect(ui->iitpDisableEcgCheckBox, &QCheckBox::clicked, this, &Cut::paint);
+	QObject::connect(ui->yNormInvertCheckBox, &QCheckBox::clicked, this, &Cut::paint);
+	QObject::connect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(paint()));
+	QObject::connect(ui->xNormSpinBox,
+					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+					 this, &Cut::xNormSlot);
+	QObject::connect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(paint()));
+	QObject::connect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT( paintResizedSlot(double)) );
+
+	QObject::connect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
+					 this, SLOT(timesAndDiffSlot()));
+	QObject::connect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
+					 this, SLOT(timesAndDiffSlot()));
+}
+
+void Cut::disconnectStuff()
+{
+	/// deriv
+	QObject::disconnect(ui->derivChan1SpinBox,  SIGNAL( valueChanged() ),
+					 this, SLOT( showDerivatives() ));
+	QObject::disconnect(ui->derivChan2SpinBox, SIGNAL( valueChanged() ),
+					 this, SLOT( showDerivatives() ));
+
+
+	/// draws
+	QObject::disconnect(ui->iitpDisableEcgCheckBox, &QCheckBox::clicked, this, &Cut::paint);
+	QObject::disconnect(ui->yNormInvertCheckBox, &QCheckBox::clicked, this, &Cut::paint);
+	QObject::disconnect(ui->yNormDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(paint()));
+	QObject::disconnect(ui->xNormSpinBox,
+					 static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+					 this, &Cut::xNormSlot);
+	QObject::disconnect(ui->paintStartDoubleSpinBox, SIGNAL(valueChanged(double)),
+					 this, SLOT(paint()));
+	QObject::disconnect(ui->paintLengthDoubleSpinBox, SIGNAL(valueChanged(double)),
+						this, SLOT( paintResizedSlot(double)) );
+	QObject::disconnect(ui->leftLimitSpinBox, SIGNAL(valueChanged(int)),
+					 this, SLOT(timesAndDiffSlot()));
+	QObject::disconnect(ui->rightLimitSpinBox, SIGNAL(valueChanged(int)),
+					 this, SLOT(timesAndDiffSlot()));
+}
 
 void Cut::timesAndDiffSlot()
 {
