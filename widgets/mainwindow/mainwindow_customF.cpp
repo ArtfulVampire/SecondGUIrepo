@@ -4,6 +4,7 @@
 #include <other/subjects.h>
 #include <other/feedback_autos.h>
 #include <other/autos.h>
+#include <other/coords.h>
 #include <myLib/adhoc.h>
 #include <myLib/drw.h>
 #include <myLib/iitp.h>
@@ -25,6 +26,8 @@ void MainWindow::customFunc()
 //	myLib::preprocessDir("C:/Data/tactile/coma_processed");
 //	myLib::GalyaProcessing("C:/Data/tactile/coma_processed");
 
+	myLib::checkChannels("/media/Files/Data/Galya/all_buben", coords::lbl19);
+	exit(0);
 #if 0
 	edfFile fl("/media/Files/Data/AAX/AAX_final.edf");
 	std::valarray<double> sig = smLib::contSubsec(fl.getData(10), 0, 2000); /// 10 sec

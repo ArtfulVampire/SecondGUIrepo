@@ -28,6 +28,8 @@ void elenaCalculation(const QString & realsPath,
 					  const QString & outSpectraPath,
 					  const QString & outTableDir);
 
+std::vector<QString> checkChannels(const QString & inPath, const std::vector<QString> & refChans);
+
 void XeniaPretable();
 void SettingsXenia();
 void XeniaProcessing(const QString & workPath);

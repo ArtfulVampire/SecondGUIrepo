@@ -4,6 +4,7 @@
 //#include <optional> /// to do (for findChannels)
 
 #include <fstream>
+#include <bitset>
 
 #include <other/matrix.h>
 #include <myLib/small.h>
@@ -273,6 +274,8 @@ public:
 	std::vector<int> findChannels(const QString & filter) const;
 	std::vector<int> findChannels(const std::vector<QString> & strs) const;
 	std::vector<bool> hasChannels(const std::vector<QString> & strs) const;
+	template<int N>
+	std::bitset<N> hasChannels(const std::vector<QString> & strs);
 
 	int countMarker(int mrk) const;
 	std::vector<uint> countMarkers(const std::vector<int> & mrks) const;

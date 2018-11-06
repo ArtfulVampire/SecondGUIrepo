@@ -538,6 +538,74 @@ void preprocessDir(const QString & inPath)
 	exit(0);
 }
 
+std::vector<QString> checkChannels(const QString & inPath, const std::vector<QString> & refChans)
+{
+	const std::vector<bool> res(refChans.size(), true);
+	std::vector<bool> maxset(refChans.size(), true);
+
+	auto subdirs = QDir(inPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	if(!QDir(inPath).entryList(def::edfFilters).isEmpty() || subdirs.isEmpty())
+	{
+		subdirs = QStringList{""};
+	}
+
+	for(const QString & subdir : subdirs)
+	{
+		const QString groupDir = inPath + "/" + subdir;
+
+		auto guyDirs = QDir(groupDir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		if(!QDir(groupDir).entryList(def::edfFilters).isEmpty() || guyDirs.isEmpty())
+		{
+			guyDirs = QStringList{""};
+		}
+
+		for(const QString & guyDir : guyDirs) /// each guy
+		{
+			const QString guyPath = groupDir + "/" + guyDir;
+			auto filList = QDir(guyPath).entryList(def::edfFilters); /// edfs of one guy
+			for(const QString & fl : filList)
+			{
+				edfFile file(guyPath + "/" + fl, true);
+				auto tmp = file.hasChannels(refChans);
+
+//				std::cout << fl << std::endl;
+
+				if(res != tmp)
+				{
+					std::cout
+							<< subdir << "\t"
+							<< guyDir << "\t"
+							<< fl << " absent: "
+//							<< std::endl
+							   ;
+					for(int i = 0; i < refChans.size(); ++i)
+					{
+						if(!tmp[i]) { std::cout << refChans[i] << " "; }
+						maxset[i] = maxset[i] & tmp[i];
+					}
+					std::cout << std::endl;
+				}
+				else
+				{
+//					std::cout << "OK: " <<  fl << std::endl;
+				}
+			}
+		}
+	}
+	std::vector<QString> out{};
+	std::cout << "maxset = " << std::endl;
+	for(int i = 0; i < refChans.size(); ++i)
+	{
+		if(maxset[i])
+		{
+			out.push_back(refChans[i]);
+			std::cout << refChans[i] << " ";
+		}
+	}
+	std::cout << std::endl;
+	return out;
+}
+
 void SettingsGalya()
 {
 	AUT_SETS.setAutosMask(0
