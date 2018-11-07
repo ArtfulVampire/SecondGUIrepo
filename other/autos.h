@@ -38,7 +38,7 @@ inline std::vector<feature> getFeatures(int in)
 }
 const std::vector<feature> allFeatures{getFeatures(allFeaturesInt)};
 
-enum class outputStyle {Line, Table};
+enum class outputStyle {Line, Column, Table};
 enum class outputSeq {ByChans, ByFilters};
 enum class initialCut {first30, second30, first60, none};
 using filterFreqs = std::pair<double, double>;
@@ -81,6 +81,8 @@ const std::unordered_map<filterEnumType, filterFreqs> filtFreqs
 };
 std::vector<filterFreqs> makeFilterVector(double start, double finish, double width);
 
+#define XENIA_AVERAGE 1
+
 /// Singleton
 class AutosSettings
 {
@@ -91,24 +93,38 @@ public:
 		return pew;
 	}
 
-	void setOutputStyle(outputStyle in)			{ this->outStyle = in; }
 	auto getOutputStyle() const					{ return this->outStyle; }
+	void setOutputStyle(outputStyle in)			{ this->outStyle = in; }
 
-	void setOutputSequence(outputSeq in)		{ this->outSeq = in; }
 	auto getOutputSequence() const				{ return this->outSeq; }
+	void setOutputSequence(outputSeq in)		{ this->outSeq = in; }
 
-	void setInitialCut(initialCut in)			{ this->initCut = in; }
 	auto getInitialCut() const					{ return this->initCut; }
+	void setInitialCut(initialCut in)			{ this->initCut = in; }
 
-	void setMarkers(const std::vector<QString> & in){ this->usedMarkers = in; }
 	auto getMarkers() const						{ return this->usedMarkers; }
+	void setMarkers(const std::vector<QString> & in){ this->usedMarkers = in; }
 
-	void setAutosMask(int in)					{ this->autosMask = in; }
 	auto getAutosMask() const					{ return this->autosMask; }
+	void setAutosMask(int in)					{ this->autosMask = in; }
 	std::vector<feature> getAutosMaskArray() const;
 
-	void setChansProc(const std::vector<QString> & in){ this->channelsToProcess = in; }
 	auto getChansProc() const					{ return this->channelsToProcess; }
+	void setChansProc(const std::vector<QString> & in) { this->channelsToProcess = in; }
+
+	auto getChansGroups() const					{ return this->channelsGroups; }
+	void setChansGroups(const std::vector< std::pair<std::vector<int>, QString> > & in)
+	{ this->channelsGroups = in; }
+
+	std::vector<QString> getChansGroupsNames() const
+	{
+		std::vector<QString> res{};
+		for(const auto & in : this->channelsGroups)
+		{
+			res.push_back(in.second);
+		}
+		return res;
+	}
 
 	void setFeatureFilter(feature in, const std::vector<filterFreqs> & f)
 	{
@@ -145,6 +161,7 @@ private:
 private:
 	std::unordered_map<featureEnumType, std::vector<filterFreqs>> filtersSets;
 	std::vector<QString> channelsToProcess{};
+	std::vector< std::pair<std::vector<int>, QString> > channelsGroups{}; /// group, name
 	std::vector<QString> usedMarkers{};
 
 	initialCut initCut{initialCut::none};
@@ -156,6 +173,8 @@ private:
 
 #define AUT_SETS autos::AutosSettings::inst()
 
+matrix XeniaAverage(const matrix & res);
+std::vector<double> XeniaAverage(const std::vector<double> & res);
 
 /// features
 void countFFT(const matrix & inData,
@@ -252,7 +271,7 @@ void ProcessByFolders(const QString & inPath,
 					  const std::vector<QString> & channs,
 					  const std::vector<QString> & markers);
 void ProcessByGroups(const QString & inPath,
-						const QString & outPath,
+					 const QString & outPath,
 						const std::vector<QString> & channs);
 void ProcessAllInOneFolder(const QString & inPath,
 						   const QString & outPath,

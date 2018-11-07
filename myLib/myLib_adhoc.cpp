@@ -236,6 +236,44 @@ void TablingXenia(const QString & outPath)
 	}
 }
 
+/// one more Xenia special tabling
+void TablingXeniaWithAverage(const QString & inPath,
+							 const QString & outPath,
+							 const QString & featName,
+							 const QString & num)
+{
+	/// read guys_finalest.txt to guys
+	std::vector<QString> guys{};
+	QFile fil("/media/Files/Data/Xenia/guys_finalest.txt");
+	fil.open(QIODevice::ReadOnly);
+	while(1)
+	{
+		QString guy = fil.readLine();
+		guy.chop(1); /// chop \n
+		if(guy.isEmpty()) { break; }
+		guys.push_back(guy);
+	}
+	fil.close();
+
+
+	std::vector<QString> filesToVertCat{};
+	for(const QString & mark : AUT_SETS.getMarkers())
+	{
+		for(const QString & guy : guys)
+		{
+			/// each file is supposed to consist of numOfChannels rows
+			filesToVertCat.push_back(
+						guy
+						+ mark
+						+ "_" + featName
+						+ ".txt");
+		}
+	}
+	myLib::concatFilesVert(inPath,
+						   filesToVertCat,
+						   outPath + "/table_" + featName + "_" + num + ".txt");
+}
+
 void TablingUsual(const QString & workPath, const QString & outPath)
 {
 	auto groups = QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
@@ -448,13 +486,105 @@ void SettingsXenia()
 	AUT_SETS.setMarkers(subj::marksLists::tbiMarkers);
 }
 
+void XeniaWithAverage(const QString & workPath)
+{
+
+	AUT_SETS.setOutputStyle(autos::outputStyle::Column);
+	AUT_SETS.setOutputSequence(autos::outputSeq::ByChans);
+	AUT_SETS.setInitialCut(autos::initialCut::first60);
+	AUT_SETS.setMarkers(subj::marksLists::tbiMarkers);
+	AUT_SETS.setChansProc(coords::lbl19);
+
+	AUT_SETS.setAutosMask(0
+						  | autos::feature::fft
+						  | autos::feature::Hilbert
+						  | autos::feature::fracDim
+						  | autos::feature::alphaPeak
+						  );
+
+	/// CHECK!
+	AUT_SETS.setFeatureFilter(autos::feature::fft, {{1, 4}, {4, 8}, {8, 13}, {14, 20}});
+	AUT_SETS.setFeatureFilter(autos::feature::Hilbert, {{1, 4}, {4, 8}, {8, 13}, {14, 20}});
+	AUT_SETS.setFeatureFilter(autos::feature::fracDim, {{1, 5}, {3, 8}, {8, 13}, {14, 20}});
+
+	using oneGroupType = std::pair<std::vector<int>, QString>;
+	using chanGroupType = std::vector<oneGroupType>;
+
+	/// Fp1=0 Fp2=1
+	/// F7=2 F3=3 Fz=4 F4=5 F8=6
+	/// T3=7 C3=8 Cz=9 C4=10 T4=11
+	/// T5=12 P3=13 Pz=14 P4=15 T6=16
+	/// O1=17 O2=18
+	const std::vector<chanGroupType> chanGroups
+	{
+		{
+			{{2, 3, 7, 8, 12, 13, 17}, "left"},
+			{{5, 6, 10, 11, 15, 16, 18}, "right"},
+		},
+
+		{
+			{{4, 9}, "FCz"},
+			{{9, 14}, "CPz"},
+			{{3, 5}, "F34"},
+			{{2, 6}, "F78"},
+			{{8, 10}, "C34"},
+			{{7, 11}, "T34"},
+			{{12, 16}, "T56"},
+			{{13, 15}, "P34"},
+			{{17, 18}, "O12"},
+		},
+
+		{
+//			{{0}, "Fp1"},	{{1}, "Fp2"},
+			{{3}, "F3"},	{{5}, "F4"},
+			{{2}, "F7"},	{{6}, "F8"},
+//			{{4}, "Fz"},
+			{{8}, "C3"},	{{10}, "C4"},
+			{{7}, "T3"},	{{11}, "T4"},
+			{{12}, "T5"},	{{16}, "T6"},
+//			{{9}, "Cz"},
+			{{13}, "P3"},	{{15}, "P4"},
+//			{{14}, "Pz"},
+			{{17}, "O1"},	{{18}, "O2"},
+		},
+	};
+
+	/// for each feature
+
+
+	/// each type of averaging
+	for(int i = 0 ; i < chanGroups.size(); ++i)
+	{
+		AUT_SETS.setChansGroups(chanGroups[i]);
+
+		myLib::cleanDir(workPath + "_res");
+		autos::ProcessByGroups(workPath,
+							   workPath + "_res",
+							   AUT_SETS.getChansProc());
+
+		for(auto feat : AUT_SETS.getAutosMaskArray())
+		{
+			autos::makeLabelsFile(AUT_SETS.getChansGroupsNames(),
+								  workPath + "/labels_" + autos::featToStr(feat) + "_" + nm(i) + ".txt",
+								  AUT_SETS.getMarkers(),
+								  "\r\n");
+
+			myLib::TablingXeniaWithAverage(workPath + "_res",
+										   workPath,
+										   autos::featToStr(feat),
+										   nm(i));
+		}
+	}
+}
+
+
 void XeniaProcessing(const QString & workPath)
 {
 	SettingsXenia();
 #if 01
 	/// processing itself
 	autos::ProcessByGroups(workPath,
-						   workPath + "_res",
+						   QString{},
 						   AUT_SETS.getChansProc());
 	autos::makeLabelsFile(AUT_SETS.getChansProc(),
 						  workPath + "/labels.txt",
@@ -467,6 +597,7 @@ void XeniaProcessing(const QString & workPath)
 		/// special Xenia tabling, aka finalest
 		TablingXenia(workPath + "_res");
 	}
+	/// Column is way too special
 	else /// if(AUT_SETS.getOutputStyle() == autos::outputStyle::Line)
 	{
 		/// usual, like for Galya, aka Final

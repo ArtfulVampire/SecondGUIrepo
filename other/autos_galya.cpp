@@ -181,6 +181,44 @@ int getFileLength(int in)
 }
 
 
+std::vector<double> XeniaAverage(const std::vector<double> & res) /// alpha peak
+{
+#if XENIA_AVERAGE
+	std::vector<double> resNew(AUT_SETS.getChansGroups().size());
+	for(int i = 0; i < AUT_SETS.getChansGroups().size(); ++i)
+	{
+		auto group = AUT_SETS.getChansGroups()[i];
+		for(auto ch : group.first)
+		{
+			resNew[i] += res[ch];
+		}
+		resNew[i] /= group.first.size();
+	}
+	return resNew;
+#else
+	return res;
+#endif
+}
+
+matrix XeniaAverage(const matrix & res)
+{
+#if XENIA_AVERAGE
+	matrix resNew(AUT_SETS.getChansGroups().size(), res.cols(), 0.);
+	for(int i = 0; i < AUT_SETS.getChansGroups().size(); ++i)
+	{
+		auto group = AUT_SETS.getChansGroups()[i];
+		for(auto ch : group.first)
+		{
+			resNew[i] += res[ch];
+		}
+		resNew[i] /= group.first.size();
+	}
+	return resNew;
+#else
+	return res;
+#endif
+}
+
 void countFFT(const matrix & inData,
 			  double srate,
 			  std::ostream & outStr)
@@ -202,9 +240,12 @@ void countFFT(const matrix & inData,
 										 AUT_SETS.getFilter(feature::fft));
 
 	}
+	res = XeniaAverage(res);
 
 	/// output part
 	QString sep{""};
+	QString sep1{"\t"};
+	if(AUT_SETS.getOutputStyle() == outputStyle::Column) { sep1 = "\r\n"; }
 	if(AUT_SETS.getOutputStyle() == outputStyle::Table) { sep = "\r\n"; }
 	switch(AUT_SETS.getOutputSequence())
 	{
@@ -214,7 +255,7 @@ void countFFT(const matrix & inData,
 		{
 			for(int i = 0; i < res.rows(); ++i) /// chans
 			{
-				outStr << res[i][j] << "\t";
+				outStr << res[i][j] << sep1;
 			}
 			outStr << sep;
 		}
@@ -226,7 +267,7 @@ void countFFT(const matrix & inData,
 		{
 			for(int j = 0; j < res.cols(); ++j) /// freqs
 			{
-				outStr << res[i][j] << "\t";
+				outStr << res[i][j] << sep1;
 			}
 			outStr << sep;
 		}
@@ -257,9 +298,13 @@ void countLogFFT(const matrix & inData,
 	}
 	res = res.apply(static_cast<double(*)(double)>(std::log10));
 
+	res = XeniaAverage(res);
+
 
 	/// output part
 	QString sep{""};
+	QString sep1{"\t"};
+	if(AUT_SETS.getOutputStyle() == outputStyle::Column) { sep1 = "\r\n"; }
 	if(AUT_SETS.getOutputStyle() == outputStyle::Table) { sep = "\r\n"; }
 	switch(AUT_SETS.getOutputSequence())
 	{
@@ -269,7 +314,7 @@ void countLogFFT(const matrix & inData,
 		{
 			for(int i = 0; i < res.rows(); ++i) /// chans
 			{
-				outStr << res[i][j] << "\t";
+				outStr << res[i][j] << sep1;
 			}
 			outStr << sep;
 		}
@@ -281,7 +326,7 @@ void countLogFFT(const matrix & inData,
 		{
 			for(int j = 0; j < res.cols(); ++j) /// freqs
 			{
-				outStr << res[i][j] << "\t";
+				outStr << res[i][j] << sep1;
 			}
 			outStr << sep;
 		}
@@ -309,8 +354,13 @@ void countAlphaPeak(const matrix & inData,
 										   inData.cols(),
 										   srate));
 	}
+
+	res = XeniaAverage(res);
+
 	/// output part
 	QString sep{""};
+	QString sep1{"\t"};
+	if(AUT_SETS.getOutputStyle() == outputStyle::Column) { sep1 = "\r\n"; }
 	if(AUT_SETS.getOutputStyle() == outputStyle::Table) { sep = "\r\n"; }
 
 	switch(AUT_SETS.getOutputSequence())
@@ -319,7 +369,7 @@ void countAlphaPeak(const matrix & inData,
 	{
 		for(int i = 0; i < res.size(); ++i) /// chans
 		{
-			outStr << res[i] << "\t";
+			outStr << res[i] << sep1;
 		}
 		outStr << sep;
 		break;
@@ -328,7 +378,7 @@ void countAlphaPeak(const matrix & inData,
 	{
 		for(int i = 0; i < res.size(); ++i) /// chans
 		{
-			outStr << res[i] << "\t";
+			outStr << res[i] << sep1;
 			outStr << sep;
 		}
 		break;
@@ -359,6 +409,8 @@ void countFracDim(const matrix & inData,
 
 	/// output part
 	QString sep{""};
+	QString sep1{"\t"};
+	if(AUT_SETS.getOutputStyle() == outputStyle::Column) { sep1 = "\r\n"; }
 	if(AUT_SETS.getOutputStyle() == outputStyle::Table) { sep = "\r\n"; }
 	switch(AUT_SETS.getOutputSequence())
 	{
@@ -368,7 +420,7 @@ void countFracDim(const matrix & inData,
 		{
 			for(int i = 0; i < res.rows(); ++i) /// chans
 			{
-				outStr << res[i][j] << "\t";
+				outStr << res[i][j] << sep1;
 			}
 			outStr << sep;
 		}
@@ -380,7 +432,7 @@ void countFracDim(const matrix & inData,
 		{
 			for(int j = 0; j < res.cols(); ++j) /// filters
 			{
-				outStr << res[i][j] << "\t";
+				outStr << res[i][j] << sep1;
 			}
 			outStr << sep;
 		}
@@ -437,6 +489,8 @@ void countHilbert(const matrix & inData,
 
 	/// output part
 	QString sep{""};
+	QString sep1{"\t"};
+	if(AUT_SETS.getOutputStyle() == outputStyle::Column) { sep1 = "\r\n"; }
 	if(AUT_SETS.getOutputStyle() == outputStyle::Table) { sep = "\r\n"; }
 	switch(AUT_SETS.getOutputSequence())
 	{
@@ -448,7 +502,7 @@ void countHilbert(const matrix & inData,
 			{
 				for(int i = 0; i < resRows; ++i) /// chans
 				{
-					outStr << res[numF][i][j] << "\t";
+					outStr << res[numF][i][j] << sep1;
 				}
 				outStr << sep;
 			}
@@ -463,7 +517,7 @@ void countHilbert(const matrix & inData,
 			{
 				for(int j = 0; j < resCols; ++j) /// filters
 				{
-					outStr << res[numF][i][j] << "\t";
+					outStr << res[numF][i][j] << sep1;
 				}
 				outStr << sep;
 			}
@@ -510,6 +564,8 @@ void countWavelet(const matrix & inData,
 	}
 	/// output part
 	QString sep{""};
+	QString sep1{"\t"};
+	if(AUT_SETS.getOutputStyle() == outputStyle::Column) { sep1 = "\r\n"; }
 	if(AUT_SETS.getOutputStyle() == outputStyle::Table) { sep = "\r\n"; }
 	switch(AUT_SETS.getOutputSequence())
 	{
@@ -521,7 +577,7 @@ void countWavelet(const matrix & inData,
 			{
 				for(int i = 0; i < resRows; ++i) /// chans
 				{
-					outStr << res[func][i][j] << "\t";
+					outStr << res[func][i][j] << sep1;
 				}
 				outStr << sep;
 			}
@@ -536,7 +592,7 @@ void countWavelet(const matrix & inData,
 			{
 				for(int j = 0; j < resCols; ++j) /// freqs
 				{
-					outStr << res[func][i][j] << "\t";
+					outStr << res[func][i][j] << sep1;
 				}
 				outStr << sep;
 			}
@@ -595,6 +651,8 @@ void countHjorth(const matrix & inData,
 
 	/// output part
 	QString sep{""};
+	QString sep1{"\t"};
+	if(AUT_SETS.getOutputStyle() == outputStyle::Column) { sep1 = "\r\n"; }
 	if(AUT_SETS.getOutputStyle() == outputStyle::Table) { sep = "\r\n"; }
 	switch(AUT_SETS.getOutputSequence())
 	{
@@ -606,7 +664,7 @@ void countHjorth(const matrix & inData,
 			{
 				for(int i = 0; i < resRows; ++i) /// chans
 				{
-					outStr << res[numF][i][j] << "\t";
+					outStr << res[numF][i][j] << sep1;
 				}
 				outStr << sep;
 			}
@@ -621,7 +679,7 @@ void countHjorth(const matrix & inData,
 			{
 				for(int j = 0; j < resCols; ++j) /// filters
 				{
-					outStr << res[numF][i][j] << "\t";
+					outStr << res[numF][i][j] << sep1;
 				}
 				outStr << sep;
 			}
@@ -817,8 +875,7 @@ void ProcessByGroups(const QString & inPath,
 					 const QString & outPath,
 					 const std::vector<QString> & channs)
 {
-	if(!QDir(outPath).exists()) { QDir().mkpath(outPath); }
-	myLib::cleanDir(outPath);
+	if(!outPath.isEmpty() && !QDir(outPath).exists()) { QDir().mkdir(outPath); }
 
 	for(const QString & group : QDir(inPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
 	{
@@ -836,11 +893,18 @@ void ProcessByGroups(const QString & inPath,
 				continue;
 			}
 
-			const QString guyOutPath = guyPath + "/out";
-			if(!QDir(guyOutPath).exists()) { QDir().mkpath(guyOutPath); }
+			QString guyOutPath{};
+			if(outPath.isEmpty())
+			{
+				guyOutPath = guyPath + "/out";
+				if(!QDir(guyOutPath).exists()) { QDir().mkpath(guyOutPath); }
+				myLib::cleanDir(guyOutPath);
+			}
+			else
+			{
+				guyOutPath = outPath;
+			}
 
-			/// clear guyOutPath
-			myLib::cleanDir(guyOutPath);
 			autos::calculateFeatures(guyPath, channs, guyOutPath);
 		}
 	}

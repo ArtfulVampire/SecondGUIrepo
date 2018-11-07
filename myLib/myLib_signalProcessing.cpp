@@ -14,6 +14,9 @@ using namespace myOut;
 namespace butter
 {
 
+const int ORDER_band = 48;
+const int ORDER_cut = 32;
+
 std::valarray<double> butterworthBandStop(const std::valarray<double> & in,
 										  double fLow,
 										  double fHigh,

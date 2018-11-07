@@ -271,8 +271,8 @@ std::valarray<double> refilterButter(const std::valarray<double> & in,
 
 namespace butter
 {
-constexpr int ORDER_band = 48;
-constexpr int ORDER_cut = 16;
+extern const int ORDER_band;
+extern const int ORDER_cut;
 
 
 /// one sided

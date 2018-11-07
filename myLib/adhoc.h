@@ -33,6 +33,7 @@ std::vector<QString> checkChannels(const QString & inPath, const std::vector<QSt
 void XeniaPretable();
 void SettingsXenia();
 void XeniaProcessing(const QString & workPath);
+void XeniaWithAverage(const QString & workPath);
 void XeniaFinal();
 
 
