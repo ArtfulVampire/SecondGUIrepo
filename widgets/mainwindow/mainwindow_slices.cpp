@@ -18,7 +18,32 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	QTime myTime;
 	myTime.start();
 
-	if(ui->matiCheckBox->isChecked())
+	switch(DEFS.getUser())
+	{
+	case username::ElenaC:
+	{
+		sliceElena();
+		break;
+	}
+	case username::MichaelA:
+	{
+		/// remake using myLib::sliceData ??
+		sliceOneByOne();
+		sliceOneByOneNew(); /// by number after 241/247 for early research before 2015
+		break;
+	}
+	case username::MichaelB:
+	{
+#if 0
+		/// old anagram tasks
+		sliceBak(1, 60, "241");
+		sliceBak(61, 120, "247");
+		sliceBak(121, 180, "241");
+		sliceBak(181, 240, "247");
+#endif
+		break;
+	}
+	case username::Mati:
 	{
 		/// almost equal time, should use sessionEdges
 #if 1
@@ -27,20 +52,22 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 #else
 		sliceMatiSimple();
 #endif
+		break;
 	}
-	else /// not MATI
+	case username::IITP:
 	{
 		if(ui->windsButton->isChecked())
 		{
-			if(DEFS.getUser() == username::IITP)
-			{
-				sliceJustWinds();
-			}
-			else
-			{
-				sliceWinds();
-			}
+			sliceJustWinds();
 		}
+		else
+		{
+			sliceWinds();
+		}
+		break;
+	}
+	case username::PolinaM:
+	{
 #if 0
 		/// Polina
 		else if(ui->pauseRadioButton->isChecked())
@@ -49,29 +76,12 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 			pausePieces(a);
 		}
 #endif
-		else if(ui->realsButton->isChecked())
-		{
-			if(ui->reduceChannelsComboBox->currentText().contains("MichaelBak")) /// generality
-			{
-				sliceBak(1, 60, "241");
-				sliceBak(61, 120, "247");
-				sliceBak(121, 180, "241");
-				sliceBak(181, 240, "247");
-			}
-			else
-			{
-				if(ui->elenaSliceCheckBox->isChecked())
-				{
-					sliceElena();
-				}
-				else
-				{
-					/// remake using myLib::sliceData ??
-					sliceOneByOne();
-					sliceOneByOneNew(); /// by number after 241/247 for early research before 2015
-				}
-			}
-		}
+		break;
+	}
+	default:
+	{
+		break;
+	}
 	}
 	ui->progressBar->setValue(0);
 	outStream << "sliceAll: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;

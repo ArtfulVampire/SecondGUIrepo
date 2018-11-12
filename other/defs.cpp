@@ -54,6 +54,7 @@ void defs::setUser(username in)
 	case username::MichaelB:
 	{
 		this->dir->cd("c:/EEG"); /// check
+		fileMarkers = QStringList{"_252", "_251", "_253"};
 		break;
 	}
 	case username::OlgaK:

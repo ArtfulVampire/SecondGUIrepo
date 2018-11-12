@@ -7,9 +7,10 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
-    /// set your user
-//	DEFS.setUser(username::MichaelA);
-	DEFS.setUser(username::ElenaC);
+	/// set your user
+	DEFS.setUser(username::MichaelB);
+	if(argc > 1) { DEFS.setDir(QString(argv[1])); }
+//	DEFS.setDir("c:\EEG");
 
 	MainWindow w;
 	w.show();
