@@ -238,7 +238,7 @@ void Classifier::leaveOneOutClassification(std::ostream & os)
 	{
 		if((i + 1) % 10 == 0)
 		{
-//			os << i + 1 << " "; os.flush();
+			os << i + 1 << " "; os.flush();
 		}
 
 		learnIndices.clear();
@@ -252,6 +252,7 @@ void Classifier::leaveOneOutClassification(std::ostream & os)
 		this->learn(learnIndices);
 		this->test(static_cast<uint>(i));
 	}
+	os << std::endl;
 }
 
 

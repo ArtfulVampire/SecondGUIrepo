@@ -40,7 +40,11 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 		sliceBak(61, 120, "247");
 		sliceBak(121, 180, "241");
 		sliceBak(181, 240, "247");
+#elif 1
+		/// new "categorial"
+		sliceBak2017();
 #endif
+
 		break;
 	}
 	case username::Mati:
@@ -975,6 +979,61 @@ void MainWindow::sliceBak(int marker1, int marker2, const QString & marker)
             h = 0;
         }
     }
+}
+
+void MainWindow::sliceBak2017()
+{
+	QString marker = "000";
+
+	const edfFile & fil = globalEdf;
+
+	int start = -1;
+	int type = -1; /// 0 - k, 1 - l, 2 - n
+	int number = -1;
+
+	// 242, 241, (1-150), (251||252||253) ]
+	/// remake fil.getMarkers()
+	for(const auto & marks : fil.getMarkers())
+	{
+		if(marks.second <= 150) //all not interesting markers
+		{
+			/// start stimulus
+			type = int(marks.second - 1) / 50;
+			number = marks.second;
+			start = marks.first;
+			continue;
+		}
+		else if(marks.second == 251 || marks.second == 252 || marks.second == 253)
+		{
+			/// answer, finish stim
+			int ans = marks.second;
+			QString typStr{};
+			QString correct = "wrong";
+			switch(type)
+			{
+			case 0: { typStr = "k"; if(ans == 251) { correct = "right"; } break; }
+			case 1: { typStr = "l"; if(ans == 253) { correct = "right"; } break; }
+			case 2: { typStr = "n"; if(ans == 252) { correct = "right"; } break; }
+			default: { typStr = ""; break; }
+			}
+			QString helpString = DEFS.getDirPath()
+								 + "/Reals/" + fil.getExpName()
+								 + "_" + nm(number)
+								 + "_" + typStr
+								 + "_" + nm(ans)
+								 + "_" + correct;
+
+			fil.saveSubsection(start, marks.first, helpString);
+		}
+		ui->progressBar->setValue(marks.first * 100. / fil.getDataLen());
+
+		qApp->processEvents();
+		if(stopFlag)
+		{
+			stopFlag = 0;
+			break;
+		}
+	}
 }
 
 

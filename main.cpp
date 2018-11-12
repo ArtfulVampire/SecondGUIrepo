@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 	/// set your user
 	DEFS.setUser(username::MichaelB);
 	if(argc > 1) { DEFS.setDir(QString(argv[1])); }
-//	DEFS.setDir("c:\EEG");
+//	DEFS.setDir("c:/EEG");
 
 	MainWindow w;
 	w.show();

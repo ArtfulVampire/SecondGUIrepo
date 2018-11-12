@@ -74,6 +74,7 @@ public:
     void sliceMatiSimple();
 
 	void sliceBak(int marker1, int marker2, const QString & marker);
+	void sliceBak2017();
     void sliceOneByOne();
 	void sliceOneByOneNew();
 	void sliceElena();
