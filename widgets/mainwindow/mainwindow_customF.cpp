@@ -29,8 +29,20 @@ void MainWindow::customFunc()
 //	myLib::checkChannels("/media/Files/Data/Galya/all_buben", coords::lbl19);
 //	exit(0);
 
-//	myLib::XeniaWithAverage("/media/Files/Data/Xenia/FINAL");
+//	const QString tmp = "/media/Files/Data/Xenia/FINAL";
+//	for(const auto & in : QDir(tmp).entryList({"table_*.txt"}))
+//	{
+//		QString lab = in;
+//		lab.replace("table_", "labels_");
+//		if(myLib::numLines(tmp + "/" + in) != myLib::numLines(tmp + "/" + lab))
+//		{
+//			std::cout << in << std::endl;
+//		}
+//	}
 //	exit(0);
+
+	myLib::XeniaWithAverage("/media/Files/Data/Xenia/FINAL");
+	exit(0);
 #if 0
 	edfFile fl("/media/Files/Data/AAX/AAX_final.edf");
 	std::valarray<double> sig = smLib::contSubsec(fl.getData(10), 0, 2000); /// 10 sec

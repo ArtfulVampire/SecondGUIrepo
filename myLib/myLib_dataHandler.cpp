@@ -364,6 +364,15 @@ matrix readMatrixFileRaw(const QString & filePath)
 	return outData;
 }
 
+int numLines(const QString & filePath)
+{
+	QFile a(filePath); a.open(QIODevice::ReadOnly);
+	int res{0};
+	while(a.readLine().size() > 0) { ++res; }
+	a.close();
+	return res;
+}
+
 matrix readMatrixFile(const QString & filePath)
 {
 	matrix res;

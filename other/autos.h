@@ -13,7 +13,8 @@
 namespace autos
 {
 /// magic const 7
-enum feature {
+enum feature : int
+{
 	fft			= 0x01,	/// std::pow(2, 0);
 	alphaPeak	= 0x02,	/// std::pow(2, 1);
 	fracDim		= 0x04,	/// std::pow(2, 2);
@@ -161,7 +162,7 @@ private:
 private:
 	std::unordered_map<featureEnumType, std::vector<filterFreqs>> filtersSets;
 	std::vector<QString> channelsToProcess{};
-	std::vector< std::pair<std::vector<int>, QString> > channelsGroups{}; /// group, name
+	std::vector< std::pair<std::vector<int>, QString> > channelsGroups{}; /// group, name - Xenia only
 	std::vector<QString> usedMarkers{};
 
 	initialCut initCut{initialCut::none};
@@ -254,7 +255,16 @@ void rereferenceFolder(const QString & procDirPath,
 void makeLabelsFile(const std::vector<QString> & chans,
 					const QString & outFilePath,
 					const std::vector<QString> & usedMarkers,
+					int Mask,
 					const QString & sep);
+
+/// 13-Nov-18
+void makeLabelsXeniaWithAverage(const std::vector<QString> & chans,
+								int guyNum,
+								const QString & outFilePath,
+								const std::vector<QString> & usedMarkers,
+								feature feat,
+								const QString & sep);
 
 
 /// main function
