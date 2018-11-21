@@ -479,7 +479,7 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 			if(i == 0) { firstStart = fragStart; }
 
 			marks.push_back({(fragStart - firstStart) * srate / 1000,
-							fragName.split("_", QString::SkipEmptyParts).back().toInt()});
+							 fragName.split("_", QString::SkipEmptyParts).back().toInt()});
 
 			matrix dt{};
 			dt.reserve(fragBins);
@@ -496,12 +496,9 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 			}
 			inStr.readLine(); /// empty line
 
-
 			dt.transpose();
 			if(i == 0)	{ allData = dt; }
 			else		{ allData.horzCat(dt); }
-
-//			std::cout << allData.cols() << std::endl;
 		}
 
 		/// markers

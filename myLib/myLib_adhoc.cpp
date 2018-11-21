@@ -908,7 +908,7 @@ void GalyaProcessing(const QString & workPath)
 						  "\t");
 #endif
 
-#if 0
+#if 01
 	/// rhythm adoption
 	for(const QString & subdir : QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
 	{

@@ -721,44 +721,93 @@ double countRhythmAdoption(const std::valarray<double> & sigRest,
 
 }
 
+std::valarray<double> countRhythmAdoption(const matrix & specRest,
+										  const matrix & specAdop,
+										  int fftLen,
+										  double freq)
+{
+	const int lowFr = smLib::fftLimit(freq - 0.5, DEFS.getFreq(), fftLen);
+	const int higFr = smLib::fftLimit(freq + 0.5, DEFS.getFreq(), fftLen) + 1;
+	std::valarray<double> res(specRest.rows());
+
+	for(int i = 0; i < res.size(); ++i)
+	{
+		res[i] = std::accumulate(std::begin(specAdop[i]) + lowFr,
+								 std::begin(specAdop[i]) + higFr,
+								 0.)
+				 /
+				 std::accumulate(std::begin(specRest[i]) + lowFr,
+								 std::begin(specRest[i]) + higFr,
+								 0.)
+				 ;
+	}
+	return res;
+}
+
 
 
 
 void rhythmAdoption(const QString & filesPath,
 					const QString & restMark,
-					const QString & stimType)
+					const QString & stimType,
+					const std::vector<int> & freqs)
 {
-	const int numChans = 19;
-	const std::vector<int> freqs{2, 4, 8, 16};
-	matrix res(freqs.size(), numChans);
+	const int numChans = 19; /// remake with channels names std::vector<QString>
 
+	const double lefFre = 3.5; /// left limit for drawing
+	const double rigFre = 12.; /// right limit for drawing
+
+	const QString outDir = filesPath.left(filesPath.lastIndexOf('/'));
 	const QString restFileName = QDir(filesPath).entryList({"*" + restMark + "*"})[0];
 	const QString ExpName = restFileName.left(restFileName.indexOf(restMark));
 
-	edfFile restEdf;
-	restEdf.readEdfFile(filesPath + "/" + restFileName);
-	const matrix restData = restEdf.getData();
+	matrix res(freqs.size(), numChans);
+	edfFile restEdf(filesPath + "/" + restFileName);
+	const matrix restData = restEdf.getData().subRows(numChans);
+	const int fftLen = smLib::fftL(restData.cols());
+
+	const int lefLim = smLib::fftLimit(lefFre, DEFS.getFreq(), fftLen);
+	const int rigLim = smLib::fftLimit(rigFre, DEFS.getFreq(), fftLen) + 1;
+
+	const matrix specRest = myLib::countSpectre(restData, fftLen, 0); // spectre 0-35 Hz
 
 	for(int j = 0; j < freqs.size(); ++j)
 	{
-		edfFile currFile;
-		currFile.readEdfFile(filesPath + "/"
-							 + ExpName + "_" + nm(freqs[j]) + stimType + ".edf");
-
-		for(int i = 0; i < numChans; ++i)
+		const QString currPath = filesPath + "/"
+								 + ExpName + "_" + nm(freqs[j])
+								 + stimType + ".edf";
+		if(!QFile::exists(currPath))
 		{
-			res[j][i] = countRhythmAdoption(restData[i],
-											currFile.getData(i),
-											freqs[j]);
+			continue;
+		}
+		edfFile currFile(currPath);
+
+		const matrix specAdop
+				= myLib::countSpectre(currFile.getData().subRows(numChans), fftLen, 0);
+
+		res[j] = countRhythmAdoption(specRest.subCols(rigLim),
+									 specAdop.subCols(rigLim),
+									 fftLen,
+									 freqs[j]);
+
+		/// draw
+		{
+			const QString picPath = outDir + "/"
+									+ ExpName + "_" + nm(freqs[j])
+									+ stimType + ".png";
+			const auto specDiff = specAdop - specRest;
+
+			matrix drawData(3);
+			drawData[0] = specAdop.subCols(lefLim, rigLim).toValarByRows();
+			drawData[1] = specRest.subCols(lefLim, rigLim).toValarByRows();
+			drawData[2] = specDiff.subCols(lefLim, rigLim).toValarByRows();
+
+			myLib::drw::drawArrays(myLib::drw::drawTemplate(true, lefFre, rigFre),
+								   drawData).save(picPath, nullptr, 100);
 		}
 	}
 
-	QDir dr(filesPath);
-	dr.cdUp();
-	dr.mkdir("out");
-	dr.cd("out");
-
-	std::ofstream outFile((dr.absolutePath() + "/"
+	std::ofstream outFile((outDir + "/"
 						   + ExpName + "_" + stimType + ".txt").toStdString());
 	outFile.precision(3);
 	for(int i = 0; i < res.rows(); ++i)
@@ -772,15 +821,17 @@ void rhythmAdoptionGroup(const QString & groupPath,
 						 const QString & restMark,
 						 const QString & stimType)
 {
-	auto lst = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	auto guysList = QDir(groupPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+	QDir(groupPath).mkdir("out");
+	const std::vector<int> freqs{2, 4, 8, 16, 32};
 
-	for(const QString & guy : lst)
+	for(const QString & guy : guysList)
 	{
 		if(guy == "out") { continue; }
-
 		rhythmAdoption(groupPath + "/" + guy,
 					   restMark,
-					   stimType);
+					   stimType,
+					   freqs);
 	}
 
 	QString subdir = groupPath.mid(groupPath.lastIndexOf("/") + 1);

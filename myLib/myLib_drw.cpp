@@ -1353,6 +1353,7 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	a[5][3] = (a[5][2] + a[4][2] + a[4][3] + a[4][4] + a[4][5]) / 5. * c2;
 	a[5][5] = (a[5][4] + a[4][4] + a[4][5]) / 3. * c1;
 
+	/// lambda initialization (if maxAbs == 0)
 	const double minMagn = helpMatrix.minVal();
 	const double maxMagn = helpMatrix.maxVal();
 
@@ -1390,6 +1391,8 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 			   mapSize * 2. * std::sqrt(2.) / (dim - 1.) ) { continue; }
 
 			val = myLib::splineOutput(inX, inYv, dim, Av, Bv, y * scale);
+
+
 			if(maxAbs == 0.)
 			{
 				/// "private" limits
@@ -1400,7 +1403,6 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 			else
 			{
 				/// global limits
-				/// current variant
 #if 0
 				/// deep blue ~ -maxAbs, deep red ~ +maxAbs
 				drawArg = (val + maxAbs)
