@@ -10,6 +10,8 @@
 
 #include <bitset>
 
+#include <QTextStream>
+
 using namespace myOut;
 
 
@@ -141,7 +143,9 @@ edfFile::edfFile(const QString & edfPath, bool headerOnly)
 
 edfFile::edfFile(const QString & txtFilePath, inst which)
 {
-	if(which == inst::mati)
+	switch(which)
+	{
+	case inst::mati:
 	{
 
 		/// quant, time
@@ -257,8 +261,9 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 												)
 									 );
 		}
+		break;
 	}
-	else if(which == inst::iitp)
+	case inst::iitp:
 	{
 		std::vector<QString> iitpLabels{};
 		myLib::readIITPfile(txtFilePath, this->edfData, iitpLabels);
@@ -393,7 +398,145 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 
 
 		*this = this->reduceChannels(chanList);
+		break;
 	}
+	case inst::veget:
+	{
+		QFile in(txtFilePath);
+		in.open(QIODevice::ReadOnly);
+		QTextStream inStr(&in);
+		inStr.setCodec("Windows-1251");
+
+		auto readInt = [&inStr]()->int
+		{
+			int res{};
+			inStr >> res; inStr.readLine();
+			return res;
+		};
+
+		auto readStr = [&inStr]()->QString
+		{
+			QString res = inStr.readLine();
+			res = res.left(res.indexOf('<') - 1);
+			res.replace(" ", "_");
+			res = myLib::kyrToLatin(res);
+			return res;
+		};
+
+		/// file cap
+		inStr.readLine();			// // Research info
+		inStr.readLine();			// groupName <Group>
+		int numChan = readInt();	// numChan channels <Name>
+		int numTrack = readInt();	// numTrack <Number of tracks>
+		int numFrag = readInt();	// numFrag <Number of fragments> ???
+		inStr.readLine();			// empty line
+
+
+
+		/// read each track info
+		for(int i = 0; i < numTrack; ++i)
+		{
+			inStr.readLine();				// // Track info
+			QString chanName = readStr();	// chanName <Name of the channel>
+			inStr.readLine();				// track number <Track number>
+			QString trackType = readStr();	// trackType <Type of the track>
+			QString dim = readStr();		// dim <dimension>
+			int srate = readInt();			// srate <sampling rate, Hz>
+			inStr.readLine();				// empty string
+
+//			std::cout << srate << std::endl;
+
+			/// add to channels vector
+			this->channels.push_back(edfChannel(myLib::fitString(trackType, 16),
+												myLib::fitString(chanName, 80),
+												myLib::fitString(dim, 8),
+												4096,
+												-4096,
+												32767,
+												-32768,
+												myLib::fitString("", 80),
+												srate,
+												myLib::fitString("", 32)
+												)
+									 );
+		}
+
+		matrix allData(numTrack, 0);
+		std::vector<std::pair<int, int>> marks{}; /// time, marker
+
+		int firstStart{0};
+
+		/// read each fragment
+		for(int i = 0; i < numFrag; ++i)
+		{
+			inStr.readLine();				// // Fragment info
+			QString fragName = readStr();	// fragName <fragment name>
+			int fragStart = readInt();		// fragStart <Time of fragment start, ms>
+			inStr.readLine();				// fragLength <Length of fragment start, ms>
+			int fragBins = readInt();		// fragLength <Length of fragment start, bins>
+			inStr.readLine();				// time \t 0 \t 1... numTracks-1
+
+			if(i == 0) { firstStart = fragStart; }
+
+			marks.push_back({(fragStart - firstStart) * srate / 1000,
+							fragName.split("_", QString::SkipEmptyParts).back().toInt()});
+
+			matrix dt{};
+			dt.reserve(fragBins);
+			for(int j = 0; j < fragBins; ++j)
+			{
+				std::valarray<double> row(0., numTrack);
+				inStr >> row[0];
+				for(int k = 0; k < numTrack; ++k)
+				{
+					inStr >> row[k];
+				}
+				inStr.readLine(); // finish row
+				dt.push_back(std::move(row));
+			}
+			inStr.readLine(); /// empty line
+
+
+			dt.transpose();
+			if(i == 0)	{ allData = dt; }
+			else		{ allData.horzCat(dt); }
+
+//			std::cout << allData.cols() << std::endl;
+		}
+
+		/// markers
+		std::valarray<double> markers(0., allData.cols());
+		for(const auto & in : marks)
+		{
+			markers[in.first] = in.second;
+		}
+
+		 /////////////////////////////// magic consts for scale
+		allData[3] /= 100.;				////////////////
+		allData *= 10.;					////////////////
+
+		allData.push_back(markers);
+		this->channels.push_back(edfChannel(myLib::fitString("Markers", 16),
+											myLib::fitString("", 80),
+											myLib::fitString("", 8),
+											255,
+											0,
+											255,
+											0,
+											myLib::fitString("", 80),
+											this->srate,
+											myLib::fitString("", 32)
+											)
+								 );
+		this->edfData = allData;
+		this->adjustArraysByChannels();
+
+		in.close();
+		break;
+	}
+//	default: { /* never get here */ break; }
+	}
+	while(0){}
 }
 
 

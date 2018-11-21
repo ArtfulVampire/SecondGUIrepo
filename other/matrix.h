@@ -89,6 +89,7 @@ public:
 	matrix & pop_back();
 	matrix & push_back(const std::valarray<double> &in);
 	matrix & push_back(const std::vector<double> &in);
+	matrix & push_back(std::valarray<double> && in);
 
 	/// for compability with vector< std::vector<Type> >
 	void clear()				{ myData.clear(); }

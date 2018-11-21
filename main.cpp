@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 
 	/// set your user
-	DEFS.setUser(username::MichaelB);
+	DEFS.setUser(username::MichaelA);
 	if(argc > 1) { DEFS.setDir(QString(argv[1])); }
 //	DEFS.setDir("c:/EEG");
 
