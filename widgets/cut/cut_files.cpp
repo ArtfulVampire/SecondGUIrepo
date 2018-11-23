@@ -177,16 +177,17 @@ void Cut::concatSlot()
 {
 	const QString fil1 = QFileDialog::getOpenFileName(this,
 													  tr("Open first file"),
-													  DEFS.dirPath(),
+													  DEFS.getDirPath(),
 													  "*.edf");
 	if(fil1.isEmpty())
 	{
 		std::cout << "concatSlot: first file path is empty" << std::endl;
 		return;
 	}
+	DEFS.setDir(myLib::getDirPathLib(fil1));
 	const QString fil2 = QFileDialog::getOpenFileName(this,
 													  tr("Open second file"),
-													  DEFS.dirPath(),
+													  DEFS.getDirPath(),
 													  "*.edf");
 
 	if(fil2.isEmpty())

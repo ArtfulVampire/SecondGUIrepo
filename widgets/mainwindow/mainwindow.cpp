@@ -555,14 +555,17 @@ void MainWindow::drawHeadSlot()
 						 tr("Choose file"),
 						 DEFS.dirPath(),
 						 tr("*.txt"));
-	std::cout << inPath << std::endl;
 	if(inPath.isEmpty())
 	{
 		std::cout << "drawHead: filePath is empty" << std::endl;
 		return;
 	}
 	const auto dt = myLib::readFileInLineRaw(inPath);
-	std::cout << dt.size() << std::endl;
+	if(dt.size() != 19)
+	{
+		std::cout << "file size is NOT 19, try adding a space after the last number" << std::endl;
+		return;
+	}
 
 	inPath.replace(".txt", ".jpg");
 

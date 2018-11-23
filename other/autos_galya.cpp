@@ -6,6 +6,7 @@
 #include <iostream>
 #include <bits/ios_base.h>
 #include <functional>
+#include <unordered_map>
 
 #include <other/coords.h>
 #include <myLib/clustering.h>
@@ -734,12 +735,12 @@ std::valarray<double> countRhythmAdoption(const matrix & specRest,
 	{
 		res[i] = std::accumulate(std::begin(specAdop[i]) + lowFr,
 								 std::begin(specAdop[i]) + higFr,
-								 0.)
-				 /
-				 std::accumulate(std::begin(specRest[i]) + lowFr,
+								 0.);
+		auto a = std::accumulate(std::begin(specRest[i]) + lowFr,
 								 std::begin(specRest[i]) + higFr,
-								 0.)
-				 ;
+								 0.);
+		if(a == 0.)	{ res[i] = -1; }
+		else		{ res[i] /= a; }
 	}
 	return res;
 }
@@ -754,20 +755,23 @@ void rhythmAdoption(const QString & filesPath,
 {
 	const int numChans = 19; /// remake with channels names std::vector<QString>
 
-	const double lefFre = 3.5; /// left limit for drawing
-	const double rigFre = 12.; /// right limit for drawing
-
 	const QString outDir = filesPath.left(filesPath.lastIndexOf('/'));
 	const QString restFileName = QDir(filesPath).entryList({"*" + restMark + "*"})[0];
 	const QString ExpName = restFileName.left(restFileName.indexOf(restMark));
 
-	matrix res(freqs.size(), numChans);
+	matrix res(freqs.size(), numChans, -1);
 	edfFile restEdf(filesPath + "/" + restFileName);
 	const matrix restData = restEdf.getData().subRows(numChans);
 	const int fftLen = smLib::fftL(restData.cols());
 
-	const int lefLim = smLib::fftLimit(lefFre, DEFS.getFreq(), fftLen);
-	const int rigLim = smLib::fftLimit(rigFre, DEFS.getFreq(), fftLen) + 1;
+	const std::unordered_map<int, std::pair<double, double>> mp
+	{
+		{2,		{1., 13.}},
+		{4,		{1., 13.}},
+		{8,		{1., 13.}},
+		{16,	{6., 20.}},
+		{32,	{28., 36.}},
+	};
 
 	const matrix specRest = myLib::countSpectre(restData, fftLen, 0); // spectre 0-35 Hz
 
@@ -780,29 +784,55 @@ void rhythmAdoption(const QString & filesPath,
 		{
 			continue;
 		}
-		edfFile currFile(currPath);
 
+		edfFile currFile(currPath);
 		const matrix specAdop
 				= myLib::countSpectre(currFile.getData().subRows(numChans), fftLen, 0);
 
-		res[j] = countRhythmAdoption(specRest.subCols(rigLim),
-									 specAdop.subCols(rigLim),
+		res[j] = countRhythmAdoption(specRest,
+									 specAdop,
 									 fftLen,
 									 freqs[j]);
 
-		/// draw
+
+		/// draw part
 		{
-			const QString picPath = outDir + "/"
+			const QString picPath = outDir + "/out/"
 									+ ExpName + "_" + nm(freqs[j])
-									+ stimType + ".png";
+									+ stimType + ".jpg";
 			const auto specDiff = specAdop - specRest;
+
+			const int lefLim = smLib::fftLimit(mp.at(freqs[j]).first, DEFS.getFreq(), fftLen);
+			const int rigLim = smLib::fftLimit(mp.at(freqs[j]).second, DEFS.getFreq(), fftLen) + 1;
 
 			matrix drawData(3);
 			drawData[0] = specAdop.subCols(lefLim, rigLim).toValarByRows();
 			drawData[1] = specRest.subCols(lefLim, rigLim).toValarByRows();
 			drawData[2] = specDiff.subCols(lefLim, rigLim).toValarByRows();
 
-			myLib::drw::drawArrays(myLib::drw::drawTemplate(true, lefFre, rigFre),
+			myLib::drw::drawArrays(
+						myLib::drw::drawTemplate(true,
+												 mp.at(freqs[j]).first,
+												 mp.at(freqs[j]).second),
+								   drawData).save(picPath, nullptr, 100);
+		}
+
+		/// draw full
+		{
+			const QString picPath = outDir + "/out/"
+									+ ExpName + "_" + nm(freqs[j])
+									+ stimType + "_all.jpg";
+			const auto specDiff = specAdop - specRest;
+
+			const int lefLim = smLib::fftLimit(1., DEFS.getFreq(), fftLen);
+			const int rigLim = smLib::fftLimit(36., DEFS.getFreq(), fftLen) + 1;
+
+			matrix drawData(3);
+			drawData[0] = specAdop.subCols(lefLim, rigLim).toValarByRows();
+			drawData[1] = specRest.subCols(lefLim, rigLim).toValarByRows();
+			drawData[2] = specDiff.subCols(lefLim, rigLim).toValarByRows();
+
+			myLib::drw::drawArrays(myLib::drw::drawTemplate(true, 1., 36.),
 								   drawData).save(picPath, nullptr, 100);
 		}
 	}
@@ -836,7 +866,7 @@ void rhythmAdoptionGroup(const QString & groupPath,
 
 	QString subdir = groupPath.mid(groupPath.lastIndexOf("/") + 1);
 
-	autos::ArrangeFilesToTable(groupPath + "/out",
+	autos::ArrangeFilesToTable(groupPath,
 							   groupPath + "/out/all_" + subdir + "_" + stimType + ".txt",
 							   true,
 							   stimType);
