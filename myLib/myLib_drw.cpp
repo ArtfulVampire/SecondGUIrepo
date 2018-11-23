@@ -1275,9 +1275,9 @@ QPixmap drawColorScale(int range, ColorScale type, bool full)
 	return pic;
 }
 
-
 QPixmap drawOneMap(const std::valarray<double> & inData,
-				   double maxAbs,
+				   double minVal,
+				   double maxVal,
 				   const ColorScale & colorTheme,
 				   bool drawScale)
 {
@@ -1354,8 +1354,13 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	a[5][5] = (a[5][4] + a[4][4] + a[4][5]) / 3. * c1;
 
 	/// lambda initialization (if maxAbs == 0)
-	const double minMagn = helpMatrix.minVal();
-	const double maxMagn = helpMatrix.maxVal();
+	if(minVal == 0. && maxVal == 0.)
+	{
+		minVal = helpMatrix.minVal();
+		maxVal = helpMatrix.maxVal();
+	}
+	const double minMagn = minVal;
+	const double maxMagn = maxVal;
 
 	/// splines
 	matrix Ah(5, 6);
@@ -1392,8 +1397,13 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 
 			val = myLib::splineOutput(inX, inYv, dim, Av, Bv, y * scale);
 
+			/// minMagn ~ blue, maxMagn ~ red
+			drawArg = (val - minMagn)
+					  / (maxMagn - minMagn) * drawRange;
 
-			if(maxAbs == 0.)
+#if 0
+			/// old version 23-Nov-18
+			if(maxVal == 0.)
 			{
 				/// "private" limits
 				/// each map from deep blue to deep red
@@ -1404,15 +1414,17 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 			{
 				/// global limits
 #if 0
+				/// oldest variant - not really employed
 				/// deep blue ~ -maxAbs, deep red ~ +maxAbs
 				drawArg = (val + maxAbs)
 						  / (2 * maxAbs) * drawRange;
 #else
 				/// deep blue ~ 0, deep red ~ +maxAbs
-				drawArg = val / maxAbs * drawRange;
+				drawArg = val / maxVal * drawRange;
 #endif
 
 			}
+#endif
 
 			QColor (*colorFunc)(int, int) = myLib::drw::colorFunction(colorTheme);
 			paint1.setBrush(QBrush(colorFunc(drawRange, drawArg)));
@@ -1464,17 +1476,17 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 
 		int fontSize = 12;
 		pnt.setFont(QFont("Times", fontSize));
-		if(maxAbs == 0.)
+		if(maxVal == 0.)
 		{
 			pnt.drawText(2, fontSize + 2, nm(smLib::doubleRound(maxMagn, 3)));
 		}
 		else
 		{
-			pnt.drawText(2, fontSize + 2, nm(smLib::doubleRound(maxAbs, 3)));
+			pnt.drawText(2, fontSize + 2, nm(smLib::doubleRound(maxVal, 3)));
 
 			/// draw maxMagn line
 			pnt.setPen(QPen(QBrush("black"), 2));
-			const int h = values.height() * (1. - maxMagn / maxAbs);
+			const int h = values.height() * (1. - maxMagn / maxVal);
 
 			pnt.drawLine(0, h, pnt.device()->width(), h);		/// what about minMagn ?
 //			pnt.drawText(2, h + fontSize + 2, nm(smLib::doubleRound(maxMagn, 3)));
@@ -1533,7 +1545,10 @@ void drawMapsICA(const QString & mapsFilePath,
 
 	for(int i = 0; i < matrixA.cols(); ++i)
 	{
-		drawOneMap(matrixA.getCol(i), maxAbs, colourTheme).save(
+		drawOneMap(matrixA.getCol(i),
+				   0,
+				   maxAbs,
+				   colourTheme).save(
 					mapPath(outDir, outName, i),
 					nullptr,
 					0);

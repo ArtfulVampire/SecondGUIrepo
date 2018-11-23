@@ -1545,6 +1545,7 @@ void IITPdoShit(const QString & resultsPathPrefix,
 
 #if 01
 	myLib::drw::drawOneMap(in.forMapRanges[i][j].getMeanVal(),
+						   0,
 						   maxes[i][j],
 						   myLib::drw::ColorScale::jet,
 						   true).save(resultsPathPrefix + "cohPics/" + picName,
@@ -1697,7 +1698,11 @@ void IITPdrawSpectralMaps(const QString & guyName,
 				}
 
 				fileName.remove(".txt");
-				myLib::drw::drawOneMap(drawSpec, 0, myLib::drw::ColorScale::jet, true).save(
+				myLib::drw::drawOneMap(drawSpec,
+									   0,
+									   0,
+									   myLib::drw::ColorScale::jet,
+									   true).save(
 							outPath + fileName + addName + ".jpg", nullptr, 100);
 			}
 		}

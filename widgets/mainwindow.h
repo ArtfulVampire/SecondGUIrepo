@@ -40,6 +40,7 @@ public slots:
     void setEdfFileSlot();
 	void cleanDirs();
 	void drawMapsSlot();
+	void drawHeadSlot();
 	void reduceChannelsSlot();
 	void reduceChannelsEDFSlot() const;
 	void cleanEdfFromEyesSlot();

@@ -29,7 +29,7 @@ const int lineWidth = 3; /// for arrays
 const int penWidth = 3; /// for signals
 const double offsetYinLine = 1 - 0.1;
 const int eegPicHeight = 600;
-const int mapSize = 240;
+const int mapSize = 300;
 
 /// sec sticks, time num text
 const int wholeSecStick = 20;
@@ -230,8 +230,9 @@ auto colorFunction(ColorScale in) -> QColor (*)(int, int);
 
 /// ica maps
 QPixmap drawOneMap(const std::valarray<double> & inData,
-				   double maxAbs,
-				   const ColorScale & colorTheme,
+				   double minVal = 0.,
+				   double maxVal = 0.,
+				   const ColorScale & colorTheme = ColorScale::jet,
 				   bool drawScale = false);
 void drawMapsICA(const QString & mapsFilePath,
 				 const QString & outDir,
