@@ -674,7 +674,7 @@ void Spectre::countSpectraSlot()
 {
 //	defaultState(); /// why was it here? 4-Mar-18
 
-	auto chanList{smLib::range<std::vector<int>>(0, DEFS.getNs())};
+	auto chanList{smLib::range<std::vector<int>>(0, DEFS.getNs() - 1)}; /// w/o markers ?????
 
 	if(!ui->bypassCountCheckBox->isChecked())
 	{

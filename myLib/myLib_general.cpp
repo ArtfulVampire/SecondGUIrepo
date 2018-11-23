@@ -181,13 +181,10 @@ QString getPicPath(const QString & dataPath,
 /// add std::optional
 int getTypeOfFileName(const QString & fileName, const QStringList & markers)
 {
-    QStringList leest;
     int res = 0;
 	for(const QString & marker : markers)
-    {
-        leest.clear();
-        leest = marker.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-        for(const QString & filter : leest)
+	{
+		for(const QString & filter : marker.split(QRegExp("[,; ]"), QString::SkipEmptyParts))
         {
             if(fileName.contains(filter))
             {

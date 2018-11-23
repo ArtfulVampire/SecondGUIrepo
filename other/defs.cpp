@@ -29,7 +29,9 @@ void defs::setUser(username in)
 	}
 	case username::PolinaM:
 	{
-		fileMarkers = QStringList{"_261" "_262", "_263", "_264"}; /// check
+		this->leftFreq = 5.;
+		this->rightFreq = 20.;
+		fileMarkers = QStringList{"_271", "_272", "_273", "_281", "_282", "_283"};
 		this->dir->cd("C:/PolinaData"); /// check
 		break;
 	}

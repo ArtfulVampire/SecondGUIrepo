@@ -30,19 +30,20 @@ void MainWindow::customFunc()
 //	myLib::checkChannels("/media/Files/Data/Galya/all_buben", coords::lbl19);
 //	exit(0);
 
+//	return;
 
-	DEFS.setUser(username::MichaelA);
+	DEFS.setUser(username::PolinaM);
 	const QString path = "/media/Files/Data/PolinaDataClean/";
 	for(QString fl : QDir(path).entryList({"*.edf"}))
 	{
 		setEdfFile(path + fl);
 		sliceAll(); /// slice as Polina
-		countSpectraSimple(4096, 15);
+		countSpectraSimple(2048, 10);
 		ClassifierData dt(path + "SpectraSmooth");
 		dt.toCsv(path + globalEdf.getExpNameShort() + ".txt");
-//		myLib::cleanDir(path + "Reals");
-//		myLib::cleanDir(path + "SpectraSmooth");
-		break;
+		myLib::cleanDir(path + "Reals");
+		myLib::cleanDir(path + "SpectraSmooth");
+//		break;
 	}
 	exit(0);
 }

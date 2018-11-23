@@ -72,6 +72,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	}
 	case username::PolinaM:
 	{
+		PausePiecesII();
 #if 0
 		/// Polina
 		else if(ui->pauseRadioButton->isChecked())
@@ -1653,4 +1654,173 @@ void MainWindow::eegVegetSlot()
 	outPath.remove("_veget");
 	outPath.replace(".edf", "_unite.edf");
 	fil1.writeEdfFile(outPath);
+}
+
+
+
+//ans/noans
+void MainWindow::PausePieces(bool a)
+{
+QString helpString;
+	std::function<bool(char)>cond1;
+	std::function<bool(char)>cond2;
+	std::function<bool(char)>cond3;
+	QString mark1;
+	QString mark2;
+	QString mark3;
+	int start = 0;
+	int end = -1;
+	char h = 0;
+	int piece = 0;
+	QString marker = "000";
+	const edfFile & fil = globalEdf;
+	//const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
+	const std::valarray<double> & markChanArr = fil.getData()[fil.getMarkChan()];
+	std::ifstream fin((fil.getDirPath()
+					  + "/"
+					  + fil.getExpNameShort()
+					  + "_ans1.txt").toStdString());
+	if (a) //right/wrong in ==true
+	{
+		cond1 = [](char a) -> bool {return a == '0';};
+		mark1 = "261";
+		cond2 = [](char a) -> bool {return a == '1';};
+		mark2 = "262";
+		cond3 = [](char a) -> bool {return a == '2';};
+		mark3 = "263";
+	}
+	else //ans/noans
+	{
+		cond1 = [](char a) -> bool {return a == '0';};
+		mark1 = "261";
+		cond2 = [](char a) -> bool {return a == '1' || a == '2';};
+		mark2 = "260";
+		cond3 = [](char a) -> bool {return true;};
+		mark3 = "000";
+	}
+	for(int i = 0; i < fil.getDataLen(); ++i)
+	{
+	   if(markChanArr[i] == 254)
+		{
+			start = i;
+			fin >> h;
+			if (cond1(h))
+			{
+				marker = mark1;
+			}
+			else if	(cond2(h))
+			{
+				marker = mark2;
+			}
+			else if	(cond3(h))
+			{
+				marker = mark3;
+			}
+//			while (h != '0' && h != '1' && h != '2')
+//			{
+//				fin >> h;
+//			}
+//		   if(h == '0')
+//		   {
+//			   marker = "261";
+//		   }
+//		   else if(h == '1' || h == '2')
+//		   {
+//			   marker = "260";
+//		   }
+		   continue;
+		}
+		else if(markChanArr[i] == 255)
+		{
+			end=i;
+			helpString = fil.getDirPath()
+						 + "/Reals"
+						 + "/" + fil.getExpName()
+						 + "." + rn(piece, 4);
+			if(end > start)
+			{
+				if(end - start <= fil.getFreq() * 62)
+				{
+					helpString += "_" + marker;
+					fil.saveSubsection(start, end, helpString);
+				}
+				++piece;
+			}
+	   }
+	   ui->progressBar->setValue(i * 100. / fil.getDataLen());
+
+	   qApp->processEvents();
+	   if(stopFlag)
+	   {
+		   stopFlag = 0;
+		   break;
+	   }
+	}
+}
+
+
+void MainWindow::PausePiecesII()
+{
+	const edfFile & fil = globalEdf;
+	const std::vector<std::vector<QString>> mark
+	{
+		{"271", "272", "273"}, /// spatial (241)
+		{"281", "282", "283"}, /// verbal  (247)
+	};
+
+	std::ifstream fin((DEFS.getDirPath()
+					   + "/" + fil.getExpNameShort() + "_ans1.txt").toStdString());
+	int start{0};
+	char ansType{}; /// 0 - noans, 1 - correct, 2 - wrong
+	int pieceNumber{0};
+	QString marker{"000"};
+	int taskType{0};
+	for(const auto & mrk : fil.getMarkers())
+	{
+		if(mrk.second == 241 || mrk.second == 247)
+		{
+			taskType = (mrk.second == 247) ? 1 : 0;
+			continue;
+		}
+		else if(mrk.second == 254)
+		{
+			if(taskType < 0)
+			{
+				std::cout << "Unexpected marker 254 at " << mrk.first << " bin" << std::endl;
+				continue;
+			}
+			start = mrk.first;
+			fin >> ansType;
+			marker = mark[taskType][QString(ansType).toInt()]; /// == ansType - '0'
+			continue;
+		}
+		else if(mrk.second == 255) /// end on the cross
+		{
+			if(mrk.first > start)
+			{
+				if(mrk.first - start <= fil.getFreq() * 10)
+				{
+					QString helpString = fil.getDirPath()
+										 + "/Reals"
+										 + "/" + fil.getExpName()
+										 + "." + rn(pieceNumber, 4)
+										 + "_" + marker
+										 + ".edf";
+					fil.saveSubsection(start, mrk.first, helpString);
+
+					start = -1;
+					taskType = -1;
+				}
+				++pieceNumber;
+			}
+	   }
+	   ui->progressBar->setValue(mrk.first * 100. / fil.getDataLen());
+
+	   qApp->processEvents();
+	   if(stopFlag)
+	   {
+		   stopFlag = 0;
+		   break;
+	   }
+	}
 }

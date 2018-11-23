@@ -378,17 +378,15 @@ void MainWindow::BaklushevDraw(const QString & workPath, const QString & edfName
 
 void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
 {
-    Spectre * sp = new Spectre();
+	std::unique_ptr<Spectre> sp{new Spectre()};
     sp->setFftLength(fftLen);
     if(inSmooth >= 0)
     {
         sp->setSmooth(inSmooth);
     }
     sp->countSpectraSlot();
-    sp->compare();
-    sp->psaSlot();
-    sp->close();
-    delete sp;
+//    sp->compare();
+//    sp->psaSlot();
 }
 
 void MainWindow::iitpNamesFix()
