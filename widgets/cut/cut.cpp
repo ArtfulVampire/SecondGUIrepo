@@ -123,11 +123,14 @@ Cut::Cut() :
 	{
 		ui->refilterLowFreqSpinBox->setValue(1.6);
 		ui->refilterHighFreqSpinBox->setValue(30);
+		QObject::connect(ui->concatPushButton, &QPushButton::clicked,
+						 this, &Cut::concatSlot);
 	}
 	else
 	{
 		ui->refilterLowFreqSpinBox->setValue(DEFS.getLeftFreq());
 		ui->refilterHighFreqSpinBox->setValue(DEFS.getRightFreq());
+		ui->concatPushButton->hide();
 	}
 
 

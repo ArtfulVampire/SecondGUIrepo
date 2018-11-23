@@ -346,7 +346,6 @@ void Cut::zeroChannel(int chanNum, int start, int end)
 	paint();
 }
 
-
 void Cut::cutPausesSlot()
 {
 	if( !fileOpened ) { return; }

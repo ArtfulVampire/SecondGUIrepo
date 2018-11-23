@@ -24,12 +24,12 @@ void MainWindow::customFunc()
 //	autos::cutFilesInFolder(workDir, 8);
 
 //	myLib::preprocessDir("C:/Data/tactile/coma_processed");
-	myLib::GalyaProcessing("C:/Data/tactile/coma_processed");
+//	myLib::GalyaProcessing("C:/Data/tactile/coma_processed");
 
 //	myLib::checkChannels("/media/Files/Data/Galya/all_buben", coords::lbl19);
 //	exit(0);
 
-	if(01)
+	if(0)
 	{
 //		QString filePath = QFileDialog::getOpenFileName(this,
 //														tr("choose txt file"),
