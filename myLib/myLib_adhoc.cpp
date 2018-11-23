@@ -607,7 +607,7 @@ void XeniaProcessing(const QString & workPath)
 
 void preprocessDir(const QString & inPath)
 {
-#if 0
+#if 01
 	/// special renames
 	const std::vector<std::pair<QString, QString>> rnm1
 	{
@@ -638,12 +638,44 @@ void preprocessDir(const QString & inPath)
 	const std::vector<std::pair<QString, QString>> renames
 	{
 		{"was1", "new1"},
-		{"was2", "new2"}
+		{"was2", "new2"},
 	};
-	repair::renameContents(workPath + "/" + subdir, renames);
+	const std::vector<std::pair<QString, QString>> svzv
+	{
+//		{"PERTSULIANNI_5_1705_VPZSF1", "PERTSULIANNI"},
+//		{"_sv-zv-6_", "_"},
+//		{"_zv-sv-5_", "_"},
+	//	{"-", ""},
+		{"_6_0202", ""},
+		{"_2_2405", ""},
+		{"_4_2405", ""},
+		{"_3_0103", ""},
+		{"_3_2604", ""},
+		{"_11_1406", ""},
+		{"_3_1502", ""},
+		{"_4_2604", ""},
+		{"_3_2102", ""},
+		{"_5_1705", ""},
+		{"_5_1406", ""},
+		{"_5_2604", ""},
+		{"_2_1705", ""},
+		{"_12_1212", ""},
+		{"_7_2604", ""},
+		{"_3_0407", ""},
+		{"_18_1502", ""},
+		{"_6_2806", ""},
+		{"_5_0404", ""},
+		{"_6_2501", ""},
+		{"_7_1502", ""}
+	};
+	for(const auto & guy : QDir(inPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+	{
+		if(guy == "out") continue;
+		repair::renameContents(inPath + "/" + guy, {{" .edf", ".edf"}});
+	}
 #endif
 
-#if 01
+#if 0
 	repair::fullRepairDir(inPath, {});
 #endif
 
@@ -759,8 +791,10 @@ void SettingsGalya()
 	AUT_SETS.setOutputSequence(autos::outputSeq::ByChans);
 	AUT_SETS.setInitialCut(autos::initialCut::none);
 
-	AUT_SETS.setChansProc(coords::lbl17noFP);
-	AUT_SETS.setMarkers(subj::marksLists::tactileComa);
+//	AUT_SETS.setChansProc(coords::lbl17noFP);
+	AUT_SETS.setChansProc(coords::lbl19);
+//	AUT_SETS.setMarkers(subj::marksLists::tactileComa);
+	AUT_SETS.setMarkers(subj::marksLists::rhythAdoption);
 }
 
 void GalyaProcessing(const QString & workPath)
@@ -816,8 +850,8 @@ void GalyaProcessing(const QString & workPath)
 
 #if 01
 	/// calculation itself
-	///
-#if 01
+
+#if 0
 	/// usual processing - each guy in his folder
 	autos::ProcessByFolders(workPath,
 							workPath + "_out",
@@ -829,13 +863,13 @@ void GalyaProcessing(const QString & workPath)
 						  "\t");
 #endif
 
-#if 0
+#if 01
 	/// rhythm adoption
-	for(const QString & subdir : QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+	for(const QString & groupName : QDir(workPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot))
 	{
 		for(const QString & stimType : {"sv", "zv"})
 		{
-			autos::rhythmAdoptionGroup(workPath + "/" + subdir,
+			autos::rhythmAdoptionGroup(workPath + "/" + groupName,
 									   "_fon",
 									   stimType);
 		}

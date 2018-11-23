@@ -221,13 +221,19 @@ int getFileLength(int in);
 /// adhoc
 double countRhythmAdoption(const std::valarray<double> & sigRest,
 						   const std::valarray<double> & sigAdop,
-						   double freq);
+						   double freq,
+						   const QString & picPath = QString());
+std::valarray<double> countRhythmAdoption(const matrix & specRest,
+										  const matrix & specAdop,
+										  int fftLen,
+										  double freq);
 void rhythmAdoptionGroup(const QString & groupPath,
 						 const QString & restMark,
 						 const QString & stimType);
-void rhythmAdoption(const QString & filesPath,
+void rhythmAdoption(const QString & guyPath,
 					const QString & restMark,			/// "_og", "_zg" or "_fon"
-					const QString & stimType);		/// "sv" or "zv"
+					const QString & stimType,
+					const std::vector<int> & freqs);		/// "sv" or "zv"
 
 
 

@@ -238,14 +238,14 @@ QPixmap drawArray(const QPixmap & templatePic,
 				  double maxVal,
 				  int lineWidth_)
 {
-	matrix dataMat;
+
 	const int nch = myLib::drw::numOfChans(inData);
 	const int len = inData.size();
-	dataMat.resize(nch, len / nch, 0.);
+	matrix dataMat(nch, len / nch, 0.);
 	for(int i = 0; i < nch; ++i)
 	{
-		std::copy(std::begin(inData) + len / nch * i,
-				  std::begin(inData) + len / nch * (i + 1),
+		std::copy(std::begin(inData) + (len / nch) * i,
+				  std::begin(inData) + (len / nch) * (i + 1),
 				  std::begin(dataMat[i]));
 	}
 

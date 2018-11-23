@@ -162,7 +162,8 @@ void cutToChannels(const QString & inSpectraPath,
 void cutCentralChannels(const QString & inPath);
 
 /// for iitp
-QPixmap drawArrays(const QPixmap & templatePic, const std::vector<QString> & filesPaths);
+QPixmap drawArrays(const QPixmap & templatePic,
+				   const std::vector<QString> & filesPaths);
 extern std::vector<int> zeroChans;
 extern std::vector<int> trueChans;
 std::vector<QPixmap> drawArraysSameScale(const QPixmap & templatePic, const std::vector<QString> & filesPaths);

@@ -61,7 +61,7 @@ inline int fftLimit(double inFreq,
 					double sampleFreq,
 					int fftL)
 {
-	return std::ceil(inFreq / sampleFreq * fftL - 0.5);
+	return std::round(inFreq / sampleFreq * fftL);
 }
 
 inline double distance(double const x1, double const y1,
