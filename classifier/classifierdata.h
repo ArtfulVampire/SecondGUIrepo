@@ -41,6 +41,8 @@ public:
 	int getSpLength() const										{ return spLength; }
 	int getClassCount(uint i) const;
 
+	void toCsv(const QString & outPath) const;
+
 	/// sets
 	void setApriori(const std::valarray<double> & inApriori);
 

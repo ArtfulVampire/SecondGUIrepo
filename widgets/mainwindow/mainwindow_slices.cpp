@@ -29,7 +29,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	{
 		/// remake using myLib::sliceData ??
 		sliceOneByOne();
-		sliceOneByOneNew(); /// by number after 241/247 for early research before 2015
+//		sliceOneByOneNew(); /// by number after 241/247 for early research before 2015
 		break;
 	}
 	case username::MichaelB:
@@ -1040,57 +1040,28 @@ void MainWindow::sliceBak2017()
 void MainWindow::sliceOneByOne()
 {
 
-#define USE_MARKERS 01
-
-    QString helpString;
     int number = 0;
     QString marker = "000";
 	int start = 0;
 
-    const edfFile & fil = globalEdf;
-#if USE_MARKERS
-	const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
-#else
-	const std::valarray<double> & markChanArr = fil.getMarkArr();
-#endif
+	const edfFile & fil = globalEdf;
 
-    /// 200, (241||247, (1), 254, 255)
-#if USE_MARKERS
-	for(const std::pair<int, int> & in : markers)
-#else
-	for(int i = 0; i < fil.getDataLen(); ++i)
-#endif
+	/// 200, (241||247, (1), 254, 255)
+	for(const std::pair<int, int> & in : fil.getMarkers())
     {
-
-
-#if USE_MARKERS
 		if(in.second != 241
 		   && in.second != 247
 		   && in.second != 254)
 		{
 			continue;
 		}
-#else
-		if(markChanArr[i] == 0 ||
-		   !(markChanArr[i] == 241 ||
-			 markChanArr[i] == 247 ||
-			 markChanArr[i] == 254))
-		{
-			continue;
-		}
-#endif
 
-#if USE_MARKERS
 		const int finish = in.first;
-#else
-		const int finish = i;
-#endif
 
-		helpString = DEFS.dirPath()
-					 + "/Reals"
-					 + "/" + fil.getExpName()
-					 + "." + rn(number++, 4);
-
+		QString helpString = DEFS.dirPath()
+							 + "/Reals"
+							 + "/" + fil.getExpName()
+							 + "." + rn(number++, 4);
 
 		if(finish > start)
 		{
@@ -1122,11 +1093,7 @@ void MainWindow::sliceOneByOne()
 				}
 			}
 		}
-#if USE_MARKERS
 		ui->progressBar->setValue(in.first * 100. / fil.getDataLen());
-#else
-		ui->progressBar->setValue(i * 100. / fil.getDataLen());
-#endif
 
 		qApp->processEvents();
 		if(stopFlag)
@@ -1134,22 +1101,17 @@ void MainWindow::sliceOneByOne()
 			stopFlag = false;
 			return;
 		}
-#if USE_MARKERS
 		marker = nm(in.second);
-#else
-		marker = nm(markChanArr[finish]);
-#endif
 		start = finish;
-
     }
 
 
     /// write final
     {
-		helpString = DEFS.dirPath()
-					 + "/Reals"
-					 + "/" + fil.getExpName()
-					 + "." + rn(number++, 4);
+		QString helpString = DEFS.dirPath()
+							 + "/Reals"
+							 + "/" + fil.getExpName()
+							 + "." + rn(number++, 4);
 		if(fil.getDataLen() - start < 40 * DEFS.getFreq()) /// if last realisation or interstimulus
 		{
 			helpString += "_" + marker;
