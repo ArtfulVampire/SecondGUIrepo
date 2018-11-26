@@ -1980,7 +1980,6 @@ edfFile edfFile::rereferenceData(reference newRef,
 			temp.labels[i].replace(refName, refToStr.at(targetRef));
 		}
 	}
-
 	/// the very processing
 	temp = this->reduceChannels(helpString);
 

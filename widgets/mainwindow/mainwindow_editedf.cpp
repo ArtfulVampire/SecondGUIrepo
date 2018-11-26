@@ -39,16 +39,8 @@ void MainWindow::rereferenceDataSlot()
 	helpString.replace(".edf", "_rr.edf", Qt::CaseInsensitive);
 	globalEdf.rereferenceData(strToRef.at(ui->rereferenceDataComboBox->currentText()),
 							  ui->eogAsIsCheckBox->isChecked(),
-							  ui->eogBipolarCheckBox->isChecked());
+							  ui->eogBipolarCheckBox->isChecked()).writeEdfFile(helpString);
 
-	if(1)
-	{
-		globalEdf.writeEdfFile(helpString);
-	}
-	else
-	{
-		/// do nothing
-	}
 	outStream << "rereferenceDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 

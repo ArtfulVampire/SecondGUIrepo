@@ -30,7 +30,7 @@ void MainWindow::customFunc()
 //	myLib::checkChannels("/media/Files/Data/Galya/all_buben", coords::lbl19);
 //	exit(0);
 
-//	return;
+	return;
 
 	DEFS.setUser(username::PolinaM);
 	const QString path = "/media/Files/Data/PolinaDataClean/";
