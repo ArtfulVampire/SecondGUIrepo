@@ -15,132 +15,6 @@
 using namespace myOut;
 
 
-std::list<std::valarray<double>> edfFile::getDataAsList() const
-{
-	std::list<std::valarray<double>> res(this->edfData.cols());
-    uint j = 0;
-    for(auto & in : res)
-    {
-		in = this->edfData.getCol(j++);
-    }
-    return res;
-}
-
-
-const std::valarray<double> & edfFile::getData(const QString & ch) const
-{
-	static std::valarray<double> badRes{};
-	badRes = decltype(badRes){};
-	auto a = this->findChannel(ch);
-	if(a == -1)
-	{
-		std::cout << "edfFile::getData(QString): no such label - ";
-		std::cout << ch << std::endl;
-		return badRes;
-	}
-	return edfData[a];
-}
-
-std::vector<int> edfFile::getAllEegChannels(const std::vector<QString> & standard) const
-{
-	std::vector<int> res{};
-	res.reserve(this->ns);
-	for(int i = 0; i < this->ns; ++i)
-	{
-		if(labels[i].contains("EEG ", Qt::CaseInsensitive))
-		{
-			res.push_back(i);
-			continue;
-		}
-		auto it = std::find_if(std::begin(standard),
-							   std::end(standard),
-							   [this, i](const QString & in)
-		{
-			return labels[i].contains(in);
-		});
-		if(it != std::end(standard))
-		{
-			res.push_back(i);
-		}
-	}
-	return res;
-}
-
-edfFile & edfFile::setDataFromList(const std::list<std::valarray<double>> & inList)
-{
-	this->edfData.resize(inList.front().size(), inList.size());
-    uint col = 0;
-    for(auto it = std::begin(inList); it != std::end(inList); ++it, ++col)
-    {
-        for(uint i = 0; i < (*it).size(); ++i)
-        {
-			this->edfData[i][col] = (*it)[i];
-        }
-    }
-	return *this;
-}
-
-
-edfFile::edfFile(const edfFile &other, bool noData)
-{
-    this->filePath = other.getFilePath();
-    this->ExpName = other.getExpName();
-    this->dirPath = other.getDirPath();
-
-    this->headerInitialInfo = other.getHeaderInit();
-    this->bytes = other.getBytes();
-    this->headerReservedField = other.getHeaderReserved();
-	this->headerRest = other.getHeaderRest();
-
-    this->ndr = other.getNdr();
-    this->ddr = other.getDdr();
-    this->ns = other.getNs();
-	this->srate = other.getFreq();
-
-    this->labels = other.getLabels();
-    this->transducerType = other.getTransducer();
-    this->physDim = other.getPhysDim();
-    this->physMax = other.getPhysMax();
-    this->physMin = other.getPhysMin();
-    this->digMax = other.getDigMax();
-    this->digMin = other.getDigMin();
-    this->prefiltering = other.getPrefiltering();
-    this->nr = other.getNr();
-    this->reserved = other.getReserved();
-
-	this->annotations = other.annotations;
-
-	this->markers = other.getMarkers();
-	this->markerChannel = other.getMarkChan();
-
-    this->channels = other.getChannels();
-
-    if(!noData)
-    {
-		this->edfData = other.getData();
-		this->fftData = other.fftData;
-    }
-    else
-    {
-		this->edfData = matrix();
-		this->fftData.clear();
-    }
-
-	this->matiFlag = other.matiFlag;
-	this->ntFlag = other.ntFlag;
-	this->edfPlusFlag = other.edfPlusFlag;
-	this->filterIITPflag = other.filterIITPflag;
-
-	this->writeMarkersFlag = other.writeMarkersFlag;
-	this->writeLabelsFlag = other.writeLabelsFlag;
-	this->writeHeaderFlag = other.writeHeaderFlag;
-}
-
-edfFile::edfFile(const QString & edfPath, bool headerOnly)
-{
-	this->readEdfFile(edfPath, headerOnly);
-}
-
 edfFile::edfFile(const QString & txtFilePath, inst which)
 {
 	switch(which)
@@ -533,7 +407,78 @@ edfFile::edfFile(const QString & txtFilePath, inst which)
 	}
 //	default: { /* never get here */ break; }
 	}
-	while(0){}
+	/// establish other invariants, fill the attributes
+	ns = edfData.rows();
+	markerChannel = ns - 1;
+	ndr = std::ceil(edfData.cols() / srate);
+	for(int i = 0; i < edfData.back().size(); ++i)
+	{
+		if(static_cast<int>(edfData.back()[i]) != 0)
+		{
+			markers.emplace_back(i, edfData.back()[i]);
+		}
+	}
+}
+
+
+edfFile::edfFile(const edfFile &other, bool noData)
+{
+	this->filePath = other.getFilePath();
+	this->ExpName = other.getExpName();
+	this->dirPath = other.getDirPath();
+
+	this->headerInitialInfo = other.getHeaderInit();
+	this->bytes = other.getBytes();
+	this->headerReservedField = other.getHeaderReserved();
+	this->headerRest = other.getHeaderRest();
+
+	this->ndr = other.getNdr();
+	this->ddr = other.getDdr();
+	this->ns = other.getNs();
+	this->srate = other.getFreq();
+
+	this->labels = other.getLabels();
+	this->transducerType = other.getTransducer();
+	this->physDim = other.getPhysDim();
+	this->physMax = other.getPhysMax();
+	this->physMin = other.getPhysMin();
+	this->digMax = other.getDigMax();
+	this->digMin = other.getDigMin();
+	this->prefiltering = other.getPrefiltering();
+	this->nr = other.getNr();
+	this->reserved = other.getReserved();
+
+	this->annotations = other.annotations;
+
+	this->markers = other.getMarkers();
+	this->markerChannel = other.getMarkChan();
+
+	this->channels = other.getChannels();
+
+	if(!noData)
+	{
+		this->edfData = other.getData();
+		this->fftData = other.fftData;
+	}
+	else
+	{
+		this->edfData = matrix();
+		this->fftData.clear();
+	}
+
+	this->matiFlag = other.matiFlag;
+	this->ntFlag = other.ntFlag;
+	this->edfPlusFlag = other.edfPlusFlag;
+	this->filterIITPflag = other.filterIITPflag;
+
+	this->writeMarkersFlag = other.writeMarkersFlag;
+	this->writeLabelsFlag = other.writeLabelsFlag;
+	this->writeHeaderFlag = other.writeHeaderFlag;
+}
+
+edfFile::edfFile(const QString & edfPath, bool headerOnly)
+{
+	this->readEdfFile(edfPath, headerOnly);
 }
 
 
@@ -592,8 +537,9 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 	/// 80 ascii : local recording identification (mind item 4 of the additional EDF+ specs)
 	/// 8 ascii : startdate of recording (dd.mm.yy) (mind item 2 of the additional EDF+ specs)
 	/// 8 ascii : starttime of recording (hh.mm.ss)
-	/// 8 ascii : number of bytes in header record
-	/// 44 ascii : reserved
+	/// 184 - headerInitialInfo
+	/// 8 ascii : number of bytes in header record - bytes
+	/// 44 ascii : reserved - headerReservedField
 	/// 236
 
 	/// 8 ascii : number of data records (-1 if unknown, obey item 10 of the additional EDF+ specs)
@@ -612,6 +558,8 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 	/// ns * 8 ascii : ns * nr of samples in each data record
 	/// ns * 32 ascii : ns * reserved
 	/// ns * 256
+
+	/// headerRest, size = bytes - (ns + 1) * 256
 
 	/// Encephalan:
 	/// Physical minimum: -4096   a0
@@ -1126,6 +1074,18 @@ std::vector<uint> edfFile::countMarkers(const std::vector<int> & mrks) const
 	return res;
 }
 
+int edfFile::findMarker(const std::vector<int> & mrks) const
+{
+	for(const auto & in : this->markers)
+	{
+		if(myLib::contains(mrks, in.second))
+		{
+			return in.first;
+		}
+	}
+	return -1;
+}
+
 void edfFile::writeAnnotations() const
 {
 	std::ofstream annotStream((dirPath + "/" + ExpName + "_annots.txt").toStdString());
@@ -1470,6 +1430,70 @@ edfFile & edfFile::zeroChannels(const std::vector<int> & chanNums)
 	for(int chan : chanNums)
 	{
 		edfData[chan] = 0.;
+	}
+	return *this;
+}
+
+std::list<std::valarray<double>> edfFile::getDataAsList() const
+{
+	std::list<std::valarray<double>> res(this->edfData.cols());
+	uint j = 0;
+	for(auto & in : res)
+	{
+		in = this->edfData.getCol(j++);
+	}
+	return res;
+}
+
+const std::valarray<double> & edfFile::getData(const QString & ch) const
+{
+	static std::valarray<double> badRes{};
+	badRes = decltype(badRes){};
+	auto a = this->findChannel(ch);
+	if(a == -1)
+	{
+		std::cout << "edfFile::getData(QString): no such label - ";
+		std::cout << ch << std::endl;
+		return badRes;
+	}
+	return edfData[a];
+}
+
+std::vector<int> edfFile::getAllEegChannels(const std::vector<QString> & standard) const
+{
+	std::vector<int> res{};
+	res.reserve(this->ns);
+	for(int i = 0; i < this->ns; ++i)
+	{
+		if(labels[i].contains("EEG ", Qt::CaseInsensitive))
+		{
+			res.push_back(i);
+			continue;
+		}
+		auto it = std::find_if(std::begin(standard),
+							   std::end(standard),
+							   [this, i](const QString & in)
+		{
+			return labels[i].contains(in);
+		});
+		if(it != std::end(standard))
+		{
+			res.push_back(i);
+		}
+	}
+	return res;
+}
+
+edfFile & edfFile::setDataFromList(const std::list<std::valarray<double>> & inList)
+{
+	this->edfData.resize(inList.front().size(), inList.size());
+	uint col = 0;
+	for(auto it = std::begin(inList); it != std::end(inList); ++it, ++col)
+	{
+		for(uint i = 0; i < (*it).size(); ++i)
+		{
+			this->edfData[i][col] = (*it)[i];
+		}
 	}
 	return *this;
 }

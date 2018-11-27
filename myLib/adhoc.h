@@ -65,6 +65,7 @@ std::vector<QString> composeMarkersList(const QString & workPath); /// really un
 void elenaCalculation(const QString & realsPath,
 					  const QString & outSpectraPath,
 					  const QString & outTableDir);
+std::vector<std::pair<QString, double>> readVegetMarkers(const QString & inPath);
 
 std::vector<QString> checkChannels(const QString & inPath, const std::vector<QString> & refChans);
 

@@ -1012,10 +1012,10 @@ void MainWindow::sliceBak2017()
 			QString correct = "wrong";
 			switch(type)
 			{
-			case 0: { typStr = "k"; if(ans == 251) { correct = "right"; } break; }
-			case 1: { typStr = "l"; if(ans == 253) { correct = "right"; } break; }
-			case 2: { typStr = "n"; if(ans == 252) { correct = "right"; } break; }
-			default: { typStr = ""; break; }
+			case 0: {	typStr = "k"; if(ans == 251) { correct = "right"; } break; } /// left
+			case 1: {	typStr = "l"; if(ans == 253) { correct = "right"; } break; } /// wheel
+			case 2: {	typStr = "n"; if(ans == 252) { correct = "right"; } break; } /// right
+			default: {	typStr = ""; break; }
 			}
 			QString helpString = DEFS.getDirPath()
 								 + "/Reals/" + fil.getExpName()

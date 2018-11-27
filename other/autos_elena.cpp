@@ -457,4 +457,31 @@ void elenaCalculation(const QString & realsPath,
 #endif
 }
 
+std::vector<std::pair<QString, double>> readVegetMarkers(const QString & inPath)
+{
+	std::vector<std::pair<QString, double>> res{};
+
+	QFile inFile(inPath);
+	inFile.open(QIODevice::ReadOnly);
+
+	while(!inFile.atEnd())
+	{
+		QString a = inFile.readLine();
+		auto lst = a.split(QRegExp(R"([ \t\n])"), QString::SkipEmptyParts);
+		if(lst.size() >= 2)
+		{
+			QString b = lst.back();
+			b.replace(',', '.');
+			bool ok = true;
+			double c = b.toDouble(&ok);
+			if(ok)
+			{
+				res.emplace_back(lst.front(), c);
+			}
+		}
+	}
+	inFile.close();
+	return res;
+}
+
 } /// end namespace myLib

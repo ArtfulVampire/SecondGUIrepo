@@ -127,7 +127,7 @@ private:
 	source Source{source::reals};
 
 	/// classification
-	Classifier * myModel = nullptr;
+	Classifier * myModel{nullptr};  /// remake to shared_ptr
 	ClassifierData myClassifierData{};
 	std::vector<int> chansToSkip{};	/// for 128 channels
 

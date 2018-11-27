@@ -31,7 +31,7 @@ protected:
 	ModelType myType;	/// don't know what to initialize with - remake
 	QString typeString{};
 
-	ClassifierData * myClassData;
+	ClassifierData * myClassData; /// remake to shared_ptr
 
 	matrix confusionMatrix;				/// [realClass] [predictedClass]
 	std::valarray<double> outputLayer;	/// output of classification
