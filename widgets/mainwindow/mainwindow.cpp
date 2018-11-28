@@ -201,6 +201,8 @@ MainWindow::MainWindow() :
 					globalEdf.getDirPath() + "/SpectraSmooth/winds"); });
 	QObject::connect(ui->eegVegetPushButton, SIGNAL(clicked()),
 					 this, SLOT(eegVegetSlot()));
+	QObject::connect(ui->reoPlusEyetrackPushButton, SIGNAL(clicked()),
+					 this, SLOT(reoEyeSlot()));
 
 	/// slice
 	QObject::connect(ui->cutEDF, SIGNAL(clicked()), this, SLOT(sliceAll()));
@@ -301,12 +303,6 @@ void MainWindow::changeRedNsLine(int a)
 	ui->reduceChannelsLineEdit->setText(outStr);
 }
 
-void MainWindow::showCountSpectra()
-{
-    Spectre *sp = new Spectre();
-    sp->show();
-}
-
 void MainWindow::processEyes()
 {
 	readData();
@@ -349,6 +345,12 @@ void MainWindow::showCut()
 {
     Cut *cut_e = new Cut();
     cut_e->show();
+}
+
+void MainWindow::showCountSpectra()
+{
+	Spectre *  sp = new Spectre();
+	sp->show();
 }
 
 void MainWindow::setEdfFileSlot()

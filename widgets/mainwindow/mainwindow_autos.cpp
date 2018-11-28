@@ -7,13 +7,14 @@
 
 #include <other/autos.h>
 #include <other/defs.h>
+#include <other/subjects.h>
 
 #include <myLib/drw.h>
 #include <myLib/mati.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/general.h>
 
-#include <other/subjects.h>
+#include <memory>
 
 using namespace myOut;
 
@@ -35,7 +36,7 @@ void MainWindow::drawWeights(const QString & wtsPath,
 							 int fftLen)
 {
 	/// draw Wts from a folder
-	ANN * net = new ANN();
+	std::unique_ptr<ANN> net{new ANN()};
 
 	ClassifierData cl = ClassifierData(spectraPath);
 	net->setClassifierData(cl);
@@ -49,7 +50,6 @@ void MainWindow::drawWeights(const QString & wtsPath,
 		net->drawWeight(wtsPath + "/" + fileName,
 						outPath + "/" + drawName);
 	}
-	delete net;
 }
 
 void MainWindow::makeEvoked(const QString & edfPath,
@@ -110,7 +110,8 @@ void MainWindow::testSuccessive2()
 
 
 		/// should not change averageDatum and sigmaVector ?
-		Net * net = new Net();
+
+		std::unique_ptr<Net> net{new Net()};
 
 		net->setSource("w");
 		net->setMode("t"); /// train-test
@@ -118,7 +119,6 @@ void MainWindow::testSuccessive2()
 		std::cout << name << std::endl;
 		res.push_back(std::get<0>(net->successiveByEDFnew(path + name + "_train" + ".edf", "",
 														  path + name + "_test" + ".edf", "")));
-		delete net;
 	}
 	outStream << "average by people = "
 			  << std::accumulate(std::begin(res), std::end(res), 0.) / res.size() << std::endl;
@@ -205,7 +205,7 @@ void MainWindow::testSuccessive(const std::vector<double> & vals)
 
 		countSpectraSimple(1024, numSmooth);
 		/// should not change averageDatum and sigmaVector ?
-		Net * net = new Net();
+		std::unique_ptr<Net> net{new Net()};
 		net->loadData(DEFS.windsSpectraDir(), {name + "_train"});
 
 		net->setClassifier(ModelType::ANN);
@@ -214,9 +214,6 @@ void MainWindow::testSuccessive(const std::vector<double> & vals)
 
 		std::cout << name << std::endl;
 		net->successiveProcessing();
-		delete net;
-
-
 	}
 }
 
@@ -233,7 +230,7 @@ void MainWindow::testNewClassifiers()
 			setEdfFile(paath + guy + suff + ".edf");
 //			readData();
 
-			Net * net = new Net();
+			std::unique_ptr<Net> net{new Net()};
 			net->loadData(paath + "/SpectraSmooth/winds", {guy + suff});
 
 			net->setClassifier(ModelType::ANN);
@@ -241,15 +238,9 @@ void MainWindow::testNewClassifiers()
 			net->setSource("w");
 			net->setNumOfPairs(30);
 			net->setFold(4);
-
 //			net->customF(); /// clean to 3*N train windows
-
-
 //			std::cout << guy + suff << std::endl;
 			net->autoClassification();
-
-
-
 			std::vector<std::vector<double>> allPew =  {{3., 30.},
 														{3., 40.},
 														{4., 40.},
@@ -282,8 +273,6 @@ void MainWindow::testNewClassifiers()
 				}
 
 			}
-
-			delete net;
 			break; /// only suff = "_train"
 		}
 
@@ -313,15 +302,14 @@ void MainWindow::BaklushevDraw(const QString & workPath, const QString & edfName
 
 	setEdfFile(filePath);
 	readData();
-	Spectre * sp = new Spectre();
-	sp->setFftLength(4096);
-	delete sp;
 
-	QString spectraPath = workPath + "/SpectraSmooth";
+/// ?????
+//	std::unique_ptr<Spectre> sp{new Spectre()};
+//	sp->setFftLength(4096);
 
+	const QString spectraPath = workPath + "/SpectraSmooth";
 	const std::vector<QString> marker{"*_241*" , "*_247*"};
 	std::array<matrix, 2> drawMat{};
-
 	for(int i = 0; i < 2; ++i)
 	{
 		QStringList lst = QDir(spectraPath).entryList({marker[i]});
@@ -761,7 +749,8 @@ void MainWindow::iitpPreproc()
 	/// prepare FeedbackFinalMark for eyes clean
 	const QString path = DEFS.dirPath() + "/FeedbackNewMark";
 
-	Cut * cut = new Cut();
+
+	std::unique_ptr<Cut> cut{new Cut()};
 	for(auto in : subj::guysFBnew)
 	{
 		const QString dr = std::get<0>(in);
@@ -801,8 +790,6 @@ void MainWindow::iitpPreproc()
 		}
 //		break;
 	}
-	cut->close();
-	delete cut;
 	exit(0);
 }
 

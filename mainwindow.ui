@@ -564,6 +564,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="reoPlusEyetrackPushButton">
+           <property name="text">
+            <string>reo + eyetrack</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>

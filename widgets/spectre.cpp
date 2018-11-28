@@ -31,17 +31,17 @@ Spectre::Spectre() :
 	defaultInPathW = DEFS.dirPath() + "/winds/fromreal";
 	defaultOutPathW = DEFS.dirPath() + "/SpectraSmooth/winds";
 
-    QButtonGroup * group1 = new QButtonGroup;
+	QButtonGroup * group1 = new QButtonGroup{};
     group1->addButton(ui->jpgButton);
     group1->addButton(ui->svgButton);
     ui->jpgButton->setChecked(true);
 
-    QButtonGroup * group3 = new QButtonGroup;
+	QButtonGroup * group3 = new QButtonGroup{};
     group3->addButton(ui->amplitudeWaveletButton);
     group3->addButton(ui->phaseWaveletButton);
     ui->amplitudeWaveletButton->setChecked(true);
 
-    QButtonGroup * group4 = new QButtonGroup;
+	QButtonGroup * group4 = new QButtonGroup{};
     group4->addButton(ui->grayRadioButton);
     group4->addButton(ui->colourRadioButton);
     ui->colourRadioButton->setChecked(true);

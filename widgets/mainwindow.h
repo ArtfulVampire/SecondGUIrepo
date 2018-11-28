@@ -45,6 +45,7 @@ public slots:
 	void reduceChannelsEDFSlot() const;
 	void cleanEdfFromEyesSlot();
 	void eegVegetSlot();
+	void reoEyeSlot();
 
 	/// mati
     void markerSaveEdf();

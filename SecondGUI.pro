@@ -11,10 +11,10 @@ TEMPLATE = app
 CONFIG += console #for better display of processes with std::cout.flush()
 
 QMAKE_CXXFLAGS += -fopenmp
-#QMAKE_CXXFLAGS += -Wno-sign-compare
-#QMAKE_CXXFLAGS += -Wno-unused-parameter
-#QMAKE_CXXFLAGS += -Wno-unused-result
-#QMAKE_CXXFLAGS += -Wno-unused-function
+QMAKE_CXXFLAGS += -Wno-sign-compare
+QMAKE_CXXFLAGS += -Wno-unused-parameter
+QMAKE_CXXFLAGS += -Wno-unused-result
+QMAKE_CXXFLAGS += -Wno-unused-function
 LIBS += -fopenmp
 #QMAKE_CXXFLAGS_RELEASE += -static -static-libgcc
 

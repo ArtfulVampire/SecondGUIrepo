@@ -11,7 +11,7 @@ using namespace myOut;
 
 Classifier::Classifier()
 {
-	myClassData = new ClassifierData();
+	myClassData = new ClassifierData(); /// remake shared_ptr
 	resultsPath = DEFS.dirPath() + "/results.txt";
 	workDir = DEFS.dirPath() + "/Help/PA";
 	filesPath = DEFS.windsSpectraDir();
@@ -28,7 +28,7 @@ void Classifier::setClassifierData(ClassifierData & in)
 {
 	if(&in != myClassData)
 	{
-		myClassData = &in; //// pointer may overlive object in !!!!
+		myClassData = &in; //// in may be destroyed on the caller site !!!! DANGER
 
 		confusionMatrix = matrix(myClassData->getNumOfCl(), myClassData->getNumOfCl(), 0.);
 		outputLayer = std::valarray<double>(0., myClassData->getNumOfCl());

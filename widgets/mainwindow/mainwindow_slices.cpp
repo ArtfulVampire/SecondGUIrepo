@@ -9,6 +9,7 @@
 #include <myLib/output.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/valar.h>
+#include <myLib/adhoc.h>
 
 using namespace myOut;
 
@@ -1615,6 +1616,64 @@ void MainWindow::sliceMatiPieces()
         }
     }
 	outStream << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+}
+
+void MainWindow::reoEyeSlot()
+{
+	const QString dataPath = QFileDialog::getOpenFileName(this,
+														  tr("Choose data file"),
+														  DEFS.getDirPath(),
+														  "*.txt");
+	DEFS.setDir(myLib::getDirPathLib(dataPath));
+
+	const QString marksPath = QFileDialog::getOpenFileName(this,
+														   tr("Choose markers file"),
+														   DEFS.getDirPath(),
+														   "*.txt");
+	if(dataPath.isEmpty() || marksPath.isEmpty())
+	{
+		std::cout << "at least one file path is empty!" << std::endl;
+		return;
+	}
+
+	edfFile fil(dataPath, inst::veget);
+	int sta = fil.findMarker({1,2,3,4});
+//	sta += 50; /// +200 ms because of hardware delay?
+
+	if(sta == -1)
+	{
+		std::cout << "can't find start marker (1, 2, 3 or 4)" << std::endl;
+		return;
+	}
+
+	for(const auto & in : myLib::readVegetMarkers(marksPath))
+	{
+		int val{0};
+
+		/// marker value choice
+		if(in.first.contains("Kross"))				{ val = 255; }
+		else if(in.first.contains("Answer"))		{ val = 254; }
+		else
+		{
+			QRegExp reg = QRegExp(R"([0-9]{1,3})");
+			int a = reg.indexIn(in.first);
+			if(a != -1)								{ val = reg.cap(0).toInt(); }
+		}
+
+		/// if ok
+		if(val != 0)
+		{
+			fil.setMarker(sta, val);
+		}
+		sta += in.second * fil.getFreq();
+	}
+	/// last marker
+	fil.setMarker(sta, 254);
+
+	/// save edf
+	QString outPath = dataPath;
+	outPath.replace(".txt", ".edf");
+	fil.writeEdfFile(outPath);
 }
 
 void MainWindow::eegVegetSlot()
