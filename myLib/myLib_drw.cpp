@@ -1294,14 +1294,15 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 	const int valsWidth = 40;
 
 	/// whole pic
-	QPixmap pic1(myLib::drw::mapSize + (colorsWidth + valsWidth) * drawScale,
+	QPixmap pic1(myLib::drw::mapSize + (colorsWidth + valsWidth) * static_cast<int>(drawScale),
 				 myLib::drw::mapSize);
 	QPainter paint1;
 	pic1.fill();
 	paint1.begin(&pic1);
 
 	/// the map itself
-	QPixmap pic2 = QPixmap(mapSize, mapSize);
+	QPixmap pic2(myLib::drw::mapSize + (colorsWidth + valsWidth) * static_cast<int>(drawScale),
+				 myLib::drw::mapSize);
 	pic2.fill();
 	QPainter paint2;
 	paint2.begin(&pic2);
