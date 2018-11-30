@@ -8,10 +8,10 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 
 	/// set your user
-	DEFS.setUser(username::MichaelA);
-	DEFS.setUser(username::ElenaC);
-//	DEFS.setUser(username::GalyaP);
-//	DEFS.setDir("c:/Data");
+//	DEFS.setUser(username::MichaelA);
+//	DEFS.setUser(username::ElenaC);
+	DEFS.setUser(username::GalyaP);
+	DEFS.setDir("c:/Data");
 	if(argc > 1) { DEFS.setDir(QString(argv[1])); }
 
 	MainWindow w;

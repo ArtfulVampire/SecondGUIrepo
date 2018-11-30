@@ -575,12 +575,15 @@ void MainWindow::drawHeadSlot()
 		return;
 	}
 
+
 	std::valarray<double> dt(numChan);
 	for(int i = 0; i < numChan; ++i)
 	{
 		lst[i].replace(',', '.');
 		dt[i] = lst[i].toDouble();
 	}
+
+	dt *= ui->drawHeadInvertCheckBox->isChecked() ? -1: 1;
 
 	inPath.replace(".txt", ".jpg");
 	if(!ui->drawHeadCheckBox->isChecked())
@@ -589,6 +592,7 @@ void MainWindow::drawHeadSlot()
 							   ui->drawHeadLowSpinBox->value(),
 							   ui->drawHeadHighSpinBox->value(),
 							   myLib::drw::ColorScale::jet,
+							   true,
 							   true).save(inPath, nullptr, 100);
 	}
 	else
@@ -597,6 +601,7 @@ void MainWindow::drawHeadSlot()
 							   dt.min(),
 							   dt.max(),
 							   myLib::drw::ColorScale::jet,
+							   true,
 							   true).save(inPath, nullptr, 100);
 	}
 }

@@ -233,7 +233,8 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 				   double minVal = 0.,
 				   double maxVal = 0.,
 				   const ColorScale & colorTheme = ColorScale::jet,
-				   bool drawScale = false);
+				   bool drawScale = false,
+				   bool notSolve = false);
 void drawMapsICA(const QString & mapsFilePath,
 				 const QString & outDir,
 				 const QString & outName,

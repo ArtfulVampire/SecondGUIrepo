@@ -29,8 +29,8 @@
      <rect>
       <x>281</x>
       <y>211</y>
-      <width>914</width>
-      <height>349</height>
+      <width>916</width>
+      <height>351</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="processingGridLayout">
@@ -304,6 +304,16 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="drawHeadLowSpinBox">
+           <property name="minimum">
+            <double>-1000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>1000.000000000000000</double>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="1">
           <widget class="QDoubleSpinBox" name="drawHeadHighSpinBox">
            <property name="minimum">
@@ -327,29 +337,30 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="drawHeadCheckBox">
-           <property name="text">
-            <string>auto limits</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QDoubleSpinBox" name="drawHeadLowSpinBox">
-           <property name="minimum">
-            <double>-1000.000000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>1000.000000000000000</double>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="2">
           <widget class="QLabel" name="label_5">
            <property name="text">
             <string>low(blue)</string>
            </property>
           </widget>
+         </item>
+         <item row="1" column="0">
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QCheckBox" name="drawHeadCheckBox">
+             <property name="text">
+              <string>auto limits</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="drawHeadInvertCheckBox">
+             <property name="text">
+              <string>invert</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>

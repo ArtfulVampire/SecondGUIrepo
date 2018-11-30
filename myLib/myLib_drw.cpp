@@ -1279,7 +1279,8 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 				   double minVal,
 				   double maxVal,
 				   const ColorScale & colorTheme,
-				   bool drawScale)
+				   bool drawScale,
+				   bool notSolve)
 {
 
 	/// inData.size() == 19
@@ -1512,6 +1513,8 @@ QPixmap drawOneMap(const std::valarray<double> & inData,
 
 	paint1.end();
 	paint2.end();
+
+	if(notSolve) { return pic1; }
 
 	/// +- solver
 	if(std::abs(maxMagn) > 1.5 * std::abs(minMagn))
