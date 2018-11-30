@@ -1646,18 +1646,30 @@ void MainWindow::reoEyeSlot()
 		return;
 	}
 
+
+	/// email 28-Nov-2018
+	const int type = fil.getMarkArr(sta);
+	fil.setMarker(sta, type + 250);					/// start
+	const std::vector<int> taskPlus
+	{
+		0,		/// filler
+		0,		/// verb
+		100,	/// arithmetic addition
+		150,	/// arithmetic multiplication
+		200,	/// arithmetic sequence
+	};
 	for(const auto & in : myLib::readVegetMarkers(marksPath))
 	{
 		int val{0};
 
 		/// marker value choice
-		if(in.first.contains("Kross"))				{ val = 255; }
-		else if(in.first.contains("Answer"))		{ val = 254; }
+		if(in.first.contains("Kross"))				{ val = 250; }	/// cross
+		else if(in.first.contains("Answer"))		{ val = 255; }	/// task end
 		else
 		{
 			QRegExp reg = QRegExp(R"([0-9]{1,3})");
 			int a = reg.indexIn(in.first);
-			if(a != -1)								{ val = reg.cap(0).toInt(); }
+			if(a != -1)								{ val = reg.cap(0).toInt() + taskPlus[type]; }
 		}
 
 		/// if ok
@@ -1667,8 +1679,7 @@ void MainWindow::reoEyeSlot()
 		}
 		sta += in.second * fil.getFreq();
 	}
-	/// last marker
-	fil.setMarker(sta, 254);
+	fil.setMarker(sta, 255);						/// last "answer" ???
 
 	/// save edf
 	QString outPath = dataPath;

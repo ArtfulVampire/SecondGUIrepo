@@ -552,6 +552,8 @@ void MainWindow::cleanDirs()
 
 void MainWindow::drawHeadSlot()
 {
+	const int numChan = 19;
+
 	QString inPath = QFileDialog::getOpenFileName(
 						 this,
 						 tr("Choose file"),
@@ -562,15 +564,25 @@ void MainWindow::drawHeadSlot()
 		std::cout << "drawHead: filePath is empty" << std::endl;
 		return;
 	}
-	const auto dt = myLib::readFileInLineRaw(inPath);
-	if(dt.size() != 19)
+	QFile in(inPath); in.open(QIODevice::ReadOnly);
+	auto lst = QString(in.readAll()).split(QRegExp("\\s"), QString::SkipEmptyParts)
+			   .toVector().toStdVector();
+	in.close();
+//	const auto dt = myLib::readFileInLineRaw(inPath);
+	if(lst.size() != numChan)
 	{
 		std::cout << "file size is NOT 19, try adding a space after the last number" << std::endl;
 		return;
 	}
 
-	inPath.replace(".txt", ".jpg");
+	std::valarray<double> dt(numChan);
+	for(int i = 0; i < numChan; ++i)
+	{
+		lst[i].replace(',', '.');
+		dt[i] = lst[i].toDouble();
+	}
 
+	inPath.replace(".txt", ".jpg");
 	if(!ui->drawHeadCheckBox->isChecked())
 	{
 		myLib::drw::drawOneMap(dt,
