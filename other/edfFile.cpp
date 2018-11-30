@@ -1074,16 +1074,16 @@ std::vector<uint> edfFile::countMarkers(const std::vector<int> & mrks) const
 	return res;
 }
 
-int edfFile::findMarker(const std::vector<int> & mrks) const
+std::pair <int, int> edfFile::findMarker(const std::vector<int> & mrks) const
 {
 	for(const auto & in : this->markers)
 	{
 		if(myLib::contains(mrks, in.second))
 		{
-			return in.first;
+			return in;
 		}
 	}
-	return -1;
+	return {-1, 0};
 }
 
 void edfFile::writeAnnotations() const

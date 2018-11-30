@@ -80,6 +80,7 @@ public:
     void sliceOneByOne();
 	void sliceOneByOneNew();
 	void sliceElena();
+	void sliceElenaReo();
 	void PausePiecesII();
 	void PausePieces(bool a);
 

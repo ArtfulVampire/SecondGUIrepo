@@ -198,7 +198,7 @@ public:
 
 	int countMarker(int mrk) const;
 	std::vector<uint> countMarkers(const std::vector<int> & mrks) const;
-	int findMarker(const std::vector<int> & mrks) const;
+	std::pair<int, int> findMarker(const std::vector<int> & mrks) const;
 
     void setLabels(const std::vector<QString> & inLabels);
 	void setLabel(int i, const QString & inLabel);
