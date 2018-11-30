@@ -152,6 +152,8 @@ Cut::Cut() :
 	QObject::connect(ui->cutPausesPushButton, SIGNAL(clicked()), this, SLOT(cutPausesSlot()));
 	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()),
 					 this, SLOT(subtractMeansSlot()));
+	QObject::connect(ui->vegetCheckBox, &QCheckBox::clicked,
+					 [this](bool ch){ vegetFlag = ch; });
 
 
 	QObject::connect(ui->setMarkLeftPushButton, &QPushButton::clicked,

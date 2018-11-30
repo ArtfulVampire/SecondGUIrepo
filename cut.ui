@@ -13,7 +13,7 @@
     <x>0</x>
     <y>0</y>
     <width>1850</width>
-    <height>740</height>
+    <height>749</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -35,7 +35,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>279</y>
+     <y>290</y>
      <width>1831</width>
      <height>450</height>
     </rect>
@@ -259,37 +259,14 @@
      <x>3</x>
      <y>2</y>
      <width>1621</width>
-     <height>263</height>
+     <height>282</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_9">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_8">
-      <item row="0" column="0" colspan="4">
-       <widget class="QLineEdit" name="filePathLineEdit"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="browseButton">
-        <property name="text">
-         <string>Open edf</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="suffixComboBox"/>
-      </item>
-      <item row="1" column="2" colspan="2">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>248</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
       <item row="2" column="0">
        <widget class="QPushButton" name="savePicPushButton">
@@ -302,6 +279,16 @@
        <widget class="QPushButton" name="saveButton">
         <property name="text">
          <string>Save edf</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="4">
+       <widget class="QLineEdit" name="filePathLineEdit"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="browseButton">
+        <property name="text">
+         <string>Open edf</string>
         </property>
        </widget>
       </item>
@@ -321,6 +308,26 @@
          </sizepolicy>
         </property>
        </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QCheckBox" name="vegetCheckBox">
+        <property name="text">
+         <string>veget</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>98</width>
+          <height>22</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </item>

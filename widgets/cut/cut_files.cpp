@@ -12,10 +12,8 @@
 
 using namespace myOut;
 
-
 void Cut::next()
 {
-//	std::cout << *fileListIter << std::endl;
 	++fileListIter;
 	if(fileListIter == std::end(filesList))
 	{
@@ -33,7 +31,6 @@ void Cut::prev()
 		std::cout << "prev: bad number, too little" << std::endl;
 		return;
 	}
-//	std::cout << *fileListIter << std::endl;
 	--fileListIter;
 	openFile(edfFil.getDirPath() + "/" + (*fileListIter));
 }
@@ -50,7 +47,7 @@ void Cut::saveSlot()
 	if( !fileOpened ) { return; }
 
 	this->saveAs("_new");
-	logAction(static_cast<const char*>("saveAs"), static_cast<const char*>("_new"));
+	logAction(static_cast<std::string>("saveAs"), static_cast<std::string>("_new"));
 	std::cout << "Cut::save: edfFile saved" << std::endl;
 #if 0
 	/// old
@@ -84,9 +81,7 @@ void Cut::saveSubsecSlot()
 					  ui->rightLimitSpinBox->value(),
 					 "saveSubsec")) { return; }
 #endif
-
 	/// new, only edf is possible
-
 	QString newPath = edfFil.getDirPath() + "/";
 	if(DEFS.getUser() != username::GalyaP)
 	{
@@ -172,7 +167,6 @@ void Cut::saveSubsecSlot()
 #endif
 }
 
-
 void Cut::concatSlot()
 {
 	const QString fil1 = QFileDialog::getOpenFileName(this,
@@ -202,7 +196,6 @@ void Cut::concatSlot()
 	edfFile fil(fil1);
 	fil.concatFile(fil2).writeEdfFile(outPath);
 }
-
 
 void Cut::browseSlot()
 {
@@ -255,7 +248,6 @@ void Cut::setFileType(const QString & dataFileName)
 #endif
 }
 #endif
-
 
 void Cut::setValuesByEdf()
 {
@@ -356,6 +348,8 @@ void Cut::openFile(const QString & dataFileName)
 	fileOpened = false; /// to prevent many paints
 	drawFlag = false;
 
+	if(dataFileName.contains("_veget")) { ui->vegetCheckBox->setChecked(true); }
+
 	addNum = 1;
 	ui->filePathLineEdit->setText(dataFileName);
 	ui->iitpDisableEcgCheckBox->setChecked(false);
@@ -379,5 +373,3 @@ void Cut::openFile(const QString & dataFileName)
 
 	paint();
 }
-
-
