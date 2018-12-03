@@ -143,6 +143,8 @@ public:
 	/// modify
 	edfFile vertcatFile(const QString & addEdfPath) const;
 	edfFile & concatFile(const QString & addEdfPath);
+	edfFile & concatFiles(const std::vector<QString> & filePaths);
+	static edfFile concatFilesStatic(const std::vector<QString> & filePaths);
 	edfFile & subtractMeans(const QString & outPath = QString());
 
     void countFft();
@@ -323,6 +325,7 @@ private:
 	void fitData(int initSize);
 	void cutZerosAtEnd();
 	void adjustMarkerChannel();
+	void adjustByData() { ndr = this->getDataLen() / (this->getFreq() * ddr); }
 
 protected:
 	/// location

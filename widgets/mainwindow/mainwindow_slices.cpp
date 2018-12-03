@@ -352,7 +352,7 @@ void MainWindow::sliceElena() /// slice only, eda in fileName
 	/// (1-numOfTasks) - number(start)
 	/// (255) - optional click
 	/// (245-254) - operational code
-	/// 255 - ready for next task
+	/// 255 - ready for the next task
 
 	for(const auto & mark : marks)
 	{
@@ -1831,9 +1831,13 @@ void MainWindow::reoEyeSlot()
 		return;
 	}
 
+#define OLD_3_DEC_18 0
+
 	/// email 28-Nov-2018
 	const int type = a.second;
-	fil.setMarker(sta, type + 250);					/// start
+#if OLD_3_DEC_18
+	/// old 3-Dec-18
+	fil.setMarker(sta, type + 250);
 	const std::vector<int> taskPlus
 	{
 		0,		/// filler
@@ -1842,28 +1846,78 @@ void MainWindow::reoEyeSlot()
 		150,	/// arithmetic multiplication
 		200,	/// arithmetic sequence
 	};
+#else
+	fil.setMarker(sta, 0);					/// erase "type" marker
+	const int taskMark = 240 + type;		/// "instruction"
+	const int operMark = 245 + type;		/// operational
+	const int readyMark = 255;				/// ready for the next task
+	const int numOfTasks = 40;
+	const int crossMark = 250;				/// cross
+	const int ansMark = 255;				/// answer
+	const int gap = 10;						/// between markers
+#endif
+
+	/// operational can be lost if no answer ????????
+
+	/// first marker BlackSlide - "type"
+	/// (Cross, VerbN, Answer) w/o last answer ???
+
 	for(const auto & in : myLib::readVegetMarkers(marksPath))
 	{
-		int val{0};
-
 		/// marker value choice
-		if(in.first.contains("Kross"))				{ val = 250; }	/// cross
-		else if(in.first.contains("Answer"))		{ val = 255; }	/// task end
+		if(in.first.contains("Kross"))
+		{
+//			fil.setMarker(sta, crossMark);
+//			fil.setMarker(sta, operMark);	/// cross is operMark?
+
+			/////////////////////////// cross is taskMark
+			if(01)
+			{
+				fil.setMarker(sta, taskMark);
+				fil.setMarker(sta - gap, readyMark);
+			}
+		}
+		else if(in.first.contains("Answer"))
+		{
+			fil.setMarker(sta, ansMark);
+			fil.setMarker(sta + gap, operMark); /// what if no answer ????????????
+		}
 		else
 		{
 			QRegExp reg = QRegExp(R"([0-9]{1,3})");
 			int a = reg.indexIn(in.first);
-			if(a != -1)								{ val = reg.cap(0).toInt() + taskPlus[type]; }
-		}
+			if(a != -1)
+			{
+#if OLD_3_DEC_18
+				/// old 3-Dec-18
+				fil.setMarker(sta, reg.cap(0).toInt() + taskPlus[type]);
+#else
+				const int taskNum = reg.cap(0).toInt() + numOfTasks * (type - 1);
 
-		/// if ok
-		if(val != 0)
-		{
-			fil.setMarker(sta, val);
+				if(taskNum <= numOfTasks)
+				{
+					fil.setMarker(sta, taskNum);
+					if(0)
+					{
+						fil.setMarker(sta - gap, taskMark);
+						fil.setMarker(sta - gap * 2, readyMark);
+					}
+				}
+				else
+				{
+					fil.setMarker(sta, 0);		/// erase any marker > numOfTasks ??????????
+				}
+#endif
+			}
 		}
 		sta += in.second * fil.getFreq();
 	}
-	fil.setMarker(sta, 255);						/// last "answer" ???
+
+	/// last "answer" ???
+	{
+		fil.setMarker(sta, ansMark);
+		fil.setMarker(sta + gap, operMark);
+	}
 
 	/// save edf
 	QString outPath = dataPath;

@@ -169,32 +169,33 @@ void Cut::saveSubsecSlot()
 
 void Cut::concatSlot()
 {
-	const QString fil1 = QFileDialog::getOpenFileName(this,
-													  tr("Open first file"),
-													  DEFS.getDirPath(),
-													  "*.edf");
-	if(fil1.isEmpty())
+	std::vector<QString> filePaths{};
+	while(true)
 	{
-		std::cout << "concatSlot: first file path is empty" << std::endl;
-		return;
-	}
-	DEFS.setDir(myLib::getDirPathLib(fil1));
-	const QString fil2 = QFileDialog::getOpenFileName(this,
-													  tr("Open second file"),
-													  DEFS.getDirPath(),
-													  "*.edf");
-
-	if(fil2.isEmpty())
-	{
-		std::cout << "concatSlot: second file path is empty" << std::endl;
-		return;
+		QString filePath = QFileDialog::getOpenFileName(this,
+														tr("Open first file"),
+														DEFS.getDirPath(),
+														"*.edf");
+		DEFS.setDir(myLib::getDirPathLib(filePath));
+		if(filePath.isEmpty())
+		{
+			break;
+		}
+		else
+		{
+			filePaths.push_back(filePath);
+		}
 	}
 
-	QString outPath{fil1};
+	if(filePaths.size() < 2)
+	{
+		std::cout << "concatSlot: not enough files chosen (expect at least 2)" << std::endl;
+		return;
+	}
+
+	QString outPath{filePaths[0]};
 	outPath.replace(".edf", "_concat.edf");
-
-	edfFile fil(fil1);
-	fil.concatFile(fil2).writeEdfFile(outPath);
+	edfFile::concatFilesStatic(filePaths).writeEdfFile(outPath);
 }
 
 void Cut::browseSlot()

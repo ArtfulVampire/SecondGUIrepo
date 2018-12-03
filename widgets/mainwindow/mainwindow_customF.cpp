@@ -27,6 +27,7 @@ void MainWindow::customFunc()
 //	myLib::preprocessDir("C:/Data/tactile/coma_processed");
 //	myLib::GalyaProcessing("C:/Data/tactile/coma_processed");
 
+
 //	myLib::checkChannels("/media/Files/Data/Galya/all_buben", coords::lbl19);
 //	exit(0);
 }

@@ -144,6 +144,7 @@ public:
 	static matrix ident(int dim);
 	static matrix vertCat(const matrix & upper, const matrix & lower);
 	static matrix horzCat(const matrix & left, const matrix & right);
+	static matrix horzCat(const std::vector<matrix> & mats);
 
 	/// "private"
 	double trace() const;

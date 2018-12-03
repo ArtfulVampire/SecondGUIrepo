@@ -62,6 +62,41 @@ matrix horzCat(const matrix & left, const matrix & right)
 	return res;
 }
 
+
+matrix matrix::horzCat(const std::vector<matrix> & mats)
+{
+	if(mats.size() == 0) return matrix{};
+	if(mats.size() == 1) return mats[0];
+
+	const int rw = mats[0].rows();
+	matrix res(rw, 0);
+	int cl = 0;
+
+	for(int i = 0; i < mats.size(); ++i)
+	{
+		if(mats[i].rows() != rw)
+		{
+			std::cout << "matrix::horzCat: inequal rows" << std::endl;
+			return {}; ///////////////////////////////////////////////////////////
+		}
+		cl += mats[i].cols();
+	}
+
+	res.resizeCols(cl);
+	int sta = 0;
+	for(const matrix & mat : mats)
+	{
+		for(int i = 0; i < res.rows(); ++i)
+		{
+			std::copy(std::begin(mat[i]),
+					  std::end(mat[i]),
+					  std::begin(res[i]) + sta);
+		}
+		sta += mat.cols();
+	}
+	return res;
+}
+
 matrix::matrix(int rows, int cols)
 {
     this->resize(rows, cols);

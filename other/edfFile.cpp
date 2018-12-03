@@ -1634,13 +1634,12 @@ edfFile & edfFile::subtractMeans(const QString & outPath)
 
 edfFile & edfFile::concatFile(const QString & addEdfPath)
 {
-    edfFile addEdf;
-    addEdf.readEdfFile(addEdfPath);
+	edfFile addEdf(addEdfPath);
 
 	const int oldLen = this->getDataLen();
 	const int addLen = addEdf.getDataLen();
 
-	edfData.resizeCols( oldLen + addLen);
+	edfData.resizeCols(oldLen + addLen);
 
 
 	for(int i = 0; i < std::min(this->ns, addEdf.getNs()); ++i)
@@ -1649,9 +1648,35 @@ edfFile & edfFile::concatFile(const QString & addEdfPath)
 				  std::end(addEdf.getData(i)),
 				  std::begin(this->edfData[i]) + oldLen);
 	}
+	this->adjustByData();
 	return (*this);
 }
 
+edfFile & edfFile::concatFiles(const std::vector<QString> & filePaths)
+{
+	std::vector<matrix> dt{this->getData()};
+	for(const QString & addPath : filePaths)
+	{
+		dt.push_back(edfFile(addPath).getData());
+	}
+	edfData = matrix::horzCat(dt);
+	this->adjustByData();
+	return (*this);
+}
+
+edfFile edfFile::concatFilesStatic(const std::vector<QString> & filePaths)
+{
+	std::vector<matrix> dt{};
+	for(const QString & addPath : filePaths)
+	{
+		dt.push_back(edfFile(addPath).getData());
+	}
+
+	edfFile res(filePaths[0]);
+	res.edfData = matrix::horzCat(dt);
+	res.adjustByData();
+	return res;
+}
 
 edfFile & edfFile::downsample(double newFreq,
 							  std::vector<int> chanList)
