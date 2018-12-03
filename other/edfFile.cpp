@@ -591,7 +591,7 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 	{
 		filePath = EDFpath;
 		fileName = myLib::getFileName(EDFpath);
-		dirPath = EDFpath.left(EDFpath.lastIndexOf('/'));
+		dirPath = myLib::getDirPathLib(EDFpath);
 		ExpName = myLib::getExpNameLib(filePath);
 
 		QFile::remove(dirPath + "/markers.txt"); /// delete markers file
@@ -600,7 +600,7 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 	std::fstream headerStream;
 	if(readFlag && (writeHeaderFlag || headerOnly))
 	{
-		helpString = dirPath + "/header.txt";
+		QString helpString = dirPath + "/header.txt";
 		headerStream.open(helpString.toStdString(), std::ios_base::out);
 		if(!headerStream.good())
 		{
@@ -698,7 +698,7 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 						labels[i].prepend("EEG ");
 						continue;
 					}
-					if(labels[i].contains(QRegExp(R"((PPG|FPG|SGR|KGR|Resp|RD))"))
+					if(labels[i].contains(QRegExp(R"((EKG|ECG|PPG|FPG|SGR|KGR|Resp|RD))"))
 							&& !labels[i].startsWith("POLY "))
 					{
 						labels[i].prepend("POLY ");
@@ -1074,7 +1074,7 @@ std::vector<uint> edfFile::countMarkers(const std::vector<int> & mrks) const
 	return res;
 }
 
-std::pair <int, int> edfFile::findMarker(const std::vector<int> & mrks) const
+std::pair<int, int> edfFile::findMarker(const std::vector<int> & mrks) const
 {
 	for(const auto & in : this->markers)
 	{
@@ -1084,6 +1084,20 @@ std::pair <int, int> edfFile::findMarker(const std::vector<int> & mrks) const
 		}
 	}
 	return {-1, 0};
+}
+
+
+std::vector<std::pair<int, int>> edfFile::findMarkers(const std::vector<int> & mrks) const
+{
+	std::vector<std::pair<int, int>> res{};
+	for(const auto & in : this->markers)
+	{
+		if(myLib::contains(mrks, in.second))
+		{
+			res.push_back(in);
+		}
+	}
+	return res;
 }
 
 void edfFile::writeAnnotations() const

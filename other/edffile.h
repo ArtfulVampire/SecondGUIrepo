@@ -201,6 +201,7 @@ public:
 	int countMarker(int mrk) const;
 	std::vector<uint> countMarkers(const std::vector<int> & mrks) const;
 	std::pair<int, int> findMarker(const std::vector<int> & mrks) const;
+	std::vector<std::pair<int, int>> findMarkers(const std::vector<int> & mrks) const;
 
     void setLabels(const std::vector<QString> & inLabels);
 	void setLabel(int i, const QString & inLabel);
@@ -329,10 +330,10 @@ private:
 
 protected:
 	/// location
-	QString filePath = QString();
-	QString fileName = QString(); /// add to other constructors
-	QString ExpName = QString();
-	QString dirPath = QString();
+	QString filePath{""};
+	QString fileName{""};
+	QString ExpName{""};
+	QString dirPath{""};
 
 	/// header stuff
 	int bytes = 256;

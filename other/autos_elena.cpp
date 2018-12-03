@@ -9,13 +9,15 @@
 namespace myLib
 {
 
-const int numOfTasks = 180;
+const int numOfTasks = 180;		/// 3 * 60 - usual eeg
+//const int numOfTasks = 160;	/// 4 * 40 - reo
 const int numSmooth = 15;
 const double hilbertFreqLimit = 40.;
 
-const QString RDstring	{" Resp "};
-const QString PPGstring	{" PPG "};
-const QString EDAstring	{" SGR "};
+/// for both usual and reo
+const QString RDstring	{" RD "};
+const QString PPGstring	{" FPG "};
+const QString EDAstring	{" KGR "};
 
 const std::vector<std::pair<double, double>> integrLimits
 {
@@ -457,6 +459,199 @@ void elenaCalculation(const QString & realsPath,
 #endif
 }
 
+
+void elenaCalculationReo(const QString & realsPath,
+						const QString & outSpectraPath,
+						const QString & outTableDir)
+{
+	///////////////
+	const std::vector<QString> markers
+	{
+		"_m_241",
+		"_m_242",
+		"_m_244",
+//		"_t_314", /// closed eyes (whole)
+//		"_t_315", /// open eyes (whole)
+		"_t_214", /// closed eyes (winds)
+		"_t_215", /// open eyes (winds)
+	};
+
+	const int fftLen = 4096;
+
+	QDir().mkpath(outTableDir);
+
+	/// RD - recursia dyhaniya (don't know how it's called in English)
+	/// FPG - FotoPletizmoGramma (PPG - PhotoPlethismoGram)
+	/// KGR - Kozhno Galvanicheskaya Reakciya (really SGR - Skin Galvanic Reaction
+	/// or EDA - ElectroDermal Activity)
+
+	matrix result{};
+
+	const auto forSet = smLib::range<std::vector<int>>(0, numOfTasks);
+	std::set<int> allNumbers(std::begin(forSet), std::end(forSet));
+
+	const auto reals = QDir(realsPath).entryList(def::edfFilters).toVector().toStdVector();
+
+	for(int i = 0; i < reals.size(); ++i)
+	{
+		QString fileName = reals[i];
+
+		edfFile fil(realsPath + "/" + fileName);
+		const matrix & inData = fil.getData();
+
+		if(inData.cols() < 2 * fil.getFreq()) { continue; }				/// too short < 2sec
+
+		/// read aux data from filename (sliceElena() has been already called)
+		std::vector<QString> fromFileName{};
+
+		/// 0 - eda, 1 - taskNum, 2 - taskMark, 3 - operMark
+		for(const QString & prefix : {"_eda_", "_n_", "_m_", "_t_"})	/// order
+		{
+			const int from = fileName.indexOf(prefix) + prefix.size();
+			const int to = fileName.indexOf("_", from);
+			fromFileName.push_back(fileName.mid(from, to - from));
+		}
+
+		std::valarray<double> res(9); /////////// magic const 9 = vegetative + auxiliary
+		int vegetIndex = 0;
+		auto eda = myLib::EDAmax(fil.getData(EDAstring), fromFileName[0].toDouble());
+
+		/// vegetative
+		res[vegetIndex++] = eda.first;										/// +0 eda magnitude
+		res[vegetIndex++] = eda.second / fil.getFreq();						/// +1 eda latency
+		res[vegetIndex++] = myLib::RDfreq(fil.getData(RDstring), fftLen);	/// +2 breath frequency
+		res[vegetIndex++] = myLib::PPGrange(fil.getData(PPGstring));		/// +3 PPG magnitude
+		res[vegetIndex++] = myLib::RDfreq(fil.getData(PPGstring), fftLen);	/// +4 PPG frequency
+		res[vegetIndex++] = inData.cols() / fil.getFreq();					/// +5 reaction time
+
+		/// auxiliary
+		res[vegetIndex++] = fromFileName[1].toInt();						/// +6 taskNumber
+		res[vegetIndex++] = fromFileName[2].toInt();						/// +7 taskMark
+		res[vegetIndex++] = fromFileName[3].toInt();						/// +8 operMark
+
+
+		allNumbers.erase(fromFileName[1].toInt());
+		result.push_back(res);
+
+		/// write into file for classification
+		if(inData.rows() < coords::egi::manyChannels)
+		{
+			QString outString = outSpectraPath + "/" + fileName;
+			std::ofstream outStream(outString
+									.replace(".edf", "." + def::spectraDataExtension)
+									.toStdString());
+			outStream << std::fixed;
+			outStream.precision(4);
+
+			outStream << "NumOfChannels " << 1 << '\t';
+			outStream << "spLength " << 5 << "\r\n";
+			outStream << std::valarray<double>(res[std::slice(0, 5, 1)]) << "\t";
+			outStream.close();
+		}
+
+		/// "progress bar"
+		static auto perc{0};
+		if(100 * i / reals.size() > perc)
+		{
+			perc = 100 * i / reals.size();
+			std::cout << perc << " "; std::cout.flush();
+		}
+	}
+
+#if 01
+	/// cout unprocessed tasks, remake map<int, QString> for messages
+	if(!allNumbers.empty())
+	{
+		std::cout << "elenaCalculation: unprocessed reals:" << std::endl;
+		for(auto each : allNumbers)
+		{
+			std::cout << each << " ";
+		}
+		std::cout << std::endl;
+	}
+#endif
+
+
+#if 01
+	/// get averages
+	auto getAverage = [&result](int taskMark) -> std::valarray<double>
+	{
+		std::valarray<double> res(0., result.cols());
+		int num = 0;
+		for(const auto & row : result)
+		{
+			if(row[7] == taskMark)
+			{
+				res += row;
+				++num;
+			}
+		}
+		if(num != 0) { res /= static_cast<double>(num); }
+		return res;
+	};
+
+	std::ofstream avStr((outTableDir + "/averages.txt").toStdString());
+	for(int taskMark : {241, 242, 243, 244}) /// markers
+	{
+		avStr << getAverage(taskMark) << std::endl;
+	}
+	avStr.close();
+
+	myLib::fileDotsToCommas(outTableDir + "/averages.txt",
+							outTableDir + "/averages_comma.txt");
+#endif
+
+
+
+	/// write into table file (with fromFileName data and vegetative)
+#if 01
+	/// sort by what?
+	std::sort(std::begin(result), std::end(result),
+			  [](const auto & a1, const auto a2)
+	{
+//		return a1[6] < a2[6]; /// taskNumber
+		return a1[7] < a2[7]; /// taskMark
+//		return a1[8] < a2[8]; /// operMark
+	});
+#endif
+
+	/// write to table
+	std::ofstream outStr((outTableDir + "/table.txt").toStdString());
+	outStr << makeTableCols({}) << std::endl; /// veget & aux only
+	outStr << result << std::endl;
+	outStr.close();
+	myLib::fileDotsToCommas(outTableDir + "/table.txt",
+							outTableDir + "/table_comma.txt");
+
+
+#if 0
+	/// NO MANN-WHITNEY
+	/// print Mann-Whitney things
+	myLib::writeMannWhitney(myLib::countMannWhitney(outSpectraPath, nullptr, nullptr),
+							outTableDir + "/MannWhitney.txt",
+							" ");
+	/// pValues
+	myLib::writeMannWhitney(myLib::countMannWhitneyD(outSpectraPath),
+							outTableDir + "/MannWhitneyD.txt",
+							"\t");
+#endif
+
+
+#if 0
+	/// remove empty rows
+	std::vector<int> inds{};
+	for(int i = 0; i < table.rows(); ++i)
+	{
+		if(table[i].size() == 0) { inds.push_back(i); }
+	}
+	table.eraseRows(inds);
+
+	tableStream << table;
+	tableStream.close();
+#endif
+}
+
+/// (name, duration)
 std::vector<std::pair<QString, double>> readVegetMarkers(const QString & inPath)
 {
 	std::vector<std::pair<QString, double>> res{};

@@ -1919,6 +1919,12 @@ void MainWindow::reoEyeSlot()
 		fil.setMarker(sta + gap, operMark);
 	}
 
+	/// delete markers 82, 83
+	for(const auto & in : fil.findMarkers({82, 83}))
+	{
+		fil.setMarker(in.first, 0);
+	}
+
 	/// save edf
 	QString outPath = dataPath;
 	outPath.replace(".txt", ".edf");

@@ -212,9 +212,20 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->elenaProcessingPushButton, &QPushButton::clicked,
 					 [this]()
 	{
-		myLib::elenaCalculation(globalEdf.getDirPath() + "/Reals",
-								globalEdf.getDirPath() + "/SpectraSmooth",
-								globalEdf.getDirPath());
+		auto pth = globalEdf.getDirPath()  + "/Reals";
+		edfFile fil(pth + "/" + QDir(pth).entryList(def::edfFilters).front(), true);
+		if(fil.getLabels(0).startsWith("EEG "))
+		{
+			myLib::elenaCalculation(globalEdf.getDirPath() + "/Reals",
+									globalEdf.getDirPath() + "/SpectraSmooth",
+									globalEdf.getDirPath());
+		}
+		else
+		{
+			myLib::elenaCalculationReo(globalEdf.getDirPath() + "/Reals",
+									   globalEdf.getDirPath() + "/SpectraSmooth",
+									   globalEdf.getDirPath());
+		}
 	});
 
 	/// edit edf
@@ -366,13 +377,8 @@ void MainWindow::setEdfFileSlot()
 
 void MainWindow::setEdfFile(const QString & filePath)
 {
-    QString helpString;
-    helpString = filePath;
-
-	ui->filePathLineEdit->setText(helpString);
-
-	helpString.resize(helpString.lastIndexOf("/"));
-	DEFS.setDir(helpString);
+	ui->filePathLineEdit->setText(filePath);
+	DEFS.setDir(myLib::getDirPathLib(filePath));
 
 	DEFS.dirMkdir("Reals");
 	DEFS.dirMkdir("Reals/BC");
@@ -413,15 +419,14 @@ void MainWindow::readData()
     QTime myTime;
     myTime.start();
 
-    QString helpString;
-	helpString = ui->filePathLineEdit->text();
+	QString helpString = ui->filePathLineEdit->text();
     if(!QFile::exists(helpString))
     {
 		outStream << "readData: edf file doent exist\n" << helpString << std::endl;
         return;
     }
 	globalEdf.readEdfFile(helpString);
-	outStream << "EDF data read successful" << std::endl;
+//	outStream << "EDF data read successful" << std::endl;
 
 	ui->reduceChannelsComboBox->currentIndexChanged(ui->reduceChannelsComboBox->currentIndex());
 	ui->markerSecTimeDoubleSpinBox->setMaximum(globalEdf.getDataLen() / DEFS.getFreq());

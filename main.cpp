@@ -8,8 +8,8 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 
 	/// set your user
-	DEFS.setUser(username::MichaelA);
-//	DEFS.setUser(username::ElenaC);
+//	DEFS.setUser(username::MichaelA);
+	DEFS.setUser(username::ElenaC);
 //	DEFS.setUser(username::GalyaP);
 //	DEFS.setDir("c:/Data");
 	DEFS.setDir("/media/Files/Data/Elena/VegetTxt");
