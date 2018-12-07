@@ -349,8 +349,6 @@ void Cut::openFile(const QString & dataFileName)
 	fileOpened = false; /// to prevent many paints
 	drawFlag = false;
 
-	if(dataFileName.contains("_veget")) { ui->vegetCheckBox->setChecked(true); }
-
 	addNum = 1;
 	ui->filePathLineEdit->setText(dataFileName);
 	ui->iitpDisableEcgCheckBox->setChecked(false);
@@ -363,6 +361,10 @@ void Cut::openFile(const QString & dataFileName)
 	marksToDrawSet();
 
 	edfFil.readEdfFile(dataFileName);
+	if(!edfFil.getLabels(0).contains("EEG") || dataFileName.contains("_veget"))
+	{
+		ui->vegetCheckBox->setChecked(true);
+	}
 	fileOpened = true;
 	logAction(edfFil.getExpName());
 

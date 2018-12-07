@@ -246,11 +246,15 @@ void MainWindow::sliceWinds()
 	}
 }
 
-void MainWindow::sliceElena() /// slice only, eda in fileName
+
+/// slice only, eda in fileName, both usual files and reo ?????
+void MainWindow::sliceElena()
 {
 	/// CONSTS START
 	const edfFile & fil = globalEdf;
-	const int numOfTasks = 180;
+//	const int numOfTasks = 180;  /// usual
+	const int numOfTasks = 120;  /// reo
+
 
 	/// rest "task codes"
 	/// 210 - closed start,	211 - closed end
@@ -292,10 +296,10 @@ void MainWindow::sliceElena() /// slice only, eda in fileName
 		return fil.getDirPath()
 				+ "/Reals"
 				+ "/" + fil.getExpName()
-				+ "_eda_" + nm(eda)
 				+ "_n_" + nm(taskNumber)
 				+ "_m_" + nm(taskMark)
 				+ "_t_" + nm(operMark)
+				+ "_eda_" + nm(eda)
 				+"_.edf";
 	};
 
@@ -425,11 +429,13 @@ void MainWindow::sliceElena() /// slice only, eda in fileName
 	}
 }
 
-void MainWindow::sliceElenaReo() /// veget reo
+/// veget reo - unused
+void MainWindow::sliceElenaReo()
 {
+	return;
 	/// CONSTS START
 	const edfFile & fil = globalEdf;
-	const int numOfTasks = 40;
+	const int numOfTasks = 40; /// of one type
 
 #if 0
 	/// ???
@@ -533,17 +539,19 @@ void MainWindow::sliceElenaReo() /// veget reo
 	int number = -1;
 	int start = -1;
 	bool startFlag = false;
-
-	const auto staPair = fil.findMarker({251, 252, 253, 254});
 	int marker = -1;
 
-	int type = staPair.second - 250;
+	/// not needed because we zero the starting marker
+//	const auto staPair = fil.findMarker({1, 2, 3, 4, 251, 252, 253, 254});
+//	int type = (staPair.second > 5) ? (staPair.second - 250) : staPair.second;
 
-	/// startTask - 251|252|253|254
+	/// startTask omitted
 	///
-	/// numNask
+	/// 255 - readyMark
+	/// 241|242|243|244 - taskMark
+	/// 1-120 - numTask
 	/// 255 - answer
-	/// 250 - cross
+	/// taskMark+5 - operMark
 
 	for(const auto & mark : marks)
 	{
@@ -1813,7 +1821,7 @@ void MainWindow::reoEyeSlot()
 	const QString marksPath = QFileDialog::getOpenFileName(this,
 														   tr("Choose markers file"),
 														   DEFS.getDirPath(),
-														   "*.txt");
+														   "*.txt, *.csv");
 	if(dataPath.isEmpty() || marksPath.isEmpty())
 	{
 		std::cout << "at least one file path is empty!" << std::endl;
@@ -1821,23 +1829,23 @@ void MainWindow::reoEyeSlot()
 	}
 
 	edfFile fil(dataPath, inst::veget);
-	const auto a = fil.findMarker({1,2,3,4});
+	auto a = fil.findMarker({1,2,3,4,251,252,253,254});
+
 	int sta = a.first;
 //	sta += 50; /// +200 ms because of hardware delay?
 
 	if(sta == -1)
 	{
-		std::cout << "can't find start marker (1, 2, 3 or 4)" << std::endl;
+		std::cout << "can't find start marker" << std::endl;
 		return;
 	}
 
 #define OLD_3_DEC_18 0
 
 	/// email 28-Nov-2018
-	const int type = a.second;
+	const int type = (a.second > 5) ? (a.second-250) : a.second;
 #if OLD_3_DEC_18
-	/// old 3-Dec-18
-	fil.setMarker(sta, type + 250);
+	/// old 3-Dec-18	fil.setMarker(sta, type + 250);
 	const std::vector<int> taskPlus
 	{
 		0,		/// filler
@@ -1850,10 +1858,10 @@ void MainWindow::reoEyeSlot()
 	fil.setMarker(sta, 0);					/// erase "type" marker
 	const int taskMark = 240 + type;		/// "instruction"
 	const int operMark = 245 + type;		/// operational
-	const int readyMark = 255;				/// ready for the next task
-	const int numOfTasks = 40;
 	const int crossMark = 250;				/// cross
 	const int ansMark = 255;				/// answer
+	const int readyMark = 255;				/// ready for the next task
+	const int numOfTasks = 30;
 	const int gap = 10;						/// between markers
 #endif
 
@@ -1884,19 +1892,20 @@ void MainWindow::reoEyeSlot()
 		}
 		else
 		{
+
 			QRegExp reg = QRegExp(R"([0-9]{1,3})");
 			int a = reg.indexIn(in.first);
+//			std::cout << a << std::endl;
 			if(a != -1)
 			{
 #if OLD_3_DEC_18
 				/// old 3-Dec-18
 				fil.setMarker(sta, reg.cap(0).toInt() + taskPlus[type]);
 #else
-				const int taskNum = reg.cap(0).toInt() + numOfTasks * (type - 1);
-
+				int taskNum = reg.cap(0).toInt();
 				if(taskNum <= numOfTasks)
 				{
-					fil.setMarker(sta, taskNum);
+					fil.setMarker(sta, taskNum + numOfTasks * (type - 1));
 					if(0)
 					{
 						fil.setMarker(sta - gap, taskMark);
@@ -1913,7 +1922,8 @@ void MainWindow::reoEyeSlot()
 		sta += in.second * fil.getFreq();
 	}
 
-	/// last "answer" ???
+	/// last "answer" - unneeded
+	if(0)
 	{
 		fil.setMarker(sta, ansMark);
 		fil.setMarker(sta + gap, operMark);

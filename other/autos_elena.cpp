@@ -9,8 +9,8 @@
 namespace myLib
 {
 
-const int numOfTasks = 180;		/// 3 * 60 - usual eeg
-//const int numOfTasks = 160;	/// 4 * 40 - reo
+//const int numOfTasks = 180;		/// 3 * 60 - usual eeg
+const int numOfTasks = 120;	/// 4 * 30 - reo
 const int numSmooth = 15;
 const double hilbertFreqLimit = 40.;
 
@@ -487,11 +487,12 @@ void elenaCalculationReo(const QString & realsPath,
 
 	matrix result{};
 
-	const auto forSet = smLib::range<std::vector<int>>(0, numOfTasks);
+	const auto forSet = smLib::range<std::vector<int>>(1, numOfTasks + 1);
 	std::set<int> allNumbers(std::begin(forSet), std::end(forSet));
 
 	const auto reals = QDir(realsPath).entryList(def::edfFilters).toVector().toStdVector();
 
+	std::cout << "progress:" << std::endl;
 	for(int i = 0; i < reals.size(); ++i)
 	{
 		QString fileName = reals[i];
@@ -557,6 +558,7 @@ void elenaCalculationReo(const QString & realsPath,
 			std::cout << perc << " "; std::cout.flush();
 		}
 	}
+	std::cout << std::endl;
 
 #if 01
 	/// cout unprocessed tasks, remake map<int, QString> for messages
@@ -591,6 +593,7 @@ void elenaCalculationReo(const QString & realsPath,
 	};
 
 	std::ofstream avStr((outTableDir + "/averages.txt").toStdString());
+	avStr.precision(5);
 	for(int taskMark : {241, 242, 243, 244}) /// markers
 	{
 		avStr << getAverage(taskMark) << std::endl;
@@ -618,6 +621,7 @@ void elenaCalculationReo(const QString & realsPath,
 	/// write to table
 	std::ofstream outStr((outTableDir + "/table.txt").toStdString());
 	outStr << makeTableCols({}) << std::endl; /// veget & aux only
+	outStr.precision(5);
 	outStr << result << std::endl;
 	outStr.close();
 	myLib::fileDotsToCommas(outTableDir + "/table.txt",
@@ -634,6 +638,8 @@ void elenaCalculationReo(const QString & realsPath,
 	myLib::writeMannWhitney(myLib::countMannWhitneyD(outSpectraPath),
 							outTableDir + "/MannWhitneyD.txt",
 							"\t");
+
+	/// or custom?
 #endif
 
 

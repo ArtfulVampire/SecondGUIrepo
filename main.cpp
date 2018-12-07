@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	DEFS.setUser(username::ElenaC);
 //	DEFS.setUser(username::GalyaP);
 //	DEFS.setDir("c:/Data");
-	DEFS.setDir("/media/Files/Data/Elena/VegetTxt");
+	DEFS.setDir("/media/Files/Data/Elena/VegetMalinovskaya");
 	if(argc > 1) { DEFS.setDir(QString(argv[1])); }
 
 	MainWindow w;

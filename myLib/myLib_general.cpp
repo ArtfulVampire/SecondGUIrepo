@@ -405,9 +405,9 @@ bool areEqualFiles(const QString & path1, const QString & path2)
 
 void fileDotsToCommas(const QString & in, const QString & out)
 {
-	QFile fileDot(in);			fileDot.open(QIODevice::ReadOnly);
+	QFile fileDot(in);	fileDot.open(QIODevice::ReadOnly);
 	QFile fileCom(out);	fileCom.open(QIODevice::WriteOnly);
-	fileCom.write(fileDot.readAll().replace(",", "."));
+	fileCom.write(fileDot.readAll().replace(".", ","));
 	fileDot.close();
 	fileCom.close();
 }
