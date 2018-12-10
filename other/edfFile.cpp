@@ -1982,11 +1982,11 @@ edfFile edfFile::rereferenceData(reference newRef,
 		{
 			helpString += currNumStr + " ";
 		}
-		else if(temp.labels[i].contains("EOG") && eogAsIs)
+		else if(temp.labels[i].contains("EOG") && eogAsIs) /// EOG as is
 		{
 			helpString += currNumStr + " ";
 		}
-		else if(temp.labels[i].contains("EOG") && bipolarEog12)
+		else if(temp.labels[i].contains("EOG") && bipolarEog12) /// EOG bipolar
 		{
 			if(temp.labels[i].contains("EOG1")) { /* do nothing */ }
 			else if(temp.labels[i].contains("EOG2")) /// make bipolar EOG1-EOG2
@@ -2009,23 +2009,16 @@ edfFile edfFile::rereferenceData(reference newRef,
 		}
 		else /// EEG and usual EOG
 		{
-			/// define current ref
-			QRegExp forRef(R"([\-].{1,4}[ ])");
-			forRef.indexIn(temp.labels[i]);
-			QString refName = forRef.cap();
-			refName.remove(QRegExp(R"([\-\s])"));
+			QString chanName = myLib::getChanName(temp.labels[i]);
+			QString refName = myLib::getRefName(temp.labels[i]);
 
-			/// if no reference found - leave as is
+			/// if no such reference is known - leave as is
 			if(strToRef.count(refName) == 0) { helpString += currNumStr + " "; continue; }
-
-			QString chanName = myLib::getLabelName(temp.labels[i]);
 
 			reference targetRef = newRef;
 			if(newRef == reference::Base)
 			{
-				if(std::find(std::begin(coords::lbl_A1),
-							 std::end(coords::lbl_A1),
-							 chanName) != std::end(coords::lbl_A1))
+				if(myLib::contains(coords::lbl_A1, chanName))
 				{
 					targetRef = reference::A1;
 				}
@@ -2040,11 +2033,19 @@ edfFile edfFile::rereferenceData(reference newRef,
 												earsChanStr,
 												groundChanStr,
 												sign) + " ";
-			temp.labels[i].replace(refName, refToStr.at(targetRef));
+
+			temp.channels[i].label.replace(refName, refToStr.at(targetRef));
 		}
 	}
+	/// save labels
+	const auto chanBC = temp.channels;
+
 	/// the very processing
 	temp = this->reduceChannels(helpString);
+
+	/// fix labels
+	temp.channels = chanBC;
+	temp.adjustArraysByChannels();
 
 	/// fix EOG1-EOG2 label when bipolar
 	/// generality
@@ -2406,7 +2407,7 @@ edfFile edfFile::reduceChannels(const QString & chanString) const
     /// need write a check of channel sequence
 
 	int itemCounter = 0;
-	for(auto item : leest)
+	for(const auto & item : leest)
 	{
 		int accordNum = item.toInt() - 1;
 		if(smLib::isInt(item)) /// just copy

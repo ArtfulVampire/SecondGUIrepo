@@ -735,7 +735,7 @@ void preprocessDir(const QString & inPath)
 
 #if 0
 	/// reref
-	autos::rereferenceFolder(guyPath, reference::Ar);
+	autos::rereferenceFolder(guyPath, guyPath, reference::Ar);
 #endif
 
 #if 0

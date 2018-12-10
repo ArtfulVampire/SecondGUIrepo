@@ -81,13 +81,20 @@ const std::map<int, QString> kyrToLatinData{
 namespace myLib
 {
 
-QString getLabelName(const QString & label)
+QString getChanName(const QString & label)
 {
-    QRegExp forChan(R"([ ].{1,4}[\-])");
+	static const QRegExp forChan(R"(\s(.{1,4})\-)");
     forChan.indexIn(label);
     QString chanName = forChan.cap();
     chanName.remove(QRegExp(R"([\-\s])"));
     return chanName;
+}
+
+QString getRefName(const QString & label)
+{
+	static const QRegExp forRef(R"(\-([\S]{1,4}))");
+	forRef.indexIn(label);
+	return forRef.cap(1);
 }
 
 QString setFileName(const QString & initNameOrPath) /// append _num before the dot

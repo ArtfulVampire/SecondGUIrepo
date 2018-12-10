@@ -44,6 +44,27 @@ void MainWindow::rereferenceDataSlot()
 	outStream << "rereferenceDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
+void MainWindow::rereferenceFolderSlot()
+{
+	QTime myTime;
+	myTime.start();
+
+	QString inPath = QFileDialog::getExistingDirectory(this,
+													   tr("Choose a directory with edfs"),
+													   DEFS.getDirPath());
+	QString outPath = inPath + "/reref";
+	QDir().mkdir(outPath);
+	for(const QString & fileName : QDir(inPath).entryList(def::edfFilters))
+	{
+		edfFile fil(inPath + "/" + fileName);
+		fil.rereferenceData(strToRef.at(ui->rereferenceDataComboBox->currentText()),
+							ui->eogAsIsCheckBox->isChecked(),
+							ui->eogBipolarCheckBox->isChecked())
+				.writeEdfFile(outPath + "/" + fileName);
+	}
+	outStream << "rereferenceFolderSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+}
+
 #if 0
 //// check remake to do
 void MainWindow::rereferenceCARSlot()

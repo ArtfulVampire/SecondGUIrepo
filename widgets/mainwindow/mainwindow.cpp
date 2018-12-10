@@ -236,6 +236,7 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
 	QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
 	QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
+	QObject::connect(ui->rereferenceFolderPushButton, SIGNAL(clicked()), this, SLOT(rereferenceFolderSlot()));
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));
 

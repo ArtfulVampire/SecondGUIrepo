@@ -59,8 +59,9 @@ public slots:
 	/// signals
     void processEyes();
     void ICA();
-    void refilterDataSlot();
-    void rereferenceDataSlot();
+	void refilterDataSlot();
+	void rereferenceDataSlot();
+	void rereferenceFolderSlot();
 #if 0
 	void rereferenceCARSlot();
 #endif

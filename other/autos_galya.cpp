@@ -1149,18 +1149,14 @@ void cutFilesInFolder(const QString & path,
 
 
 
-void rereferenceFolder(const QString & procDirPath,
+void rereferenceFolder(const QString & inPath,
+					   const QString & outPath,
 					   reference newRef)
 {
-	const QStringList filesList = QDir(procDirPath).entryList(def::edfFilters,
-															  QDir::NoFilter,
-															  QDir::Size | QDir::Reversed);
-
-	for(const QString & fileName : filesList)
+	for(const QString & fileName : QDir(inPath).entryList(def::edfFilters))
 	{
-		QString helpString = procDirPath + "/" + fileName;
-		edfFile fil(helpString);
-		fil.rereferenceData(newRef, false, false).writeEdfFile(helpString);
+		edfFile fil(inPath + "/" + fileName);
+		fil.rereferenceData(newRef, false, false).writeEdfFile(outPath + "/" + fileName);
 	}
 }
 
