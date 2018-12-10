@@ -1821,7 +1821,7 @@ void MainWindow::reoEyeSlot()
 	const QString marksPath = QFileDialog::getOpenFileName(this,
 														   tr("Choose markers file"),
 														   DEFS.getDirPath(),
-														   "*.txt, *.csv");
+														   "(*.txt *.csv)");
 	if(dataPath.isEmpty() || marksPath.isEmpty())
 	{
 		std::cout << "at least one file path is empty!" << std::endl;

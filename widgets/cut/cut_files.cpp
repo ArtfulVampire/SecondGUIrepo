@@ -364,6 +364,7 @@ void Cut::openFile(const QString & dataFileName)
 	if(!edfFil.getLabels(0).contains("EEG") || dataFileName.contains("_veget"))
 	{
 		ui->vegetCheckBox->setChecked(true);
+		vegetFlag = true;
 	}
 	fileOpened = true;
 	logAction(edfFil.getExpName());
