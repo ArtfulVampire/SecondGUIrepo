@@ -10,6 +10,29 @@ using namespace myOut;
 namespace repair
 {
 
+void addReference(const QString & inDirPath,
+				  const QString & outDirPath,
+				  const QString & ref)
+{
+	for(const QString & str : QDir(inDirPath).entryList(def::edfFilters))
+	{
+		edfFile feel(inDirPath + "/" + str);
+
+		auto labels = feel.getLabels();
+		for(auto & lbl : labels)
+		{
+			if(!lbl.contains('-') && !lbl.contains(QRegExp(R"(A1\|A2\|Ar\|N)")))
+			{
+				lbl = lbl.trimmed();
+				lbl += "-" + ref;
+				lbl = myLib::fitString(lbl, 16); /// magic const label length
+			}
+		}
+		feel.setLabels(labels);
+		feel.writeEdfFile((outDirPath.isEmpty() ? inDirPath : outDirPath) + "/" + str);
+	}
+}
+
 void physMinMaxDir(const QString & dirPath, const QStringList & filters)
 {
 	for(const QString & str : QDir(dirPath).entryList(filters))

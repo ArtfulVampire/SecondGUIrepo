@@ -152,6 +152,11 @@ MainWindow::MainWindow() :
 		ui->reduceChannesPushButton->hide(); /// reduce ns in Reals
 	}
 
+	if(!DEFS.isUser(username::GalyaP))
+	{
+		ui->addRefPushButton->hide();
+	}
+
 #if SHOW_MATI_WIDGETS
 	/// mati
 	QObject::connect(ui->matiPreprocessingPushButton, SIGNAL(clicked()), this, SLOT(matiPreprocessingSlot()));
@@ -237,6 +242,7 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
 	QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
 	QObject::connect(ui->rereferenceFolderPushButton, SIGNAL(clicked()), this, SLOT(rereferenceFolderSlot()));
+	QObject::connect(ui->addRefPushButton, SIGNAL(clicked()), this, SLOT(addRefSlot()));
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));
 

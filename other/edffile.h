@@ -470,7 +470,9 @@ void handleParamArray(std::valarray<Typ> & qStr,
 /// public "static" funcs to repair edfs or filenames
 namespace repair
 {
-
+void addReference(const QString & inDirPath,
+				  const QString & outDirPath,
+				  const QString & ref);
 bool testChannelsOrderConsistency(const QString & dirPath);
 edfFile channelsOrderFile(const QString & inFilePath,
 					   const std::vector<QString> & standard);

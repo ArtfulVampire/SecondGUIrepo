@@ -62,6 +62,7 @@ public slots:
 	void refilterDataSlot();
 	void rereferenceDataSlot();
 	void rereferenceFolderSlot();
+	void addRefSlot();
 #if 0
 	void rereferenceCARSlot();
 #endif

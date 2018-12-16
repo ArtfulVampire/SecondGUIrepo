@@ -44,6 +44,54 @@ void MainWindow::rereferenceDataSlot()
 	outStream << "rereferenceDataSlot: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
+void MainWindow::addRefSlot()
+{
+	QString inPath = QFileDialog::getExistingDirectory(this,
+													   tr("Choose a directory with edfs"),
+													   DEFS.getDirPath());
+	DEFS.setDir(inPath);
+	QString outPath = QFileDialog::getExistingDirectory(this,
+													   tr("Choose output directory"),
+													   DEFS.getDirPath());
+	if(outPath.isEmpty() || outPath == inPath)
+	{
+		outPath = inPath + "/reref";
+		QDir().mkdir(outPath);
+	}
+	/// no progress bar
+//	repair::addReference(inPath, outPath, ui->rereferenceDataComboBox->currentText());
+	/// yes progress bar
+	const auto lst = QDir(inPath).entryList(def::edfFilters);
+	int c = 0;
+	qApp->processEvents();
+	for(const QString & str : lst)
+	{
+		edfFile feel(inPath + "/" + str);
+
+		auto labels = feel.getLabels();
+		for(auto & lbl : labels)
+		{
+			if(!lbl.contains('-') && !lbl.contains(QRegExp(R"(A1\|A2\|Ar\|N)")))
+			{
+				lbl = lbl.trimmed();
+				lbl += "-" + ui->rereferenceDataComboBox->currentText();
+				lbl = myLib::fitString(lbl, 16); /// magic const label length
+			}
+		}
+		feel.setLabels(labels);
+		feel.writeEdfFile(outPath + "/" + str);
+
+		qApp->processEvents();
+		if(stopFlag)
+		{
+			stopFlag = false;
+			return;
+		}
+		ui->progressBar->setValue(c++ * 100. / lst.size());
+	}
+	ui->progressBar->setValue(0);
+}
+
 void MainWindow::rereferenceFolderSlot()
 {
 	QTime myTime;
