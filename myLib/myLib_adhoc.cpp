@@ -238,9 +238,8 @@ void TablingXenia(const QString & outPath)
 
 /// one more Xenia special tabling
 void TablingXeniaWithAverage(const QString & inPath,
-							 const QString & outPath,
-							 const QString & featName,
-							 const QString & num)
+							 const QString & outFilePath,
+							 const QString & featName)
 {
 	/// read guys_finalest.txt to guys
 	std::vector<QString> guys{};
@@ -271,7 +270,7 @@ void TablingXeniaWithAverage(const QString & inPath,
 	}
 	myLib::concatFilesVert(inPath,
 						   filesToVertCat,
-						   outPath + "/table_" + featName + "_" + num + ".txt");
+						   outFilePath);
 }
 
 void TablingUsual(const QString & workPath, const QString & outPath)
@@ -403,6 +402,7 @@ void XeniaFinal()
 	autos::makeLabelsFile(AUT_SETS.getChansProc(),
 						  inPath + "/labels.txt",
 						  AUT_SETS.getMarkers(),
+						  AUT_SETS.getAutosMask(),
 						  "\t");
 }
 
@@ -495,33 +495,37 @@ void XeniaWithAverage(const QString & workPath)
 	AUT_SETS.setMarkers(subj::marksLists::tbiMarkers);
 	AUT_SETS.setChansProc(coords::lbl19);
 
-	AUT_SETS.setAutosMask(0
-						  | autos::feature::fft
-						  | autos::feature::Hilbert
-						  | autos::feature::fracDim
-						  | autos::feature::alphaPeak
-						  );
+//	AUT_SETS.setAutosMask(0
+//						  | autos::feature::fft
+//						  | autos::feature::Hilbert
+//						  | autos::feature::fracDim
+//						  | autos::feature::alphaPeak
+//						  );
 
-	/// CHECK!
-	AUT_SETS.setFeatureFilter(autos::feature::fft, {{1, 4}, {4, 8}, {8, 13}, {14, 20}});
-	AUT_SETS.setFeatureFilter(autos::feature::Hilbert, {{1, 4}, {4, 8}, {8, 13}, {14, 20}});
-	AUT_SETS.setFeatureFilter(autos::feature::fracDim, {{1, 5}, {3, 8}, {8, 13}, {14, 20}});
+
+
+//	AUT_SETS.setFeatureFilter(autos::feature::fft,		{{1, 4}, {3, 8}, {8, 13}, {14, 20}});
+//	AUT_SETS.setFeatureFilter(autos::feature::Hilbert,	{{1, 4}, {3, 8}, {8, 13}, {14, 20}, {1, 20}});
+//	AUT_SETS.setFeatureFilter(autos::feature::fracDim,	{{1, 5}, {3, 8}, {8, 13}, {14, 20}, {1, 20}});
 
 	using oneGroupType = std::pair<std::vector<int>, QString>;
 	using chanGroupType = std::vector<oneGroupType>;
 
-	/// Fp1=0 Fp2=1
-	/// F7=2 F3=3 Fz=4 F4=5 F8=6
-	/// T3=7 C3=8 Cz=9 C4=10 T4=11
-	/// T5=12 P3=13 Pz=14 P4=15 T6=16
-	/// O1=17 O2=18
+	///			Fp1=0			Fp2=1
+	/// F7=2	F3=3	Fz=4	F4=5	F8=6
+	/// T3=7	C3=8	Cz=9	C4=10	T4=11
+	/// T5=12	P3=13	Pz=14	P4=15	T6=16
+	///			O1=17			O2=18
 	const std::vector<chanGroupType> chanGroups
 	{
+#if 01
 		{
 			{{2, 3, 7, 8, 12, 13, 17}, "left"},
 			{{5, 6, 10, 11, 15, 16, 18}, "right"},
 		},
+#endif
 
+#if 01
 		{
 			{{4, 9}, "FCz"},
 			{{9, 14}, "CPz"},
@@ -533,7 +537,9 @@ void XeniaWithAverage(const QString & workPath)
 			{{13, 15}, "P34"},
 			{{17, 18}, "O12"},
 		},
+#endif
 
+#if 01
 		{
 //			{{0}, "Fp1"},	{{1}, "Fp2"},
 			{{3}, "F3"},	{{5}, "F4"},
@@ -547,32 +553,103 @@ void XeniaWithAverage(const QString & workPath)
 //			{{14}, "Pz"},
 			{{17}, "O1"},	{{18}, "O2"},
 		},
+#endif
 	};
 
 	/// for each feature
+	/// new 13-Nov
+	const std::vector<autos::feature> features
+	{
+		autos::feature::fft,
+//		autos::feature::Hilbert,
+//		autos::feature::fracDim,
+//		autos::feature::alphaPeak,
+	};
 
+	/// new 13-Nov
+	const std::map<autos::featureEnumType, std::vector<autos::filterFreqs>> featuresFilters
+	{
+		{autos::feature::alphaPeak,	{autos::filtFreqs.at(autos::filter::none)}},
+		{autos::feature::fft,
+			{
+//				{1, 4},
+				{3, 8},
+//				{8, 13},
+//				{14, 20}
+			}
+		},
+		{autos::feature::Hilbert,
+			{
+				{1, 4},
+				{3, 8},
+				{8, 13},
+				{14, 20},
+				{1, 20}
+			}
+		},
+		{autos::feature::fracDim,
+			{
+				{1, 5},
+				{3, 8},
+				{8, 13},
+				{14, 20},
+				{1, 20}
+			}
+		},
+	};
+
+	const QString tmpPath = workPath + "_res2";
 
 	/// each type of averaging
-	for(int i = 0 ; i < chanGroups.size(); ++i)
+//	for(int i = 0 ; i < chanGroups.size(); ++i)
+	for(int i : {1})
 	{
 		AUT_SETS.setChansGroups(chanGroups[i]);
 
-		myLib::cleanDir(workPath + "_res");
-		autos::ProcessByGroups(workPath,
-							   workPath + "_res",
-							   AUT_SETS.getChansProc());
-
-		for(auto feat : AUT_SETS.getAutosMaskArray())
+		for(auto feat : features)
 		{
-			autos::makeLabelsFile(AUT_SETS.getChansGroupsNames(),
-								  workPath + "/labels_" + autos::featToStr(feat) + "_" + nm(i) + ".txt",
-								  AUT_SETS.getMarkers(),
-								  "\r\n");
+			for(auto flt : featuresFilters.at(feat))
+			{
+				myLib::cleanDir(tmpPath);
+				AUT_SETS.setAutosMask(feat);
+				AUT_SETS.setFeatureFilter(feat, {flt});
 
-			myLib::TablingXeniaWithAverage(workPath + "_res",
-										   workPath,
-										   autos::featToStr(feat),
-										   nm(i));
+				autos::ProcessByGroups(workPath,
+									   tmpPath,
+									   AUT_SETS.getChansProc());
+
+				const QString filtString = ([](autos::filterFreqs in) -> QString
+				{
+					if(in != autos::filterFreqs{0, 0})
+					{ return QString{"_" + nm(in.first) + "_" + nm(in.second)}; }
+					return QString{};
+				})(flt);
+
+				/// magic const 41
+				autos::makeLabelsXeniaWithAverage(AUT_SETS.getChansGroupsNames(),
+												  41,
+
+												  workPath + "/labels_"
+												  + autos::featToStr(feat)
+												  + filtString
+												  + "_av" + nm(i + 1)
+												  + ".txt",
+
+												  AUT_SETS.getMarkers(),
+												  feat,
+												  "\r\n");
+
+				myLib::TablingXeniaWithAverage(tmpPath,
+
+											   workPath
+											   + "/table_"
+											   + autos::featToStr(feat)
+											   + filtString
+											   + "_av" + nm(i + 1)
+											   + ".txt",
+
+											   autos::featToStr(feat));
+			}
 		}
 	}
 }
@@ -588,7 +665,8 @@ void XeniaProcessing(const QString & workPath)
 						   AUT_SETS.getChansProc());
 	autos::makeLabelsFile(AUT_SETS.getChansProc(),
 						  workPath + "/labels.txt",
-						   AUT_SETS.getMarkers(),
+						  AUT_SETS.getMarkers(),
+						  AUT_SETS.getAutosMask(),
 						  "\t");
 #endif
 
@@ -860,6 +938,7 @@ void GalyaProcessing(const QString & workPath)
 	autos::makeLabelsFile(AUT_SETS.getChansProc(),
 						  workPath + "_out/labels.txt",
 						  AUT_SETS.getMarkers(),
+						  AUT_SETS.getAutosMask(),
 						  "\t");
 #endif
 
@@ -884,6 +963,7 @@ void GalyaProcessing(const QString & workPath)
 	autos::makeLabelsFile(AUT_SETS.getChansProc(),
 						  workPath + "_out/labels.txt",
 						  subj::marksLists::none,
+						  AUT_SETS.getAutosMask(),
 						  "\t");
 #endif
 	exit(0);

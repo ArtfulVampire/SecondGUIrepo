@@ -172,6 +172,37 @@ void Cut::saveSubsecSlot()
 #endif
 }
 
+
+void Cut::concatSlot()
+{
+	const QString fil1 = QFileDialog::getOpenFileName(this,
+													  tr("Open first file"),
+													  DEFS.dirPath(),
+													  "*.edf");
+	if(fil1.isEmpty())
+	{
+		std::cout << "concatSlot: first file path is empty" << std::endl;
+		return;
+	}
+	const QString fil2 = QFileDialog::getOpenFileName(this,
+													  tr("Open second file"),
+													  DEFS.dirPath(),
+													  "*.edf");
+
+	if(fil2.isEmpty())
+	{
+		std::cout << "concatSlot: second file path is empty" << std::endl;
+		return;
+	}
+
+	QString outPath{fil1};
+	outPath.replace(".edf", "_concat.edf");
+
+	edfFile fil(fil1);
+	fil.concatFile(fil2).writeEdfFile(outPath);
+}
+
+
 void Cut::browseSlot()
 {
 	const auto suffix = ui->suffixComboBox->currentText();

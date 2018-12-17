@@ -525,6 +525,13 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="3">
+       <widget class="QPushButton" name="zeroChannelPushButton">
+        <property name="text">
+         <string>zero channel</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item row="0" column="4" rowspan="6">
@@ -679,6 +686,13 @@
        <widget class="QPushButton" name="findNextNonzeroMarkPushButton">
         <property name="text">
          <string>next nonzero</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QPushButton" name="concatPushButton">
+        <property name="text">
+         <string>concatenate</string>
         </property>
        </widget>
       </item>

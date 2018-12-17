@@ -222,7 +222,12 @@ int getFileLength(int in);
 /// adhoc
 double countRhythmAdoption(const std::valarray<double> & sigRest,
 						   const std::valarray<double> & sigAdop,
+<<<<<<< HEAD
+						   double freq,
+						   const QString & picPath = QString());
+=======
 						   double freq);
+>>>>>>> d98768f4e97e9c10029769e870471f9d16e7002b
 std::valarray<double> countRhythmAdoption(const matrix & specRest,
 										  const matrix & specAdop,
 										  int fftLen,

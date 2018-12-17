@@ -1028,6 +1028,12 @@ matrix & matrix::push_back(const std::vector<double> & in)
 	return *this;
 }
 
+matrix & matrix::push_back(std::valarray<double> && in)
+{
+	myData.push_back(in);
+	return *this;
+}
+
 matrix matrix::transposed(const matrix & input)
 {
     matrix res(input.cols(), input.rows());

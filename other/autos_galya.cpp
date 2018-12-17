@@ -140,7 +140,7 @@ void countAllFeatures(const matrix & inData,
 					  const int Mask,
 					  const QString & preOutPath)
 {
-	/// spectre will be calculated twice for alpha and FFT but I dont care
+	/// spectre will be calculated thrice for alpha, FFT, logFFT but I dont care
 	/// envelope will be calculated twice in countHilbert
 	for(const auto & feat : FEATURES)
 	{
@@ -406,6 +406,7 @@ void countFracDim(const matrix & inData,
 											srate));
 		}
 	}
+	res = XeniaAverage(res);
 
 
 	/// output part
@@ -486,7 +487,8 @@ void countHilbert(const matrix & inData,
 			}
 		}
 	}
-
+	res[0] = XeniaAverage(res[0]);
+	res[1] = XeniaAverage(res[1]);
 
 	/// output part
 	QString sep{""};
@@ -501,7 +503,7 @@ void countHilbert(const matrix & inData,
 		{
 			for(int j = 0; j < resCols; ++j) /// filters
 			{
-				for(int i = 0; i < resRows; ++i) /// chans
+				for(int i = 0; i < res[numF].rows(); ++i) /// chans or groups
 				{
 					outStr << res[numF][i][j] << sep1;
 				}
@@ -514,7 +516,7 @@ void countHilbert(const matrix & inData,
 	{
 		for(int numF = 0; numF < funcs.size(); ++numF)
 		{
-			for(int i = 0; i < resRows; ++i) /// chans
+			for(int i = 0; i < res[numF].rows(); ++i) /// chans or groups
 			{
 				for(int j = 0; j < resCols; ++j) /// filters
 				{
@@ -698,8 +700,7 @@ void countHjorth(const matrix & inData,
 
 double countRhythmAdoption(const std::valarray<double> & sigRest,
 						   const std::valarray<double> & sigAdop,
-						   double freq,
-						   const QString & picPath)
+						   double freq)
 {
 	int fftLen = std::max(smLib::fftL(sigRest.size()),
 						  smLib::fftL(sigAdop.size()));
@@ -734,12 +735,12 @@ std::valarray<double> countRhythmAdoption(const matrix & specRest,
 	{
 		res[i] = std::accumulate(std::begin(specAdop[i]) + lowFr,
 								 std::begin(specAdop[i]) + higFr,
-								 0.)
-				 /
-				 std::accumulate(std::begin(specRest[i]) + lowFr,
+								 0.);
+		auto a = std::accumulate(std::begin(specRest[i]) + lowFr,
 								 std::begin(specRest[i]) + higFr,
-								 0.)
-				 ;
+								 0.);
+		if(a == 0.)	{ res[i] = -1; }
+		else		{ res[i] /= a; }
 	}
 	return res;
 }
@@ -772,7 +773,6 @@ void rhythmAdoption(const QString & guyPath,
 		{16,	{6., 20.}},
 		{32,	{28., 36.}},
 	};
-
 	const matrix specRest = myLib::countSpectre(restData, fftLen, 0); // spectre 0-35 Hz
 
 	for(int j = 0; j < freqs.size(); ++j)
@@ -846,7 +846,6 @@ void rhythmAdoption(const QString & guyPath,
 //											picPath);
 //		}
 	}
-
 	std::ofstream outFile((outDir + "/"
 						   + ExpName + "_" + stimType + ".txt").toStdString());
 	outFile.precision(3);
@@ -1356,6 +1355,7 @@ void ProcessByFolders(const QString & inPath,
 void makeLabelsFile(const std::vector<QString> & chans,
 					const QString & outFilePath,
 					const std::vector<QString> & usedMarkers,
+					int Mask,
 					const QString & sep)
 {
 	std::ofstream lab(outFilePath.toStdString());
@@ -1406,12 +1406,12 @@ void makeLabelsFile(const std::vector<QString> & chans,
 	{
 		mark.remove('_');
 
-		if(AUT_SETS.getAutosMask() & feature::fft)
+		if(Mask & feature::fft)
 		{
 			out(mark, feature::fft, {"fft"});
 		}
 
-		if(AUT_SETS.getAutosMask() & feature::alphaPeak)
+		if(Mask & feature::alphaPeak)
 		{
 			for(const QString & lbl : chans)
 			{
@@ -1419,23 +1419,23 @@ void makeLabelsFile(const std::vector<QString> & chans,
 			}
 		}
 
-		if(AUT_SETS.getAutosMask() & feature::fracDim)
+		if(Mask & feature::fracDim)
 		{
 			out(mark, feature::fracDim, {"fd"});
 		}
 
-		if(AUT_SETS.getAutosMask() & feature::Hilbert)
+		if(Mask & feature::Hilbert)
 		{
 			out(mark, feature::Hilbert, {"hilbcarr", "hilbsd"});
 		}
 
-		if(AUT_SETS.getAutosMask() & feature::Hjorth)
+		if(Mask & feature::Hjorth)
 		{
 			out(mark, feature::Hjorth, {"hjorthmob", "hjorthcom"});
 		}
 
 #if WAVELET_MATLAB
-		if(AUT_SETS.getAutosMask() & feature::wavelet)
+		if(Mask & feature::wavelet)
 		{
 			for(int i = 0; i < 19; ++i) /// wavelet freqs magic const
 			{
@@ -1450,9 +1450,99 @@ void makeLabelsFile(const std::vector<QString> & chans,
 		}
 #endif
 
-		if(AUT_SETS.getAutosMask() & feature::logFFT)
+		if(Mask & feature::logFFT)
 		{
 			out(mark, feature::logFFT, {"logfft"});
+		}
+	}
+	lab.close();
+}
+
+
+void makeLabelsXeniaWithAverage(const std::vector<QString> & chans,
+								int guyNum,
+								const QString & outFilePath,
+								const std::vector<QString> & usedMarkers,
+								feature feat,
+								const QString & sep)
+{
+	std::ofstream lab(outFilePath.toStdString());
+
+	/// make lambda
+	auto out = [&](QString mrk, int num, feature feat, const std::vector<QString> & funcs) -> void
+	{
+		for(const auto & f : funcs)
+		{
+			switch(AUT_SETS.getOutputSequence())
+			{
+			case outputSeq::ByChans:
+			{
+				for(const auto & filt : AUT_SETS.getFilter(feat))
+				{
+					for(const QString & lbl : chans)
+					{
+						lab
+								<< mrk
+								<< "_" << nm(num + 1)
+								<< "_" << f;
+						if(filt != autos::filtFreqs.at(autos::filter::none))
+						{
+							lab
+									<< "_" << nm(filt.first)
+									<< "_" << nm(filt.second);
+						}
+						lab << "_"  << lbl << sep;
+					}
+				}
+				break;
+			}
+			case outputSeq::ByFilters:
+			{
+				for(const QString & lbl : chans)
+				{
+					for(const auto & filt : AUT_SETS.getFilter(feat))
+					{
+						lab
+								<< mrk
+								<< "_" << nm(num + 1)
+								<< "_" << f;
+						if(filt != autos::filtFreqs.at(autos::filter::none))
+						{
+							lab
+									<< "_" << nm(filt.first)
+									<< "_" << nm(filt.second);
+						}
+						lab << "_"  << lbl << sep;
+					}
+				}
+				break;
+			}
+//			default: { /* can't get here */ }
+			}
+		}
+	};
+
+	const std::vector<QString> funcNames = ([feat]() -> std::vector<QString>
+	{
+		switch(feat)
+		{
+		case feature::fft:			{ return {"fft"}; }
+		case feature::fracDim:		{ return {"fd"}; }
+		case feature::Hilbert:		{ return {"hilbcarr", "hilbsd"}; }
+		case feature::alphaPeak:	{ return {"alpha"}; }
+		case feature::wavelet:		{ return {"wavsd"}; }
+		case feature::Hjorth:		{ return {"hjorthmob", "hjorthcom"}; }
+		case feature::logFFT:		{ return {"logfft"}; }
+		}
+		return {};
+	})();
+
+	for(QString mark : usedMarkers)
+	{
+		mark.remove('_');
+		for(int num = 0; num < guyNum; ++num)
+		{
+			out(mark, num, feat, funcNames);
 		}
 	}
 	lab.close();

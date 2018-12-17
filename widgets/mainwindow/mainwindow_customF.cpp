@@ -24,12 +24,13 @@ void MainWindow::customFunc()
 //	autos::cutFilesInFolder(workDir, 8);
 
 //	myLib::preprocessDir("C:/Data/aut/Group");
-	myLib::GalyaProcessing("C:/Data/aut");
+//	myLib::GalyaProcessing("C:/Data/aut");
+//	myLib::GalyaProcessing("I:/data/aut");
 
-
-//	myLib::preprocessDir("C:/Data/svzv-test/PERTSULIANNI");
-//	myLib::GalyaProcessing("C:/Data/svzv-test");
-
-	//myLib::checkChannels("C:/Data/aut", coords::lbl19);
+//	myLib::checkChannels("/media/Files/Data/Galya/all_buben", coords::lbl19);
 //	exit(0);
+
+//	myLib::XeniaWithAverage("/media/Files/Data/Xenia/FINAL");
+//	exit(0);
+
 }

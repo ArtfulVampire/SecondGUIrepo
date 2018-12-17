@@ -13,8 +13,7 @@
 namespace autos
 {
 /// magic const 7
-enum feature : int
-{
+enum feature {
 	fft			= 0x01,	/// std::pow(2, 0);
 	alphaPeak	= 0x02,	/// std::pow(2, 1);
 	fracDim		= 0x04,	/// std::pow(2, 2);
@@ -162,7 +161,7 @@ private:
 private:
 	std::unordered_map<featureEnumType, std::vector<filterFreqs>> filtersSets;
 	std::vector<QString> channelsToProcess{};
-	std::vector< std::pair<std::vector<int>, QString> > channelsGroups{}; /// group, name - Xenia only
+	std::vector< std::pair<std::vector<int>, QString> > channelsGroups{}; /// group, name
 	std::vector<QString> usedMarkers{};
 
 	initialCut initCut{initialCut::none};
@@ -223,17 +222,12 @@ int getFileLength(int in);
 double countRhythmAdoption(const std::valarray<double> & sigRest,
 						   const std::valarray<double> & sigAdop,
 						   double freq);
-std::valarray<double> countRhythmAdoption(const matrix & specRest,
-										  const matrix & specAdop,
-										  int fftLen,
-										  double freq);
 void rhythmAdoptionGroup(const QString & groupPath,
 						 const QString & restMark,
 						 const QString & stimType);
-void rhythmAdoption(const QString & guyPath,
+void rhythmAdoption(const QString & filesPath,
 					const QString & restMark,			/// "_og", "_zg" or "_fon"
-					const QString & stimType,
-					const std::vector<int> & freqs);		/// "sv" or "zv"
+					const QString & stimType);		/// "sv" or "zv"
 
 
 
@@ -260,16 +254,7 @@ void rereferenceFolder(const QString & procDirPath,
 void makeLabelsFile(const std::vector<QString> & chans,
 					const QString & outFilePath,
 					const std::vector<QString> & usedMarkers,
-					int Mask,
 					const QString & sep);
-
-/// 13-Nov-18
-void makeLabelsXeniaWithAverage(const std::vector<QString> & chans,
-								int guyNum,
-								const QString & outFilePath,
-								const std::vector<QString> & usedMarkers,
-								feature feat,
-								const QString & sep);
 
 
 /// main function

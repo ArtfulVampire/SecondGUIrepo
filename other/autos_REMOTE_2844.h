@@ -230,7 +230,7 @@ std::valarray<double> countRhythmAdoption(const matrix & specRest,
 void rhythmAdoptionGroup(const QString & groupPath,
 						 const QString & restMark,
 						 const QString & stimType);
-void rhythmAdoption(const QString & guyPath,
+void rhythmAdoption(const QString & filesPath,
 					const QString & restMark,			/// "_og", "_zg" or "_fon"
 					const QString & stimType,
 					const std::vector<int> & freqs);		/// "sv" or "zv"

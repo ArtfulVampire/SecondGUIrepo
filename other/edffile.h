@@ -144,9 +144,11 @@ public:
 };
 
 
-enum class inst {mati, iitp};
+enum class inst {mati, iitp, veget};
 enum class eogType {cross, correspond};
 enum class reference {A1, A2, Ar, N, Cz, CAR, Base};
+
+/// bidirectional map - use boost?
 const std::map<QString, reference> strToRef
 {
 	{"A1",		reference::A1},

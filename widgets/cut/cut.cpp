@@ -123,11 +123,14 @@ Cut::Cut() :
 	{
 		ui->refilterLowFreqSpinBox->setValue(1.6);
 		ui->refilterHighFreqSpinBox->setValue(30);
+		QObject::connect(ui->concatPushButton, &QPushButton::clicked,
+						 this, &Cut::concatSlot);
 	}
 	else
 	{
 		ui->refilterLowFreqSpinBox->setValue(DEFS.getLeftFreq());
 		ui->refilterHighFreqSpinBox->setValue(DEFS.getRightFreq());
+		ui->concatPushButton->hide();
 	}
 
 
@@ -149,6 +152,13 @@ Cut::Cut() :
 	QObject::connect(ui->cutPausesPushButton, SIGNAL(clicked()), this, SLOT(cutPausesSlot()));
 	QObject::connect(ui->subtractMeansPushButton, SIGNAL(clicked()),
 					 this, SLOT(subtractMeansSlot()));
+	QObject::connect(ui->zeroChannelPushButton, &QPushButton::clicked,
+					 [this]()
+	{
+		int i = ui->color3SpinBox->value();
+		if(i > 0) dataCutLocal[i] = 0;
+		paint();
+	});
 
 
 	QObject::connect(ui->setMarkLeftPushButton, &QPushButton::clicked,

@@ -158,11 +158,7 @@ std::valarray<double> readFileInLineRaw(const QString & filePath)
 	double tmp;
 	while(file >> tmp)
 	{
-		if(!file.eof())
-		{
-			vec.push_back(tmp);
-		}
-		else { break; }
+		vec.push_back(tmp);
 	}
 	file.close();
 	res.resize(vec.size());
@@ -362,6 +358,15 @@ matrix readMatrixFileRaw(const QString & filePath)
 	}
 	fil.close();
 	return outData;
+}
+
+int numLines(const QString & filePath)
+{
+	QFile a(filePath); a.open(QIODevice::ReadOnly);
+	int res{0};
+	while(a.readLine().size() > 0) { ++res; }
+	a.close();
+	return res;
 }
 
 matrix readMatrixFile(const QString & filePath)

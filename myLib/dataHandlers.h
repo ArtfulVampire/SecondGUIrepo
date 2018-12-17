@@ -22,6 +22,8 @@ std::vector<matrix> readSpectraDir(const QString & spectraPath);
 
 //void writePlainData(const QString & outPath, const matrix & data); /// deprecated
 
+int numLines(const QString & filePath);
+
 matrix readMatrixFile(const QString & filePath);
 
 matrix readMatrixFileRaw(const QString & filePath); /// without head line "rows, cols"
