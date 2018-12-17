@@ -55,7 +55,7 @@ void MainWindow::addRefSlot()
 													   DEFS.getDirPath());
 	if(outPath.isEmpty() || outPath == inPath)
 	{
-		outPath = inPath + "/reref";
+		outPath = inPath + "/addref";
 		QDir().mkdir(outPath);
 	}
 	/// no progress bar
@@ -66,20 +66,26 @@ void MainWindow::addRefSlot()
 	qApp->processEvents();
 	for(const QString & str : lst)
 	{
+		bool flag = false;
 		edfFile feel(inPath + "/" + str);
 
 		auto labels = feel.getLabels();
 		for(auto & lbl : labels)
 		{
-			if(!lbl.contains('-') && !lbl.contains(QRegExp(R"(A1\|A2\|Ar\|N)")))
+			if(lbl.startsWith("EEG ") && !lbl.contains('-') && !lbl.contains(QRegExp(R"(A1\|A2\|Ar\|N)")))
 			{
+				bool flag = true;
 				lbl = lbl.trimmed();
 				lbl += "-" + ui->rereferenceDataComboBox->currentText();
 				lbl = myLib::fitString(lbl, 16); /// magic const label length
 			}
 		}
-		feel.setLabels(labels);
-		feel.writeEdfFile(outPath + "/" + str);
+		if(flag)
+		{
+			std::cout << "was bad: " << str << std::endl;
+			feel.setLabels(labels);
+			feel.writeEdfFile(outPath + "/" + str);
+		}
 
 		qApp->processEvents();
 		if(stopFlag)
@@ -102,6 +108,7 @@ void MainWindow::rereferenceFolderSlot()
 													   DEFS.getDirPath());
 	QString outPath = inPath + "/reref";
 	QDir().mkdir(outPath);
+
 	for(const QString & fileName : QDir(inPath).entryList(def::edfFilters))
 	{
 		edfFile fil(inPath + "/" + fileName);

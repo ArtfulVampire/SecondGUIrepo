@@ -26,7 +26,7 @@ const std::vector<double> y {0.1875, 0.1875,
 const std::vector<QString> lbl_A1 {			"Fp1",
 								   "F7",	"F3",	"Fz",
 								   "T3",	"C3",
-								   "T5"		"P3",	"Pz",
+								   "T5",	"P3",	"Pz",
 											"O1",
 																"EOG2"};
 

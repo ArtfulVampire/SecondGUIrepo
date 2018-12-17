@@ -2027,6 +2027,8 @@ edfFile edfFile::rereferenceData(reference newRef,
 					targetRef = reference::A2;
 				}
 			}
+
+//			std::cout << std::endl << chanName << " " << refName << " " << refToStr.at(targetRef) << std::endl << std::endl;
 			helpString += edfFile::rerefChannel(strToRef.at(refName),
 												targetRef,
 												currNumStr,
@@ -2387,8 +2389,8 @@ edfFile & edfFile::removeChannel(const QString & nam)
 
 edfFile edfFile::reduceChannels(const QString & chanString) const
 {
-    QTime myTime;
-	myTime.start();
+//	QTime myTime;
+//	myTime.start();
 
 	QStringList leest = chanString.split(QRegExp("[,;\\s]"), QString::SkipEmptyParts);
     if(leest.last().toInt() - 1 != this->markerChannel)
@@ -2494,8 +2496,8 @@ edfFile edfFile::reduceChannels(const QString & chanString) const
 		}
 		++itemCounter;
 	}
-	std::cout << "edfFile::reduceChannels: ns = " << leest.length() << " "
-			  << "time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
+//	std::cout << "edfFile::reduceChannels: ns = " << leest.length() << " "
+//			  << "time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 
 	temp.ns = leest.length();
 	temp.adjustArraysByChannels();
