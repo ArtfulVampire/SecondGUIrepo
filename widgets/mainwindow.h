@@ -45,6 +45,7 @@ public slots:
 	void reduceChannelsEDFSlot() const;
 	void cleanEdfFromEyesSlot();
 	void eegVegetSlot();
+	void reoEyeSlot();
 
 	/// mati
     void markerSaveEdf();
@@ -58,8 +59,10 @@ public slots:
 	/// signals
     void processEyes();
     void ICA();
-    void refilterDataSlot();
-    void rereferenceDataSlot();
+	void refilterDataSlot();
+	void rereferenceDataSlot();
+	void rereferenceFolderSlot();
+	void addRefSlot();
 #if 0
 	void rereferenceCARSlot();
 #endif
@@ -79,6 +82,9 @@ public:
     void sliceOneByOne();
 	void sliceOneByOneNew();
 	void sliceElena();
+	void sliceElenaReo();
+	void PausePiecesII();
+	void PausePieces(bool a);
 
 
 	void setEdfFile(const QString & filePath);

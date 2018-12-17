@@ -81,13 +81,20 @@ const std::map<int, QString> kyrToLatinData{
 namespace myLib
 {
 
-QString getLabelName(const QString & label)
+QString getChanName(const QString & label)
 {
-    QRegExp forChan(R"([ ].{1,4}[\-])");
+	static const QRegExp forChan(R"(\s(.{1,4})\-)");
     forChan.indexIn(label);
     QString chanName = forChan.cap();
     chanName.remove(QRegExp(R"([\-\s])"));
     return chanName;
+}
+
+QString getRefName(const QString & label)
+{
+	static const QRegExp forRef(R"(\-([\S]{1,4}))");
+	forRef.indexIn(label);
+	return forRef.cap(1);
 }
 
 QString setFileName(const QString & initNameOrPath) /// append _num before the dot
@@ -181,13 +188,10 @@ QString getPicPath(const QString & dataPath,
 /// add std::optional
 int getTypeOfFileName(const QString & fileName, const QStringList & markers)
 {
-    QStringList leest;
     int res = 0;
 	for(const QString & marker : markers)
-    {
-        leest.clear();
-        leest = marker.split(QRegExp("[,; ]"), QString::SkipEmptyParts);
-        for(const QString & filter : leest)
+	{
+		for(const QString & filter : marker.split(QRegExp("[,; ]"), QString::SkipEmptyParts))
         {
             if(fileName.contains(filter))
             {
@@ -408,9 +412,9 @@ bool areEqualFiles(const QString & path1, const QString & path2)
 
 void fileDotsToCommas(const QString & in, const QString & out)
 {
-	QFile fileDot(in);			fileDot.open(QIODevice::ReadOnly);
+	QFile fileDot(in);	fileDot.open(QIODevice::ReadOnly);
 	QFile fileCom(out);	fileCom.open(QIODevice::WriteOnly);
-	fileCom.write(fileDot.readAll().replace(",", "."));
+	fileCom.write(fileDot.readAll().replace(".", ","));
 	fileDot.close();
 	fileCom.close();
 }

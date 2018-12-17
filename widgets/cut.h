@@ -173,6 +173,7 @@ private:
 	fileType myFileType{fileType::edf};
 	edfFile edfFil{};
 	bool fileOpened{false};
+	bool vegetFlag{false};
 	matrix dataCutLocal{};				/// eegData of the whole file
 	matrix dataCutLocalBackup{};		/// edfData backup for reset filtering
 	matrix drawData{};					/// a piece of data to be drawn

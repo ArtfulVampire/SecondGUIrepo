@@ -292,7 +292,7 @@ double FBedf::partOfCleanedWinds()
 	auto clData = this->prepareClDataWinds(false);
 	const double init = clData.size();
 
-	ANN * ann = new ANN();
+	std::unique_ptr<ANN> ann{new ANN()};
 	ann->setClassifierData(clData);
 	do
 	{
@@ -305,7 +305,6 @@ double FBedf::partOfCleanedWinds()
 	while( std::get<0>( ann->averageClassification(DEVNULL) ) != 100.);
 
 	const double last = ann->getClassifierData()->size();
-
 	return (init - last) / init;
 }
 
@@ -787,7 +786,8 @@ matrix FBedf::backgroundCompare(taskType typ, ansType howSolved) const
 Classifier::avType FBedf::classifyReals(bool alphaFlag) const
 {
 	DEFS.setFftLen(FBedf::realFftLen);
-	ANN * net = new ANN();
+
+	std::unique_ptr<ANN> net{new ANN()};
 
 	std::vector<uint> types{};	types.reserve(160);
 	matrix clData{};			clData.reserve(160);
@@ -827,8 +827,6 @@ Classifier::avType FBedf::classifyReals(bool alphaFlag) const
 	net->adjustLearnRate(DEVNULL);
 	net->crossClassification(10, 5, DEVNULL);
 	auto res = net->averageClassification(DEVNULL);
-
-	delete net;
 	return res;
 }
 
@@ -836,7 +834,7 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 {
 	DEFS.setFftLen(windFftLen);
 
-	ANN * net = new ANN();
+	std::unique_ptr<ANN> net{new ANN()};
 
 	std::vector<uint> windTypesUint(this->windTypes.size());
 	std::transform(std::begin(this->windTypes),
@@ -855,7 +853,6 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 		alphaRange[i] = {i * getSpLenWind() + alphaIndex - twoHzRange,
 						 i * getSpLenWind() + alphaIndex + twoHzRange};
 	}
-
 	ClassifierData dt{};
 	if(alphaFlag)
 	{
@@ -865,15 +862,12 @@ Classifier::avType FBedf::classifyWinds(bool alphaFlag) const
 	{
 		dt = ClassifierData(this->windSpectra, windTypesUint);
 	}
-
 	/// arguments of wrong size
 	net->setClassifierData(dt);
 	net->adjustLearnRate(DEVNULL);
 	net->crossClassification(10, 5, DEVNULL);
 //	net->leaveOneOutClassification(DEVNULL);
 	auto res = net->averageClassification(DEVNULL);
-
-	delete net;
 	return res;
 }
 

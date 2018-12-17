@@ -9,6 +9,7 @@
 #include <myLib/output.h>
 #include <myLib/dataHandlers.h>
 #include <myLib/valar.h>
+#include <myLib/adhoc.h>
 
 using namespace myOut;
 
@@ -29,7 +30,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	{
 		/// remake using myLib::sliceData ??
 		sliceOneByOne();
-		sliceOneByOneNew(); /// by number after 241/247 for early research before 2015
+//		sliceOneByOneNew(); /// by number after 241/247 for early research before 2015
 		break;
 	}
 	case username::MichaelB:
@@ -72,6 +73,7 @@ void MainWindow::sliceAll() /////// aaaaaaaaaaaaaaaaaaaaaaaaaa//////////////////
 	}
 	case username::PolinaM:
 	{
+		PausePiecesII();
 #if 0
 		/// Polina
 		else if(ui->pauseRadioButton->isChecked())
@@ -244,11 +246,15 @@ void MainWindow::sliceWinds()
 	}
 }
 
-void MainWindow::sliceElena() /// slice only, eda in fileName
+
+/// slice only, eda in fileName, both usual files and reo ?????
+void MainWindow::sliceElena()
 {
 	/// CONSTS START
 	const edfFile & fil = globalEdf;
-	const int numOfTasks = 180;
+//	const int numOfTasks = 180;  /// usual
+	const int numOfTasks = 120;  /// reo
+
 
 	/// rest "task codes"
 	/// 210 - closed start,	211 - closed end
@@ -290,10 +296,10 @@ void MainWindow::sliceElena() /// slice only, eda in fileName
 		return fil.getDirPath()
 				+ "/Reals"
 				+ "/" + fil.getExpName()
-				+ "_eda_" + nm(eda)
 				+ "_n_" + nm(taskNumber)
 				+ "_m_" + nm(taskMark)
 				+ "_t_" + nm(operMark)
+				+ "_eda_" + nm(eda)
 				+"_.edf";
 	};
 
@@ -350,7 +356,7 @@ void MainWindow::sliceElena() /// slice only, eda in fileName
 	/// (1-numOfTasks) - number(start)
 	/// (255) - optional click
 	/// (245-254) - operational code
-	/// 255 - ready for next task
+	/// 255 - ready for the next task
 
 	for(const auto & mark : marks)
 	{
@@ -422,6 +428,194 @@ void MainWindow::sliceElena() /// slice only, eda in fileName
 		}
 	}
 }
+
+/// veget reo - unused
+void MainWindow::sliceElenaReo()
+{
+	return;
+	/// CONSTS START
+	const edfFile & fil = globalEdf;
+	const int numOfTasks = 40; /// of one type
+
+#if 0
+	/// ???
+	/// rest "task codes"
+	/// 210 - closed start,	211 - closed end
+	/// 212 - open start,	213 - open end
+	const std::vector<std::vector<int>> eyesMarks{{210, 211}, {212, 213}};
+
+	/// rest "operational codes", 214 - closed, 215 - open
+	const std::vector<int> eyesCodes{214, 215};
+
+	/// for windows operational codes are +100
+
+	const double restWindow = 16.;	/// window length in seconds
+	const double restShift = 16.;	/// time shift between windows in seconds
+#endif
+
+	const auto & marks = fil.getMarkers();
+
+#if 0
+	/// make a set of all task numbers (to check later which ones were not processed)
+	/// really should use smLib::range and std::set(iter1, iter2);
+	std::set<int> allNumbers;
+	for(int i = 1; i <= numOfTasks; ++i)
+	{
+		allNumbers.emplace(i);
+	}
+	/// CONSTS END
+#endif
+
+	auto edaBaseMean = [&fil](int startBin) -> double
+	{
+		int EDAnum = fil.findChannel("KGR");
+		if(EDAnum == -1) { return 0.; }
+		return smLib::mean(smLib::contSubsec(
+							   fil.getData(EDAnum),
+							   std::max(0., startBin - 2 * fil.getFreq()), /// -2 sec
+							   startBin)
+						   );
+	};
+
+	auto fileName = [&fil](double eda, int taskNumber, int taskMark, int operMark) -> QString
+	{
+		return fil.getDirPath()
+				+ "/Reals"
+				+ "/" + fil.getExpName()
+				+ "_eda_" + nm(eda)
+				+ "_n_" + nm(taskNumber)
+				+ "_m_" + nm(taskMark)
+				+ "_t_" + nm(operMark)
+				+"_.edf";
+	};
+
+#if 0
+	/// ???
+	/// slice rest backgrounds
+	for(int typ = 0; typ < 2; ++typ)	/// 0 - closed, 1 - open
+	{
+		/// start iterator
+		auto eyesSta = std::find_if(std::begin(marks),
+									std::end(marks),
+									[eyesMarks, typ](const auto & in)
+		{ return in.second == eyesMarks[typ][0]; });
+
+		/// finish iterator
+		auto eyesFin = std::find_if(std::begin(marks),
+									std::end(marks),
+									[eyesMarks, typ](const auto & in)
+		{ return in.second == eyesMarks[typ][1]; });
+
+		/// if not found both markers - do nothing
+		if(eyesSta == std::end(marks) || eyesFin == std::end(marks)) { continue; }
+
+		/// save rest whole signal
+		fil.saveSubsection((*eyesSta).first,
+						   (*eyesFin).first,
+						   fileName(edaBaseMean((*eyesSta).first),
+									typ,
+									eyesMarks[typ][0] + 100,
+									eyesCodes[typ] + 100));
+
+
+		/// rest windows
+		int windCounter = 0;
+		for(int i = (*eyesSta).first;
+			i < (*eyesFin).first - restWindow * fil.getFreq();
+			i += restShift * fil.getFreq(), ++windCounter)
+		{
+			/// save window signal
+			fil.saveSubsection(i,
+							   i + restWindow * fil.getFreq(),
+							   fileName(edaBaseMean(i),
+										windCounter,
+										eyesMarks[typ][0],
+										eyesCodes[typ]));
+		}
+
+	}
+#endif
+
+	int number = -1;
+	int start = -1;
+	bool startFlag = false;
+	int marker = -1;
+
+	/// not needed because we zero the starting marker
+//	const auto staPair = fil.findMarker({1, 2, 3, 4, 251, 252, 253, 254});
+//	int type = (staPair.second > 5) ? (staPair.second - 250) : staPair.second;
+
+	/// startTask omitted
+	///
+	/// 255 - readyMark
+	/// 241|242|243|244 - taskMark
+	/// 1-120 - numTask
+	/// 255 - answer
+	/// taskMark+5 - operMark
+
+	for(const auto & mark : marks)
+	{
+		if(!startFlag)
+		{
+			if(mark.second <= 240 && mark.second != 82 && mark.second != 83)
+			{
+				number = mark.second;
+				startFlag = true;
+				start = mark.first;
+			}
+			else
+			{
+				outStream << "sliceElena: startFlag == false, "
+						  << "expecting taskStart marker 1-240, but have "
+						  << mark.second
+						  << ", time = " << mark.first / fil.getFreq() << " sec" << std::endl;
+			}
+		}
+		else /// if(startFlag)
+		{
+			if(mark.second == 255) /// answer - task end
+			{
+				if(start != -1) /// it was already set by task start
+				{
+					if(mark.first - start < 60 * fil.getFreq()) /// task < 1 minute
+					{
+						/// save the task signal
+						fil.saveSubsection(start,
+										   mark.first,
+										   fileName(edaBaseMean(start),
+													number,
+													marker,
+													mark.second));
+					}
+					else /// if the task lasts more than 1 minute
+					{
+						outStream << "sliceElena: too long task, "
+								  << "start time = " << start / fil.getFreq() << " sec, "
+								  << "end time = " << mark.first / fil.getFreq() << " sec" << std::endl;
+					}
+				}
+				else /// if start was not set, but we've found task end - answer
+				{
+					outStream << "sliceElena: task end (255) found but there was no start, "
+							  << "its time = " << mark.first / fil.getFreq() << " sec" << std::endl;
+				}
+				startFlag = false;
+				start = -1;
+				marker = 0;
+
+				ui->progressBar->setValue(mark.first * 100. / fil.getDataLen());
+				qApp->processEvents();
+				if(stopFlag)
+				{
+					stopFlag = false;
+					return;
+				}
+			}
+		}
+	}
+}
+
+
 
 
 #if 0
@@ -1011,10 +1205,10 @@ void MainWindow::sliceBak2017()
 			QString correct = "wrong";
 			switch(type)
 			{
-			case 0: { typStr = "k"; if(ans == 251) { correct = "right"; } break; }
-			case 1: { typStr = "l"; if(ans == 253) { correct = "right"; } break; }
-			case 2: { typStr = "n"; if(ans == 252) { correct = "right"; } break; }
-			default: { typStr = ""; break; }
+			case 0: {	typStr = "k"; if(ans == 251) { correct = "right"; } break; } /// left
+			case 1: {	typStr = "l"; if(ans == 253) { correct = "right"; } break; } /// wheel
+			case 2: {	typStr = "n"; if(ans == 252) { correct = "right"; } break; } /// right
+			default: {	typStr = ""; break; }
 			}
 			QString helpString = DEFS.getDirPath()
 								 + "/Reals/" + fil.getExpName()
@@ -1040,57 +1234,28 @@ void MainWindow::sliceBak2017()
 void MainWindow::sliceOneByOne()
 {
 
-#define USE_MARKERS 01
-
-    QString helpString;
     int number = 0;
     QString marker = "000";
 	int start = 0;
 
-    const edfFile & fil = globalEdf;
-#if USE_MARKERS
-	const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
-#else
-	const std::valarray<double> & markChanArr = fil.getMarkArr();
-#endif
+	const edfFile & fil = globalEdf;
 
-    /// 200, (241||247, (1), 254, 255)
-#if USE_MARKERS
-	for(const std::pair<int, int> & in : markers)
-#else
-	for(int i = 0; i < fil.getDataLen(); ++i)
-#endif
+	/// 200, (241||247, (1), 254, 255)
+	for(const std::pair<int, int> & in : fil.getMarkers())
     {
-
-
-#if USE_MARKERS
 		if(in.second != 241
 		   && in.second != 247
 		   && in.second != 254)
 		{
 			continue;
 		}
-#else
-		if(markChanArr[i] == 0 ||
-		   !(markChanArr[i] == 241 ||
-			 markChanArr[i] == 247 ||
-			 markChanArr[i] == 254))
-		{
-			continue;
-		}
-#endif
 
-#if USE_MARKERS
 		const int finish = in.first;
-#else
-		const int finish = i;
-#endif
 
-		helpString = DEFS.dirPath()
-					 + "/Reals"
-					 + "/" + fil.getExpName()
-					 + "." + rn(number++, 4);
-
+		QString helpString = DEFS.dirPath()
+							 + "/Reals"
+							 + "/" + fil.getExpName()
+							 + "." + rn(number++, 4);
 
 		if(finish > start)
 		{
@@ -1122,11 +1287,7 @@ void MainWindow::sliceOneByOne()
 				}
 			}
 		}
-#if USE_MARKERS
 		ui->progressBar->setValue(in.first * 100. / fil.getDataLen());
-#else
-		ui->progressBar->setValue(i * 100. / fil.getDataLen());
-#endif
 
 		qApp->processEvents();
 		if(stopFlag)
@@ -1134,22 +1295,17 @@ void MainWindow::sliceOneByOne()
 			stopFlag = false;
 			return;
 		}
-#if USE_MARKERS
 		marker = nm(in.second);
-#else
-		marker = nm(markChanArr[finish]);
-#endif
 		start = finish;
-
     }
 
 
     /// write final
     {
-		helpString = DEFS.dirPath()
-					 + "/Reals"
-					 + "/" + fil.getExpName()
-					 + "." + rn(number++, 4);
+		QString helpString = DEFS.dirPath()
+							 + "/Reals"
+							 + "/" + fil.getExpName()
+							 + "." + rn(number++, 4);
 		if(fil.getDataLen() - start < 40 * DEFS.getFreq()) /// if last realisation or interstimulus
 		{
 			helpString += "_" + marker;
@@ -1654,6 +1810,137 @@ void MainWindow::sliceMatiPieces()
 	outStream << "sliceMatiPieces: time = " << myTime.elapsed() / 1000. << " sec" << std::endl;
 }
 
+void MainWindow::reoEyeSlot()
+{
+	const QString dataPath = QFileDialog::getOpenFileName(this,
+														  tr("Choose data file"),
+														  DEFS.getDirPath(),
+														  "*.txt");
+	DEFS.setDir(myLib::getDirPathLib(dataPath));
+
+	const QString marksPath = QFileDialog::getOpenFileName(this,
+														   tr("Choose markers file"),
+														   DEFS.getDirPath(),
+														   "(*.txt *.csv)");
+	if(dataPath.isEmpty() || marksPath.isEmpty())
+	{
+		std::cout << "at least one file path is empty!" << std::endl;
+		return;
+	}
+
+	edfFile fil(dataPath, inst::veget);
+	auto a = fil.findMarker({1,2,3,4,251,252,253,254});
+
+	int sta = a.first;
+//	sta += 50; /// +200 ms because of hardware delay?
+
+	if(sta == -1)
+	{
+		std::cout << "can't find start marker" << std::endl;
+		return;
+	}
+
+#define OLD_3_DEC_18 0
+
+	/// email 28-Nov-2018
+	const int type = (a.second > 5) ? (a.second-250) : a.second;
+#if OLD_3_DEC_18
+	/// old 3-Dec-18	fil.setMarker(sta, type + 250);
+	const std::vector<int> taskPlus
+	{
+		0,		/// filler
+		0,		/// verb
+		100,	/// arithmetic addition
+		150,	/// arithmetic multiplication
+		200,	/// arithmetic sequence
+	};
+#else
+	fil.setMarker(sta, 0);					/// erase "type" marker
+	const int taskMark = 240 + type;		/// "instruction"
+	const int operMark = 245 + type;		/// operational
+	const int crossMark = 250;				/// cross
+	const int ansMark = 255;				/// answer
+	const int readyMark = 255;				/// ready for the next task
+	const int numOfTasks = 30;
+	const int gap = 10;						/// between markers
+#endif
+
+	/// operational can be lost if no answer ????????
+
+	/// first marker BlackSlide - "type"
+	/// (Cross, VerbN, Answer) w/o last answer ???
+
+	for(const auto & in : myLib::readVegetMarkers(marksPath))
+	{
+		/// marker value choice
+		if(in.first.contains("Kross"))
+		{
+//			fil.setMarker(sta, crossMark);
+//			fil.setMarker(sta, operMark);	/// cross is operMark?
+
+			/////////////////////////// cross is taskMark
+			if(01)
+			{
+				fil.setMarker(sta, taskMark);
+				fil.setMarker(sta - gap, readyMark);
+			}
+		}
+		else if(in.first.contains("Answer"))
+		{
+			fil.setMarker(sta, ansMark);
+			fil.setMarker(sta + gap, operMark); /// what if no answer ????????????
+		}
+		else
+		{
+
+			QRegExp reg = QRegExp(R"([0-9]{1,3})");
+			int a = reg.indexIn(in.first);
+//			std::cout << a << std::endl;
+			if(a != -1)
+			{
+#if OLD_3_DEC_18
+				/// old 3-Dec-18
+				fil.setMarker(sta, reg.cap(0).toInt() + taskPlus[type]);
+#else
+				int taskNum = reg.cap(0).toInt();
+				if(taskNum <= numOfTasks)
+				{
+					fil.setMarker(sta, taskNum + numOfTasks * (type - 1));
+					if(0)
+					{
+						fil.setMarker(sta - gap, taskMark);
+						fil.setMarker(sta - gap * 2, readyMark);
+					}
+				}
+				else
+				{
+					fil.setMarker(sta, 0);		/// erase any marker > numOfTasks ??????????
+				}
+#endif
+			}
+		}
+		sta += in.second * fil.getFreq();
+	}
+
+	/// last "answer" - unneeded
+	if(0)
+	{
+		fil.setMarker(sta, ansMark);
+		fil.setMarker(sta + gap, operMark);
+	}
+
+	/// delete markers 82, 83
+	for(const auto & in : fil.findMarkers({82, 83}))
+	{
+		fil.setMarker(in.first, 0);
+	}
+
+	/// save edf
+	QString outPath = dataPath;
+	outPath.replace(".txt", ".edf");
+	fil.writeEdfFile(outPath);
+}
+
 void MainWindow::eegVegetSlot()
 {
 	QStringList files = QFileDialog::getOpenFileNames(this,
@@ -1691,4 +1978,173 @@ void MainWindow::eegVegetSlot()
 	outPath.remove("_veget");
 	outPath.replace(".edf", "_unite.edf");
 	fil1.writeEdfFile(outPath);
+}
+
+
+
+//ans/noans
+void MainWindow::PausePieces(bool a)
+{
+QString helpString;
+	std::function<bool(char)>cond1;
+	std::function<bool(char)>cond2;
+	std::function<bool(char)>cond3;
+	QString mark1;
+	QString mark2;
+	QString mark3;
+	int start = 0;
+	int end = -1;
+	char h = 0;
+	int piece = 0;
+	QString marker = "000";
+	const edfFile & fil = globalEdf;
+	//const std::vector<std::pair<int, int>> & markers = fil.getMarkers();
+	const std::valarray<double> & markChanArr = fil.getData()[fil.getMarkChan()];
+	std::ifstream fin((fil.getDirPath()
+					  + "/"
+					  + fil.getExpNameShort()
+					  + "_ans1.txt").toStdString());
+	if (a) //right/wrong in ==true
+	{
+		cond1 = [](char a) -> bool {return a == '0';};
+		mark1 = "261";
+		cond2 = [](char a) -> bool {return a == '1';};
+		mark2 = "262";
+		cond3 = [](char a) -> bool {return a == '2';};
+		mark3 = "263";
+	}
+	else //ans/noans
+	{
+		cond1 = [](char a) -> bool {return a == '0';};
+		mark1 = "261";
+		cond2 = [](char a) -> bool {return a == '1' || a == '2';};
+		mark2 = "260";
+		cond3 = [](char a) -> bool {return true;};
+		mark3 = "000";
+	}
+	for(int i = 0; i < fil.getDataLen(); ++i)
+	{
+	   if(markChanArr[i] == 254)
+		{
+			start = i;
+			fin >> h;
+			if (cond1(h))
+			{
+				marker = mark1;
+			}
+			else if	(cond2(h))
+			{
+				marker = mark2;
+			}
+			else if	(cond3(h))
+			{
+				marker = mark3;
+			}
+//			while (h != '0' && h != '1' && h != '2')
+//			{
+//				fin >> h;
+//			}
+//		   if(h == '0')
+//		   {
+//			   marker = "261";
+//		   }
+//		   else if(h == '1' || h == '2')
+//		   {
+//			   marker = "260";
+//		   }
+		   continue;
+		}
+		else if(markChanArr[i] == 255)
+		{
+			end=i;
+			helpString = fil.getDirPath()
+						 + "/Reals"
+						 + "/" + fil.getExpName()
+						 + "." + rn(piece, 4);
+			if(end > start)
+			{
+				if(end - start <= fil.getFreq() * 62)
+				{
+					helpString += "_" + marker;
+					fil.saveSubsection(start, end, helpString);
+				}
+				++piece;
+			}
+	   }
+	   ui->progressBar->setValue(i * 100. / fil.getDataLen());
+
+	   qApp->processEvents();
+	   if(stopFlag)
+	   {
+		   stopFlag = 0;
+		   break;
+	   }
+	}
+}
+
+
+void MainWindow::PausePiecesII()
+{
+	const edfFile & fil = globalEdf;
+	const std::vector<std::vector<QString>> mark
+	{
+		{"271", "272", "273"}, /// spatial (241)
+		{"281", "282", "283"}, /// verbal  (247)
+	};
+
+	std::ifstream fin((DEFS.getDirPath()
+					   + "/" + fil.getExpNameShort() + "_ans1.txt").toStdString());
+	int start{0};
+	char ansType{}; /// 0 - noans, 1 - correct, 2 - wrong
+	int pieceNumber{0};
+	QString marker{"000"};
+	int taskType{0};
+	for(const auto & mrk : fil.getMarkers())
+	{
+		if(mrk.second == 241 || mrk.second == 247)
+		{
+			taskType = (mrk.second == 247) ? 1 : 0;
+			continue;
+		}
+		else if(mrk.second == 254)
+		{
+			if(taskType < 0)
+			{
+				std::cout << "Unexpected marker 254 at " << mrk.first << " bin" << std::endl;
+				continue;
+			}
+			start = mrk.first;
+			fin >> ansType;
+			marker = mark[taskType][QString(ansType).toInt()]; /// == ansType - '0'
+			continue;
+		}
+		else if(mrk.second == 255) /// end on the cross
+		{
+			if(mrk.first > start)
+			{
+				if(mrk.first - start <= fil.getFreq() * 10)
+				{
+					QString helpString = fil.getDirPath()
+										 + "/Reals"
+										 + "/" + fil.getExpName()
+										 + "." + rn(pieceNumber, 4)
+										 + "_" + marker
+										 + ".edf";
+					fil.saveSubsection(start, mrk.first, helpString);
+
+					start = -1;
+					taskType = -1;
+				}
+				++pieceNumber;
+			}
+	   }
+	   ui->progressBar->setValue(mrk.first * 100. / fil.getDataLen());
+
+	   qApp->processEvents();
+	   if(stopFlag)
+	   {
+		   stopFlag = 0;
+		   break;
+	   }
+	}
 }

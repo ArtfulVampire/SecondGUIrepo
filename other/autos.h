@@ -253,7 +253,8 @@ void refilterFolder(const QString & procDirPath,
 					double lowFreq,
 					double highFreq,
 					bool isNotch = false);
-void rereferenceFolder(const QString & procDirPath,
+void rereferenceFolder(const QString & inPath,
+					   const QString & outPath,
 					   reference newRef);
 
 /// labels file

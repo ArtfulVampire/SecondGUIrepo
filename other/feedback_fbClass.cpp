@@ -9,6 +9,7 @@
 #include <widgets/net.h>
 
 #include <utility>
+#include <memory>
 
 namespace fb
 {
@@ -272,7 +273,7 @@ void FeedbackClass::calculateICAs()
 /// ???
 void FeedbackClass::writeLearnedPatterns()
 {
-	ANN * ann = new ANN();
+	std::unique_ptr<ANN> ann{new ANN()};
 
 	auto & fil1 = this->files[static_cast<int>(fileNum::first)];
 	fil1.remakeWindows(0.5 * fil1.getFreq(), 0); /// magic const
@@ -309,13 +310,11 @@ void FeedbackClass::writeLearnedPatterns()
 			<< std::get<0>( res1 ) << "\t"
 			<< std::get<0>( res2 ) << "\t"
 			   ;
-
-	delete ann;
 }
 
 void FeedbackClass::writeSuccessive()
 {
-	Net * net = new Net();
+	std::unique_ptr<Net> net{new Net()};
 	(*ostr)
 			<< std::get<0>(
 				   net->successiveByEDFfinal(
@@ -323,12 +322,11 @@ void FeedbackClass::writeSuccessive()
 					files[static_cast<int>(fileNum::second)])
 			)
 			<< "\t"; (*ostr).flush();
-	delete net;
 }
 
 void FeedbackClass::writeSuccessive3()
 {
-	ANN * ann = new ANN();
+	std::unique_ptr<ANN> ann{new ANN()};
 	auto fil3 = this->files[static_cast<int>(fileNum::third)];
 	fil3.remakeWindows(0.5 * fil3.getFreq(), 0); /// magic const
 	auto clData3 = prepareClDataWinds(fileNum::third, false);

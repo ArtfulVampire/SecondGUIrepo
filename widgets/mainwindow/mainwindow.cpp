@@ -152,6 +152,11 @@ MainWindow::MainWindow() :
 		ui->reduceChannesPushButton->hide(); /// reduce ns in Reals
 	}
 
+	if(!DEFS.isUser(username::GalyaP))
+	{
+		ui->addRefPushButton->hide();
+	}
+
 #if SHOW_MATI_WIDGETS
 	/// mati
 	QObject::connect(ui->matiPreprocessingPushButton, SIGNAL(clicked()), this, SLOT(matiPreprocessingSlot()));
@@ -201,6 +206,8 @@ MainWindow::MainWindow() :
 					globalEdf.getDirPath() + "/SpectraSmooth/winds"); });
 	QObject::connect(ui->eegVegetPushButton, SIGNAL(clicked()),
 					 this, SLOT(eegVegetSlot()));
+	QObject::connect(ui->reoPlusEyetrackPushButton, SIGNAL(clicked()),
+					 this, SLOT(reoEyeSlot()));
 
 	/// slice
 	QObject::connect(ui->cutEDF, SIGNAL(clicked()), this, SLOT(sliceAll()));
@@ -210,9 +217,20 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->elenaProcessingPushButton, &QPushButton::clicked,
 					 [this]()
 	{
-		myLib::elenaCalculation(globalEdf.getDirPath() + "/Reals",
-								globalEdf.getDirPath() + "/SpectraSmooth",
-								globalEdf.getDirPath());
+		auto pth = globalEdf.getDirPath()  + "/Reals";
+		edfFile fil(pth + "/" + QDir(pth).entryList(def::edfFilters).front(), true);
+		if(fil.getLabels(0).startsWith("EEG "))
+		{
+			myLib::elenaCalculation(globalEdf.getDirPath() + "/Reals",
+									globalEdf.getDirPath() + "/SpectraSmooth",
+									globalEdf.getDirPath());
+		}
+		else
+		{
+			myLib::elenaCalculationReo(globalEdf.getDirPath() + "/Reals",
+									   globalEdf.getDirPath() + "/SpectraSmooth",
+									   globalEdf.getDirPath());
+		}
 	});
 
 	/// edit edf
@@ -223,6 +241,8 @@ MainWindow::MainWindow() :
 	QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
 	QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
 	QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
+	QObject::connect(ui->rereferenceFolderPushButton, SIGNAL(clicked()), this, SLOT(rereferenceFolderSlot()));
+	QObject::connect(ui->addRefPushButton, SIGNAL(clicked()), this, SLOT(addRefSlot()));
 	QObject::connect(ui->cleanEdfFromEyesButton, SIGNAL(clicked()),
 					 this, SLOT(cleanEdfFromEyesSlot()));
 
@@ -301,12 +321,6 @@ void MainWindow::changeRedNsLine(int a)
 	ui->reduceChannelsLineEdit->setText(outStr);
 }
 
-void MainWindow::showCountSpectra()
-{
-    Spectre *sp = new Spectre();
-    sp->show();
-}
-
 void MainWindow::processEyes()
 {
 	readData();
@@ -351,6 +365,12 @@ void MainWindow::showCut()
     cut_e->show();
 }
 
+void MainWindow::showCountSpectra()
+{
+	Spectre *  sp = new Spectre();
+	sp->show();
+}
+
 void MainWindow::setEdfFileSlot()
 {
 	QString helpString = QFileDialog::getOpenFileName(
@@ -364,13 +384,8 @@ void MainWindow::setEdfFileSlot()
 
 void MainWindow::setEdfFile(const QString & filePath)
 {
-    QString helpString;
-    helpString = filePath;
-
-	ui->filePathLineEdit->setText(helpString);
-
-	helpString.resize(helpString.lastIndexOf("/"));
-	DEFS.setDir(helpString);
+	ui->filePathLineEdit->setText(filePath);
+	DEFS.setDir(myLib::getDirPathLib(filePath));
 
 	DEFS.dirMkdir("Reals");
 	DEFS.dirMkdir("Reals/BC");
@@ -411,15 +426,14 @@ void MainWindow::readData()
     QTime myTime;
     myTime.start();
 
-    QString helpString;
-	helpString = ui->filePathLineEdit->text();
+	QString helpString = ui->filePathLineEdit->text();
     if(!QFile::exists(helpString))
     {
 		outStream << "readData: edf file doent exist\n" << helpString << std::endl;
         return;
     }
 	globalEdf.readEdfFile(helpString);
-	outStream << "EDF data read successful" << std::endl;
+//	outStream << "EDF data read successful" << std::endl;
 
 	ui->reduceChannelsComboBox->currentIndexChanged(ui->reduceChannelsComboBox->currentIndex());
 	ui->markerSecTimeDoubleSpinBox->setMaximum(globalEdf.getDataLen() / DEFS.getFreq());
@@ -550,6 +564,7 @@ void MainWindow::cleanDirs()
 
 void MainWindow::drawHeadSlot()
 {
+	const int numChan = 19;
 	QString inPath = QFileDialog::getOpenFileName(
 						 this,
 						 tr("Choose file"),
@@ -560,21 +575,33 @@ void MainWindow::drawHeadSlot()
 		std::cout << "drawHead: filePath is empty" << std::endl;
 		return;
 	}
-	const auto dt = myLib::readFileInLineRaw(inPath);
-	if(dt.size() != 19)
+	QFile in(inPath); in.open(QIODevice::ReadOnly);
+	auto lst = QString(in.readAll()).split(QRegExp("\\s"), QString::SkipEmptyParts)
+			   .toVector().toStdVector();
+	in.close();
+	if(lst.size() != numChan)
 	{
 		std::cout << "file size is NOT 19, try adding a space after the last number" << std::endl;
 		return;
 	}
 
-	inPath.replace(".txt", ".jpg");
+	std::valarray<double> dt(numChan);
+	for(int i = 0; i < numChan; ++i)
+	{
+		lst[i].replace(',', '.');
+		dt[i] = lst[i].toDouble();
+	}
 
+	dt *= ui->drawHeadInvertCheckBox->isChecked() ? -1: 1;
+
+	inPath.replace(".txt", ".jpg");
 	if(!ui->drawHeadCheckBox->isChecked())
 	{
 		myLib::drw::drawOneMap(dt,
 							   ui->drawHeadLowSpinBox->value(),
 							   ui->drawHeadHighSpinBox->value(),
 							   myLib::drw::ColorScale::jet,
+							   true,
 							   true).save(inPath, nullptr, 100);
 	}
 	else
@@ -583,6 +610,7 @@ void MainWindow::drawHeadSlot()
 							   dt.min(),
 							   dt.max(),
 							   myLib::drw::ColorScale::jet,
+							   true,
 							   true).save(inPath, nullptr, 100);
 	}
 }

@@ -9,7 +9,10 @@ int main(int argc, char *argv[])
 
 	/// set your user
 //	DEFS.setUser(username::MichaelA);
-	DEFS.setUser(username::GalyaP);
+//	DEFS.setUser(username::ElenaC);
+//	DEFS.setUser(username::GalyaP);
+//	DEFS.setDir("c:/Data");
+//	DEFS.setDir("/media/Files/Data/Elena/VegetMalinovskaya");
 	if(argc > 1) { DEFS.setDir(QString(argv[1])); }
 	DEFS.setUser(username::GalyaP);
 	DEFS.setDir("c:/Data");

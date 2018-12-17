@@ -29,8 +29,8 @@
      <rect>
       <x>281</x>
       <y>211</y>
-      <width>914</width>
-      <height>349</height>
+      <width>934</width>
+      <height>355</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="processingGridLayout">
@@ -248,126 +248,6 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
-      <layout class="QHBoxLayout" name="rerefLayout">
-       <item>
-        <layout class="QGridLayout" name="rerefInnerLayout">
-         <item row="0" column="0">
-          <widget class="QPushButton" name="rereferenceDataPushButton">
-           <property name="text">
-            <string>Reref Data -&gt; new EDF</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <layout class="QVBoxLayout" name="eogsLayout">
-           <item>
-            <widget class="QCheckBox" name="eogAsIsCheckBox">
-             <property name="text">
-              <string>EOG as is</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="eogBipolarCheckBox">
-             <property name="text">
-              <string>bipolar EOG1-2</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="rereferenceDataComboBox"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="drawHeadGridLayout">
-         <item row="0" column="0">
-          <widget class="QPushButton" name="drawHeadPushButton">
-           <property name="text">
-            <string>draw head</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QDoubleSpinBox" name="drawHeadHighSpinBox">
-           <property name="minimum">
-            <double>-1000.000000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>1000.000000000000000</double>
-           </property>
-           <property name="singleStep">
-            <double>1.000000000000000</double>
-           </property>
-           <property name="value">
-            <double>10.000000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>high(red)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="drawHeadCheckBox">
-           <property name="text">
-            <string>auto limits</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QDoubleSpinBox" name="drawHeadLowSpinBox">
-           <property name="minimum">
-            <double>-1000.000000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>1000.000000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QLabel" name="label_5">
-           <property name="text">
-            <string>low(blue)</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_8">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>38</width>
-           <height>48</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
      <item row="0" column="1">
       <layout class="QGridLayout" name="filterFreqsGridLayout">
        <item row="0" column="0">
@@ -444,6 +324,134 @@
      </item>
      <item row="2" column="2">
       <widget class="QLineEdit" name="reduceChannelsLineEdit"/>
+     </item>
+     <item row="0" column="2">
+      <layout class="QHBoxLayout" name="rerefLayout">
+       <item>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QPushButton" name="rereferenceDataPushButton">
+           <property name="text">
+            <string>Reref Data -&gt; new EDF</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="eogAsIsCheckBox">
+           <property name="text">
+            <string>EOG as is</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" rowspan="2">
+          <widget class="QPushButton" name="rereferenceFolderPushButton">
+           <property name="text">
+            <string>Reref Folder -&gt; new EDFs</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="eogBipolarCheckBox">
+           <property name="text">
+            <string>bipolar EOG1-2</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1" rowspan="2">
+          <widget class="QComboBox" name="rereferenceDataComboBox"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QPushButton" name="addRefPushButton">
+           <property name="text">
+            <string>add reference</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="drawHeadGridLayout">
+         <item row="0" column="0">
+          <widget class="QPushButton" name="drawHeadPushButton">
+           <property name="text">
+            <string>draw head</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="drawHeadLowSpinBox">
+           <property name="minimum">
+            <double>-1000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>1000.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="drawHeadHighSpinBox">
+           <property name="minimum">
+            <double>-1000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>1000.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>10.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>high(red)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>low(blue)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QCheckBox" name="drawHeadCheckBox">
+             <property name="text">
+              <string>auto limits</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="drawHeadInvertCheckBox">
+             <property name="text">
+              <string>invert</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_8">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>38</width>
+           <height>48</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>
@@ -561,6 +569,13 @@
           <widget class="QPushButton" name="elenaProcessingPushButton">
            <property name="text">
             <string>process</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="reoPlusEyetrackPushButton">
+           <property name="text">
+            <string>reo + eyetrack</string>
            </property>
           </widget>
          </item>

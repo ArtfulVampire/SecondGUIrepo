@@ -1,6 +1,7 @@
 #include <other/feedback_autos.h>
 
 #include <sstream>
+#include <memory>
 
 #include <widgets/net.h>
 
@@ -29,7 +30,8 @@ coutAllFeatures(const QString & guysPath,
 {
 	std::map<QString, QString> results{}; ///
 
-	Net * net = new Net();
+
+	std::unique_ptr<Net> net{new Net()};
 
 //	bool pass = true;
 	for(const auto & in : guysList)
@@ -113,7 +115,6 @@ coutAllFeatures(const QString & guysPath,
 //		break;
 	}
 	std::cout << std::endl;
-	delete net;
 	return results;
 }
 
@@ -134,7 +135,8 @@ calculateSuccessiveBoth(const QString & guysPath,
 		if(!QDir(guyPath).exists()) { continue; }
 
 		fb::FeedbackClass fbItem(guyPath, in.second, postfix); if(!fbItem) { continue; }
-		Net * ann = new Net();
+
+		std::unique_ptr<Net> ann{new Net()};
 		res.push_back(ann->successiveByEDFall(
 						  fbItem.getFile(fileNum::first),
 						  fbItem.getFile(fileNum::third)));
@@ -143,8 +145,6 @@ calculateSuccessiveBoth(const QString & guysPath,
 				  << std::get<0>( std::get<1>(res.back()) ) << "\t"
 				  << std::get<0>( std::get<2>(res.back()) ) << "\t"
 				  << std::endl;
-
-		delete ann;
 //		return res; /// calculate only first guy
 	}
 	return res;
@@ -314,11 +314,10 @@ void repairMarkersInNewFB(QString edfPath, int numSession)
 
 void successiveNetPrecleanWinds(const QString & windsPath)
 {
-	Net * ann = new Net();
+	std::unique_ptr<Net> ann{new Net()};
 	ann->loadData(windsPath, QStringList{"*.psd"});
 	ann->setClassifier(ModelType::ANN);
 	ann->successivePreclean(windsPath, {});
-	delete ann;
 }
 
 } /// end of namespace fb

@@ -11,7 +11,7 @@ using namespace myOut;
 
 Classifier::Classifier()
 {
-	myClassData = new ClassifierData();
+	myClassData = new ClassifierData(); /// remake shared_ptr
 	resultsPath = DEFS.dirPath() + "/results.txt";
 	workDir = DEFS.dirPath() + "/Help/PA";
 	filesPath = DEFS.windsSpectraDir();
@@ -28,7 +28,7 @@ void Classifier::setClassifierData(ClassifierData & in)
 {
 	if(&in != myClassData)
 	{
-		myClassData = &in; //// pointer may overlive object in !!!!
+		myClassData = &in; //// in may be destroyed on the caller site !!!! DANGER
 
 		confusionMatrix = matrix(myClassData->getNumOfCl(), myClassData->getNumOfCl(), 0.);
 		outputLayer = std::valarray<double>(0., myClassData->getNumOfCl());
@@ -43,15 +43,15 @@ void Classifier::setClassifierData(ClassifierData & in)
 
 void Classifier::setTestCleanFlag(bool inFlag)
 {
-    this->testCleanFlag = inFlag;
+	this->testCleanFlag = inFlag;
 }
 
 void Classifier::deleteFile(uint vecNum, uint predType)
 {
 	if(this->testCleanFlag && (predType != myClassData->getTypes(vecNum)))
-    {
+	{
 		QFile::remove(filesPath + "/" + myClassData->getFileNames(vecNum));
-    }
+	}
 }
 
 #if 0
@@ -62,7 +62,7 @@ void Classifier::classifyDatum1(uint vecNum)
 	/// ALWAYS TRUE WITH ZERO ERROR
 	this->confusionMatrix[myClassData->getTypes(vecNum)][myClassData->getTypes(vecNum)] += 1.;
 	outputLayer = clLib::oneHot(myClassData->getNumOfCl(),
-								myClassData->getTypes(vecNum));
+	myClassData->getTypes(vecNum));
 }
 #endif
 
@@ -79,8 +79,8 @@ Classifier::classOneType Classifier::classifyDatum(uint vecNum)
 	printResult(typeString + ".txt", outClass, vecNum);
 	smLib::normalize(outputLayer); /// for clLib::countError
 	return std::make_tuple(myClassData->getTypes(vecNum) == outClass,
-						   outClass,
-						   clLib::countError(outputLayer, myClassData->getTypes(vecNum)));
+	outClass,
+	clLib::countError(outputLayer, myClassData->getTypes(vecNum)));
 }
 
 Classifier::classOneType Classifier::classifyDatumLast()
@@ -106,13 +106,13 @@ void Classifier::classifyDatumLast1()
 
 void Classifier::printResult(const QString & fileName, uint predType, uint vecNum)
 {
-    std::ofstream outStr;
+	std::ofstream outStr;
 	outStr.open((workDir + "/" + fileName).toStdString()
-				, std::ios_base::app
-				);
+	, std::ios_base::app
+	);
 
 
-    QString pew;
+	QString pew;
 
 	if(predType == myClassData->getTypes(vecNum))
 	{
@@ -129,32 +129,32 @@ void Classifier::printResult(const QString & fileName, uint predType, uint vecNu
 
 void Classifier::test(const std::vector<uint> & indices)
 {
-    for(int ind : indices)
+	for(int ind : indices)
 	{
 		/// should affect confusionMatrix and outputLayer
 		classifyDatum(ind);
-    }
+	}
 }
 
 void Classifier::learnAll()
 {
 	std::vector<uint> ind(myClassData->getData().rows());
 	std::iota(std::begin(ind), std::end(ind), 0);
-    learn(ind);
+	learn(ind);
 }
 
 void Classifier::testAll()
 {
 	std::vector<uint> ind(myClassData->getData().rows());
-    std::iota(std::begin(ind), std::end(ind), 0);
-    test(ind);
+	std::iota(std::begin(ind), std::end(ind), 0);
+	test(ind);
 }
 
 void Classifier::successiveRelearn()
 {
-    this->resetFlag = false;
+	this->resetFlag = false;
 	learnAll(); /// relearn w/o weights reset
-    this->resetFlag = true;
+	this->resetFlag = true;
 }
 
 Classifier::avType Classifier::averageClassification(std::ostream & os)
@@ -162,38 +162,38 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
 #if 01
 	/// successive
 	resultsPath =
-			DEFS.dirPath()
-			+ "/results"
-			+ "_" + nm(suc::numGoodNewLimit)
-			+ "_" + nm(suc::learnSetStay)
-			+ "_" + nm(suc::decayRate)
-			+ ".txt";
+	DEFS.dirPath()
+	+ "/results"
+	+ "_" + nm(suc::numGoodNewLimit)
+	+ "_" + nm(suc::learnSetStay)
+	+ "_" + nm(suc::decayRate)
+	+ ".txt";
 #endif
 
 	std::ofstream res;
-    res.open(resultsPath.toStdString(), std::ios_base::app);
+	res.open(resultsPath.toStdString(), std::ios_base::app);
 
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
-    {
-        const double num = confusionMatrix[i].sum();
-        if(num != 0.)
-        {
-            res << smLib::doubleRound(confusionMatrix[i][i] * 100. / num, 2) << '\t';
-        }
-        else
-        {
-            res << "pew" << '\t';
-        }
-    }
+	{
+		const double num = confusionMatrix[i].sum();
+		if(num != 0.)
+		{
+			res << smLib::doubleRound(confusionMatrix[i][i] * 100. / num, 2) << '\t';
+		}
+		else
+		{
+			res << "pew" << '\t';
+		}
+	}
 
 	/// calculate quality
-    double corrSum = 0.;
+	double corrSum = 0.;
 	int wholeNum = confusionMatrix.sum();
 
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
-    {
+	{
 		corrSum += confusionMatrix[i][i];
-    }
+	}
 	/// av.acc
 	double averageAccuracy = corrSum * 100. / wholeNum;
 
@@ -202,11 +202,11 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
 
 	/// Cohen's
 	double pE = 0.;
-    const double S = confusionMatrix.sum();
+	const double S = confusionMatrix.sum();
 	for(uint i = 0; i < myClassData->getNumOfCl(); ++i)
-    {
+	{
 		pE += (confusionMatrix[i].sum() * confusionMatrix.getCol(i).sum()) / std::pow(S, 2);
-    }
+	}
 	double kappa = 1. - (1. - corrSum / wholeNum) / (1. - pE);
 
 
@@ -215,7 +215,7 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
 	res << smLib::doubleRound(kappa, 3) << "\t";
 	res << smLib::doubleRound(pval, 3) << "\t";
 	res << std::endl;
-    res.close();
+	res.close();
 
 
 	os << confusionMatrix;
@@ -224,7 +224,7 @@ Classifier::avType Classifier::averageClassification(std::ostream & os)
 	os << "pval = " << smLib::doubleRound(pval, 3) << "\t";
 	os << std::endl << std::endl;
 
-    confusionMatrix.fill(0.);
+	confusionMatrix.fill(0.);
 
 	return std::make_tuple(averageAccuracy, kappa, pval);
 }
@@ -244,11 +244,11 @@ void Classifier::leaveOneOutClassification(std::ostream & os)
 		learnIndices.clear();
 		learnIndices.resize(dataMatrix.rows() - 1);
 		std::iota(std::begin(learnIndices),
-				  std::begin(learnIndices) + i,
-				  0);
+		std::begin(learnIndices) + i,
+		0);
 		std::iota(std::begin(learnIndices) + i,
-				  std::end(learnIndices),
-				  i + 1);
+		std::end(learnIndices),
+		i + 1);
 		this->learn(learnIndices);
 		this->test(static_cast<uint>(i));
 	}
@@ -258,9 +258,9 @@ void Classifier::leaveOneOutClassification(std::ostream & os)
 
 std::pair<std::vector<uint>,
 std::vector<uint>> Classifier::makeIndicesSetsCross(
-		const std::vector<std::vector<uint> > & arr,
-		int numOfFolds,
-		const int currentFold)
+const std::vector<std::vector<uint> > & arr,
+int numOfFolds,
+const int currentFold)
 {
 	const double numOfClasses = this->myClassData->getNumOfCl();
 
@@ -273,7 +273,7 @@ std::vector<uint>> Classifier::makeIndicesSetsCross(
 		for(int j = 0; j < clSize; ++j)
 		{
 			if(j >= (clSize * currentFold / numOfFolds) &&
-			   j < (clSize * (currentFold + 1) / numOfFolds))
+			j < (clSize * (currentFold + 1) / numOfFolds))
 			{
 				tallInd.push_back(arr[i][j]);
 			}
@@ -352,10 +352,10 @@ void Classifier::peopleClassification(bool indZ, std::ostream & os)
 
 		auto res = this->averageClassification(DEVNULL);
 		os << guy
-		   << "\t" << smLib::doubleRound(std::get<0>(res), 2)	/// accuracy
-		   << "\t" << smLib::doubleRound(std::get<1>(res), 3)	/// Cohen's
-		   << "\t" << smLib::doubleRound(std::get<2>(res), 4)	/// p-value
-		   << std::endl;
+		<< "\t" << smLib::doubleRound(std::get<0>(res), 2)	/// accuracy
+		<< "\t" << smLib::doubleRound(std::get<1>(res), 3)	/// Cohen's
+		<< "\t" << smLib::doubleRound(std::get<2>(res), 4)	/// p-value
+		<< std::endl;
 	}
 }
 
@@ -391,7 +391,7 @@ void Classifier::crossClassification(int numOfPairs, int fold, std::ostream & os
 }
 
 void Classifier::trainTestClassification(const QString & trainTemplate,
-										 const QString & testTemplate)
+const QString & testTemplate)
 {
 	const matrix & dataMatrix = this->myClassData->getData();
 	const auto & fileNames = this->myClassData->getFileNames();
@@ -462,11 +462,11 @@ void Classifier::cleaningNfold(int num)
 			learnIndices.clear();
 			learnIndices.resize(this->myClassData->size() - 1);
 			std::iota(std::begin(learnIndices),
-					  std::begin(learnIndices) + i,
-					  0);
+			std::begin(learnIndices) + i,
+			0);
 			std::iota(std::begin(learnIndices) + i,
-					  std::end(learnIndices),
-					  i + 1);
+			std::end(learnIndices),
+			i + 1);
 
 			this->learn(learnIndices);
 			auto a = this->test(i);

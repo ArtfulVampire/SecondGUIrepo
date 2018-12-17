@@ -519,7 +519,7 @@ void Cut::setMarker(int offset, int newVal)
 
 void Cut::zeroSlot()
 {
-	if(edfFil.getExpName().contains("_veget"))
+	if(vegetFlag)
 	{
 		this->zeroChannel(ui->color3SpinBox->value(),
 						  ui->leftLimitSpinBox->value(),
@@ -629,7 +629,7 @@ void Cut::splitSemiSlot(int start, int end, bool addUndo)
 
 void Cut::splitSlot()
 {
-	if(edfFil.getExpName().contains("_veget"))
+	if(vegetFlag)
 	{
 		std::cout << "split is forbidden for vegetative data" << std::endl;
 		return;

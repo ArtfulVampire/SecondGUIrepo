@@ -12,10 +12,8 @@
 
 using namespace myOut;
 
-
 void Cut::next()
 {
-//	std::cout << *fileListIter << std::endl;
 	++fileListIter;
 	if(fileListIter == std::end(filesList))
 	{
@@ -33,7 +31,6 @@ void Cut::prev()
 		std::cout << "prev: bad number, too little" << std::endl;
 		return;
 	}
-//	std::cout << *fileListIter << std::endl;
 	--fileListIter;
 	openFile(edfFil.getDirPath() + "/" + (*fileListIter));
 }
@@ -50,7 +47,7 @@ void Cut::saveSlot()
 	if( !fileOpened ) { return; }
 
 	this->saveAs("_new");
-	logAction(static_cast<const char*>("saveAs"), static_cast<const char*>("_new"));
+	logAction(static_cast<std::string>("saveAs"), static_cast<std::string>("_new"));
 	std::cout << "Cut::save: edfFile saved" << std::endl;
 #if 0
 	/// old
@@ -84,9 +81,7 @@ void Cut::saveSubsecSlot()
 					  ui->rightLimitSpinBox->value(),
 					 "saveSubsec")) { return; }
 #endif
-
 	/// new, only edf is possible
-
 	QString newPath = edfFil.getDirPath() + "/";
 	if(DEFS.getUser() != username::GalyaP)
 	{
@@ -172,36 +167,36 @@ void Cut::saveSubsecSlot()
 #endif
 }
 
-
 void Cut::concatSlot()
 {
-	const QString fil1 = QFileDialog::getOpenFileName(this,
-													  tr("Open first file"),
-													  DEFS.dirPath(),
-													  "*.edf");
-	if(fil1.isEmpty())
+	std::vector<QString> filePaths{};
+	while(true)
 	{
-		std::cout << "concatSlot: first file path is empty" << std::endl;
-		return;
-	}
-	const QString fil2 = QFileDialog::getOpenFileName(this,
-													  tr("Open second file"),
-													  DEFS.dirPath(),
-													  "*.edf");
-
-	if(fil2.isEmpty())
-	{
-		std::cout << "concatSlot: second file path is empty" << std::endl;
-		return;
+		QString filePath = QFileDialog::getOpenFileName(this,
+														tr("Open first file"),
+														DEFS.getDirPath(),
+														"*.edf");
+		DEFS.setDir(myLib::getDirPathLib(filePath));
+		if(filePath.isEmpty())
+		{
+			break;
+		}
+		else
+		{
+			filePaths.push_back(filePath);
+		}
 	}
 
-	QString outPath{fil1};
+	if(filePaths.size() < 2)
+	{
+		std::cout << "concatSlot: not enough files chosen (expect at least 2)" << std::endl;
+		return;
+	}
+
+	QString outPath{filePaths[0]};
 	outPath.replace(".edf", "_concat.edf");
-
-	edfFile fil(fil1);
-	fil.concatFile(fil2).writeEdfFile(outPath);
+	edfFile::concatFilesStatic(filePaths).writeEdfFile(outPath);
 }
-
 
 void Cut::browseSlot()
 {
@@ -254,7 +249,6 @@ void Cut::setFileType(const QString & dataFileName)
 #endif
 }
 #endif
-
 
 void Cut::setValuesByEdf()
 {
@@ -367,6 +361,11 @@ void Cut::openFile(const QString & dataFileName)
 	marksToDrawSet();
 
 	edfFil.readEdfFile(dataFileName);
+	if(!edfFil.getLabels(0).contains("EEG") || dataFileName.contains("_veget"))
+	{
+		ui->vegetCheckBox->setChecked(true);
+		vegetFlag = true;
+	}
 	fileOpened = true;
 	logAction(edfFil.getExpName());
 
@@ -378,5 +377,3 @@ void Cut::openFile(const QString & dataFileName)
 
 	paint();
 }
-
-

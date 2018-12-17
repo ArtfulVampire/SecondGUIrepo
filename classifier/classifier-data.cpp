@@ -91,16 +91,24 @@ ClassifierData::ClassifierData(const matrix & inData, const std::vector<uint> & 
 	bcMatrix = dataMatrix;
 }
 
+void ClassifierData::toCsv(const QString & outPath) const
+{
+	std::ofstream out(outPath.toStdString());
+	out << std::fixed;
+	out.precision(4);
+	for(int i = 0; i < dataMatrix.rows(); ++i)
+	{
+		out << dataMatrix[i] << types[i] << "\r\n";
+	}
+	out.close();
+}
 
 ClassifierData::ClassifierData(const QString & inPath, const QStringList & filters)
 {
-
 	this->dataMatrix.clear();
 	this->types.clear();
 	this->fileNames.clear();
 	this->filesPath = inPath;
-
-
 #if MAP
 	/// construct types vector, dataMatrix and fileNames, then adjust
 	for(const QString & fileName : myLib::makeFullFileList(inPath, filters))

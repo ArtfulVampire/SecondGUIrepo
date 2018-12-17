@@ -123,14 +123,11 @@ Cut::Cut() :
 	{
 		ui->refilterLowFreqSpinBox->setValue(1.6);
 		ui->refilterHighFreqSpinBox->setValue(30);
-		QObject::connect(ui->concatPushButton, &QPushButton::clicked,
-						 this, &Cut::concatSlot);
 	}
 	else
 	{
 		ui->refilterLowFreqSpinBox->setValue(DEFS.getLeftFreq());
 		ui->refilterHighFreqSpinBox->setValue(DEFS.getRightFreq());
-		ui->concatPushButton->hide();
 	}
 
 
@@ -159,12 +156,14 @@ Cut::Cut() :
 		if(i > 0) dataCutLocal[i] = 0;
 		paint();
 	});
-
-
+	QObject::connect(ui->vegetCheckBox, &QCheckBox::clicked,
+					 [this](bool ch){ vegetFlag = ch; });
 	QObject::connect(ui->setMarkLeftPushButton, &QPushButton::clicked,
 					 [this]() { this->setMarkerSlot(true); });
 	QObject::connect(ui->setMarkRightPushButton, &QPushButton::clicked,
 					 [this]() { this->setMarkerSlot(false); });
+	QObject::connect(ui->concatPushButton, &QPushButton::clicked,
+					 this, &Cut::concatSlot);
 
 	/// navi
 //	QObject::connect(ui->forwardStepButton, SIGNAL(clicked()), this, SLOT(forwardStepSlot()));
