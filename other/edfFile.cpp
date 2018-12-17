@@ -1947,7 +1947,7 @@ edfFile edfFile::rereferenceData(reference newRef,
 		else if(temp.labels[i].contains("EOG1"))	{ eog1 = i; }
 		else if(temp.labels[i].contains("EOG2"))	{ eog2 = i; }
 	}
-	if(groundChan == -1 || (earsChan1 == -1 && earsChan2 == -1))
+	if(earsChan1 == -1 && earsChan2 == -1)
 	{
 		std::cout << "edfFile::rereferenceData: some of ref channels are absent" << std::endl;
 		return {};
@@ -1974,7 +1974,8 @@ edfFile edfFile::rereferenceData(reference newRef,
 	{
 		const QString currNumStr = nm(i + 1);
 
-		if(i == groundChan || i == earsChan1 || i == earsChan2) /// reref chans
+		/// remake with switch
+		if(i == groundChan || i == earsChan) /// reref chans
 		{
 			helpString += currNumStr + " ";
 		}

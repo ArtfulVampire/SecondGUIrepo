@@ -72,12 +72,21 @@ void MainWindow::addRefSlot()
 		auto labels = feel.getLabels();
 		for(auto & lbl : labels)
 		{
-			if(lbl.startsWith("EEG ") && !lbl.contains('-') && !lbl.contains(QRegExp(R"(A1\|A2\|Ar\|N)")))
+			if(lbl.startsWith("EEG") && !lbl.contains('-'))
 			{
-				bool flag = true;
-				lbl = lbl.trimmed();
-				lbl += "-" + ui->rereferenceDataComboBox->currentText();
-				lbl = myLib::fitString(lbl, 16); /// magic const label length
+				flag = true;
+				if(!lbl.contains(QRegExp(R"(A1|A2|Ar|N)")))
+				{
+					lbl = lbl.trimmed();
+					lbl += "-" + ui->rereferenceDataComboBox->currentText();
+					lbl = myLib::fitString(lbl, 16); /// magic const label length
+				}
+				else
+				{
+					lbl = lbl.trimmed();
+					lbl += "-N";
+					lbl = myLib::fitString(lbl, 16); /// magic const label length
+				}
 			}
 		}
 		if(flag)
