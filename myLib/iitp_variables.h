@@ -83,7 +83,13 @@ const std::vector<std::valarray<int>> interestGonios{
 	/// 34 VR + arms, legs slow
 	{Knee_l, Knee_r, Elbow_l, Elbow_r},
 	/// 35 VR + arms, legs fast
-	{Knee_l, Knee_r, Elbow_l, Elbow_r}
+	{Knee_l, Knee_r, Elbow_l, Elbow_r},
+	/// 36 noVR legs synphase
+	{Knee_l, Knee_r},
+	/// 37 VR + legs
+	{},
+	/// 38 VR + legs
+	{Knee_l, Knee_r},
 };
 
 
@@ -109,13 +115,10 @@ const std::vector<int> interestEeg{
 	18	/// O2
 };
 
-/// all with 12th
-const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 35 + 1);
-//const std::valarray<double> fileNums{1};
-
+const std::valarray<double> fileNums = smLib::range<std::valarray<double>>(0, 38 + 1);
 
 /// added 2, 6, 10 due to letter 03.11.17
-const QVector<int> interestingForLegs{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 24, 25, 30, 31, 34, 35};  /// for maps drawing
+const QVector<int> interestingForLegs{0, 1, 2, 4, 6, 8, 10, 13, 14, 22, 23, 24, 25, 30, 31, 34, 35, 36, 37, 38};  /// for maps drawing
 
 /// added due to talk 28.11.17
 const QVector<int> interestingForWrists{0, 1, 6, 8, 10, 13, 14, 26, 27, 28, 29};  /// for maps drawing

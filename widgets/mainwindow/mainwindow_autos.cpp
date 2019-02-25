@@ -377,17 +377,16 @@ void MainWindow::countSpectraSimple(int fftLen, int inSmooth)
 //    sp->psaSlot();
 }
 
-void MainWindow::iitpNamesFix()
+void MainWindow::iitpFixes()
 {
 	/// IITP filenames prep
-	const QString wrk = "/media/Files/Data/iitp/Aliev2";
-	QStringList lst = QDir(wrk).entryList({"*.*"}, QDir::Files|QDir::NoDotAndDotDot);
-	for(QString str : lst)
+	const QString wrk = "/media/Files/Data/iitp/Aliev3";
+	const QStringList edfs = QDir(wrk).entryList({"*.*"}, QDir::Files|QDir::NoDotAndDotDot);
+
+#if 0
+	for(const QString & str : edfs)
 	{
 		QString newName = str;
-//		newName.remove("virt");
-//		newName.remove("VR");
-//		newName.replace("Aliev", "Aliev2");
 		newName.replace(".EDF", "_eeg.edf");
 		if(0)
 		{
@@ -402,6 +401,7 @@ void MainWindow::iitpNamesFix()
 
 		}
 	}
+#endif
 
 
 #if 0
@@ -454,15 +454,13 @@ void MainWindow::iitpNamesFix()
 #endif
 
 
-#if 0
+#if 01
 	/// insert absent channels for all files of a guy
 	{
-		const QString guy = "Isakov2";
-//		const QString guyPath = def::iitpSyncFolder + "/" + guy + "/bc_noRectify";
-		const QString guyPath = def::iitpFolder + "/" + guy;
-		const QString postfix = "_eeg";
-		auto badFiles = autos::IITPtestEegChannels(guyPath, postfix);
-//		autos::IITPinsertChannels(guyPath, badFiles);
+		const QString guy = "Aliev3";
+		const QString guyPath = def::iitpSyncFolder + "/" + guy;
+		const QString postfix = "_sum_new_stag";
+		autos::IITPinsertChannels(guyPath, autos::IITPtestEegChannels(guyPath, postfix));
 		exit(0);
 	}
 #endif
@@ -749,7 +747,6 @@ void MainWindow::iitpPreproc()
 	/// prepare FeedbackFinalMark for eyes clean
 	const QString path = DEFS.dirPath() + "/FeedbackNewMark";
 
-
 	std::unique_ptr<Cut> cut{new Cut()};
 	for(auto in : subj::guysFBnew)
 	{
@@ -795,7 +792,7 @@ void MainWindow::iitpPreproc()
 
 void MainWindow::iitpMainProc()
 {
-	QString guy = "Isakov2";
+	QString guy = "Aliev3";
 	{
 		if(0)
 		{
@@ -830,7 +827,6 @@ void MainWindow::iitpMainProc()
 			}
 			return; /// clean init eeg - zero in the beginning for better filering
 		}
-//		return;
 		if(0)
 		{
 			if(01)
@@ -855,22 +851,22 @@ void MainWindow::iitpMainProc()
 //		return;
 		if(01)
 		{
-//			std::cout << "staging start" << std::endl;
+			std::cout << "staging start" << std::endl;
 //			autos::IITPstaging(guy);							/// flex/extend markers
-//			std::cout << "staging end, copy start" << std::endl;
+			std::cout << "staging end, copy start" << std::endl;
 			autos::IITPcopyToCar(guy);							/// copy ALL *_stag.edf to guy_car
-//			std::cout << "copy end, reref start" << std::endl;
+			std::cout << "copy end, reref start" << std::endl;
 			autos::IITPrerefCAR(guy + "_car");					/// rewrite ALL edfs in SYNCED/guy_car
 //			return;
 		}
-		/// CHECK car files if needed
+		/// CHECK car files manually if needed
 		if(01)
 		{
-//			std::cout << "copy end, process start" << std::endl;
+			std::cout << "copy end, process start" << std::endl;
 			autos::IITPprocessStaged(guy);						/// both -Ref and -car
-//			std::cout << "process end, draw start" << std::endl;
+			std::cout << "process end, draw start" << std::endl;
 			autos::IITPdrawSpectralMaps(guy);					/// both -Ref and -car
-//			std::cout << "all end" << std::endl;
+			std::cout << "all end" << std::endl;
 //			continue;
 //			exit(0);
 		}

@@ -17,11 +17,13 @@ const std::vector<QString> trialTypesNames
 };
 
 /// class because of simple names
-enum trialType {rest	= 0,
-				real	= 1,
-				imag	= 2,
-				passive	= 3,
-				stat	= 4};
+enum trialType {
+	rest	= 0,
+	real	= 1,
+	imag	= 2,
+	passive	= 3,
+	stat	= 4
+};
 
 
 const std::valarray<int> trialTypes{
@@ -97,7 +99,13 @@ const std::valarray<int> trialTypes{
 	trialType::real,
 	/// 34 VR + arms, legs slow
 	trialType::real,
-	/// 34 VR + arms, legs fast
+	/// 35 VR + arms, legs fast
+	trialType::real,
+	/// 36 noVR legs synphase
+	trialType::real,
+	/// 37 VR + legs
+	trialType::imag,
+	/// 38 VR + legs
 	trialType::real
 };
 
@@ -240,7 +248,13 @@ const std::vector<std::valarray<int>> interestEmg{
 	/// 34 VR + arms, legs slow
 	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
 	/// 35 VR + arms, legs fast
-	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r}
+	{Da_l, Da_r, Dp_l, Dp_r, Ta_l, Ta_r, Bf_l, Bf_r},
+	/// 36 noVR legs synphase
+	{Ta_l, Ta_r, Bf_l, Bf_r},
+	/// 37 VR + legs
+	{Ta_l, Ta_r, Bf_l, Bf_r},
+	/// 38 VR + legs
+	{Ta_l, Ta_r, Bf_l, Bf_r},
 };
 
 

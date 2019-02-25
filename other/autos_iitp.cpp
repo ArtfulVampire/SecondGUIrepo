@@ -113,13 +113,12 @@ std::vector<std::pair<QString, std::vector<QString>>> IITPtestEegChannels(const 
 																		  const QString & postfix)
 {
 	/// check all EEG channels presence
+	/// [fileNum]{fileName, absentChannels}
 	std::vector<std::pair<QString, std::vector<QString>>> res;
 	const auto filesList = QDir(guyDir).entryList({"*" + postfix + ".edf"});
 	for(const auto & edf : filesList)
 	{
-		edfFile fil;
-		fil.readEdfFile(guyDir + "/" + edf);
-
+		edfFile fil(guyDir + "/" + edf);
 		std::vector<QString> absChans{};
 		for(const auto & chan : iitp::eegNames) /// good order
 		{
@@ -158,10 +157,10 @@ void IITPinsertChannels(const QString & guyDir,
 	///  - make std::vector<...> of parameters, what to insert
 	/// in simpliest case - weighted sum of neighbours or just contralateral channel
 	/// USED ALGORITHM - insert previous channel by number
+	///
 	for(const auto & in : forInsert)
 	{
-		edfFile fil;
-		fil.readEdfFile(guyDir + "/" + in.first);
+		edfFile fil(guyDir + "/" + in.first);
 		for(const auto & chan : in.second)
 		{
 			int num = myLib::indexOfVal(iitp::eegNames, chan);
@@ -624,78 +623,24 @@ void IITPconcat(const QString & guyName,
 				const QString & emgPostfix)
 {
 	/// iitp
-	///  0 - downsample EMG, 1 - upsample EEG
-#ifdef UP_DOWN_S
-#undef UP_DOWN_S
-#define UP_DOWN_S 0
-#endif
-
-
-
 	DEFS.setNtFlag(true);
-
 	for(int fileNum : iitp::fileNums)
 	{
 		const QString ExpNamePre = def::iitpFolder + "/" +
 								   guyName + "/" +
 								   guyName + "_" + rn(fileNum, 2);
-
-#if 01
-		/// resample
-#if UP_DOWN_S
-		/// upsample EEGs
-		QString filePath = ExpNamePre + eegPostfix + ".edf";
-		if(QFile::exists(filePath))
-		{
-			edfFile fil;
-			fil.readEdfFile(filePath);
-			fil.upsample(1000.).writeEdfFile(ExpNamePre + eegPostfix + "_up.edf");
-		}
-#else
 		/// downsample EMGs
-		QString filePath = ExpNamePre + emgPostfix +".edf";
-		if(QFile::exists(filePath))
+		const QString eegPath = ExpNamePre + eegPostfix + ".edf";
+		const QString emgPath = ExpNamePre + emgPostfix +".edf";
+		const QString emgDownPath = ExpNamePre + emgPostfix + "_down.edf";
+		const QString outPath = ExpNamePre + "_sum.edf";
+		if(QFile::exists(emgPath))
 		{
-			edfFile fil;
-			fil.readEdfFile(filePath);
-			fil.downsample(250.).writeEdfFile(ExpNamePre + emgPostfix + "_down.edf");
+			edfFile emg(emgPath);
+			emg.downsample(250.).writeEdfFile(emgDownPath);
+			edfFile eeg(eegPath);
+			eeg.vertcatFile(emgDownPath).writeEdfFile(outPath);
 		}
-#endif
-
-#endif
-
-
-#if 01
-		/// vertcat eeg+emg
-#if UP_DOWN_S
-		/// upsampled EEG
-		filePath = ExpNamePre + eegPostfix + "_up.edf";
-		if(QFile::exists(filePath))
-		{
-			edfFile fil;
-			fil.readEdfFile(filePath);
-			filePath = ExpNamePre + emgPostfix + ".edf";
-			if(QFile::exists(filePath))
-			{
-				fil.vertcatFile(filePath).writeEdfFile(ExpNamePre + "_sum.edf");
-			}
-		}
-#else
-		/// downsampled EMG
-		filePath = ExpNamePre + eegPostfix + ".edf";
-		if(QFile::exists(filePath))
-		{
-			edfFile fil;
-			fil.readEdfFile(filePath);
-			filePath = ExpNamePre + emgPostfix + "_down.edf";
-			if(QFile::exists(filePath))
-			{
-				fil.vertcatFile(filePath).writeEdfFile(ExpNamePre + "_sum.edf");
-			}
-		}
-#endif
-
-#endif
 	}
 }
 
@@ -1083,45 +1028,33 @@ void IITPrerefCAR(const QString & guyName,
 				  const QString & dirPath,
 				  const QString & addFilter)
 {
-
 	const auto & usedLabels = coords::lbl19;	/// to build reref array
-
-
 	const auto & rerefLabels = coords::lbl19;	/// list to reref
-
 	const QString workPath = dirPath + "/" + guyName;
-
-
-	QStringList edfs = QDir(workPath).entryList(def::edfFilters);
-
+	const QStringList edfs = QDir(workPath).entryList(def::edfFilters);
 	for(const QString & fileName : edfs)
 	{
 		if(!addFilter.isEmpty() && !fileName.contains(addFilter)) { continue; }
 
-		edfFile fil;
-		fil.readEdfFile(workPath + "/" + fileName);
-
-
 		/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - Ref
+
+		edfFile fil(workPath + "/" + fileName);
 		std::valarray<double> refArr(fil.getDataLen());
 		for(const QString & chanName : usedLabels)
 		{
-			int ref = fil.findChannel(chanName);
-			refArr += fil.getData(ref);
+			refArr += fil.getData(fil.findChannel(chanName));
 		}
 		refArr /= usedLabels.size();
 
-
 		for(int i = 0; i < fil.getNs(); ++i)
 		{
-			auto it = std::find_if(std::begin(rerefLabels),
-								   std::end(rerefLabels),
-								   [fil, i](const QString & in)
+			const auto it = std::find_if(std::begin(rerefLabels),
+										 std::end(rerefLabels),
+										 [fil, i](const QString & in)
 			{ return fil.getLabels(i).contains(in); });
 
 			if(it != std::end(rerefLabels))
 			{
-
 				fil.setData(i, fil.getData(i) - refArr);
 
 				/// set new label *-CAR

@@ -124,7 +124,7 @@ public:
 	void testSuccessive2();
 	void iitpPreproc();
 	void iitpMainProc();
-	void iitpNamesFix();
+	void iitpFixes();
 	void matiMainProc();
 
 private:

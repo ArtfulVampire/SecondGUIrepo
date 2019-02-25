@@ -7,7 +7,7 @@
 #include <other/edffile.h>
 //#include <other/feedback_autos.h>
 //#include <other/coords.h>
-//#include <other/defs.h>
+#include <other/defs.h>
 //#include <myLib/adhoc.h>
 #include <myLib/general.h>
 //#include <myLib/drw.h>
@@ -24,6 +24,11 @@ using namespace myOut;
 
 void MainWindow::customFunc()
 {
+//	DEFS.setDir(def::iitpFolder + "/Aliev3");
+//	iitpFixes();
+//	iitpMainProc();
+
+
 //	const QString workDir = "c:/Data/tactile";
 //	autos::cutFilesInFolder(workDir, 8);
 

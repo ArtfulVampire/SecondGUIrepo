@@ -115,8 +115,8 @@ Cut::Cut() :
 	ui->splitButton->setShortcut(tr("x"));
 	ui->linearApproxPushButton->setShortcut(tr("l"));
 	ui->refilterFramePushButton->setShortcut(tr("f"));
-//	ui->iitpInverseCheckBox->setShortcut(tr("i"));
-//	ui->iitpDisableEcgCheckBox->setShortcut(tr("p"));
+	ui->iitpInverseCheckBox->setShortcut(tr("i"));
+	ui->iitpDisableEcgCheckBox->setShortcut(tr("p"));
 
 	/// stuff
 	if(DEFS.getUser() == username::GalyaP)
@@ -262,10 +262,12 @@ Cut::Cut() :
 	QObject::connect(ui->iitpManualPushButton, SIGNAL(clicked()), this, SLOT(iitpManualSlot()));
 	QObject::connect(ui->iitpSaveNewNumPushButton, SIGNAL(clicked()), this, SLOT(saveNewNumSlot()));
 	QObject::connect(ui->iitpRectifyEmgPushButton, SIGNAL(clicked()), this, SLOT(rectifyEmgSlot()));
-#if !SHOW_IITP_WIDGETS
-	qtLib::hideLayout(ui->iitpGrid);
-//	qtLib::hideLayout(ui->linearApproxVertLayout);
-#endif
+
+	if(!DEFS.isUser(username::IITP))
+	{
+		qtLib::hideLayout(ui->iitpGrid);
+		qtLib::hideLayout(ui->linearApproxVertLayout);
+	}
 
 	smartFindSetFuncs();
 	ui->smartFindSetAbsThrPushButton->click();

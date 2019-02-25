@@ -33,11 +33,6 @@ using uint = unsigned int;
 #define SHOW_MATI_WIDGETS 0
 #endif
 
-
-#ifndef SHOW_IITP_WIDGETS
-#define SHOW_IITP_WIDGETS 0
-#endif
-
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
 #endif
