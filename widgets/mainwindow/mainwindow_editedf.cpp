@@ -9,10 +9,14 @@
 
 using namespace myOut;
 
-std::vector<int> MainWindow::makeChanList() const
+std::vector<int> MainWindow::makeChanList(QString text) const
 {
 	std::vector<int> chanList{};
-    QStringList lst = ui->reduceChannelsLineEdit->text().split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
+	if(text.isEmpty())
+	{
+		text = ui->reduceChannelsLineEdit->text();
+	}
+	QStringList lst = text.split(QRegExp("[,.; ]"), QString::SkipEmptyParts);
 	for(const auto & str : lst)
     {
         chanList.push_back(str.toInt() - 1);
@@ -27,7 +31,10 @@ void MainWindow::cleanEdfFromEyesSlot()
 	QString helpString = globalEdf.getFilePath();
 	helpString.replace(".edf", "_eyesClean.edf", Qt::CaseInsensitive);
 
-	globalEdf.cleanFromEyes().writeEdfFile(helpString);
+	auto chans = processEyes();
+
+	globalEdf.cleanFromEyes({}, ui->removeEogsCheckBox->isChecked(),
+							chans.second, chans.first).writeEdfFile(helpString);
 }
 
 void MainWindow::rereferenceDataSlot()

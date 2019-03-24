@@ -743,12 +743,12 @@ void edfFile::handleEdfFile(const QString & EDFpath, bool readFlag, bool headerO
 			/// ECG for IITP
 			if(labels[i].contains(QRegExp("E[EOC]G")))
             {
-#if 0
+#if 1
 				/// encephalan only !!!!!1111
 				physMax[i] = 4096;
 				physMin[i] = -4096;
-				digMax[i] = 32767;
-				digMin[i] = -32768;
+//				digMax[i] = 32767;
+//				digMin[i] = -32768;
 #endif
             }
             /// repair for equal phys min/max
@@ -2221,8 +2221,8 @@ void edfFile::drawSubsection(int startBin, int finishBin, const QString & outPat
 
 edfFile & edfFile::cleanFromEyes(QString eyesPath,
 								 bool removeEogChannels,
-								 std::vector<uint> eegNums,
-								 std::vector<uint> eogNums)
+								 std::vector<int> eegNums,
+								 std::vector<int> eogNums)
 {
     QTime myTime;
     myTime.start();
@@ -2539,6 +2539,13 @@ edfFile & edfFile::insertChannel(int num,
 edfFile & edfFile::addChannel(const std::valarray<double> & dat, const edfChannel & ch)
 {
 	return this->insertChannel(this->getNs(), dat, ch);
+}
+
+edfFile & edfFile::addMarkerChannel()
+{
+	edfChannel ch("Markers", "", "", 4096, 0, 4096, 0, "", getFreq(), "");
+	addChannel(std::valarray<double>(0., getDataLen()), ch);
+	return *this;
 }
 
 /// exceptions

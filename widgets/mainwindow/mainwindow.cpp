@@ -58,6 +58,7 @@ MainWindow::MainWindow() :
 
 	/// reduce channels
 	ui->reduceChannelsComboBox->addItem("EEG,reref,EOG,mark");
+	ui->reduceChannelsComboBox->addItem("EEG,reref,EOG,other,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,reref,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,EOG,other,mark");
 	ui->reduceChannelsComboBox->addItem("EEG,other,mark");
@@ -66,6 +67,11 @@ MainWindow::MainWindow() :
 	ui->reduceChannelsComboBox->addItem("other,mark");
 	ui->reduceChannelsComboBox->addItem("128to19mark");
 	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
+
+	/// eog channels
+	ui->eogChannelsComboBox->addItem("128");
+	ui->eogChannelsComboBox->addItem("Usual");
+	ui->eogChannelsComboBox->setCurrentText("Usual");
 
 	/// slice
     ui->timeShiftSpinBox->setMinimum(0.1);
@@ -238,6 +244,10 @@ MainWindow::MainWindow() :
 					 this, SLOT(changeRedNsLine(int)));
 	QObject::connect(ui->reduceChannelsComboBox, SIGNAL(currentIndexChanged(int)),
 					 this, SLOT(changeRedNsLine(int)));
+	QObject::connect(ui->eogChannelsComboBox, SIGNAL(highlighted(int)),
+					 this, SLOT(changeEogChannelsLine(int)));
+	QObject::connect(ui->eogChannelsComboBox, SIGNAL(currentIndexChanged(int)),
+					 this, SLOT(changeEogChannelsLine(int)));
 	QObject::connect(ui->refilterDataPushButton, SIGNAL(clicked()), this, SLOT(refilterDataSlot()));
 	QObject::connect(ui->reduceChannelsNewEDFPushButton, SIGNAL(clicked()), this, SLOT(reduceChannelsEDFSlot()));
 	QObject::connect(ui->rereferenceDataPushButton, SIGNAL(clicked()), this, SLOT(rereferenceDataSlot()));
@@ -321,36 +331,83 @@ void MainWindow::changeRedNsLine(int a)
 	ui->reduceChannelsLineEdit->setText(outStr);
 }
 
-void MainWindow::processEyes()
+void MainWindow::changeEogChannelsLine(int a)
+{
+	if(!QFile::exists(ui->filePathLineEdit->text()))
+	{
+		outStream << "changeEogChannelsLine: file doesn't exist" << std::endl;
+		return;
+	}
+	if(globalEdf.isEmpty())
+	{
+		this->readData();
+	}
+
+	const QString str = ui->eogChannelsComboBox->itemText(a);
+
+	QString outStr{};
+	if(str.startsWith("128"))
+	{
+		ui->eogChannelsLineEdit->setText(" 8, 14, 21, 25, 125, 128");
+		return;
+	}
+
+	// Usual encephalan
+	for(int i = 0; i < globalEdf.getNs(); ++i)
+	{
+		const QString & lab = globalEdf.getLabels(i);
+
+		if(lab.contains("EOG"))
+		{
+			outStr += nm(i + 1) + " ";
+		}
+	}
+	ui->eogChannelsLineEdit->setText(outStr);
+}
+
+std::pair<std::vector<int>, std::vector<int>> MainWindow::processEyes()
 {
 	readData();
 	const edfFile & fil = globalEdf;
 
 	std::vector<int> eegs{};
 	std::vector<int> eogs{};
-    for(int i = 0; i < fil.getNs(); ++i)
-    {
-		const auto & labl = fil.getLabels(i);
-        if(labl.contains("EOG"))
-        {
-            eogs.push_back(i);
-        }
-        /// what with A1-A2 and A1-N ???
-        else if(labl.contains("EEG"))
-        {
-            if(!labl.contains("A1-A2") &&
-               !labl.contains("A2-A1") &&
-               !labl.contains("A1-N" ) &&
-               !labl.contains("A2-N"))
-            {
-                eegs.push_back(i);
-            }
-        }
-    }
+	if(fil.getNs() < coords::egi::manyChannels)
+	{
+		for(int i = 0; i < fil.getNs(); ++i)
+		{
+			const auto & labl = fil.getLabels(i);
+			if(labl.contains("EOG"))
+			{
+				eogs.push_back(i);
+			}
+			/// what with A1-A2 and A1-N ???
+			else if(labl.contains("EEG"))
+			{
+				if(!labl.contains("A1-A2") &&
+				   !labl.contains("A2-A1") &&
+				   !labl.contains("A1-N" ) &&
+				   !labl.contains("A2-N"))
+				{
+					eegs.push_back(i);
+				}
+			}
+		}
+	}
+	else
+	{
+		eogs = makeChanList(ui->eogChannelsLineEdit->text());
+		for(int i = 0; i < 128; ++i)
+		{
+			eegs.push_back(i);
+		}
+		smLib::eraseItems(eegs, eogs); /// be careful here
+	}
     /// or (eogs, eegs)
 	myLib::eyesProcessingStatic(eogs, eegs,
 								fil.getDirPath() + "/winds",
 								fil.getDirPath() + "/eyes.txt"); /// for first 19 eeg channels
+	return {eogs, eegs};
 }
 
 void MainWindow::showNet()
@@ -410,8 +467,17 @@ void MainWindow::setEdfFile(const QString & filePath)
 		DEFS.dirMkdir("amod");
 		DEFS.dirMkdir("auxEdfs");
 	}
-
 	readData();
+	if(globalEdf.getNs() > coords::egi::manyChannels)
+	{
+		ui->reduceChannelsComboBox->setCurrentText("128to19mark");
+		ui->eogChannelsComboBox->setCurrentText("128");
+	}
+	else
+	{
+		ui->reduceChannelsComboBox->setCurrentText("EEG,reref,EOG,other,mark");
+		ui->eogChannelsComboBox->setCurrentText("Usual");
+	}
 }
 
 void MainWindow::setOutputStream(qtLib::outputType in)

@@ -28,6 +28,7 @@ public slots:
 	/// parameters processing
 	void setFileMarkers();
 	void changeRedNsLine(int a);
+	void changeEogChannelsLine(int);
 
 	/// in-window calculations, substantional actions
 	/// files
@@ -56,8 +57,8 @@ public slots:
     void markerSetBinValueSlot();
 	void matiPreprocessingSlot();
 
-	/// signals
-    void processEyes();
+	/// signals ???
+	std::pair<std::vector<int>, std::vector<int>> processEyes();
     void ICA();
 	void refilterDataSlot();
 	void rereferenceDataSlot();
@@ -91,7 +92,7 @@ public:
 	void readData();
 
 
-	std::vector<int> makeChanList() const;
+	std::vector<int> makeChanList(QString text = {}) const;
 	void cleanDirsCheckAllBoxes(bool);
 
 

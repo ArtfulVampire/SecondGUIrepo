@@ -180,6 +180,7 @@ public:
 
 	edfFile & insertChannel(int num, const std::valarray<double> & dat, const edfChannel & ch);
 	edfFile & addChannel(const std::valarray<double> & dat, const edfChannel & ch);
+	edfFile & addMarkerChannel();
 
 	edfFile & multiplyChannel(uint chanNum, double mult);
 	edfFile & multiplyChannels(std::vector<uint> chanNums, double mult);
@@ -209,8 +210,8 @@ public:
 	void setChannels(const std::vector<edfChannel> & inChannels);
 	edfFile & cleanFromEyes(QString eyesPath = QString(),
 							bool removeEogChannels = false,
-							std::vector<uint> eegNums = {},
-							std::vector<uint> eogNums = {});
+							std::vector<int> eegNums = {},
+							std::vector<int> eogNums = {});
 
 	edfFile & downsample(double newFreq,
 					std::vector<int> chanList = std::vector<int>{});
@@ -507,6 +508,8 @@ void toLowerItem(const QString & inPath);
 void toLowerContents(const QString & dirPath, const QStringList & filters);
 
 void fullRepairDir(const QString & dirPath, const QStringList & filters);
+
+edfFile addMarkerChannel(const QString & filePath);
 
 void testArtifacts(const QString & dirPath, const QStringList & filters);
 }

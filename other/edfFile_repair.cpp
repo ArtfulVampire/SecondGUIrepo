@@ -457,4 +457,12 @@ void fullRepairDir(const QString & dirPath, const QStringList & filters)
 	repair::toLowerContents(dirPath, filters);
 }
 
+edfFile addMarkerChannel(const QString & filePath)
+{
+	edfFile fil(filePath);
+	edfChannel ch("Markers", "", "", 4096, 0, 4096, 0, "", fil.getFreq(), "");
+	fil.addChannel(std::valarray<double>(0., fil.getDataLen()), ch);
+	return fil;
+}
+
 } /// end of namespace repair

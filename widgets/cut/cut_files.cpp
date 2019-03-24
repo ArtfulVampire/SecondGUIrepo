@@ -361,6 +361,11 @@ void Cut::openFile(const QString & dataFileName)
 	marksToDrawSet();
 
 	edfFil.readEdfFile(dataFileName);
+	if(edfFil.getMarkChan() == -1)
+	{
+		edfFil.addMarkerChannel();
+	}
+
 	if(!edfFil.getLabels(0).contains("EEG") || dataFileName.contains("_veget"))
 	{
 		ui->vegetCheckBox->setChecked(true);

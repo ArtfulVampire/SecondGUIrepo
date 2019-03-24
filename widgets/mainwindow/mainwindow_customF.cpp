@@ -28,6 +28,12 @@ void MainWindow::customFunc()
 //	iitpFixes();
 //	iitpMainProc();
 
+//	const QString wrk = "/media/Files/Data/Elena/Pew";
+//	for(const auto & in : QDir(wrk).entryList(def::edfFilters))
+//	{
+//		repair::addMarkerChannel(wrk + "/" + in).writeEdfFile(wrk + "/m_" + in);
+//	}
+//	exit(0);
 
 //	const QString workDir = "c:/Data/tactile";
 //	autos::cutFilesInFolder(workDir, 8);
