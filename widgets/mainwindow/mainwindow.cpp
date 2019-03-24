@@ -69,7 +69,9 @@ MainWindow::MainWindow() :
 	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
 
 	/// eog channels
-	ui->eogChannelsComboBox->addItem("128");
+	ui->eogChannelsComboBox->addItem("128, 2 eogs", "14 128");
+	ui->eogChannelsComboBox->addItem("128, 4 eogs", "14 21 125 128");
+	ui->eogChannelsComboBox->addItem("128, 6 eogs", "8 14 21 25 125 128");
 	ui->eogChannelsComboBox->addItem("Usual");
 	ui->eogChannelsComboBox->setCurrentText("Usual");
 
@@ -346,23 +348,25 @@ void MainWindow::changeEogChannelsLine(int a)
 	const QString str = ui->eogChannelsComboBox->itemText(a);
 
 	QString outStr{};
-	if(str.startsWith("128"))
+	if(str.startsWith("Usual"))
 	{
-		ui->eogChannelsLineEdit->setText(" 8, 14, 21, 25, 125, 128");
-		return;
-	}
-
-	// Usual encephalan
-	for(int i = 0; i < globalEdf.getNs(); ++i)
-	{
-		const QString & lab = globalEdf.getLabels(i);
-
-		if(lab.contains("EOG"))
+		// Usual encephalan
+		for(int i = 0; i < globalEdf.getNs(); ++i)
 		{
-			outStr += nm(i + 1) + " ";
+			const QString & lab = globalEdf.getLabels(i);
+
+			if(lab.contains("EOG"))
+			{
+				outStr += nm(i + 1) + " ";
+			}
 		}
+		ui->eogChannelsLineEdit->setText(outStr);
 	}
-	ui->eogChannelsLineEdit->setText(outStr);
+	else
+	{
+		ui->eogChannelsLineEdit->setText(ui->eogChannelsComboBox->itemData(a).toString());
+	}
+
 }
 
 std::pair<std::vector<int>, std::vector<int>> MainWindow::processEyes()
@@ -471,7 +475,7 @@ void MainWindow::setEdfFile(const QString & filePath)
 	if(globalEdf.getNs() > coords::egi::manyChannels)
 	{
 		ui->reduceChannelsComboBox->setCurrentText("128to19mark");
-		ui->eogChannelsComboBox->setCurrentText("128");
+		ui->eogChannelsComboBox->setCurrentText("128, 4 eogs");
 	}
 	else
 	{
