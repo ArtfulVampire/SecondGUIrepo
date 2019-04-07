@@ -108,6 +108,7 @@ public slots:
 	void timesAndDiffSlot();
 	void showDerivatives();
 	void paintResizedSlot(double a);
+	void changeZeroChannels(int a);
 
 	void undoSlot();
 	void copySlot();

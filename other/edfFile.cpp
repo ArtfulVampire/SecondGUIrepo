@@ -2089,16 +2089,38 @@ edfFile edfFile::rereferenceData(reference newRef,
 /// need check
 edfFile edfFile::rereferenceDataCAR() const
 {
-	edfFile temp(*this, false);
+	edfFile temp{};
 
-	/// check the same reference
-	/// if not - reref to N
-	temp = this->rereferenceData(reference::N, false, false);
+	if(ns < coords::egi::manyChannels)
+	{
+		/// check the same reference
+		/// if not - reref to N
+		temp = edfFile(*this, false);
+		temp = this->rereferenceData(reference::N, false, false);
+	}
+	else
+	{
+		temp = edfFile(*this);
+	}
 
-	const std::vector<int> eegs
-	{(ns < coords::egi::manyChannels) ? this->getAllEegChannels(coords::lbl19) : smLib::range<std::vector<int>>(0, 128)};
+	const std::vector<int> eegs =
+		(ns < coords::egi::manyChannels)
+				? this->getAllEegChannels(coords::lbl19)
+				: smLib::range<std::vector<int>>(0, 128);
+
 	const std::vector<QString> rerefLabels =
-	{(ns < coords::egi::manyChannels) ? coords::lbl21 : smLib::range<std::vector<QString>>(1, 129)};	/// list to reref (with EOG)
+		[](int ns_){
+			if(ns_ < coords::egi::manyChannels)
+			{
+				return coords::lbl21;
+			}
+			std::vector<QString> res{};
+			for(int i = 1; i <= 128; ++i)
+			{
+				res.push_back(" " + QString::number(i) + " ");
+			}
+			return res;
+		}(ns);
 
 	/// refArr = (Fp1 + Fp2 + ... + O1 + O2)/19 - N
 	std::valarray<double> refArr(temp.edfData.cols());
@@ -2115,7 +2137,11 @@ edfFile edfFile::rereferenceDataCAR() const
 							   [&temp, i](const QString & in)
 		{ return temp.labels[i].contains(in); });
 
-		if(it == std::end(rerefLabels)) { continue; }
+		if(it == std::end(rerefLabels))
+		{
+			std::cout << temp.labels[i] << " is not rerefLabel" << std::endl;
+			continue;
+		}
 
 		if(!(*it).contains("EOG")) /// non-EOGs
 		{
@@ -2129,10 +2155,13 @@ edfFile edfFile::rereferenceDataCAR() const
 		}
 
 		/// set new label *-CAR
-		temp.labels[i] = myLib::fitString(temp.labels[i]
+//		std::cout << temp.labels[i] << std::endl;
+		temp.labels[i] = myLib::fitString(temp.labels[i].trimmed()
 										  .left(temp.labels[i].indexOf('-'))
 										  + "-CAR",
 										  16);
+		temp.channels[i].label = temp.labels[i];
+//		std::cout << temp.labels[i] << std::endl;
 	}
 	return temp;
 }

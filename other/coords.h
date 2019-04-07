@@ -29,7 +29,8 @@ namespace egi
 {
 extern const int manyChannels;
 extern const std::vector<int> chans128to20;
-extern const std::vector<QString> chans128to20str;
+extern const std::vector<QString> chans128to19mark;
+extern const std::vector<QString> chans128to19noeyesMark;
 extern const std::vector<QString> chans128groups;
 extern const std::map<QString, std::vector<QString>> chans128;
 } /// end namespace egi

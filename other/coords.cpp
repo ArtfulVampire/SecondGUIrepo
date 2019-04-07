@@ -140,7 +140,7 @@ const std::vector<int> chans128to20
 	128,
 };									/// markers
 
-const std::vector<QString> chans128to20str
+const std::vector<QString> chans128to19mark
 {
 			" 22 ",			" 9 ",						/// Fp1, Fp2
 	" 33 ",	" 24 ",	" 11 ",	" 124 "," 122 ",			/// F7, F3, Fz, F4, F8
@@ -148,6 +148,16 @@ const std::vector<QString> chans128to20str
 	" 58 ",	" 52 ",	" 62 ",	" 92 ",	" 96 ",				/// P7(T5), P3, Pz, P4, P8(T6)
 			" 70 ",			" 83 ",						/// O1, O2
 	" 8 ", " 14 ", " 21 ", " 25 ", " 125 ", " 128 ",	/// EOGs
+	"Status",											/// markers
+};
+
+const std::vector<QString> chans128to19noeyesMark
+{
+			" 22 ",			" 9 ",						/// Fp1, Fp2
+	" 33 ",	" 24 ",	" 11 ",	" 124 "," 122 ",			/// F7, F3, Fz, F4, F8
+	" 45 ",	" 36 ",	" 55 ",	" 104 "," 108 ",			/// T7(T3), C3, CPz, C4, T8(T4)
+	" 58 ",	" 52 ",	" 62 ",	" 92 ",	" 96 ",				/// P7(T5), P3, Pz, P4, P8(T6)
+			" 70 ",			" 83 ",						/// O1, O2
 	"Status",											/// markers
 };
 

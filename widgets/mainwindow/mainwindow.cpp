@@ -66,6 +66,7 @@ MainWindow::MainWindow() :
 	ui->reduceChannelsComboBox->addItem("EEG,mark");
 	ui->reduceChannelsComboBox->addItem("other,mark");
 	ui->reduceChannelsComboBox->addItem("128to19mark");
+	ui->reduceChannelsComboBox->addItem("128to19noeyes");
 	ui->reduceChannelsComboBox->setCurrentText("EEG,mark");
 
 	/// eog channels
@@ -299,7 +300,15 @@ void MainWindow::changeRedNsLine(int a)
 	QString outStr{};
 	if(str.startsWith("128"))
 	{
-		for(const QString & ch : coords::egi::chans128to20str)
+		const std::vector<QString>& chanList = [&str]()
+		{
+			if(str.contains("noeyes"))
+			{
+				return coords::egi::chans128to19noeyesMark;
+			}
+			return coords::egi::chans128to19mark;
+		}();
+		for(const QString & ch : chanList)
 		{
 			outStr += nm(globalEdf.findChannel(ch) + 1) + " ";
 		}
@@ -476,6 +485,7 @@ void MainWindow::setEdfFile(const QString & filePath)
 	{
 		ui->reduceChannelsComboBox->setCurrentText("128to19mark");
 		ui->eogChannelsComboBox->setCurrentText("128, 4 eogs");
+		ui->rereferenceDataComboBox->setCurrentText("CAR");
 	}
 	else
 	{

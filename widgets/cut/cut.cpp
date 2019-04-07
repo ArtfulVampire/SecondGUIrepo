@@ -72,6 +72,9 @@ Cut::Cut() :
 		std::get<0>(in)->setMinimum(-1);
 	}
 
+	ui->zeroChannelsComboBox->addItem("none");
+	ui->zeroChannelsComboBox->addItem("128eyes");
+
 	/// derivativesGridLayout
 	ui->derivVal1SpinBox->setMaximum(33000);		ui->derivVal1SpinBox->setMinimum(-33000);
 	ui->derivVal2SpinBox->setMaximum(33000);		ui->derivVal2SpinBox->setMinimum(-33000);
@@ -228,6 +231,10 @@ Cut::Cut() :
 	QObject::connect(ui->savePicPushButton, &QPushButton::clicked,
 			[this](){ currentPic.save(edfFil.getDirPath() + "/"
 									  + ui->saveSubsecAddNameLineEdit->text() + ".jpg"); });
+	QObject::connect(ui->zeroChannelsComboBox, SIGNAL(highlighted(int)),
+					 this, SLOT(changeZeroChannels(int)));
+	QObject::connect(ui->zeroChannelsComboBox, SIGNAL(currentIndexChanged(int)),
+					 this, SLOT(changeZeroChannels(int)));
 
 
 	/// smartFind
@@ -730,6 +737,19 @@ void Cut::drawSpectre()
 						 "black");
 
 	ui->spectreLabel->setPixmap(toDraw.scaled(ui->spectreLabel->size()));
+}
+
+void Cut::changeZeroChannels(int a)
+{
+	if(ui->zeroChannelsComboBox->itemText(a) == "128eyes" )
+	{
+		ui->zeroChannelsLineEdit->setText("19 20 21 22 23 24");
+	}
+	else if(ui->zeroChannelsComboBox->itemText(a) == "none")
+	{
+		ui->zeroChannelsLineEdit->clear();
+	}
+	emit ui->zeroChannelsLineEdit->editingFinished();
 }
 
 void Cut::showDerivatives()
